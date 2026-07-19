@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TITEL DER SIMULATION</title>
+	<link rel="stylesheet" href="arbeitsblatt-stil.css">
+	<script src="sim-kit.js"></script>
+</head>
+<body>
+<div class="blatt">
+
+	<div class="kopf">
+		<span class="kapitel">C.XX.X Kapiteltitel</span>
+	</div>
+
+	<div class="tcb blau">
+		<div class="tcb-title">Simulation: Kurzbeschreibung</div>
+		<div class="tcb-body">
+			<canvas id="sim-canvas" class="sim"></canvas>
+
+			<div class="steuerung">
+				<div class="zeile">
+					<label for="regler-a">Amplitude <i class="gr">A</i></label>
+					<input type="range" id="regler-a" min="0.2" max="1" step="0.05" value="0.8">
+					<span class="wert" id="wert-a">0,80</span>
+				</div>
+				<div class="zeile">
+					<label>Tempo</label>
+					<span class="knopfleiste" id="tempo-knoepfe">
+						<button data-wert="1" class="aktiv">1&times;</button>
+						<button data-wert="5">5&times;</button>
+					</span>
+					<span class="knopfleiste" style="margin-left:auto">
+						<button id="btn-start">Start</button>
+					</span>
+				</div>
+			</div>
+			<p class="fussnote">Fu&szlig;note: Modellannahmen, feste Gr&ouml;&szlig;en, Zeitraffer.</p>
+		</div>
+	</div>
+
+</div>
+
+<script>
+	"use strict";
+	const K = window.SimKit;
+
+	const zustand = { A: 0.8, tempo: 1, t: 0, laeuft: false };
+
+	const canvas = document.getElementById("sim-canvas");
+	const ctx = canvas.getContext("2d");
+	let W = 740, H = 430;
+
+	function zeichne() {
+		ctx.clearRect(0, 0, W, H);
+		const u = K.zeichneAchsen(ctx, {
+			dx: 48, dy: 20, dw: W - 64, dh: H - 66,
+			xMax: 10, xSchritt: 2, yMax: 2, ySchritt: 1,
+			xLabel: "t", xEinheit: "s", yLabel: "y", yEinheit: "m"
+		});
+		K.zeichneKurve(ctx, u, t => 1 + zustand.A * Math.sin(t + zustand.t), 10, "#0000BF");
+	}
+
+	K.bindeSlider("regler-a", "wert-a", "", v => zustand.A = v, zeichne);
+	K.bindeKnopfgruppe("tempo-knoepfe", w => zustand.tempo = +w);
+
+	const btn = document.getElementById("btn-start");
+	let stopp = null;
+	btn.addEventListener("click", () => {
+		zustand.laeuft = !zustand.laeuft;
+		btn.textContent = zustand.laeuft ? "Pause" : "Start";
+		btn.classList.toggle("laeuft", zustand.laeuft);
+		if (zustand.laeuft) {
+			stopp = K.starteSchleife(dt => {
+				zustand.t += dt;
+				zeichne();
+				return zustand.laeuft;
+			}, () => zustand.tempo);
+		} else if (stopp) stopp();
+	});
+
+	function layout() {
+		({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 0.9 : 0.55));
+		zeichne();
+	}
+	window.addEventListener("resize", layout);
+	layout();
+	K.nachFontLaden(zeichne);
+</script>
+</body>
+</html>
