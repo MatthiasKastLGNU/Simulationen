@@ -362,23 +362,34 @@
 	const btnMessung = document.getElementById("btn-messwert");
 	const messkoerper = document.getElementById("messtabelle-koerper");
 
-	/* Messwert-Button nur bedienbar, wenn die Simulation gerade nicht laeuft */
-	function messknopfAktualisieren() { btnMessung.disabled = zustand.laeuft; }
+	/* Ein Gefaess ist "fertig", sobald es (bei aktueller Zeit) seine Zieltemperatur erreicht hat */
+	const kFertig = k => zustand.t >= tBeiZiel(k);
+
+	/* Messwert-Button nur bedienbar, wenn die Simulation nicht laeuft und
+	   mindestens ein Gefaess noch nicht am Ziel ist */
+	function messknopfAktualisieren() {
+		btnMessung.disabled = zustand.laeuft || (kFertig(zustand.a) && kFertig(zustand.b));
+	}
 
 	btnMessung.addEventListener("click", () => {
 		const nr = messkoerper.children.length + 1;
 		const zelle = (text, klasse = "") => `<td${klasse ? ` class="${klasse}"` : ""}>${text}</td>`;
 		const zeile = document.createElement("tr");
-		const werte = [zustand.a, zustand.b].map(k => ({
+		/* Ein Gefaess, das sein Ziel schon erreicht hat, liefert keine neuen
+		   Messwerte mehr - dort erscheint ein Gedankenstrich statt einer Zahl */
+		const werte = [zustand.a, zustand.b].map(k => kFertig(k) ? null : {
 			T: temperatur(k, zustand.t),
 			dT: temperatur(k, zustand.t) - tStart(),
 			E: energieVon(k) / 1000
-		}));
+		});
+		const spalten = (w, klasse) => w
+			? zelle(zahl(w.T), klasse) + zelle(zahl(w.dT), klasse) + zelle(zahl(w.E), klasse)
+			: zelle("&ndash;", klasse) + zelle("&ndash;", klasse) + zelle("&ndash;", klasse);
 		zeile.innerHTML =
 			zelle(nr) +
 			zelle(zahl(zustand.t)) +
-			zelle(zahl(werte[0].T), "sp-a") + zelle(zahl(werte[0].dT), "sp-a") + zelle(zahl(werte[0].E), "sp-a") +
-			zelle(zahl(werte[1].T), "sp-b") + zelle(zahl(werte[1].dT), "sp-b") + zelle(zahl(werte[1].E), "sp-b");
+			spalten(werte[0], "sp-a") +
+			spalten(werte[1], "sp-b");
 		messkoerper.appendChild(zeile);
 	});
 	document.getElementById("btn-tabelle-leeren").addEventListener("click", () => {
