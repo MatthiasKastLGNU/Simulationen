@@ -1300,6 +1300,33 @@
 		({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 1.0 : 0.60));
 		aktualisiere();
 	}
+	/* Modus aus der URL lesen: ...#wasserfall / ...#fallrohr (auch Kurzform #wasser / #fall). */
+	function modusAusHash() {
+		const h = (location.hash || "").toLowerCase();
+		if (h.indexOf("wasser") >= 0) return "fall";
+		if (h.indexOf("fallrohr") >= 0 || h.indexOf("rohr") >= 0) return "rohr";
+		if (h.indexOf("fall") >= 0) return "fall";   /* #fall -> Wasserfall */
+		return null;
+	}
+	function setzeModus(wunsch) {
+		if (!wunsch || wunsch === z.modus) return;
+		z.modus = wunsch;
+		document.querySelectorAll("#modus-knoepfe button").forEach(b =>
+			b.classList.toggle("aktiv", b.dataset.wert === wunsch));
+		modusWechsel();
+	}
+	/* Startmodus direkt setzen (vor dem ersten Aufbau), Groesse etc. folgt darunter. */
+	{
+		const start = modusAusHash();
+		if (start) {
+			z.modus = start;
+			document.querySelectorAll("#modus-knoepfe button").forEach(b =>
+				b.classList.toggle("aktiv", b.dataset.wert === start));
+		}
+	}
+	/* Auch spaeteres Aendern des Ankers (ohne Neuladen) schaltet um. */
+	window.addEventListener("hashchange", () => setzeModus(modusAusHash()));
+
 	window.addEventListener("resize", neuLayouten);
 	modusWechsel();          /* setzt Fussnote, Tabellenkopf und Sichtbarkeiten */
 	neuLayouten();
