@@ -563,10 +563,12 @@
 		}
 		if (fall) {
 			const gb = 158;                       /* Breite des Messgeraets */
+			/* Mit eingeschalteter Lupe braucht die Szene eine zusaetzliche Spalte. */
+			const ab = W * (z.teilchen ? 0.42 : 0.28);
 			return {
-				app:   { x: 4, y: 14, b: W * 0.28, h: H - 46 },
-				therm: { x: W * 0.28 + 12, y: 40, h: H - 140, b: gb },
-				dia:   { x: W * 0.28 + gb + 26, y: 12, b: W - (W * 0.28 + gb + 34), h: H - 30 }
+				app:   { x: 4, y: 14, b: ab, h: H - 46 },
+				therm: { x: ab + 12, y: 40, h: H - 140, b: gb },
+				dia:   { x: ab + gb + 26, y: 12, b: W - (ab + gb + 34), h: H - 30 }
 			};
 		}
 		return {
@@ -689,39 +691,55 @@
 		});
 	}
 
-	function zeichneLupe(cx, cy, r) {
-		const faellt = z.phase === "fallen";
-		const seit = z.anim - z.tAufprall;
-		const st = stoff();
+	/* opt: { geordnet, amp, farbe, grund, stroemung, ring, text }
+	   geordnet   true  = alle Teilchen bewegen sich gemeinsam (Arbeit)
+	   stroemung  Pixel/s, mit denen die Teilchen durch die Lupe wandern
+	              (fuer den fallenden Wasserstrahl)
+	   text       Array von Beschriftungszeilen unter der Lupe            */
+	function zeichneLupe(cx, cy, r, opt) {
+		opt = opt || {};
+		const geordnet = ("geordnet" in opt) ? opt.geordnet : (z.phase === "fallen");
+		const s = r / 52;                       /* Massstab gegenueber der Standardlupe */
+		const farbe = opt.farbe || stoff().farbe;
+		const rad = 7 * s;
+		/* Zappel-Amplitude waechst mit der Temperaturerhoehung */
+		const amp = (("amp" in opt) ? opt.amp : Math.min(6.5, 1.2 + dTreal() * 1.1)) * s;
+		const kopf = Math.max(3.5, 5 * s), quer = Math.max(2.2, 3 * s);
 
 		ctx.save();
 		ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-		ctx.fillStyle = "#FCFBF8"; ctx.fill();
+		ctx.fillStyle = opt.grund || "#FCFBF8"; ctx.fill();
 		ctx.strokeStyle = "#555"; ctx.lineWidth = 2; ctx.stroke();
 		ctx.clip();
 
-		/* Zappel-Amplitude waechst mit der Temperaturerhoehung */
-		const amp = Math.min(6.5, 1.2 + dTreal() * 1.1);
-		const gemeinsam = faellt ? Math.sin(z.anim * 3) * 1.5 : 0;
+		const gemeinsam = (geordnet && !opt.stroemung) ? Math.sin(z.anim * 3) * 1.5 * s : 0;
+		const spanne = 2 * (r + rad);
 
 		TEILCHEN.forEach(t => {
-			const bx = cx + t.x * r, by = cy + t.y * r;
+			const bx = cx + t.x * r;
+			let by;
+			if (opt.stroemung) {                 /* Teilchen wandern nach unten durch */
+				let yy = (t.y * r + r + rad + z.anim * opt.stroemung) % spanne;
+				if (yy < 0) yy += spanne;
+				by = cy - r - rad + yy;
+			} else by = cy + t.y * r;
+
 			let dx, dy;
-			if (faellt) { dx = 0; dy = gemeinsam; }
+			if (geordnet) { dx = 0; dy = gemeinsam; }
 			else {
 				dx = Math.sin(z.anim * t.w1 + t.ph) * amp;
 				dy = Math.cos(z.anim * t.w2 + t.ph * 1.3) * amp;
 			}
-			ctx.beginPath(); ctx.arc(bx + dx, by + dy, 7, 0, 2 * Math.PI);
-			ctx.fillStyle = st.farbe; ctx.fill();
+			ctx.beginPath(); ctx.arc(bx + dx, by + dy, rad, 0, 2 * Math.PI);
+			ctx.fillStyle = farbe; ctx.fill();
 			ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 0.8; ctx.stroke();
 
 			/* Bewegungspfeile */
-			ctx.strokeStyle = faellt ? "#0000BF" : "#BF0000"; ctx.lineWidth = 1.8;
+			ctx.strokeStyle = geordnet ? "#0000BF" : "#BF0000"; ctx.lineWidth = 1.8;
 			let px, py;
-			if (faellt) { px = 0; py = 15; }
+			if (geordnet) { px = 0; py = 15 * s; }
 			else {
-				const laenge = 4 + amp * 1.5;
+				const laenge = 4 * s + amp * 1.5;
 				px = Math.sin(z.anim * t.w1 + t.ph) * laenge;
 				py = Math.cos(z.anim * t.w2 + t.ph * 1.3) * laenge;
 			}
@@ -730,23 +748,60 @@
 			ctx.beginPath(); ctx.moveTo(bx + dx, by + dy); ctx.lineTo(ex, ey); ctx.stroke();
 			ctx.beginPath();
 			ctx.moveTo(ex, ey);
-			ctx.lineTo(ex - px / len * 5 - py / len * 3, ey - py / len * 5 + px / len * 3);
-			ctx.lineTo(ex - px / len * 5 + py / len * 3, ey - py / len * 5 - px / len * 3);
+			ctx.lineTo(ex - px / len * kopf - py / len * quer, ey - py / len * kopf + px / len * quer);
+			ctx.lineTo(ex - px / len * kopf + py / len * quer, ey - py / len * kopf - px / len * quer);
 			ctx.closePath();
-			ctx.fillStyle = faellt ? "#0000BF" : "#BF0000"; ctx.fill();
+			ctx.fillStyle = geordnet ? "#0000BF" : "#BF0000"; ctx.fill();
 		});
 
 		/* Aufprall-Ring: nur nach dem Landen, nicht waehrend des Falls */
-		if (seit < 0.35 && !faellt) {
+		const seit = z.anim - z.tAufprall;
+		if (opt.ring !== false && seit < 0.35 && !geordnet) {
 			ctx.strokeStyle = "#BF0000"; ctx.lineWidth = 3;
 			ctx.beginPath(); ctx.arc(cx, cy, seit * 180, 0, 2 * Math.PI); ctx.stroke();
 		}
 		ctx.restore();
 
-		ctx.textAlign = "center"; ctx.font = "bold 12px " + K.SCHRIFT;
-		ctx.fillStyle = faellt ? "#0000BF" : "#BF0000";
-		ctx.fillText(faellt ? "geordnete Bewegung → Arbeit" : "ungeordnete Bewegung → innere Energie",
-		             cx, cy + r + 16);
+		const zeilen = opt.text ||
+			[geordnet ? "geordnete Bewegung → Arbeit" : "ungeordnete Bewegung → innere Energie"];
+		ctx.textAlign = "center";
+		ctx.font = "bold " + (opt.text ? 11 : 12) + "px " + K.SCHRIFT;
+		ctx.fillStyle = geordnet ? "#0000BF" : "#BF0000";
+		zeilen.forEach((t, i) => ctx.fillText(t, cx, cy + r + 16 + i * 13));
+	}
+
+	/* Lupenspalte neben dem Wasserfall: oben der Strahl (geordnet), unten das
+	   Becken (ungeordnet). Genau hier wird aus Arbeit innere Energie.        */
+	function zeichneLupenFall(o, szene) {
+		const r = Math.max(22, Math.min(o.b / 2 - 4, (o.h - 104) / 4));
+		const cx = o.x + o.b / 2;
+		const yO = o.y + 16 + r;
+		const yU = o.y + o.h - 52 - r;
+		/* Je hoeher der Wasserfall, desto heftiger das Zappeln unten. */
+		const amp = 2.2 + 4.0 * (z.hFall - 10) / 290;
+
+		/* Verbindungslinien zu den beiden Stellen in der Szene */
+		const kante   = szene.x + szene.b * 0.40;
+		const yBecken = szene.y + szene.h - 92;
+		const anteil  = 0.30 + 0.70 * (z.hFall - 10) / 290;
+		const yFluss  = yBecken - anteil * (yBecken - (szene.y + 44));
+		const strecke = yBecken + 10 - (yFluss - 20);
+		ctx.strokeStyle = "#999"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+		ctx.beginPath();
+		ctx.moveTo(kante + 44, yFluss - 20 + strecke * 0.45); ctx.lineTo(cx - r, yO);
+		ctx.moveTo(kante + 30, yBecken + 14);                 ctx.lineTo(cx - r, yU);
+		ctx.stroke(); ctx.setLineDash([]);
+
+		zeichneLupe(cx, yO, r, {
+			geordnet: true, ring: false, stroemung: 55,
+			farbe: WASSER.farbe, grund: "#EAF3FC",
+			text: ["im Strahl: geordnet", "→ Arbeit"]
+		});
+		zeichneLupe(cx, yU, r, {
+			geordnet: false, ring: false, amp: amp,
+			farbe: WASSER.farbe, grund: "#EAF3FC",
+			text: ["im Becken: ungeordnet", "→ innere Energie"]
+		});
 	}
 
 	/* ---------------- Fallrohr ---------------- */
@@ -1070,7 +1125,13 @@
 			thermometer(o.therm.x, o.therm.y, o.therm.h,
 			            dTreal(), Math.max(0.5, N_MAX * G * z.h / stoff().c));
 		} else {
-			zeichneWasserfall(o.app);
+			const a = o.app;
+			if (z.teilchen) {
+				const sp = Math.min(112, Math.max(70, a.b * 0.36));   /* Lupenspalte */
+				const szene = { x: a.x, y: a.y, b: a.b - sp, h: a.h };
+				zeichneWasserfall(szene);
+				zeichneLupenFall({ x: a.x + a.b - sp, y: a.y, b: sp, h: a.h }, szene);
+			} else zeichneWasserfall(a);
 			zeichneMessgeraet(o.therm.x, o.therm.y, o.therm.b, o.therm.h);
 		}
 		zeichneDiagramm(o.dia);
