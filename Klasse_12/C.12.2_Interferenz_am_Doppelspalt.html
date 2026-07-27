@@ -301,6 +301,14 @@ window.SimKit = (function () {
 		.kopf .nummer { color: var(--kopf-grau); font-weight: normal; }
 		.kopf .platzhalter { visibility: hidden; }
 		#laser-punkt { border: 1px solid #555; }
+		/* Alle Reglerzeilen: gleich breite Beschriftungsspalte,
+		   damit die Schieberegler exakt untereinander beginnen. */
+		.steuerung .zeile > label {
+			flex: 0 0 9.2em; min-width: 0; white-space: nowrap;
+		}
+		@media (max-width: 560px) {
+			.steuerung .zeile > label { flex: 1 1 auto; white-space: normal; }
+		}
 		input[type="range"]:disabled { opacity: 0.35; }
 
 		/* Modus-Umschalter ueber der Box */
@@ -319,6 +327,7 @@ window.SimKit = (function () {
 		}
 		.auswertung .wert { font-variant-numeric: tabular-nums; min-width: 0; text-align: left; }
 		.auswertung .trenner { color: #BBB; margin: 0 0.5rem; }
+		.auswertung .naeherung { color: #555; font-size: 0.9rem; }
 		.folgerung { font-weight: bold; }
 
 		/* Aufgabenkarte */
@@ -353,6 +362,19 @@ window.SimKit = (function () {
 		details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
 		details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
 		details.tipp-box > summary:hover { background: var(--green-title); }
+		details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
+
+		/* Formelzeile: alle Bestandteile auf gemeinsamer Mittellinie */
+		.formelzeile {
+			display: flex; align-items: center; justify-content: center;
+			gap: 0.35em; flex-wrap: wrap;
+			font-size: 1.05rem; line-height: 1.3;
+			margin: 0.75rem 0 0.35rem;
+		}
+		/* Bruch: Zaehler ueber Nenner mit Bruchstrich */
+		.bruch { display: inline-flex; flex-direction: column; align-items: center; }
+		.bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
+		.bruch > .n { padding: 0.14em 0.45em 0; }
 
 		table.messtabelle { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
 		table.messtabelle th, table.messtabelle td { border: 1px solid #bbb; padding: 0.22rem 0.55rem; text-align: right; white-space: nowrap; }
@@ -382,9 +404,10 @@ window.SimKit = (function () {
 		<div class="tcb-body">
 			<p class="aufgabe-text">
 				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Ein Laser mit <b>unbekannter Wellenl&auml;nge</b> beleuchtet den Doppelspalt.
-				Spaltabstand <i class="gr">d</i> und Schirmabstand <i class="gr">L</i> k&ouml;nnen Sie
-				ablesen und einstellen. Bestimmen Sie <i class="gr">&lambda;</i> in Nanometern.
+				Ein Laser mit <b>unbekannter Wellenl&auml;nge</b> beleuchtet einen Doppelspalt.
+				Spaltmittenabstand <i class="gr">b</i> und Schirmabstand <i class="gr">a</i>
+				k&ouml;nnen Sie ablesen und einstellen. Bestimmen Sie <i class="gr">&lambda;</i>
+				in Nanometern.
 			</p>
 			<div class="antwortzeile">
 				<label for="antwort" style="min-width:0"><i class="gr">&lambda;</i> =</label>
@@ -396,19 +419,48 @@ window.SimKit = (function () {
 			</div>
 			<div class="rueckmeldung" id="rueckmeldung"></div>
 			<details class="tipp-box">
-				<summary>Tipp zum Vorgehen</summary>
+				<summary>Tipp 1: Was messen Sie?</summary>
 				<p class="tipp">
-					Setzen Sie die Messmarke auf ein Maximum <i class="gr">k</i>-ter Ordnung
-					(die Sprungkn&ouml;pfe sind hier abgeschaltet) und lesen Sie <i class="gr">x</i> ab.
-					Aus dem rechtwinkligen Dreieck aus <i class="gr">x</i> und <i class="gr">L</i> folgt
-					tan&thinsp;<i class="gr">&alpha;</i> = <i class="gr">x</i>&thinsp;/&thinsp;<i class="gr">L</i>
-					und daraus <i class="gr">&alpha;</i>. Dann ist
-					&Delta;<i class="gr">s</i> = <i class="gr">d</i>&thinsp;&middot;&thinsp;sin&thinsp;<i class="gr">&alpha;</i> = <i class="gr">k</i>&thinsp;&middot;&thinsp;<i class="gr">&lambda;</i>.
+					Setzen Sie die Messmarke auf ein Maximum und lesen Sie dessen Abstand
+					<i class="gr">d</i><sub><i class="gr">k</i></sub> von der Mittelachse ab.
+					Z&auml;hlen Sie dabei mit, um die wievielte Ordnung <i class="gr">k</i> es sich
+					handelt. Das Maximum in der Mitte ist dabei das 0.&thinsp;Ordnung.
+					Spaltmittenabstand <i class="gr">b</i> und Schirmabstand <i class="gr">a</i>
+					lesen Sie an den Reglern ab. (Die Sprungkn&ouml;pfe sind hier abgeschaltet.)
+				</p>
+			</details>
+			<details class="tipp-box">
+				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
+				<p class="tipp">
+					F&uuml;r ein Maximum <i class="gr">k</i>-ter Ordnung ist der Gangunterschied
+					ein ganzes Vielfaches der Wellenl&auml;nge:
+				</p>
+				<p class="formelzeile">
+					<span>&Delta;<i class="gr">s</i> = <i class="gr">k</i>&thinsp;&middot;&thinsp;<i class="gr">&lambda;</i></span>
+				</p>
+				<p class="tipp">Aus der Geometrie am Doppelspalt kennen Sie au&szlig;erdem:</p>
+				<p class="formelzeile">
+					<span>&Delta;<i class="gr">s</i> = <i class="gr">b</i>&thinsp;&middot;&thinsp;sin&thinsp;<i class="gr">&alpha;</i></span>
+				</p>
+				<p class="tipp">Weil der Winkel winzig ist, gilt die Kleinwinkeln&auml;herung:</p>
+				<p class="formelzeile">
+					<span>sin&thinsp;<i class="gr">&alpha;</i> &asymp; tan&thinsp;<i class="gr">&alpha;</i> =</span>
+					<span class="bruch"><span class="z"><i class="gr">d</i><sub><i class="gr">k</i></sub></span><span class="n"><i class="gr">a</i></span></span>
 				</p>
 				<p class="tipp">
-					Genauer wird es, wenn Sie ein Maximum <b>h&ouml;herer</b> Ordnung nehmen oder den
-					Abstand mehrerer Streifen mitteln. Achten Sie auf die Einheiten:
-					<i class="gr">x</i> in mm, <i class="gr">L</i> in m.
+					Setzen Sie die drei Beziehungen zusammen und l&ouml;sen Sie nach
+					<i class="gr">&lambda;</i> auf.
+				</p>
+			</details>
+			<details class="tipp-box">
+				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
+				<p class="formelzeile">
+					<span><i class="gr">&lambda;</i> =</span>
+					<span class="bruch"><span class="z"><i class="gr">b</i>&thinsp;&middot;&thinsp;<i class="gr">d</i><sub><i class="gr">k</i></sub></span><span class="n"><i class="gr">k</i>&thinsp;&middot;&thinsp;<i class="gr">a</i></span></span>
+				</p>
+				<p class="tipp">
+					Genauer wird es, wenn Sie ein Maximum <b>h&ouml;herer</b> Ordnung nehmen oder
+					den Abstand mehrerer Streifen mitteln.
 				</p>
 			</details>
 		</div>
@@ -427,24 +479,19 @@ window.SimKit = (function () {
 					<span class="wert" id="wert-lambda">633&nbsp;nm</span>
 				</div>
 				<div class="zeile">
-					<label>Spaltabstand <i class="gr">d</i></label>
-					<input type="range" id="regler-d" min="0.10" max="0.50" step="0.01" value="0.25">
-					<span class="wert" id="wert-d">0,25&nbsp;mm</span>
+					<label>Spaltmittenabstand <i class="gr">b</i></label>
+					<input type="range" id="regler-b" min="0.10" max="0.50" step="0.01" value="0.25">
+					<span class="wert" id="wert-b">0,25&nbsp;mm</span>
 				</div>
 				<div class="zeile">
-					<label>Spaltbreite <i class="gr">b</i></label>
-					<input type="range" id="regler-b" min="0.02" max="0.15" step="0.005" value="0.05">
-					<span class="wert" id="wert-b">0,050&nbsp;mm</span>
+					<label>Schirmabstand <i class="gr">a</i></label>
+					<input type="range" id="regler-a" min="0.5" max="3" step="0.05" value="1.5">
+					<span class="wert" id="wert-a">1,50&nbsp;m</span>
 				</div>
 				<div class="zeile">
-					<label>Schirmabstand <i class="gr">L</i></label>
-					<input type="range" id="regler-L" min="0.5" max="3" step="0.05" value="1.5">
-					<span class="wert" id="wert-L">1,50&nbsp;m</span>
-				</div>
-				<div class="zeile">
-					<label>Messmarke <i class="gr">x</i></label>
-					<input type="range" id="regler-x" min="-20" max="20" step="0.001" value="3.8">
-					<span class="wert" id="wert-x">3,80&nbsp;mm</span>
+					<label>Messmarke <i class="gr">d</i></label>
+					<input type="range" id="regler-d" min="-20" max="20" step="0.001" value="3.8">
+					<span class="wert" id="wert-d">3,80&nbsp;mm</span>
 				</div>
 				<div class="zeile">
 					<label>Ausschnitt</label>
@@ -461,8 +508,16 @@ window.SimKit = (function () {
 					</span>
 					<span class="schalter">
 						<input type="checkbox" id="chk-strahlen" checked>
-						<label for="chk-strahlen" style="min-width:0">Strahlengang</label>
+						<label for="chk-strahlen" style="flex:0 0 auto">Strahlengang</label>
 					</span>
+				</div>
+				<div class="zeile">
+					<label>
+						<input type="checkbox" id="chk-spaltbreite">
+						Spaltbreite <i class="gr">b</i><sub>S</sub>
+					</label>
+					<input type="range" id="regler-bs" min="0.02" max="0.15" step="0.005" value="0.05" disabled>
+					<span class="wert" id="wert-bs">0,050&nbsp;mm</span>
 				</div>
 				<div class="zeile" id="zeile-standard">
 					<span class="knopfleiste">
@@ -473,23 +528,24 @@ window.SimKit = (function () {
 
 			<div class="auswertung" id="auswertung">
 				<div>
-					tan&thinsp;<i class="gr">&alpha;</i> = <i class="gr">x</i>&thinsp;/&thinsp;<i class="gr">L</i> = <span class="wert" id="aw-tan"></span>
+					tan&thinsp;<i class="gr">&alpha;</i> = <i class="gr">d</i>&thinsp;/&thinsp;<i class="gr">a</i> = <span class="wert" id="aw-tan"></span>
 					&nbsp;&rArr;&nbsp; <i class="gr">&alpha;</i> = <span class="wert" id="aw-alpha"></span>&deg;
-					<span class="trenner">|</span>
-					&Delta;<i class="gr">s</i> = <i class="gr">d</i>&thinsp;&middot;&thinsp;sin&thinsp;<i class="gr">&alpha;</i> = <span class="wert" id="aw-ds"></span>&nbsp;nm
+				</div>
+				<div>
+					&Delta;<i class="gr">s</i> = <i class="gr">b</i>&thinsp;&middot;&thinsp;sin&thinsp;<i class="gr">&alpha;</i> = <span class="wert" id="aw-ds"></span>&nbsp;nm
 					= <span class="wert" id="aw-m"></span>&thinsp;&middot;&thinsp;<i class="gr">&lambda;</i>
+					<span class="trenner">|</span>
+					<span class="naeherung">Kleinwinkeln&auml;herung: &Delta;<i class="gr">s</i> &asymp; <i class="gr">b</i>&thinsp;&middot;&thinsp;<i class="gr">d</i>&thinsp;/&thinsp;<i class="gr">a</i> = <span id="aw-ds-nah"></span>&nbsp;nm</span>
 				</div>
 				<div class="folgerung" id="aw-folgerung"></div>
 			</div>
 
 			<p class="fussnote">
-				Der Aufbau links ist eine <b>schematische Skizze</b>: Der Spaltabstand <i class="gr">d</i>
-				ist stark vergr&ouml;&szlig;ert, der Schirmabstand <i class="gr">L</i> stark verk&uuml;rzt
-				gezeichnet &ndash; der wahre Beugungswinkel <i class="gr">&alpha;</i> betr&auml;gt nur
-				Bruchteile eines Grades. Die Lupe zeigt <i class="gr">d</i> und <i class="gr">b</i>
-				im gleichen Ma&szlig;stab. Schirmbild und Diagramm sind in <i class="gr">x</i>
-				ma&szlig;st&auml;blich; der Ausschnitt bleibt fest, bis Sie ihn selbst &auml;ndern.
-				Die Messmarke l&auml;sst sich auch direkt im Bild ziehen.
+				Die Skizze links ist <b>nicht ma&szlig;st&auml;blich</b>: Der Spaltabstand
+				<i class="gr">b</i> ist stark vergr&ouml;&szlig;ert gezeichnet, denn in Wirklichkeit
+				ist der Winkel <i class="gr">&alpha;</i> kleiner als ein Grad. Schirmbild und
+				Diagramm sind in <i class="gr">d</i> ma&szlig;st&auml;blich. Die Messmarke
+				k&ouml;nnen Sie auch direkt im Bild ziehen.
 			</p>
 
 			<div class="messblock" style="margin-top:0.7rem;">
@@ -504,9 +560,9 @@ window.SimKit = (function () {
 						<thead>
 							<tr>
 								<th>Nr.</th>
-								<th><i class="gr">x</i> in mm</th>
-								<th><i class="gr">L</i> in m</th>
 								<th><i class="gr">d</i> in mm</th>
+								<th><i class="gr">a</i> in m</th>
+								<th><i class="gr">b</i> in mm</th>
 								<th>sin&thinsp;<i class="gr">&alpha;</i></th>
 								<th>&Delta;<i class="gr">s</i> in nm</th>
 								<th class="sp-deutung">Deutung</th>
@@ -528,42 +584,56 @@ window.SimKit = (function () {
 	const K = window.SimKit;
 
 	/* ================================================================
-	   Zustand.  Einheiten: d, b, x in mm; L in m; lambda in nm.
+	   Bezeichnungen wie auf den Arbeitsblaettern C.12.1 bis C.12.3:
+	     lambda  Wellenlaenge            in nm
+	     b       Spaltmittenabstand      in mm
+	     bS      Spaltbreite (optional)  in mm
+	     a       Schirmabstand           in m
+	     d       Abstand von der Mittelachse (Messmarke) in mm
+	     k       Ordnung,  alpha  Winkel,  ds  Gangunterschied
 	   ================================================================ */
 	const zustand = {
-		lambda: 633, d: 0.25, b: 0.05, L: 1.5, x: 3.8,
+		lambda: 633, b: 0.25, bS: 0.05, bSaktiv: false, a: 1.5, d: 3.8,
 		zoom: 20,                 /* halber sichtbarer Schirmbereich in mm */
 		strahlen: true,
 		modus: "erkunden",        /* "erkunden" | "aufgabe" */
 		lambdaGeheim: 633,
-		aufgabeNr: 1,
+		aufgabeNr: 0,   /* wird beim Erzeugen der ersten Aufgabe auf 1 gesetzt */
 		geloest: false
 	};
-	const STANDARD = { lambda: 633, d: 0.25, b: 0.05, L: 1.5, x: 3.8, zoom: 20 };
+	const STANDARD = { lambda: 633, b: 0.25, bS: 0.05, a: 1.5, d: 3.8, zoom: 20 };
 	const imAufgabenmodus = () => zustand.modus === "aufgabe";
 	const lam = () => imAufgabenmodus() ? zustand.lambdaGeheim : zustand.lambda;
 
 	/* ---------------- Physik ---------------- */
 	const sinc = u => u === 0 ? 1 : Math.sin(u) / u;
-	const sinAlpha = x => (x / 1000) / Math.hypot(x / 1000, zustand.L);
-	const gangunterschied = x => zustand.d * 1e6 * sinAlpha(x);
-	/* Streifenabstand Δx = λ·L/d  (λ in nm, L in m, d in mm) in mm */
-	const streifenabstand = () => lam() * 1e-3 * zustand.L / zustand.d;
+	/* exakter Sinus des Winkels zur Mittelachse (d in mm, a in m) */
+	const sinAlpha = d => (d / 1000) / Math.hypot(d / 1000, zustand.a);
+	/* Gangunterschied in nm:  ds = b * sin(alpha) */
+	const gangunterschied = d => zustand.b * 1e6 * sinAlpha(d);
+	/* Gangunterschied in Kleinwinkelnaeherung:  ds ~ b * d / a */
+	const gangunterschiedNah = d => zustand.b * 1e6 * d / (zustand.a * 1000);
+	/* Streifenabstand dk+1 - dk = lambda * a / b, in mm */
+	const streifenabstand = () => lam() * 1e-3 * zustand.a / zustand.b;
 
-	function intensitaet(x) {
-		const s = sinAlpha(x);
-		const g = Math.PI * zustand.d * 1e6 * s / lam();
-		const e = sinc(Math.PI * zustand.b * 1e6 * s / lam());
-		return Math.cos(g) * Math.cos(g) * e * e;
+	function intensitaet(d) {
+		const s = sinAlpha(d);
+		const g = Math.PI * zustand.b * 1e6 * s / lam();
+		let I = Math.cos(g) * Math.cos(g);
+		if (zustand.bSaktiv) {
+			const e = sinc(Math.PI * zustand.bS * 1e6 * s / lam());
+			I *= e * e;
+		}
+		return I;
 	}
-	function einhuellende(x) {
-		const e = sinc(Math.PI * zustand.b * 1e6 * sinAlpha(x) / lam());
+	function einhuellende(d) {
+		const e = sinc(Math.PI * zustand.bS * 1e6 * sinAlpha(d) / lam());
 		return e * e;
 	}
-	const xVonSin = s => zustand.L * 1000 * s / Math.sqrt(1 - s * s);
+	const dVonSin = s => zustand.a * 1000 * s / Math.sqrt(1 - s * s);
 
-	function deutung(x) {
-		const m = gangunterschied(x) / lam();
+	function deutung(d) {
+		const m = gangunterschied(d) / lam();
 		const frac = m - Math.round(m);
 		if (Math.abs(frac) < 0.025) return { art: "max", k: Math.abs(Math.round(m)) };
 		if (Math.abs(Math.abs(frac) - 0.5) < 0.025)
@@ -573,15 +643,15 @@ window.SimKit = (function () {
 	function extrema(art) {
 		const p = [];
 		for (let k = art === "max" ? 0 : 1; ; k++) {
-			const s = (art === "max" ? k : k - 0.5) * lam() / (zustand.d * 1e6);
+			const s = (art === "max" ? k : k - 0.5) * lam() / (zustand.b * 1e6);
 			if (s >= 0.9999) break;
-			const x = xVonSin(s);
-			if (x > zustand.zoom) break;
-			if (x === 0) p.push(0); else p.push(x, -x);
+			const d = dVonSin(s);
+			if (d > zustand.zoom) break;
+			if (d === 0) p.push(0); else p.push(d, -d);
 		}
-		return p.sort((a, b) => a - b);
+		return p.sort((x, y) => x - y);
 	}
-	const xBereich = () => zustand.zoom;
+	const dBereich = () => zustand.zoom;
 
 	function schrittweite(spanne) {
 		const roh = spanne / 3;
@@ -590,8 +660,7 @@ window.SimKit = (function () {
 	}
 
 	/* ---------------- Farben ----------------
-	   Im Aufgabenmodus wird neutral gezeichnet, damit die Farbe die
-	   gesuchte Wellenlaenge nicht verraet.                            */
+	   Im Aufgabenmodus neutral, damit die Farbe die Wellenlaenge nicht verraet. */
 	function laserRGB() {
 		const l = lam();
 		let r = 0, g = 0, b = 0;
@@ -608,10 +677,10 @@ window.SimKit = (function () {
 	}
 	const neutral = () => imAufgabenmodus() && !zustand.geloest;
 	const schirmRGB = () => neutral() ? [238, 238, 238] : laserRGB();
-	function strahlCSS(a = 1) {
-		if (neutral()) return `rgba(110,110,110,${a})`;
+	function strahlCSS(alpha = 1) {
+		if (neutral()) return `rgba(110,110,110,${alpha})`;
 		const c = laserRGB();
-		return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+		return `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
 	}
 
 	/* ================================================================
@@ -650,7 +719,7 @@ window.SimKit = (function () {
 		L.H = Math.round(W * (eng ? 0.98 : 0.58));
 		L.yBot = L.H - 54;
 		L.dvX0 = 10;
-		L.dvX1 = Math.round(W * (eng ? 0.40 : 0.46));   /* rechter Rand der Skizze */
+		L.dvX1 = Math.round(W * (eng ? 0.40 : 0.46));
 		L.sx0 = L.dvX1 + 16;
 		L.sw = eng ? 16 : 22;
 		L.gx0 = L.sx0 + L.sw + (eng ? 30 : 42);
@@ -661,10 +730,9 @@ window.SimKit = (function () {
 		L.lupeSkala = eng ? 62 : 84;                    /* px pro mm, fest */
 		return L;
 	}
-	/* Schirmposition: waechst mit L, aber gestaucht (Skizze ist schematisch).
-	   L = 0,5 m -> 45 % des Wegs, L = 3 m -> 100 %.  Wurzelkennlinie. */
+	/* Schirmposition waechst mit a, aber gestaucht (Skizze ist schematisch) */
 	function schirmX() {
-		const t = (zustand.L - 0.5) / (3 - 0.5);
+		const t = (zustand.a - 0.5) / (3 - 0.5);
 		const f = 0.45 + 0.55 * Math.sqrt(Math.max(0, Math.min(1, t)));
 		return LO.plateX + f * (LO.dvX1 - LO.plateX);
 	}
@@ -678,19 +746,17 @@ window.SimKit = (function () {
 		canvas.height = Math.round(H * dpr);
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 	}
-	const yVonX = mm => LO.yTop + (xBereich() - mm) / (2 * xBereich()) * (LO.yBot - LO.yTop);
-	const xVonY = py => xBereich() - (py - LO.yTop) / (LO.yBot - LO.yTop) * 2 * xBereich();
+	const yVonD = mm => LO.yTop + (dBereich() - mm) / (2 * dBereich()) * (LO.yBot - LO.yTop);
+	const dVonY = py => dBereich() - (py - LO.yTop) / (LO.yBot - LO.yTop) * 2 * dBereich();
 
 	/* ---- Aufbauskizze ---- */
 	function zeichneAufbau() {
 		const g = 9;
 		const sX = schirmX();
-		/* Schirmhoehe schrumpft leicht mit der Entfernung (perspektivischer Eindruck) */
 		const hf = 0.62 + 0.38 * (sX - LO.plateX) / (LO.dvX1 - LO.plateX);
 		const sTop = LO.cy - (LO.cy - LO.yTop) * hf;
 		const sBot = LO.cy + (LO.yBot - LO.cy) * hf;
 
-		/* Lichtfeld */
 		ctx.fillStyle = strahlCSS(0.06);
 		ctx.beginPath();
 		ctx.moveTo(LO.plateX, LO.cy - g);
@@ -698,11 +764,13 @@ window.SimKit = (function () {
 		ctx.lineTo(LO.plateX, LO.cy + g);
 		ctx.closePath(); ctx.fill();
 
-		/* optische Achse */
+		/* Mittelachse */
 		ctx.strokeStyle = "#B4B4B4"; ctx.lineWidth = 1;
 		ctx.setLineDash([6, 5]);
 		ctx.beginPath(); ctx.moveTo(LO.plateX, LO.cy); ctx.lineTo(sX + 4, LO.cy); ctx.stroke();
 		ctx.setLineDash([]);
+		ctx.fillStyle = "#8A8A8A"; ctx.font = fnt(10.5); ctx.textAlign = "center";
+		ctx.fillText("Mittelachse", (LO.plateX + sX) / 2, LO.cy - 6);
 
 		/* Laser */
 		const lb = LO.eng ? 36 : 44, lh = 20, lx = LO.dvX0 + 2;
@@ -729,7 +797,7 @@ window.SimKit = (function () {
 
 		/* Teilstrahlen zur Messmarke */
 		if (zustand.strahlen) {
-			const yP = LO.cy + (yVonX(zustand.x) - LO.cy) * hf;
+			const yP = LO.cy + (yVonD(zustand.d) - LO.cy) * hf;
 			ctx.strokeStyle = strahlCSS(0.75); ctx.lineWidth = 1.2;
 			ctx.beginPath();
 			ctx.moveTo(LO.plateX, LO.cy - g); ctx.lineTo(sX, yP);
@@ -757,26 +825,27 @@ window.SimKit = (function () {
 		ctx.fillText("Doppelspalt", LO.plateX, LO.yTop - 10);
 		ctx.fillText("Schirm", sX, sTop - 8);
 
-		/* L-Maß */
+		/* Schirmabstand a */
 		const yL = H - 14;
 		doppelpfeilH(yL, LO.plateX, sX);
 		ctx.fillStyle = "#111";
-		textTeile([{ t: "L", f: fnt(13, "italic") }, { t: " = " + K.de(zustand.L, 2) + " m", f: fnt(12) }],
+		textTeile([{ t: "a", f: fnt(13, "italic") }, { t: " = " + K.de(zustand.a, 2) + " m", f: fnt(12) }],
 			(LO.plateX + sX) / 2, yL - 6, "center");
 
 		ctx.fillStyle = "#8A8A8A"; ctx.font = fnt(10.5); ctx.textAlign = "center";
-		ctx.fillText("schematisch – nicht maßstäblich", (LO.plateX + LO.dvX1) / 2, LO.yBot + 16);
+		ctx.fillText("schematisch, nicht maßstäblich", (LO.plateX + LO.dvX1) / 2, LO.yBot + 16);
 
 		zeichneLupe(g);
 	}
 
+	/* Lupe: fester Massstab, b und bS im gleichen Verhaeltnis */
 	function zeichneLupe(g) {
 		const zr = LO.lupeR;
 		const zx = Math.max(zr + 4, LO.plateX - (LO.eng ? 40 : 54));
 		const zy = LO.yTop + zr + 6;
 		const skala = LO.lupeSkala;
-		const gd = zustand.d * skala / 2;
-		const gb = Math.max(1.6, zustand.b * skala);
+		const gb = zustand.b * skala / 2;                                     /* halber Mittenabstand */
+		const gs = zustand.bSaktiv ? Math.max(1.6, zustand.bS * skala) : 2.4; /* Spaltbreite */
 		const zb = 8;
 
 		ctx.strokeStyle = "#C0C0C0"; ctx.lineWidth = 1;
@@ -793,27 +862,31 @@ window.SimKit = (function () {
 		ctx.save();
 		ctx.beginPath(); ctx.arc(zx, zy, zr - 0.7, 0, 2 * Math.PI); ctx.clip();
 		ctx.fillStyle = "#3F3F3F";
-		ctx.fillRect(zx - zb / 2, zy - zr, zb, Math.max(0, zr - gd - gb / 2));
-		ctx.fillRect(zx - zb / 2, zy - gd + gb / 2, zb, Math.max(0, 2 * gd - gb));
-		ctx.fillRect(zx - zb / 2, zy + gd + gb / 2, zb, Math.max(0, zr - gd - gb / 2));
+		ctx.fillRect(zx - zb / 2, zy - zr, zb, Math.max(0, zr - gb - gs / 2));
+		ctx.fillRect(zx - zb / 2, zy - gb + gs / 2, zb, Math.max(0, 2 * gb - gs));
+		ctx.fillRect(zx - zb / 2, zy + gb + gs / 2, zb, Math.max(0, zr - gb - gs / 2));
 
-		doppelpfeilV(zx - (LO.eng ? 11 : 15), zy - gd, zy + gd);
+		/* b = Mittenabstand, links */
+		doppelpfeilV(zx - (LO.eng ? 11 : 15), zy - gb, zy + gb);
 		ctx.fillStyle = "#111"; ctx.font = fnt(13, "italic"); ctx.textAlign = "right";
-		ctx.fillText("d", zx - (LO.eng ? 15 : 20), zy + 4.5);
+		ctx.fillText("b", zx - (LO.eng ? 15 : 20), zy + 4.5);
 
-		const xb = zx + (LO.eng ? 11 : 15);
-		const yo = zy - gd - gb / 2, yu = zy - gd + gb / 2;
-		ctx.strokeStyle = "#111"; ctx.fillStyle = "#111"; ctx.lineWidth = 1;
-		ctx.beginPath();
-		ctx.moveTo(xb - 5, yo); ctx.lineTo(xb + 5, yo);
-		ctx.moveTo(xb - 5, yu); ctx.lineTo(xb + 5, yu);
-		ctx.moveTo(xb, yo - 9); ctx.lineTo(xb, yo);
-		ctx.moveTo(xb, yu + 9); ctx.lineTo(xb, yu);
-		ctx.stroke();
-		ctx.beginPath(); ctx.moveTo(xb, yo); ctx.lineTo(xb - 2.4, yo - 5); ctx.lineTo(xb + 2.4, yo - 5); ctx.closePath(); ctx.fill();
-		ctx.beginPath(); ctx.moveTo(xb, yu); ctx.lineTo(xb - 2.4, yu + 5); ctx.lineTo(xb + 2.4, yu + 5); ctx.closePath(); ctx.fill();
-		ctx.font = fnt(12, "italic"); ctx.textAlign = "left";
-		ctx.fillText("b", xb + 4, zy - gd + 4);
+		/* bS = Spaltbreite, rechts am oberen Spalt (nur wenn beruecksichtigt) */
+		if (zustand.bSaktiv) {
+			const xb = zx + (LO.eng ? 11 : 15);
+			const yo = zy - gb - gs / 2, yu = zy - gb + gs / 2;
+			ctx.strokeStyle = "#111"; ctx.fillStyle = "#111"; ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.moveTo(xb - 5, yo); ctx.lineTo(xb + 5, yo);
+			ctx.moveTo(xb - 5, yu); ctx.lineTo(xb + 5, yu);
+			ctx.moveTo(xb, yo - 9); ctx.lineTo(xb, yo);
+			ctx.moveTo(xb, yu + 9); ctx.lineTo(xb, yu);
+			ctx.stroke();
+			ctx.beginPath(); ctx.moveTo(xb, yo); ctx.lineTo(xb - 2.4, yo - 5); ctx.lineTo(xb + 2.4, yo - 5); ctx.closePath(); ctx.fill();
+			ctx.beginPath(); ctx.moveTo(xb, yu); ctx.lineTo(xb - 2.4, yu + 5); ctx.lineTo(xb + 2.4, yu + 5); ctx.closePath(); ctx.fill();
+			textTeile([{ t: "b", f: fnt(12, "italic") }, { t: "S", f: fnt(9) }],
+				xb + 4, zy - gb + 4, "left");
+		}
 		ctx.restore();
 
 		ctx.fillStyle = "#8A8A8A"; ctx.font = fnt(10); ctx.textAlign = "center";
@@ -825,11 +898,11 @@ window.SimKit = (function () {
 		const c = schirmRGB();
 		ctx.fillStyle = "#0E0E0E";
 		ctx.fillRect(LO.sx0, LO.yTop, LO.sw, LO.yBot - LO.yTop);
-		const dxProPixel = 2 * xBereich() / (LO.yBot - LO.yTop);
+		const ddProPixel = 2 * dBereich() / (LO.yBot - LO.yTop);
 		for (let py = LO.yTop + 1; py < LO.yBot - 1; py++) {
-			const xm = xVonY(py + 0.5);
+			const dm = dVonY(py + 0.5);
 			let I = 0;
-			for (let s = -3; s <= 3; s++) I += intensitaet(xm + s * dxProPixel / 7);
+			for (let s = -3; s <= 3; s++) I += intensitaet(dm + s * ddProPixel / 7);
 			I = Math.pow(I / 7, 0.8);
 			if (I < 0.004) continue;
 			ctx.fillStyle = `rgb(${Math.round(c[0] * I)},${Math.round(c[1] * I)},${Math.round(c[2] * I)})`;
@@ -843,12 +916,12 @@ window.SimKit = (function () {
 
 	/* ---- Diagramm ---- */
 	function zeichneDiagramm() {
-		const xm = xBereich(), schritt = schrittweite(xm), breite = LO.gx1 - LO.gx0;
+		const dm = dBereich(), schritt = schrittweite(dm), breite = LO.gx1 - LO.gx0;
 		const nk = schritt < 1 ? 2 : schritt < 10 ? 1 : 0;
 
 		ctx.lineWidth = 1;
-		for (let mm = -Math.floor(xm / schritt) * schritt; mm <= xm + 1e-9; mm += schritt) {
-			const y = yVonX(mm);
+		for (let mm = -Math.floor(dm / schritt) * schritt; mm <= dm + 1e-9; mm += schritt) {
+			const y = yVonD(mm);
 			ctx.strokeStyle = Math.abs(mm) < 1e-9 ? "#B8B8B8" : "#E2E2E2";
 			ctx.beginPath(); ctx.moveTo(LO.gx0, y); ctx.lineTo(LO.gx1, y); ctx.stroke();
 			ctx.fillStyle = "#111"; ctx.font = fnt(11.5); ctx.textAlign = "right";
@@ -870,44 +943,49 @@ window.SimKit = (function () {
 		ctx.stroke();
 
 		ctx.fillStyle = "#111";
-		textTeile([{ t: "x", f: fnt(13, "italic") }, { t: " in mm", f: fnt(11.5) }],
+		textTeile([{ t: "d", f: fnt(13, "italic") }, { t: " in mm", f: fnt(11.5) }],
 			LO.gx0 - 4, LO.yTop - 10, "right");
 		textTeile([{ t: "I", f: fnt(13, "italic") }, { t: " / ", f: fnt(11.5) },
 			{ t: "I", f: fnt(13, "italic") }, { t: "0", f: fnt(9) }],
 			LO.gx1, LO.yBot + 32, "right");
 
-		ctx.strokeStyle = "#9A9A9A"; ctx.lineWidth = 1.3;
-		ctx.setLineDash([6, 5]);
-		ctx.beginPath();
-		for (let py = LO.yTop; py <= LO.yBot; py++) {
-			const px = LO.gx0 + einhuellende(xVonY(py)) * breite;
-			if (py === LO.yTop) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+		/* Einhuellende nur, wenn die Spaltbreite beruecksichtigt wird */
+		if (zustand.bSaktiv) {
+			ctx.strokeStyle = "#9A9A9A"; ctx.lineWidth = 1.3;
+			ctx.setLineDash([6, 5]);
+			ctx.beginPath();
+			for (let py = LO.yTop; py <= LO.yBot; py++) {
+				const px = LO.gx0 + einhuellende(dVonY(py)) * breite;
+				if (py === LO.yTop) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+			}
+			ctx.stroke();
+			ctx.setLineDash([]);
 		}
-		ctx.stroke();
-		ctx.setLineDash([]);
 
 		ctx.strokeStyle = "#0000BF"; ctx.lineWidth = 2.1;
 		ctx.beginPath();
 		for (let py = LO.yTop; py <= LO.yBot; py += 0.5) {
-			const px = LO.gx0 + intensitaet(xVonY(py)) * breite;
+			const px = LO.gx0 + intensitaet(dVonY(py)) * breite;
 			if (py === LO.yTop) ctx.moveTo(px, py); else ctx.lineTo(px, py);
 		}
 		ctx.stroke();
 
 		ctx.fillStyle = "#6A6A6A"; ctx.font = fnt(10.5); ctx.textAlign = "right";
-		ctx.fillText("gestrichelt: Einzelspalt (Einhüllende)", LO.gx1, LO.yTop - 10);
+		ctx.fillText(zustand.bSaktiv ? "gestrichelt: Einzelspalt (Einhüllende)"
+			: "Intensität I/I₀ = cos²(π·b·sin α / λ)", LO.gx1, LO.yTop - 10);
 	}
 
 	function zeichneMessmarke() {
-		const yP = yVonX(zustand.x);
+		const yP = yVonD(zustand.d);
 		ctx.strokeStyle = "#BF0000"; ctx.lineWidth = 1.3;
 		ctx.setLineDash([4, 4]);
 		ctx.beginPath(); ctx.moveTo(LO.sx0 - 10, yP); ctx.lineTo(LO.gx1, yP); ctx.stroke();
 		ctx.setLineDash([]);
 		ctx.fillStyle = "#BF0000";
-		ctx.beginPath(); ctx.arc(LO.gx0 + intensitaet(zustand.x) * (LO.gx1 - LO.gx0), yP, 4, 0, 2 * Math.PI); ctx.fill();
-		ctx.font = fnt(11.5, "bold"); ctx.textAlign = "right";
-		ctx.fillText(K.de(zustand.x, 2) + " mm", LO.sx0 - 12, yP - 5);
+		ctx.beginPath(); ctx.arc(LO.gx0 + intensitaet(zustand.d) * (LO.gx1 - LO.gx0), yP, 4, 0, 2 * Math.PI); ctx.fill();
+		textTeile([{ t: "d", f: fnt(11.5, "italic") },
+			{ t: " = " + K.de(zustand.d, 2) + " mm", f: fnt(11.5, "bold") }],
+			LO.sx0 - 12, yP - 5, "right");
 	}
 
 	function zeichne() {
@@ -923,18 +1001,18 @@ window.SimKit = (function () {
 	   ================================================================ */
 	function aktualisiereAuswertung() {
 		const setze = (id, text) => document.getElementById(id).textContent = text;
-		/* Der Winkel wird ueber den Tangens bestimmt - x und L bilden ein
-		   rechtwinkliges Dreieck, das kommt ohne Pythagoras aus.          */
-		const tanA = zustand.x / (zustand.L * 1000);
+		/* Winkel ueber den Tangens: d und a bilden ein rechtwinkliges Dreieck */
+		const tanA = zustand.d / (zustand.a * 1000);
 		setze("aw-tan", K.de(tanA, 5));
 		setze("aw-alpha", K.de(Math.atan(tanA) * 180 / Math.PI, 3));
-		setze("aw-ds", K.de(gangunterschied(zustand.x), 0));
-		setze("aw-m", K.de(gangunterschied(zustand.x) / lam(), 2));
-		const u = deutung(zustand.x);
+		setze("aw-ds", K.de(gangunterschied(zustand.d), 0));
+		setze("aw-ds-nah", K.de(gangunterschiedNah(zustand.d), 0));
+		setze("aw-m", K.de(gangunterschied(zustand.d) / lam(), 2));
+		const u = deutung(zustand.d);
 		const folg = document.getElementById("aw-folgerung");
 		if (u.art === "max") {
 			folg.textContent = "⇒ konstruktive Interferenz: Maximum " + u.k + ". Ordnung"
-				+ (u.k > 0 && intensitaet(zustand.x) < 0.02 ? " – vom Einzelspalt unterdrückt!" : "");
+				+ (u.k > 0 && intensitaet(zustand.d) < 0.02 ? ", vom Einzelspalt unterdrückt!" : "");
 			folg.style.color = "#295C06";
 		} else if (u.art === "min") {
 			folg.textContent = "⇒ destruktive Interferenz: Minimum " + u.k + ". Ordnung";
@@ -956,23 +1034,25 @@ window.SimKit = (function () {
 	   Bedienelemente
 	   ================================================================ */
 	const nbsp = " ";
-	const elX = document.getElementById("regler-x");
-	const anzX = document.getElementById("wert-x");
+	const elD = document.getElementById("regler-d");
+	const anzD = document.getElementById("wert-d");
 
-	function reglerXAnpassen() {
-		const xm = zustand.zoom;
-		elX.min = (-xm).toFixed(3);
-		elX.max = xm.toFixed(3);
-		elX.step = "0.001";
-		if (Math.abs(zustand.x) > xm) zustand.x = Math.sign(zustand.x) * xm;
-		elX.value = zustand.x.toFixed(3);
-		anzX.innerHTML = K.de(zustand.x, 2) + nbsp + "mm";
+	/* Feine, feste Schrittweite - nur die Grenzen folgen dem Ausschnitt,
+	   damit die Messmarke beim Verstellen anderer Groessen stehen bleibt. */
+	function reglerDAnpassen() {
+		const dm = zustand.zoom;
+		elD.min = (-dm).toFixed(3);
+		elD.max = dm.toFixed(3);
+		elD.step = "0.001";
+		if (Math.abs(zustand.d) > dm) zustand.d = Math.sign(zustand.d) * dm;
+		elD.value = zustand.d.toFixed(3);
+		anzD.innerHTML = K.de(zustand.d, 2) + nbsp + "mm";
 	}
-	function setzeX(x) {
-		const xm = zustand.zoom;
-		zustand.x = Math.max(-xm, Math.min(xm, x));
-		elX.value = zustand.x.toFixed(3);
-		anzX.innerHTML = K.de(zustand.x, 2) + nbsp + "mm";
+	function setzeD(wert) {
+		const dm = zustand.zoom;
+		zustand.d = Math.max(-dm, Math.min(dm, wert));
+		elD.value = zustand.d.toFixed(3);
+		anzD.innerHTML = K.de(zustand.d, 2) + nbsp + "mm";
 		aktualisiere();
 	}
 
@@ -982,37 +1062,45 @@ window.SimKit = (function () {
 		const zeigen = () => anzeige.innerHTML = format(parseFloat(el.value));
 		el.addEventListener("input", () => {
 			setzer(parseFloat(el.value));
-			if (zustand.b > 0.8 * zustand.d) {
-				zustand.b = Math.round(0.8 * zustand.d * 200) / 200;
-				document.getElementById("regler-b").value = zustand.b;
-				document.getElementById("wert-b").innerHTML = K.de(zustand.b, 3) + nbsp + "mm";
+			/* Spaltbreite darf den Mittenabstand nicht erreichen */
+			if (zustand.bS > 0.8 * zustand.b) {
+				zustand.bS = Math.round(0.8 * zustand.b * 200) / 200;
+				document.getElementById("regler-bs").value = zustand.bS;
+				document.getElementById("wert-bs").innerHTML = K.de(zustand.bS, 3) + nbsp + "mm";
 			}
 			zeigen();
-			reglerXAnpassen();
+			reglerDAnpassen();
 			aktualisiere();
 		});
 		return zeigen;
 	}
 	const zeigLambda = bindeRegler("regler-lambda", "wert-lambda",
 		v => imAufgabenmodus() ? "???" : K.de(v, 0) + nbsp + "nm", v => zustand.lambda = v);
-	bindeRegler("regler-d", "wert-d", v => K.de(v, 2) + nbsp + "mm", v => zustand.d = v);
-	bindeRegler("regler-b", "wert-b", v => K.de(v, 3) + nbsp + "mm", v => zustand.b = v);
-	bindeRegler("regler-L", "wert-L", v => K.de(v, 2) + nbsp + "m",  v => zustand.L = v);
+	bindeRegler("regler-b",  "wert-b",  v => K.de(v, 2) + nbsp + "mm", v => zustand.b = v);
+	bindeRegler("regler-bs", "wert-bs", v => K.de(v, 3) + nbsp + "mm", v => zustand.bS = v);
+	bindeRegler("regler-a",  "wert-a",  v => K.de(v, 2) + nbsp + "m",  v => zustand.a = v);
 	const zeigZoom = bindeRegler("regler-zoom", "wert-zoom",
 		v => "±" + K.de(v, v < 10 ? 1 : 0) + nbsp + "mm", v => zustand.zoom = v);
-	elX.addEventListener("input", () => setzeX(parseFloat(elX.value)));
+	elD.addEventListener("input", () => setzeD(parseFloat(elD.value)));
+
+	/* Spaltbreite zuschalten */
+	document.getElementById("chk-spaltbreite").addEventListener("change", ev => {
+		zustand.bSaktiv = ev.target.checked;
+		document.getElementById("regler-bs").disabled = !zustand.bSaktiv;
+		aktualisiere();
+	});
 
 	document.getElementById("sprung-knoepfe").addEventListener("click", ev => {
-		const b = ev.target.closest("button");
-		if (!b || imAufgabenmodus()) return;
-		const liste = extrema(b.dataset.art);
-		const dir = +b.dataset.dir;
+		const knopf = ev.target.closest("button");
+		if (!knopf || imAufgabenmodus()) return;
+		const liste = extrema(knopf.dataset.art);
+		const richtung = +knopf.dataset.dir;
 		const tol = zustand.zoom / 400;
 		let ziel = null;
-		for (const p of (dir > 0 ? liste : liste.slice().reverse())) {
-			if (dir > 0 ? p > zustand.x + tol : p < zustand.x - tol) { ziel = p; break; }
+		for (const p of (richtung > 0 ? liste : liste.slice().reverse())) {
+			if (richtung > 0 ? p > zustand.d + tol : p < zustand.d - tol) { ziel = p; break; }
 		}
-		if (ziel !== null) setzeX(ziel);
+		if (ziel !== null) setzeD(ziel);
 	});
 
 	/* Messmarke im Bild ziehen */
@@ -1026,12 +1114,12 @@ window.SimKit = (function () {
 		if (px < LO.plateX + 8 || py < LO.yTop - 6 || py > LO.yBot + 6) return;
 		zieht = true;
 		canvas.setPointerCapture(ev.pointerId);
-		setzeX(xVonY(py));
+		setzeD(dVonY(py));
 	});
 	canvas.addEventListener("pointermove", ev => {
 		const { px, py } = ausEvent(ev);
 		canvas.style.cursor = (px > LO.plateX + 8 && py > LO.yTop - 6 && py < LO.yBot + 6) ? "ns-resize" : "default";
-		if (zieht) setzeX(xVonY(py));
+		if (zieht) setzeD(dVonY(py));
 	});
 	canvas.addEventListener("pointerup", () => zieht = false);
 	canvas.addEventListener("pointercancel", () => zieht = false);
@@ -1043,20 +1131,20 @@ window.SimKit = (function () {
 
 	function reglerAnzeigenAktualisieren() {
 		document.getElementById("regler-lambda").value = zustand.lambda;
-		document.getElementById("regler-d").value = zustand.d;
 		document.getElementById("regler-b").value = zustand.b;
-		document.getElementById("regler-L").value = zustand.L;
+		document.getElementById("regler-bs").value = zustand.bS;
+		document.getElementById("regler-a").value = zustand.a;
 		document.getElementById("regler-zoom").value = zustand.zoom;
 		document.getElementById("wert-lambda").innerHTML = imAufgabenmodus() ? "???" : K.de(zustand.lambda, 0) + nbsp + "nm";
-		document.getElementById("wert-d").innerHTML = K.de(zustand.d, 2) + nbsp + "mm";
-		document.getElementById("wert-b").innerHTML = K.de(zustand.b, 3) + nbsp + "mm";
-		document.getElementById("wert-L").innerHTML = K.de(zustand.L, 2) + nbsp + "m";
+		document.getElementById("wert-b").innerHTML  = K.de(zustand.b, 2) + nbsp + "mm";
+		document.getElementById("wert-bs").innerHTML = K.de(zustand.bS, 3) + nbsp + "mm";
+		document.getElementById("wert-a").innerHTML  = K.de(zustand.a, 2) + nbsp + "m";
 		zeigZoom();
 	}
 	document.getElementById("btn-standard").addEventListener("click", () => {
 		Object.assign(zustand, STANDARD);
 		reglerAnzeigenAktualisieren();
-		reglerXAnpassen();
+		reglerDAnpassen();
 		aktualisiere();
 	});
 
@@ -1068,20 +1156,18 @@ window.SimKit = (function () {
 	const feldAntwort = document.getElementById("antwort");
 
 	function neueAufgabe() {
-		/* Wellenlaenge und Aufbau zufaellig, aber messbar waehlen */
 		zustand.lambdaGeheim = 400 + Math.round(Math.random() * 70) * 5;
-		zustand.d = Math.round((0.15 + Math.random() * 0.3) * 100) / 100;
-		zustand.L = Math.round((1.0 + Math.random() * 1.6) * 20) / 20;
-		zustand.b = 0.05;
+		zustand.b = Math.round((0.15 + Math.random() * 0.3) * 100) / 100;
+		zustand.a = Math.round((1.0 + Math.random() * 1.6) * 20) / 20;
 		zustand.zoom = 20;
-		zustand.x = 0;
+		zustand.d = 0;
 		zustand.geloest = false;
 		zustand.aufgabeNr++;
 		document.getElementById("aufgabe-nr").textContent = "Nr. " + zustand.aufgabeNr;
 		feldAntwort.value = "";
 		rueck.textContent = "";
 		reglerAnzeigenAktualisieren();
-		reglerXAnpassen();
+		reglerDAnpassen();
 		aktualisiere();
 	}
 
@@ -1089,17 +1175,15 @@ window.SimKit = (function () {
 		zustand.modus = m;
 		const auf = m === "aufgabe";
 		karte.classList.toggle("verborgen", !auf);
-		/* Ablenkung reduzieren: lambda-Regler, Sprungknoepfe und Auswertung ausblenden */
 		document.getElementById("zeile-lambda").classList.toggle("verborgen", auf);
 		document.getElementById("zeile-sprung").classList.toggle("verborgen", auf);
 		document.getElementById("zeile-standard").classList.toggle("verborgen", auf);
 		document.getElementById("auswertung").classList.toggle("verborgen", auf);
-		/* Deutungsspalte der Tabelle verraet die Ordnung -> im Aufgabenmodus weg */
 		document.querySelectorAll("#messtabelle .sp-deutung, #messtabelle td:last-child")
 			.forEach(el => el.classList.toggle("verborgen", auf));
 		document.querySelectorAll("#modus-knoepfe button")
 			.forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
-		if (auf) neueAufgabe(); else { reglerAnzeigenAktualisieren(); reglerXAnpassen(); aktualisiere(); }
+		if (auf) neueAufgabe(); else { reglerAnzeigenAktualisieren(); reglerDAnpassen(); aktualisiere(); }
 	}
 	document.getElementById("modus-knoepfe").addEventListener("click", ev => {
 		const b = ev.target.closest("button");
@@ -1123,7 +1207,7 @@ window.SimKit = (function () {
 			aktualisiere();
 		} else if (Math.abs(abw) <= 0.12) {
 			rueck.textContent = "Fast! Ihr Wert ist noch etwas zu " + (abw > 0 ? "groß" : "klein")
-				+ ". Messen Sie ein Maximum höherer Ordnung – das ist genauer.";
+				+ ". Messen Sie ein Maximum höherer Ordnung, das ist genauer.";
 			rueck.style.color = "#B06000";
 		} else {
 			rueck.textContent = "Noch nicht. Ihr Wert ist deutlich zu " + (abw > 0 ? "groß" : "klein")
@@ -1136,9 +1220,9 @@ window.SimKit = (function () {
 	});
 	document.getElementById("btn-neue-aufgabe").addEventListener("click", neueAufgabe);
 	document.getElementById("btn-loesung").addEventListener("click", () => {
-		rueck.textContent = "Lösung: λ = " + zustand.lambdaGeheim + " nm   (Streifenabstand Δx = "
-			+ K.de(streifenabstand(), 2) + " mm bei d = " + K.de(zustand.d, 2)
-			+ " mm und L = " + K.de(zustand.L, 2) + " m)";
+		rueck.textContent = "Lösung: λ = " + zustand.lambdaGeheim + " nm   (Streifenabstand "
+			+ K.de(streifenabstand(), 2) + " mm bei b = " + K.de(zustand.b, 2)
+			+ " mm und a = " + K.de(zustand.a, 2) + " m)";
 		rueck.style.color = "#0000BF";
 		zustand.geloest = true;
 		aktualisiere();
@@ -1149,18 +1233,18 @@ window.SimKit = (function () {
 	   ================================================================ */
 	const messkoerper = document.getElementById("messtabelle-koerper");
 	document.getElementById("btn-messwert").addEventListener("click", () => {
-		const s = sinAlpha(zustand.x);
-		const u = deutung(zustand.x);
+		const s = sinAlpha(zustand.d);
+		const u = deutung(zustand.d);
 		const deutText = u.art === "max" ? "Max. " + u.k + ". Ordnung"
-			: u.art === "min" ? "Min. " + u.k + ". Ordnung" : "&ndash;";
+			: u.art === "min" ? "Min. " + u.k + ". Ordnung" : "";
 		const z = document.createElement("tr");
 		z.innerHTML =
 			"<td>" + (messkoerper.children.length + 1) + "</td>" +
-			"<td>" + K.de(zustand.x, 2) + "</td>" +
-			"<td>" + K.de(zustand.L, 2) + "</td>" +
 			"<td>" + K.de(zustand.d, 2) + "</td>" +
+			"<td>" + K.de(zustand.a, 2) + "</td>" +
+			"<td>" + K.de(zustand.b, 2) + "</td>" +
 			"<td>" + K.de(s, 5) + "</td>" +
-			"<td>" + K.de(gangunterschied(zustand.x), 0) + "</td>" +
+			"<td>" + K.de(gangunterschied(zustand.d), 0) + "</td>" +
 			"<td" + (imAufgabenmodus() ? " class=\"verborgen\"" : "") + ">" + deutText + "</td>";
 		messkoerper.appendChild(z);
 	});
@@ -1173,7 +1257,7 @@ window.SimKit = (function () {
 	   ================================================================ */
 	function layout() {
 		skaliere();
-		reglerXAnpassen();
+		reglerDAnpassen();
 		aktualisiere();
 	}
 	window.addEventListener("resize", layout);
