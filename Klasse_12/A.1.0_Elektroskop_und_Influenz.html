@@ -1526,6 +1526,24 @@ schnipselNeu();
 layout();
 aktualisiereErklaerung();
 K.nachFontLaden(layout);
+
+/* Direktlinks auf die Reiter: #elektroskop, #schnipsel, #aufgabe (dazu #erkunden) */
+function setzeAnker() {
+	const a = modus === "aufgabe" ? "aufgabe" : teil;
+	try { history.replaceState(null, "", "#" + a); } catch (e) { /* z. B. in abgeschotteten Vorschauen */ }
+}
+function oeffneAnker() {
+	const a = decodeURIComponent(location.hash.slice(1)).toLowerCase();
+	if (!/^[a-z]+$/.test(a)) return;
+	const teilKnopf = document.querySelector('#teil-knoepfe button[data-wert="' + a + '"]');
+	if (a !== "aufgabe" && a !== "erkunden" && !teilKnopf) return;
+	document.querySelector('#modus-knoepfe button[data-modus="' + (a === "aufgabe" ? "aufgabe" : "erkunden") + '"]').click();
+	if (teilKnopf) teilKnopf.click();
+}
+document.getElementById("modus-knoepfe").addEventListener("click", setzeAnker);
+document.getElementById("teil-knoepfe").addEventListener("click", setzeAnker);
+window.addEventListener("hashchange", oeffneAnker);
+oeffneAnker();
 </script>
 </body>
 </html>

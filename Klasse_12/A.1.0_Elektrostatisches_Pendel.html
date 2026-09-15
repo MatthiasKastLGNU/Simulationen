@@ -1176,6 +1176,24 @@ setzeVersuch("kondensator");
 layout();
 aktualisiereErklaerung();
 K.nachFontLaden(aktualisiere);
+
+/* Direktlinks auf die Reiter: #platte, #kondensator, #aufgabe (dazu #erkunden) */
+function setzeAnker() {
+	const a = zustand.modus === "aufgabe" ? "aufgabe" : zustand.versuch;
+	try { history.replaceState(null, "", "#" + a); } catch (e) { /* z. B. in abgeschotteten Vorschauen */ }
+}
+function oeffneAnker() {
+	const a = decodeURIComponent(location.hash.slice(1)).toLowerCase();
+	if (!/^[a-z]+$/.test(a)) return;
+	const versuchKnopf = document.querySelector('#versuch-knoepfe button[data-wert="' + a + '"]');
+	if (a !== "aufgabe" && a !== "erkunden" && !versuchKnopf) return;
+	document.querySelector('#modus-knoepfe button[data-modus="' + (a === "aufgabe" ? "aufgabe" : "erkunden") + '"]').click();
+	if (versuchKnopf) versuchKnopf.click();
+}
+document.getElementById("modus-knoepfe").addEventListener("click", setzeAnker);
+document.getElementById("versuch-knoepfe").addEventListener("click", setzeAnker);
+window.addEventListener("hashchange", oeffneAnker);
+oeffneAnker();
 </script>
 </body>
 </html>
