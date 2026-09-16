@@ -786,6 +786,28 @@ table.messtabelle td.links, table.messtabelle th.links { text-align: left; white
 	</div>
 
 	<div class="tcb blau">
+		<div class="tcb-title">Hypothesen prüfen</div>
+		<div class="tcb-body">
+			<p class="hinweis" style="margin:0 0 0.55rem">Wählen Sie eine Hypothese. Überlegen Sie zuerst, was Sie beobachten müssten, wenn sie stimmt. Prüfen Sie es dann mit der Simulation unten.</p>
+			<div class="hyp-leiste" id="hyp-knoepfe"></div>
+			<p class="hypothese" id="hyp-text"></p>
+			<p class="arbeitsschritt"><b>1. Vorhersage:</b> Was müssten Sie beobachten, wenn die Hypothese stimmt?</p>
+			<div id="hyp-tipps"></div>
+			<textarea class="notiz" id="feld-vorhersage" rows="2" placeholder="Wenn die Hypothese stimmt, dann müsste ..."></textarea>
+			<p class="arbeitsschritt"><b>2. Versuch:</b> Was beobachten Sie tatsächlich?</p>
+			<textarea class="notiz" id="feld-beobachtung" rows="2" placeholder="Ich habe ... verändert und beobachtet, dass ..."></textarea>
+			<p class="arbeitsschritt"><b>3. Einschätzung:</b> Ist die Hypothese plausibel oder abzulehnen?</p>
+			<div class="knopfleiste urteil" id="urteil-knoepfe"><button data-wert="plausibel">plausibel</button><button data-wert="abzulehnen">abzulehnen</button><button data-wert="unklar">noch unklar</button></div>
+
+			<div class="tabelle-wrap" style="margin-top:1rem">
+				<table class="messtabelle"><thead><tr><th>Nr.</th><th class="links">Hypothese</th><th class="links">Ihre Einschätzung</th></tr></thead><tbody id="uebersicht"></tbody></table>
+			</div>
+			<div class="knopfleiste" style="margin-top:0.6rem"><button id="btn-leeren">Alle Eingaben löschen</button></div>
+			<p class="fussnote">Ihre Eingaben bleiben nur in diesem Browser gespeichert.</p>
+		</div>
+	</div>
+
+	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Elektronenbeugungsröhre</div>
 		<div class="tcb-body">
 			<canvas id="seite-canvas" class="sim"></canvas>
@@ -811,28 +833,6 @@ table.messtabelle td.links, table.messtabelle th.links { text-align: left; white
 				</div>
 				<div class="zeile"><span class="knopfleiste"><button id="btn-standard">Standardwerte</button></span></div>
 			</div>
-		</div>
-	</div>
-
-	<div class="tcb blau">
-		<div class="tcb-title">Hypothesen prüfen</div>
-		<div class="tcb-body">
-			<p class="hinweis" style="margin:0 0 0.55rem">Wählen Sie eine Hypothese. Überlegen Sie zuerst, was Sie beobachten müssten, wenn sie stimmt. Prüfen Sie es dann mit der Simulation.</p>
-			<div class="hyp-leiste" id="hyp-knoepfe"></div>
-			<p class="hypothese" id="hyp-text"></p>
-			<p class="arbeitsschritt"><b>1. Vorhersage:</b> Was müssten Sie beobachten, wenn die Hypothese stimmt?</p>
-			<div id="hyp-tipps"></div>
-			<textarea class="notiz" id="feld-vorhersage" rows="2" placeholder="Wenn die Hypothese stimmt, dann müsste ..."></textarea>
-			<p class="arbeitsschritt"><b>2. Versuch:</b> Was beobachten Sie tatsächlich?</p>
-			<textarea class="notiz" id="feld-beobachtung" rows="2" placeholder="Ich habe ... verändert und beobachtet, dass ..."></textarea>
-			<p class="arbeitsschritt"><b>3. Einschätzung:</b> Ist die Hypothese plausibel oder abzulehnen?</p>
-			<div class="knopfleiste urteil" id="urteil-knoepfe"><button data-wert="plausibel">plausibel</button><button data-wert="abzulehnen">abzulehnen</button><button data-wert="unklar">noch unklar</button></div>
-
-			<div class="tabelle-wrap" style="margin-top:1rem">
-				<table class="messtabelle"><thead><tr><th>Nr.</th><th class="links">Hypothese</th><th class="links">Ihre Einschätzung</th></tr></thead><tbody id="uebersicht"></tbody></table>
-			</div>
-			<div class="knopfleiste" style="margin-top:0.6rem"><button id="btn-leeren">Alle Eingaben löschen</button></div>
-			<p class="fussnote">Ihre Eingaben bleiben nur in diesem Browser gespeichert.</p>
 		</div>
 	</div>
 
