@@ -325,9 +325,9 @@ window.SimKit = (function () {
 			<div class="legende">
 				<span><span class="punkt" style="background:#E00000"></span>Atomrumpf</span>
 				<span><span class="punkt" style="background:#0000E0;width:0.5em;height:0.5em"></span>Elektron</span>
-				<span><span class="strich" style="border-color:#808080"></span>äußeres Feld</span>
-				<span><span class="strich" style="border-color:#3B7A12"></span>Feld der verschobenen Ladungen</span>
-				<span><span class="strich" style="border-color:#111"></span>resultierendes Feld</span>
+				<span><span class="strich" style="border-color:#111"></span>resultierendes Feld (tatsächlich vorhanden)</span>
+				<span><span class="strich" style="border-color:#808080"></span>Feld der Platten allein</span>
+				<span><span class="strich" style="border-color:#3B7A12"></span>Feld der verschobenen Ladungen allein</span>
 			</div>
 
 			<div class="steuerung">
@@ -348,9 +348,9 @@ window.SimKit = (function () {
 				</div>
 				<div class="zeile">
 					<span class="gruppe">Anzeigen</span>
-					<label class="haken"><input type="checkbox" id="zeige-aussen" checked> äußeres Feld</label>
-					<label class="haken"><input type="checkbox" id="zeige-gegen"> Feld der verschobenen Ladungen</label>
-					<label class="haken"><input type="checkbox" id="zeige-result"> resultierendes Feld</label>
+					<label class="haken"><input type="checkbox" id="zeige-result" checked> resultierendes Feld</label>
+					<label class="haken"><input type="checkbox" id="zeige-aussen"> Feld der Platten allein</label>
+					<label class="haken"><input type="checkbox" id="zeige-gegen"> Feld der verschobenen Ladungen allein</label>
 				</div>
 				<div class="zeile">
 					<span class="gruppe">Bilder vom Blatt</span>
@@ -386,7 +386,7 @@ window.SimKit = (function () {
 		staerke: 3,      // Stufe des äußeren Feldes; die Verschiebung der Elektronen ist dazu proportional
 		laeuft: true,
 		t: 0,            // Zeit in s (nur für das Zittern der Elektronen)
-		zeigeAussen: true, zeigeGegen: false, zeigeResult: false
+		zeigeAussen: false, zeigeGegen: false, zeigeResult: true
 	};
 
 	/* Leitermaterial: Rahmen von -3,5 bis 3,5 (x) und -2,5 bis 2,5 (y) mit Hohlraum |x| < 2,5, |y| < 1,5 */
@@ -560,18 +560,18 @@ window.SimKit = (function () {
 		if (an && zustand.zeigeGegen && q > 0.01) {
 			feldlinienHoehen(n + 1).forEach(y => {
 				const yy = y + (Math.abs(y) > 2 ? -Math.sign(y) * 0.13 : 0.13);
-				if (Math.abs(yy) < 2.5) pfeil(2.5, yy, -2.5, yy, "#3B7A12", 2, Math.min(1, 0.15 + q));
+				if (Math.abs(yy) < 2.5) pfeil(3.3, yy, -3.3, yy, "#3B7A12", 2, Math.min(1, 0.15 + q));
 			});
 		}
+		/* Resultierendes Feld: außen unverändert, im Leiter und im Hohlraum wird es mit fortschreitender
+		   Ladungsverschiebung schwächer (blasser) und verschwindet im Gleichgewicht ganz */
 		if (an && zustand.zeigeResult) {
-			for (let y = -2.25; y <= 2.26; y += 0.75) {
-				for (let x = -3.75; x <= 3.76; x += 0.75) {
-					const innen = Math.abs(x) < 3.5;
-					const betrag = innen ? 1 - q : 1;
-					const laenge = 0.09 * n * betrag;
-					if (laenge > 0.02) pfeil(x - laenge / 2, y, x + laenge / 2, y, "#111", 1.8, 1);
-				}
-			}
+			const innen = 1 - q;
+			feldlinienHoehen(n + 1).forEach(y => {
+				pfeil(-4, y, -3.5, y, "#111", 2, 1);
+				pfeil(3.5, y, 4, y, "#111", 2, 1);
+				if (innen > 0.02) pfeil(-3.5, y, 3.5, y, "#111", 2, innen);
+			});
 		}
 
 		const prozent = an ? Math.round(100 * (1 - q)) : 0;
@@ -626,7 +626,8 @@ window.SimKit = (function () {
 		setzeLaeuft(false);
 		zustand.feldAn = bild > 1;
 		zustand.p = [0, 0, 0, 0.5, 1][bild];
-		setzeHaken(bild > 1, bild === 3, false);
+		/* Bild 2 und 3: Einzelfelder; Bild 4: tatsächlich vorhandenes (resultierendes) Feld */
+		setzeHaken(bild === 2 || bild === 3, bild === 3, bild === 4);
 		setzeFeldKnopf();
 		document.querySelectorAll("#bild-knoepfe button").forEach(x => x.classList.toggle("aktiv", x === b));
 		zeichne();
@@ -636,7 +637,7 @@ window.SimKit = (function () {
 		zustand.feldAn = false; zustand.p = 0; zustand.staerke = 3;
 		document.getElementById("regler-staerke").value = 3;
 		document.getElementById("wert-staerke").textContent = "3";
-		setzeHaken(true, false, false);
+		setzeHaken(false, false, true);
 		setzeFeldKnopf();
 		setzeLaeuft(true);
 		zeichne();
