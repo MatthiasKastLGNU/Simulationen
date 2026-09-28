@@ -214,6 +214,17 @@ table.messtabelle td:first-child, table.messtabelle th:first-child { text-align:
 .tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
 .verborgen { display: none !important; }
 
+/* Werkzeugknoepfe fuer Ladungen: farbiger Kreis mit Vorzeichen wie im Bild */
+.ladungssymbol {
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 1.35em; height: 1.35em; border-radius: 50%;
+	color: #fff; font-weight: bold; line-height: 1; vertical-align: middle;
+	box-shadow: 0 0 0 1.5px #fff;
+}
+.ladungssymbol.plus  { background: var(--red-frame); }
+.ladungssymbol.minus { background: var(--blue-frame); }
+#werkzeug-knoepfe button { min-height: 2.1em; }
+
 .hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 .kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
 .zweispaltig { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
@@ -766,10 +777,10 @@ window.SimPlus = (function () {
 				<div class="zeile" id="zeile-werkzeug">
 					<label>Werkzeug</label>
 					<span class="knopfleiste" id="werkzeug-knoepfe">
-						<button data-wert="verschieben">Verschieben</button>
-						<button data-wert="plus" class="aktiv">Ladung + setzen</button>
-						<button data-wert="minus">Ladung &minus; setzen</button>
-						<button data-wert="loeschen">Ladung löschen</button>
+						<button data-wert="plus" class="aktiv" title="Positive Ladung setzen"><span class="ladungssymbol plus">+</span></button>
+						<button data-wert="minus" title="Negative Ladung setzen"><span class="ladungssymbol minus">&minus;</span></button>
+						<button data-wert="linie" id="knopf-linie">Feldlinie</button>
+						<button data-wert="loeschen">Löschen</button>
 					</span>
 				</div>
 				<div class="zeile">
@@ -1010,17 +1021,38 @@ function zeichne() {
 	else if (zustand.ansicht === "richtung") zeichneRichtungsfeld();
 	if (zustand.punkte) zeichnePunkteABC();
 	for (const L of zustand.ladungen) zeichneLadung(L);
-	if (!zustand.ladungen.length) {
-		P.text(ctx, "Setzen Sie die Ladungen aus der Aufgabe mit „Ladung + setzen“ und „Ladung − setzen“.", W / 2, yPix(Y_MAX - 0.9), { ausrichtung: "center", groesse: 14, farbe: "#555" });
-	}
+	if (!zustand.ladungen.length) zeichneStarthinweis();
+}
+
+/* Hinweis bei leerem Feld: im linken oberen Viertel auf weissem Grund, damit er keine Achse ueberdeckt */
+function zeichneStarthinweis() {
+	const zeilen = ["Setzen Sie zuerst die", "Ladungen aus der Aufgabe."];
+	const links = xPix(-X_MAX + 0.4), rechts = xPix(-0.6);
+	let groesse = 15;
+	ctx.font = groesse + "px " + P.SCHRIFT;
+	const breiteste = () => Math.max(...zeilen.map(z => ctx.measureText(z).width));
+	while (groesse > 10 && breiteste() > rechts - links - 16) { groesse--; ctx.font = groesse + "px " + P.SCHRIFT; }
+	const b = breiteste() + 16, h = zeilen.length * groesse * 1.35 + 12;
+	const mx = (links + rechts) / 2, oben = yPix(5.6);
+	ctx.fillStyle = "#fff"; ctx.strokeStyle = "#BBB"; ctx.lineWidth = 1;
+	ctx.fillRect(mx - b / 2, oben, b, h); ctx.strokeRect(mx - b / 2, oben, b, h);
+	zeilen.forEach((z, i) => P.text(ctx, z, mx, oben + 6 + groesse * (1.05 + 1.35 * i), { ausrichtung: "center", groesse, farbe: "#444" }));
 }
 
 /* ---------- Bedienung ---------- */
 const FUSSNOTEN = {
-	linien: "Die Ladungen rasten auf ganze Kästchen ein und lassen sich mit der Maus verschieben. Mit „Verschieben“ fügt ein Klick auf eine freie Stelle eine weitere Feldlinie hinzu. Blau: negative, rot: positive Ladung.",
+	linien: "Mit den farbigen Knöpfen setzen Sie positive (rot) und negative (blau) Ladungen; sie rasten auf ganze Kästchen ein und lassen sich mit der Maus verschieben. Mit „Feldlinie“ fügt ein Klick eine Feldlinie durch diesen Punkt hinzu.",
 	richtung: "Die Fähnchen zeigen die Richtung des elektrischen Feldes an der jeweiligen Stelle. Die Ladungen lassen sich mit der Maus verschieben."
 };
+function waehleWerkzeug(w) {
+	zustand.werkzeug = w;
+	document.querySelectorAll("#werkzeug-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === w));
+}
 function aktualisiereSteuerung() {
+	const mitLinien = zustand.ansicht === "linien";
+	document.getElementById("knopf-linie").classList.toggle("verborgen", !mitLinien);
+	document.getElementById("btn-linien-weg").classList.toggle("verborgen", !mitLinien);
+	if (!mitLinien && zustand.werkzeug === "linie") waehleWerkzeug("plus");
 	document.getElementById("fussnote-text").textContent = FUSSNOTEN[zustand.ansicht];
 }
 
@@ -1087,10 +1119,10 @@ canvas.addEventListener("pointerdown", ev => {
 		return;
 	}
 
-	/* Werkzeug "Verschieben": Klick auf eine freie Stelle fuegt eine Feldlinie hinzu */
+	/* Werkzeug "Feldlinie": Klick auf eine freie Stelle fuegt eine Feldlinie durch diesen Punkt hinzu */
 	const klick = { x: xWert(px), y: yWert(py) };
 	if (Math.abs(klick.x) > X_MAX || Math.abs(klick.y) > Y_MAX) return;
-	if (zustand.ansicht === "linien") {
+	if (zustand.werkzeug === "linie" && zustand.ansicht === "linien") {
 		const anker = ankerFuerKlick(klick);
 		if (anker) zustand.zusatzlinien.push(anker);
 		zeichne();
@@ -1110,7 +1142,7 @@ canvas.addEventListener("pointermove", ev => {
 	}
 	const ueberLadung = ladungBeiPixel(px, py);
 	if (zustand.werkzeug === "loeschen") canvas.style.cursor = ueberLadung ? "pointer" : "default";
-	else canvas.style.cursor = ueberLadung ? "grab" : (zustand.werkzeug === "verschieben" ? "default" : "crosshair");
+	else canvas.style.cursor = ueberLadung ? "grab" : "crosshair";
 });
 
 function loslassen() { gezogen = null; }
