@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Coulomb-Messlabor</title>
+	<title>Coulomb-Kraft</title>
 	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFWElEQVRYha2XW2wUVRjHf2dmOrPtblvSNkVaIEobLC1QBYrKNcErWhWkCcaClYCXGOILD5YXNBKER43xQYNSSauYcAkiGBLDQytRLFaU9GaIib1AKL1Ad9vuTHfm+LDtbnd3dmmV/9PMme87///5vnO+74xgEsXFRq7MeFNKXgEWI/Byb3FHQouQfDr4958nJgcFQO7C8kLpcBYpy+8xaTJ8OyhGa7h2zdQoLjZmSl6ao5Kmxo6N29A2aE93iq25eEMDsE3kFi19R8LH0xcPp5/3sqZAixlr6g2x6fuRmUyDlEqlIgXVqYwKfUrC2OW+xJX+ditxzM13KoRwditISpMZLMtXaarysWFudLWKgL5RmWB7c9RBEdH3DXM1mqp8LMtXE2yn4FGRU7Q0cbYJ8hPPecnSBV1+h2dOB9heovPaIoM5XuHmwvURhyNtFvUd45zf5GV+psKwJdlydoQWl6gBuAqYSj4JywE9dUQjMG2JoUZ9U4lIEFDoU2iq8pFtuK8S4LYpabweoscvEUJS6FNYX6Cl9LljStYeD9AbcGLGtXjD3oDD9vOjfLQ+nQXZsUvuH5McaA7yTaeFLcGZkK4IUAVUl+jsrfCQ54kV0uV32NM4lkAO4BrUizdCVJ4JYE2x7xhyePxkgKPtFooQXKvJwlAFhhp+VoSgrs3iiZN+OoaijqYteepUgAs9IdfIJM3q9hI9kvP+McnWcyP0TKwgTYFsQ5CmxD4DdPslL/8QoD8YDo+hCqof1JPRuAtQBNQsijodaA5GyDM0wY6yNABqVxjUrjAAeHWRjkeLijjUHIz47yjTEUm2h5qeM/t9gIWzVL58MoPiWSolOSqbisIkt03JWxdGMVTwpQl2LtbZXKTTOeTQOyqxAcuG5fkqPl3QOeQgBPxxy+aNJQaGKsjSBUOmZOP9aexZZtDS5zAwEaHIJtRVWFOgJZTYxushbAmd27Iiu/zijRCb48rudy942bfSw76VHu6YkuKvhmnsDVH5QHghB1elR2z1KbUp4RTEo2vYwZFQVj+MoQr2VhiYiZuZK/027YM2B5tNTFviSPjH72IYh7uWlmS5mw6UafjeNQLzfQqKgNa4FMTjoTyV1XM0dpUZkRTM96XsA7ECLBt+uh6i+abNrTHJh6s8AKwr1FBFNAU1pTqbFqRxqtLL7/3h0vpwnkpmmmD/r0Hq2ixMW6IJWFsYFVB7cYzZGQoVs1Us20XAX7dtXjwT3liKgN3lOgVehWxDUF2iU9dmMRaSfHbVZNyG/Y95aB2wIyLf+2WML1otxiaCs7NUj/SSbr/kcKuFdGl7rnvAkXCkzYq8763wMC8zPFkwBEfbw98OXTY5dNkEoK5tPEI+P1Ph3QpPxL+u3XQlTyoAoL5jHNMOe+V5BMc2+iIixp1wcxl3Yp8nyY9t9JI70Q9MW1LfYblyQJJ2vHqO5tqMBoKSg81BGjosQnHNSBOwbZFO7QpPhHwSk83IrR/8p3Y8bEkae0N0T5TneT6FdYVazP0hHsna8bQvJPGXjFSYyYXEdQ+09NlsOTvCsBXW1uV3KG/ws/9StCm5odsv+eBSkKUNfromquA0rmRL7oDIcvu4LF/l+LNedv04GsmfEPD6Yj2mtkP4nE89ahvmahx+IoOqc8nJQQ5rIH4Gnk4Wifi8SQmzMxIDd59XiTlqF3pCrjmPhWhTpFQ+SWHhOkFFfmIFX+Fy/U5NDgLZEP43LC6vl1Km/EGZinvwawaSK4Pp9iMawAAjO3PI0ICt0/GdEVEScqGJSlpbrZhzlbug/CUp5NvAcmDW/2NJQAC4KpBfD3icz2lttQD+BaeYX5auMkA0AAAAAElFTkSuQmCC">
 	<style>
 /* ==========================================================================
@@ -213,8 +213,6 @@ table.messtabelle tr:last-child td, table.messtabelle tr:last-child th { border-
 table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
 .tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
 .verborgen { display: none !important; }
-/* Messmodus (?auswertung=aus): F-Spalte der Messtabelle ausblenden, F rechnen die Schueler selbst */
-.nur-messen #tabelle-simulation th:nth-child(6), .nur-messen #tabelle-simulation td:nth-child(6) { display: none; }
 
 .hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 .kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
@@ -749,124 +747,58 @@ window.SimPlus = (function () {
 <div class="blatt">
 
 	<div class="kopf">
-		<span class="nummer">12 eA</span>
-		<span class="kapitel">A.1.4* Das Gesetz von Coulomb</span>
-		<span class="nummer platzhalter">12 eA</span>
+		<span class="nummer">12</span>
+		<span class="kapitel">A.1.4 Das Gesetz von Coulomb</span>
+		<span class="nummer platzhalter">12</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-		<button data-modus="aufgabe">Aufgabe</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Die elektrische Feldkonstante bestimmen</div>
+	<div class="tcb blau">
+		<div class="tcb-title">Simulation: Kraft zwischen zwei Punktladungen</div>
 		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Beide Kugeln sind mit <i class="gr">U</i> = <b id="aufgabe-u"></b> geladen. Die Ladung einer Kugel wurde mit dem Messverst&auml;rker gemessen: <i class="gr">Q</i> = <b id="aufgabe-c"></b>.
-				Nehmen Sie eine Messreihe auf und bestimmen Sie &epsilon;<sub>0</sub>.
-			</p>
-			<div class="antwortzeile">
-				<label for="antwort">&epsilon;<sub>0</sub> =</label>
-				<input type="number" id="antwort" step="any" placeholder="?">
-				<span>&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm)</span>
-				<button id="btn-pruefen">Pr&uuml;fen</button>
-				<button id="btn-neue-aufgabe">Neue Aufgabe</button>
-				<button id="btn-loesung">L&ouml;sung zeigen</button>
+			<canvas id="kraft-canvas" class="sim"></canvas>
+			<div class="steuerung">
+				<div class="zeile"><label><span class="punkt" id="punkt-q1"></span> Ladung <i class="gr">Q</i><sub>1</sub></label><input type="range" id="regler-q1" min="-5" max="5" step="0.5" value="2"><span class="wert" id="wert-q1"></span></div>
+				<div class="zeile"><label><span class="punkt" id="punkt-q2"></span> Ladung <i class="gr">Q</i><sub>2</sub></label><input type="range" id="regler-q2" min="-5" max="5" step="0.5" value="-1"><span class="wert" id="wert-q2"></span></div>
+				<div class="zeile"><label>Abstand <i class="gr">r</i></label><input type="range" id="regler-r" min="1" max="10" step="0.1" value="3"><span class="wert" id="wert-r"></span></div>
+				<div class="zeile"><label>Pfeilmaßstab</label>
+					<span class="knopfleiste" id="massstab-knoepfe">
+						<button data-wert="1e-6">1&nbsp;µN</button>
+						<button data-wert="1e-5" class="aktiv">10&nbsp;µN</button>
+						<button data-wert="1e-4">100&nbsp;µN</button>
+						<button data-wert="1e-3">1&nbsp;mN</button>
+					</span>
+				</div>
 			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Was messen Sie?</summary>
-				<p class="tipp">Lesen Sie &Delta;<i class="gr">m</i> f&uuml;r mindestens f&uuml;nf Abst&auml;nde ab und berechnen Sie <i class="gr">F</i> = &Delta;<i class="gr">m</i>&thinsp;&middot;&thinsp;<i class="gr">g</i>. Werten Sie nur Abst&auml;nde ab dem 2,5-fachen Kugeldurchmesser aus. Messen Sie z&uuml;gig.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span><i class="gr">F</i> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;&epsilon;<sub>0</sub>&thinsp;&middot;&thinsp;<i class="gr">r</i><sup>2</sup></span></span></p>
-				<p class="tipp">Tragen Sie <i class="gr">F</i> &uuml;ber 1/<i class="gr">r</i><sup>2</sup> auf. Die Steigung ist <i class="gr">Q</i><sup>2</sup>/(4&pi;&epsilon;<sub>0</sub>).</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="formelzeile"><span>&epsilon;<sub>0</sub> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;<i class="gr">m</i></span></span></p>
-				<p class="tipp">Achten Sie auf die Einheiten der Steigung <i class="gr">m</i> (mN&thinsp;&middot;&thinsp;cm<sup>2</sup>) und der Ladung (nC).</p>
-			</details>
+			<div class="formelzeile">
+				<span><i class="gr">F</i> =</span>
+				<span class="bruch"><span class="z">1</span><span class="n">4&thinsp;·&thinsp;π&thinsp;·&thinsp;<i class="gr">ε</i><sub>0</sub></span></span>
+				<span>·</span>
+				<span class="bruch"><span class="z" id="formel-zaehler"></span><span class="n" id="formel-nenner"></span></span>
+				<span>=</span>
+				<span class="kennzahl" id="formel-ergebnis"></span>
+			</div>
+			<p class="hinweis" style="text-align:center" id="art-text"></p>
+			<div class="auswertung">
+				<div class="knopfleiste"><button id="btn-merken">Als Vergleichswert merken</button><button id="btn-standard">Standardwerte</button></div>
+				<div id="vergleich" style="margin-top:0.45rem"></div>
+			</div>
+			<p class="fussnote">Die Ladung <i class="gr">Q</i><sub>2</sub> lässt sich auch im Bild ziehen. Merken Sie sich einen Vergleichswert und ändern Sie dann immer nur eine Größe.</p>
 		</div>
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Simulation: Kraft zwischen zwei geladenen Kugeln</div>
+		<div class="tcb-title">Diagramm: Betrag der Kraft in Abhängigkeit vom Abstand</div>
 		<div class="tcb-body">
-			<canvas id="aufbau-canvas" class="sim"></canvas>
-			<div class="steuerung">
-				<div class="zeile">
-					<label>Abstand <i class="gr">r</i></label>
-					<input type="range" id="regler-r" min="3.5" max="20" step="0.1" value="8">
-					<span class="wert" id="wert-r"></span>
-				</div>
-				<div class="zeile" id="zeile-u">
-					<label>Ladespannung <i class="gr">U</i></label>
-					<input type="range" id="regler-u" min="2" max="10" step="0.5" value="10">
-					<span class="wert" id="wert-u"></span>
-				</div>
-				<div class="zeile" id="zeile-rk">
-					<label>Kugelradius <i class="gr">R</i></label>
-					<input type="range" id="regler-rk" min="1" max="2.5" step="0.1" value="2">
-					<span class="wert" id="wert-rk"></span>
-				</div>
-				<div class="zeile" id="zeile-feuchte">
-					<label>Luftfeuchte</label>
-					<input type="range" id="regler-feuchte" min="20" max="90" step="5" value="30">
-					<span class="wert" id="wert-feuchte"></span>
-				</div>
-				<div class="zeile" id="zeile-influenz">
-					<label>Modell</label>
-					<span class="schalter" style="margin-left:0"><input type="checkbox" id="chk-influenz" checked><label for="chk-influenz" style="flex:0 0 auto">Ladungsverschiebung auf den Kugeln (Influenz)</label></span>
-				</div>
-				<div class="zeile" id="zeile-halbieren">
-					<label>Ladung halbieren</label>
-					<span class="knopfleiste">
-						<button id="btn-halb-oben">Obere Kugel berühren</button>
-						<button id="btn-halb-unten">Untere Kugel berühren</button>
-					</span>
-				</div>
-				<div class="zeile">
-					<span class="knopfleiste">
-						<button id="btn-laden">Kugeln neu laden</button>
-						<button id="btn-messwert">Messwert notieren</button>
-						<button id="btn-tabelle-leeren">Tabelle leeren</button>
-					</span>
-					<span class="knopfleiste" id="zeile-standard" style="margin-left:auto">
-						<button id="btn-standard">Standardwerte</button>
-						<button id="btn-material">Material erzeugen</button>
-					</span>
-				</div>
-			</div>
-			<p class="fussnote" id="fussnote-zeit"></p>
-			<div class="tabelle-wrap">
-				<table class="messtabelle" id="tabelle-simulation">
-					<thead><tr><th>Nr.</th><th><i class="gr">r</i> in cm</th><th><i class="gr">U</i> in kV</th><th><i class="gr">Q</i><sub>oben</sub>&thinsp;/&thinsp;<i class="gr">Q</i><sub>unten</sub></th><th>&Delta;<i class="gr">m</i> in g</th><th><i class="gr">F</i> in mN</th><th>Zeit nach dem Laden</th></tr></thead>
-					<tbody id="messtabelle-koerper"></tbody>
-				</table>
-			</div>
-		</div>
-	</div>
-
-	<p class="fussnote verborgen" id="hinweis-nur-messen">Die Auswertung f&uuml;hren Sie selbst auf dem Arbeitsblatt durch. Die Diagramme zur Kontrolle finden Sie danach in der vollst&auml;ndigen Version der Simulation.</p>
-
-	<div class="tcb blau" id="auswertung-box">
-		<div class="tcb-title">Auswertung der notierten Messwerte</div>
-		<div class="tcb-body">
-			<div class="zeile" style="margin-bottom:0.4rem">
-				<span class="knopfleiste" id="darstellung-knoepfe">
-					<button data-wert="Fr" class="aktiv"><i class="gr">F</i> &uuml;ber <i class="gr">r</i></button>
-					<button data-wert="Fr2"><i class="gr">F</i>&thinsp;&middot;&thinsp;<i class="gr">r</i><sup>2</sup> &uuml;ber <i class="gr">r</i></button>
-					<button data-wert="F1r2"><i class="gr">F</i> &uuml;ber 1/<i class="gr">r</i><sup>2</sup></button>
-					<button data-wert="ln">ln&thinsp;<i class="gr">F</i> &uuml;ber ln&thinsp;<i class="gr">r</i></button>
+			<div class="zeile" style="margin-bottom:0.3rem"><label>Hochachse bis</label>
+				<span class="knopfleiste" id="achse-knoepfe">
+					<button data-wert="1e-5">10&nbsp;µN</button>
+					<button data-wert="1e-4" class="aktiv">100&nbsp;µN</button>
+					<button data-wert="1e-3">1&nbsp;mN</button>
+					<button data-wert="1e-2">10&nbsp;mN</button>
 				</span>
 			</div>
-			<div class="zeile"><span class="schalter" style="margin-left:0"><input type="checkbox" id="chk-ausschluss"><label for="chk-ausschluss" style="flex:0 0 auto">Punkte mit <i class="gr">r</i> &lt; 2,5&thinsp;&middot;&thinsp;2<i class="gr">R</i> bei der Regression nicht ber&uuml;cksichtigen</label></span></div>
 			<canvas id="diagramm-canvas" class="sim"></canvas>
-			<div class="auswertung" id="auswertung"></div>
+			<p class="fussnote">Durchgezogen: aktuelle Ladungen. Gestrichelt: gemerkter Vergleichswert.</p>
 		</div>
 	</div>
 
@@ -876,304 +808,177 @@ window.SimPlus = (function () {
 <script>
 "use strict";
 const K = window.SimKit, P = window.SimPlus;
-const EPS0 = 8.854e-12, KC = 1 / (4 * Math.PI * EPS0);
 
-/* Einheiten: r, R in cm; U in kV; feuchte in %; tSeit in s; Massen in g, Kraefte in N bzw. mN.
-   fOben, fUnten: Anteil der Ladung nach dem Beruehren mit einer gleich grossen, ungeladenen Kugel (1, 1/2, 1/4, ...). */
-const G = 9.81;
-const STANDARD = { r: 8, U: 10, R: 2, feuchte: 30, influenz: true };   /* Tischtennisbaelle mit Leitlack, 10-kV-Netzgeraet */
-const zustand = Object.assign({ tSeit: 0, darstellung: "Fr", ausschluss: false, modus: "erkunden", fOben: 1, fUnten: 1 }, STANDARD);
-const aufgabe = { nr: 0, U: 10, R: 2, Qangabe: 19.5 };
-/* Standard (Link ohne Zusatz): nur messen, keine Diagramme, keine Regression, keine F-Spalte, kein Aufgabenmodus;
-   ausgewertet wird von Hand auf dem Blatt. Vollstaendige Version mit ?auswertung=an */
-const NUR_MESSEN = new URLSearchParams(location.search).get("auswertung") !== "an";
-if (NUR_MESSEN) {
-	document.body.classList.add("nur-messen");
-	["modus-knoepfe", "auswertung-box", "btn-material"].forEach(id => document.getElementById(id).classList.add("verborgen"));
-	document.getElementById("hinweis-nur-messen").classList.remove("verborgen");
-}
+/* Einheiten: Ladungen in nC, Abstand in cm, Kraft in N */
+const EPS0 = 8.8541878188e-12;           // C/(V m), CODATA 2022
+const KC = 1 / (4 * Math.PI * EPS0);     // V m / C
+const zustand = { q1: 2, q2: -1, r: 3, massstab: 1e-5, yMax: 1e-4, vergleich: null };
 
-/* Ladung einer Kugel direkt nach dem Laden (bei grossem Abstand): Halterung und Umgebung verringern sie
-   gegenueber der frei stehenden Kugel (4*pi*eps0*R*U) auf etwa 88 %; so auch bei der Messung mit dem Kraftsensor (LEIFI). */
-const FAKTOR_LADUNG = 0.876;
-function ladung(R, U) { return FAKTOR_LADUNG * 4 * Math.PI * EPS0 * R / 100 * U * 1e3; }  /* C; R in cm, U in kV */
-/* Influenz: Kraft zweier gleicher, gleich geladener leitender Kugeln im Verhaeltnis zur Coulombkraft,
-   exakt mit Bildladungen (Reihen fuer die Kapazitaetskoeffizienten, Kraft aus der Energie bei fester Ladung); s = r/R */
-function summeS(s) {
-	const b = Math.acosh(s / 2), sh = Math.sinh(b), N = Math.ceil(40 / b) + 2;
-	let c = 0;
-	for (let n = 0; n < N; n++) c += 1 / Math.sinh((2 * n + 1) * b);
-	for (let n = 1; n < N; n++) c -= 1 / Math.sinh(2 * n * b);
-	return sh * c;
-}
-function influenzFaktor(s) {
-	if (s > 40) return 1;
-	const h = 1e-4, S0 = summeS(s);
-	return (summeS(s + h) - summeS(s - h)) / (2 * h) / (S0 * S0) * s * s;
-}
-function tauLeck(feuchte) { return 4000 * Math.exp(-(feuchte - 30) / 20); } /* s */
-function kraft(z, t) {                                                      /* N */
-	const Q = ladung(z.R, z.U) * Math.exp(-t / tauLeck(z.feuchte));
-	const fO = z.fOben ?? 1, fU = z.fUnten ?? 1;
-	let F = KC * (Q * fO) * (Q * fU) / Math.pow(z.r / 100, 2);
-	if (z.influenz) F *= influenzFaktor(z.r / z.R);
-	return F;
-}
-function aktiv() { return zustand.modus === "aufgabe" ? { r: zustand.r, U: aufgabe.U, R: aufgabe.R, feuchte: 30, influenz: true, fOben: 1, fUnten: 1 } : zustand; }
-/* Anzeige der Feinwaage in g: Aufloesung 0,001 g, kleines Rauschen */
-function anzeigeMasse() { return P.runde(kraft(aktiv(), zustand.tSeit) / G * 1e3 + 0.0006 * P.gauss(), 0.001); }
-function bruch(f) { return f === 1 ? "Q" : "Q/" + Math.round(1 / f); }
+function kraft(q1, q2, r) { return KC * (q1 * 1e-9) * (q2 * 1e-9) / Math.pow(r * 1e-2, 2); }
 
-/* ---------- Aufbau zeichnen: senkrechter Aufbau mit Feinwaage wie auf dem Arbeitsblatt ---------- */
-const cA = document.getElementById("aufbau-canvas"), gA = cA.getContext("2d");
-let WA = 760, HA = 420;
-function zeichneKugel(g, x, y, rp, oben, versatz, anteil) {
-	const grad = g.createRadialGradient(x - rp * 0.35, y - rp * 0.35, rp * 0.1, x, y, rp);
-	grad.addColorStop(0, "#FFF"); grad.addColorStop(1, "#999");
-	g.fillStyle = grad; g.beginPath(); g.arc(x, y, rp, 0, 2 * Math.PI); g.fill();
-	g.strokeStyle = "#555"; g.lineWidth = 1; g.stroke();
-	const n = Math.max(2, Math.round(10 * anteil));
-	for (let k = 0; k < n; k++) {
-		const w = 2 * Math.PI * k / n + Math.PI / 2;
-		/* gleichnamige Ladungen weichen auf die abgewandten Seiten aus: oben nach oben, unten nach unten */
-		const wicht = 1 + versatz * (oben ? -Math.sin(w) : Math.sin(w));
-		const rr = rp * 0.7;
-		if (wicht > 0.55) P.text(g, "+", x + rr * Math.cos(w), y + rr * Math.sin(w) + 4, { ausrichtung: "center", groesse: Math.max(8, Math.min(14, 8 * wicht)), farbe: P.FARBEN.rot, fett: true });
-	}
+function formatKraft(F) { return formatKraftRoh(F).replace("-", "−"); }
+function formatKraftRoh(F) {
+	const a = Math.abs(F);
+	if (a === 0) return "0 N";
+	if (a >= 1e-3) return P.sig(F * 1e3, 3) + " mN";
+	if (a >= 1e-6) return P.sig(F * 1e6, 3) + " µN";
+	return P.sig(F, 3) + " N";
 }
-function zeichneAufbau(g, W, H, z, mAnzeige) {
-	g.clearRect(0, 0, W, H);
-	const STAB = 6, OBEN = 3;                               /* Laenge Isolierstab und Aufhaengung in cm */
-	const s = Math.max(2, (H - 70) / (STAB + 20 + 2 * 2.5 + OBEN));   /* px pro cm, fest fuer alle Einstellungen */
-	const xK = W * 0.34, yWaage = H - 34;
-	const rp = z.R * s;
-	const yU = yWaage - 22 - STAB * s - rp, yO = yU - z.r * s;
-	/* Feinwaage */
-	g.fillStyle = "#EEE"; g.strokeStyle = "#555"; g.lineWidth = 1.2;
-	g.beginPath(); g.roundRect(xK - 70, yWaage - 10, 140, 34, 5); g.fill(); g.stroke();
-	g.fillStyle = "#AAA"; g.fillRect(xK - 34, yWaage - 22, 68, 12);
-	g.fillStyle = "#1B1B1B"; g.fillRect(xK - 55, yWaage - 4, 110, 22);
-	if (mAnzeige !== null) {
-		g.font = "bold 15px Consolas, monospace"; g.fillStyle = "#7CFC7C"; g.textAlign = "right";
-		g.fillText(P.de(mAnzeige, 3) + " g", xK + 48, yWaage + 12); g.textAlign = "left";
-	}
-	P.text(g, "Feinwaage", xK - 76, yWaage + 14, { groesse: 12, farbe: "#555", ausrichtung: "right" });
-	/* Isolierstab und untere Kugel */
-	g.strokeStyle = "#8B5A2B"; g.lineWidth = 4;
-	g.beginPath(); g.moveTo(xK, yWaage - 22); g.lineTo(xK, yU + rp); g.stroke();
-	P.text(g, "Isolierstab", xK - 10, yWaage - 22 - STAB * s * 0.5, { groesse: 11, farbe: "#8B5A2B", ausrichtung: "right" });
-	/* Stativ mit Skala und Ausleger */
-	const xS = xK + 11 * s, yTop = 14;
-	g.strokeStyle = "#444"; g.lineWidth = 5;
-	g.beginPath(); g.moveTo(xS, yWaage + 24); g.lineTo(xS, yTop); g.stroke();
-	g.fillStyle = "#777"; g.fillRect(xS - 30, yWaage + 18, 60, 8);
-	g.lineWidth = 1; g.strokeStyle = "#444";
-	for (let c = 0; c <= 22; c++) {
-		const y = yU - c * s;
-		if (y < yTop + 4) break;
-		g.beginPath(); g.moveTo(xS + 3, y); g.lineTo(xS + (c % 5 === 0 ? 14 : 9), y); g.stroke();
-		if (c % 5 === 0) P.text(g, String(c), xS + 18, y + 4, { groesse: 10, farbe: "#555" });
-	}
-	P.text(g, "cm", xS + 18, yU + 18, { groesse: 10, farbe: "#555" });
-	g.strokeStyle = "#444"; g.lineWidth = 3;
-	const yArm = yO - rp - OBEN * s;
-	g.beginPath(); g.moveTo(xS, yArm); g.lineTo(xK, yArm); g.stroke();
-	g.strokeStyle = "#8B5A2B"; g.lineWidth = 4;
-	g.beginPath(); g.moveTo(xK, yArm); g.lineTo(xK, yO - rp); g.stroke();
-	/* Kugeln */
-	const versatz = z.influenz ? Math.min(0.8, 3 * Math.pow(z.R / z.r, 2)) : 0;
-	zeichneKugel(g, xK, yO, rp, true, versatz, z.fOben ?? 1);
-	zeichneKugel(g, xK, yU, rp, false, versatz, z.fUnten ?? 1);
-	P.text(g, bruch(z.fOben ?? 1), xK - rp - 8, yO + 5, { groesse: 13, kursiv: true, ausrichtung: "right", farbe: P.FARBEN.rot });
-	P.text(g, bruch(z.fUnten ?? 1), xK - rp - 8, yU + 5, { groesse: 13, kursiv: true, ausrichtung: "right", farbe: P.FARBEN.rot });
-	/* Abstand r der Mittelpunkte */
-	const xM = xK + rp + 26;
-	g.strokeStyle = "#111"; g.lineWidth = 1;
-	g.setLineDash([3, 3]); g.beginPath(); g.moveTo(xK, yO); g.lineTo(xM + 6, yO); g.moveTo(xK, yU); g.lineTo(xM + 6, yU); g.stroke(); g.setLineDash([]);
-	P.pfeil(g, xM, (yO + yU) / 2, xM, yO, "#111", 1, 7); P.pfeil(g, xM, (yO + yU) / 2, xM, yU, "#111", 1, 7);
-	P.text(g, "r = " + P.de(z.r, 1) + " cm", xM + 8, (yO + yU) / 2 + 4, { groesse: 13 });
-	P.text(g, "schematisch, Längen im Maßstab der Skala", W - 8, H - 6, { groesse: 11, farbe: "#777", ausrichtung: "right" });
+function formatQ(q) { return ((q > 0 ? "+" : "") + P.de(q, 1)).replace("-", "−") + " nC"; }
+function farbe(q) { return q > 0 ? P.FARBEN.rot : q < 0 ? P.FARBEN.blau : "#888"; }
+
+/* ---------- Bild mit den beiden Ladungen ---------- */
+const canvas = document.getElementById("kraft-canvas"), ctx = canvas.getContext("2d");
+let W = 760, H = 280;
+const X0_CM = 1.2, BREITE_CM = 12.6;
+function xPix(xcm) { return 20 + xcm / BREITE_CM * (W - 40); }
+function xCm(px) { return (px - 20) / (W - 40) * BREITE_CM; }
+function yLinie() { return Math.max(60, H - 118); }
+
+function zeichneLadung(x, y, q, name) {
+	ctx.beginPath(); ctx.arc(x, y, 15, 0, 2 * Math.PI);
+	ctx.fillStyle = farbe(q); ctx.fill();
+	ctx.fillStyle = "#fff"; ctx.font = "bold 16px " + P.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+	ctx.fillText(q === 0 ? "0" : q > 0 ? "+" : "−", x, y + 1);
+	ctx.textBaseline = "alphabetic";
+	P.symbol(ctx, "Q", name, x - 8, y - 24, { groesse: 15, farbe: farbe(q) });
 }
 
-/* ---------- Auswertung zeichnen ---------- */
-const cD = document.getElementById("diagramm-canvas"), gD = cD.getContext("2d");
-let WD = 760, HD = 360;
-const tabelle = new P.Messtabelle("messtabelle-koerper");
-function transformiere(p) {
-	switch (zustand.darstellung) {
-		case "Fr2": return { x: p.r, y: p.F * p.r * p.r };
-		case "F1r2": return { x: 1 / (p.r * p.r), y: p.F };
-		case "ln": return { x: Math.log(p.r), y: Math.log(p.F) };
-		default: return { x: p.r, y: p.F };
-	}
+function zeichneKraftpfeil(x, y, richtung, F, name, oben) {
+	const lPix = Math.abs(F) / zustand.massstab * 60;
+	if (lPix < 0.5) return;
+	const maxPix = W * 0.42;
+	const l = Math.min(lPix, maxPix);
+	const yy = y + (oben ? -7 : 7);
+	P.pfeil(ctx, x, yy, x + richtung * l, yy, "#111", 3, 12);
+	const tx = x + richtung * l * 0.55;
+	P.symbol(ctx, "F", name, tx - 8, oben ? yy - 10 : yy + 24, { groesse: 15 });
+	if (lPix > maxPix) P.text(ctx, "(Pfeil gekürzt)", x + richtung * l, yy + (oben ? -12 : 26), { groesse: 11, farbe: "#555", ausrichtung: richtung > 0 ? "right" : "left" });
 }
+
+function zeichne() {
+	ctx.clearRect(0, 0, W, H);
+	const y = yLinie();
+	const x1 = xPix(X0_CM), x2 = xPix(X0_CM + zustand.r);
+
+	/* Lineal in cm */
+	const yL = H - 38;
+	ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
+	ctx.beginPath(); ctx.moveTo(xPix(0), yL); ctx.lineTo(xPix(BREITE_CM), yL); ctx.stroke();
+	for (let k = 0; k <= 12; k++) {
+		const px = xPix(k);
+		ctx.beginPath(); ctx.moveTo(px, yL); ctx.lineTo(px, yL + 6); ctx.stroke();
+		P.text(ctx, String(k), px, yL + 19, { groesse: 11, ausrichtung: "center", farbe: "#555" });
+	}
+	P.text(ctx, "cm", xPix(BREITE_CM) - 2, yL + 19, { groesse: 11, ausrichtung: "right", farbe: "#555" });
+
+	/* Abstand r als Maßpfeil */
+	const yM = yL - 18;
+	ctx.strokeStyle = "#808080"; ctx.setLineDash([3, 3]);
+	ctx.beginPath(); ctx.moveTo(x1, y + 17); ctx.lineTo(x1, yM + 4); ctx.moveTo(x2, y + 17); ctx.lineTo(x2, yM + 4); ctx.stroke();
+	ctx.setLineDash([]);
+	P.pfeil(ctx, (x1 + x2) / 2, yM, x1, yM, "#808080", 1.2, 7);
+	P.pfeil(ctx, (x1 + x2) / 2, yM, x2, yM, "#808080", 1.2, 7);
+	P.text(ctx, "r = " + P.de(zustand.r, 1) + " cm", (x1 + x2) / 2, yM - 5, { groesse: 12, ausrichtung: "center", farbe: "#555", kursiv: false });
+
+	/* Kraefte: F > 0 abstossend, F < 0 anziehend */
+	const F = kraft(zustand.q1, zustand.q2, zustand.r);
+	const abstossend = F > 0;
+	zeichneKraftpfeil(x1, y, abstossend ? -1 : 1, F, "1", true);
+	zeichneKraftpfeil(x2, y, abstossend ? 1 : -1, F, "2", false);
+
+	zeichneLadung(x1, y, zustand.q1, "1");
+	zeichneLadung(x2, y, zustand.q2, "2");
+
+	/* Legende zum Pfeilmassstab */
+	const lx = W - 20 - 60, ly = 22;
+	ctx.strokeStyle = "#111"; ctx.lineWidth = 3;
+	ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 60, ly); ctx.stroke();
+	P.text(ctx, "≙ " + formatKraft(zustand.massstab), lx - 6, ly + 5, { groesse: 12, ausrichtung: "right" });
+
+	aktualisiereText(F);
+	zeichneDiagramm();
+}
+
+function aktualisiereText(F) {
+	document.getElementById("formel-zaehler").innerHTML = "(" + formatQ(zustand.q1) + ")&thinsp;·&thinsp;(" + formatQ(zustand.q2) + ")";
+	document.getElementById("formel-nenner").innerHTML = "(" + P.de(zustand.r, 1) + "&nbsp;cm)<sup>2</sup>";
+	document.getElementById("formel-ergebnis").textContent = formatKraft(F);
+	document.getElementById("art-text").textContent = F > 0 ? "Gleichnamige Ladungen: Die Kräfte sind abstoßend."
+		: F < 0 ? "Ungleichnamige Ladungen: Die Kräfte sind anziehend."
+		: "Eine der Ladungen ist null: Es wirkt keine Kraft.";
+
+	const v = zustand.vergleich, el = document.getElementById("vergleich");
+	if (!v) { el.innerHTML = '<span class="naeherung">Noch kein Vergleichswert gemerkt.</span>'; return; }
+	const verh = (a, b) => b === 0 ? "n. d." : P.de(a / b, 2);
+	el.innerHTML = "Vergleichswert: <i class='gr'>Q</i><sub>1</sub> = " + formatQ(v.q1) + ", <i class='gr'>Q</i><sub>2</sub> = " + formatQ(v.q2) +
+		", <i class='gr'>r</i> = " + P.de(v.r, 1) + "&nbsp;cm, <i class='gr'>F</i><sub>0</sub> = " + formatKraft(v.F) + "<br>" +
+		"<i class='gr'>Q</i><sub>1</sub>&thinsp;/&thinsp;<i class='gr'>Q</i><sub>1,0</sub> = <span class='wert'>" + verh(zustand.q1, v.q1) + "</span><span class='trenner'>|</span>" +
+		"<i class='gr'>Q</i><sub>2</sub>&thinsp;/&thinsp;<i class='gr'>Q</i><sub>2,0</sub> = <span class='wert'>" + verh(zustand.q2, v.q2) + "</span><span class='trenner'>|</span>" +
+		"<i class='gr'>r</i>&thinsp;/&thinsp;<i class='gr'>r</i><sub>0</sub> = <span class='wert'>" + verh(zustand.r, v.r) + "</span><span class='trenner'>|</span>" +
+		"<span class='folgerung'><i class='gr'>F</i>&thinsp;/&thinsp;<i class='gr'>F</i><sub>0</sub> = <span class='wert'>" + verh(F, v.F) + "</span></span>";
+}
+
+/* ---------- Diagramm |F| ueber r ---------- */
+const dCanvas = document.getElementById("diagramm-canvas"), dctx = dCanvas.getContext("2d");
+let DW = 760, DH = 330;
 function zeichneDiagramm() {
-	gD.clearRect(0, 0, WD, HD);
-	const daten = tabelle.zeilen.filter(p => p.F > 0);
-	const pkt = daten.map(p => Object.assign(transformiere(p), { raus: zustand.ausschluss && p.r < 5 * p.R }));
-	const beschr = {
-		Fr: ["r", "cm", "F", "mN"], Fr2: ["r", "cm", "F·r²", "mN·cm²"],
-		F1r2: ["1/r²", "1/cm²", "F", "mN"], ln: ["ln(r/cm)", "", "ln(F/mN)", ""]
-	}[zustand.darstellung];
-	let xMin = 0, xMax = 20, yMin = 0, yMax = 10;
-	if (pkt.length) {
-		const xs = pkt.map(p => p.x), ys = pkt.map(p => p.y);
-		if (zustand.darstellung === "ln") { xMin = Math.floor(Math.min(...xs) * 2) / 2 - 0.5; xMax = Math.ceil(Math.max(...xs) * 2) / 2 + 0.5; yMin = Math.floor(Math.min(...ys)) - 0.5; yMax = Math.ceil(Math.max(...ys)) + 0.5; }
-		else {
-			xMax = Math.max(...xs) * 1.15; yMax = Math.max(...ys) * 1.15;
-			const sx = P.schrittFuer(xMax), sy = P.schrittFuer(yMax);
-			xMax = Math.ceil(xMax / sx) * sx; yMax = Math.ceil(yMax / sy) * sy;
-		}
+	dctx.clearRect(0, 0, DW, DH);
+	const faktor = zustand.yMax >= 1e-3 ? 1e3 : 1e6, einheit = zustand.yMax >= 1e-3 ? "mN" : "µN";
+	const yMax = zustand.yMax * faktor;
+	const u = P.achsen(dctx, { dx: 58, dy: 22, dw: DW - 90, dh: DH - 70, xMin: 0, xMax: 10, yMin: 0, yMax,
+		xSchritt: 1, ySchritt: yMax / 5, xLabel: "r", xEinheit: "cm", yLabel: "F", yEinheit: einheit, xStellen: 0, yStellen: yMax / 5 < 1 ? 1 : 0 });
+	dctx.save();
+	dctx.beginPath(); dctx.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); dctx.clip();
+	if (zustand.vergleich && zustand.vergleich.F !== 0) {
+		const v = zustand.vergleich;
+		P.kurve(dctx, u, r => Math.abs(kraft(v.q1, v.q2, r)) * faktor, 0.3, 10, "#808080", { gestrichelt: true, breite: 1.8 });
 	}
-	const u = P.achsen(gD, { dx: 62, dy: 24, dw: WD - 90, dh: HD - 70, xMin, xMax, yMin, yMax, xLabel: beschr[0], xEinheit: beschr[1], yLabel: beschr[2], yEinheit: beschr[3] });
-	P.punkte(gD, u, pkt.filter(p => !p.raus), P.FARBEN.blau);
-	P.punkte(gD, u, pkt.filter(p => p.raus), "#999", { kreuz: true });
-	const aw = document.getElementById("auswertung");
-	const reg = pkt.filter(p => !p.raus);
-	if (reg.length < 2) { aw.innerHTML = "Notieren Sie mindestens zwei Messwerte."; return; }
-	const xs = reg.map(p => p.x), ys = reg.map(p => p.y);
-	let text = "";
-	if (zustand.darstellung === "F1r2") {
-		const r = P.ursprungReg(xs, ys);
-		P.kurve(gD, u, x => r.m * x, 0, xMax, P.FARBEN.rot, { breite: 1.6 });
-		text = "Ursprungsgerade: Steigung <i class='gr'>m</i> = " + P.sig(r.m, 3) + "&nbsp;mN&thinsp;cm<sup>2</sup>, <i class='gr'>R</i><sup>2</sup> = " + P.de(r.R2, 4);
-		if (zustand.modus === "erkunden") {
-			const p0 = daten[0], Q = ladung(p0.R, p0.U);
-			text += "<br>Mit <i class='gr'>Q</i> = " + P.sig(Q, 3) + "&nbsp;C folgt &epsilon;<sub>0</sub> = " + P.sig(Q * Q / (4 * Math.PI * r.m * 1e-7), 4) + "&nbsp;As/(Vm) (Tabellenwert 8,854&middot;10<sup>&minus;12</sup>)";
-		}
-	} else if (zustand.darstellung === "Fr2") {
-		const mw = ys.reduce((a, b) => a + b, 0) / ys.length;
-		const streu = (Math.max(...ys) - Math.min(...ys)) / 2 / mw * 100;
-		P.kurve(gD, u, () => mw, xMin, xMax, P.FARBEN.rot, { breite: 1.6, gestrichelt: true });
-		text = "Mittelwert <i class='gr'>F</i>&thinsp;&middot;&thinsp;<i class='gr'>r</i><sup>2</sup> = " + P.sig(mw, 4) + "&nbsp;mN&thinsp;cm<sup>2</sup>, halbe Spannweite " + P.de(streu, 1) + "&nbsp;% des Mittelwerts";
-	} else if (zustand.darstellung === "ln") {
-		const r = P.linReg(xs, ys);
-		P.kurve(gD, u, x => r.m * x + r.b, xMin, xMax, P.FARBEN.rot, { breite: 1.6 });
-		text = "Ausgleichsgerade: Steigung <i class='gr'>n</i> = " + P.de(r.m, 3) + ", Achsenabschnitt " + P.de(r.b, 3) + ", <i class='gr'>R</i><sup>2</sup> = " + P.de(r.R2, 4);
-	} else {
-		text = "Aus diesem Diagramm allein l&auml;sst sich der Zusammenhang schlecht erkennen. W&auml;hlen Sie eine Linearisierung.";
-	}
-	aw.innerHTML = text;
+	P.kurve(dctx, u, r => Math.abs(kraft(zustand.q1, zustand.q2, r)) * faktor, 0.3, 10, P.FARBEN.blau);
+	dctx.restore();
+	const F = Math.abs(kraft(zustand.q1, zustand.q2, zustand.r)) * faktor;
+	if (F <= yMax) P.punkte(dctx, u, [{ x: zustand.r, y: F }], P.FARBEN.rot, { r: 5 });
+	else P.text(dctx, "Punkt liegt oberhalb der Achse", u.xPix(zustand.r), u.o.dy + 14, { groesse: 11, farbe: P.FARBEN.rot, ausrichtung: "center" });
 }
 
-/* ---------- Anzeigen ---------- */
-function aktualisiere() {
-	const z = aktiv();
-	const minR = 2 * z.R + 0.3;
-	const regR = document.getElementById("regler-r");
-	regR.min = minR;
-	if (zustand.r < minR) { zustand.r = minR; regR.value = minR; }
-	document.getElementById("wert-r").innerHTML = P.de(zustand.r, 1) + "&nbsp;cm";
-	document.getElementById("wert-u").innerHTML = P.de(zustand.U, 1) + "&nbsp;kV";
-	document.getElementById("wert-rk").innerHTML = P.de(zustand.R, 1) + "&nbsp;cm";
-	document.getElementById("wert-feuchte").innerHTML = zustand.feuchte + "&nbsp;%";
-	const min = Math.floor(zustand.tSeit / 60), sek = Math.floor(zustand.tSeit % 60);
-	document.getElementById("fussnote-zeit").innerHTML = "Zeit seit dem Laden: " + min + "&nbsp;min " + sek + "&nbsp;s (Zeitraffer 10-fach). Durch die Luft flie&szlig;t Ladung ab; bei hoher Luftfeuchte schneller." +
-		(zustand.modus === "erkunden" ? " Ladung einer Kugel direkt nach dem Laden (Messverst&auml;rker): <i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC" + (NUR_MESSEN ? "." : ", das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV.") + " Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
-	zeichneAufbau(gA, WA, HA, Object.assign({}, z, { r: zustand.r }), anzeigeMasse());
-	zeichneDiagramm();
-}
-
-P.regler("regler-r", "wert-r", v => v, v => zustand.r = v, aktualisiere);
-P.regler("regler-u", "wert-u", v => v, v => { zustand.U = v; zustand.tSeit = 0; }, aktualisiere);
-P.regler("regler-rk", "wert-rk", v => v, v => { zustand.R = v; zustand.tSeit = 0; }, aktualisiere);
-P.regler("regler-feuchte", "wert-feuchte", v => v, v => zustand.feuchte = v, aktualisiere);
-document.getElementById("chk-influenz").addEventListener("change", ev => { zustand.influenz = ev.target.checked; aktualisiere(); });
-document.getElementById("chk-ausschluss").addEventListener("change", ev => { zustand.ausschluss = ev.target.checked; zeichneDiagramm(); });
-K.bindeKnopfgruppe("darstellung-knoepfe", w => zustand.darstellung = w, zeichneDiagramm);
-document.getElementById("btn-laden").addEventListener("click", () => { zustand.tSeit = 0; zustand.fOben = 1; zustand.fUnten = 1; aktualisiere(); });
-document.getElementById("btn-halb-oben").addEventListener("click", () => { if (zustand.fOben > 1 / 16) zustand.fOben /= 2; aktualisiere(); });
-document.getElementById("btn-halb-unten").addEventListener("click", () => { if (zustand.fUnten > 1 / 16) zustand.fUnten /= 2; aktualisiere(); });
-document.getElementById("btn-messwert").addEventListener("click", () => {
-	const z = aktiv(), m = anzeigeMasse(), F = m * G;   /* F in mN, da m in g */
-	const min = Math.floor(zustand.tSeit / 60), sek = Math.floor(zustand.tSeit % 60);
-	const fO = z.fOben ?? 1, fU = z.fUnten ?? 1;
-	tabelle.hinzu([P.de(zustand.r, 1), P.de(z.U, 1), "<i class='gr'>" + bruch(fO) + "</i> / <i class='gr'>" + bruch(fU) + "</i>", P.de(m, 3), P.de(F, 2), min + "&nbsp;min " + sek + "&nbsp;s"], { r: zustand.r, U: z.U, F, R: z.R, fO, fU });
-	zeichneDiagramm();
-});
-document.getElementById("btn-tabelle-leeren").addEventListener("click", () => { tabelle.leeren(); zeichneDiagramm(); });
-document.getElementById("btn-standard").addEventListener("click", () => {
-	Object.assign(zustand, STANDARD, { tSeit: 0, fOben: 1, fUnten: 1 });
+/* ---------- Bedienung ---------- */
+function setzeRegler() {
+	document.getElementById("regler-q1").value = zustand.q1;
+	document.getElementById("regler-q2").value = zustand.q2;
 	document.getElementById("regler-r").value = zustand.r;
-	document.getElementById("regler-u").value = zustand.U;
-	document.getElementById("regler-rk").value = zustand.R;
-	document.getElementById("regler-feuchte").value = zustand.feuchte;
-	document.getElementById("chk-influenz").checked = true;
-	aktualisiere();
-});
-/* Uhr: Zeitraffer 10-fach */
-setInterval(() => { zustand.tSeit += 2; aktualisiere(); }, 200);
-
-/* Material */
-document.getElementById("btn-material").addEventListener("click", () => {
-	const z = aktiv();
-	const mc = P.neuerCanvas(720, 300);
-	zeichneAufbau(mc.ctx, 720, 300, Object.assign({}, z, { r: 8 }), null);
-	const zeilen = [];
-	let t = 0;
-	for (const r of [6, 7, 8, 10, 12, 14, 16]) {
-		if (r < 2 * z.R + 0.3) continue;
-		const m = P.runde(kraft(Object.assign({}, z, { r }), t) / G * 1e3 + 0.0006 * P.gauss(), 0.001);
-		zeilen.push([P.de(r, 1), P.de(m, 3)]);
-		t += 40;
-	}
-	P.zeigeMaterial({
-		titel: "Material: Messwerte zur Coulombkraft",
-		text: "<p>Zwei gleiche leitende Kugeln mit dem Radius " + P.de(z.R, 1) + "&nbsp;cm werden mit <i class='gr'>U</i> = " + P.de(z.U, 1) + "&nbsp;kV geladen. Ladung einer Kugel (mit dem Messverst&auml;rker gemessen): <i class='gr'>Q</i> = (" + P.de(ladung(z.R, z.U) * 1e9, 1) + "&nbsp;&plusmn;&nbsp;0,4)&nbsp;nC. Luftfeuchte " + z.feuchte + "&nbsp;%.</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Versuchsaufbau (schematisch)" }],
-		tabelle: { kopf: ["<i class='gr'>r</i> in cm", "&Delta;<i class='gr'>m</i> in g"], zeilen, unterschrift: "Unsicherheiten: <i class='gr'>r</i> &plusmn;&nbsp;0,1&nbsp;cm, &Delta;<i class='gr'>m</i> &plusmn;&nbsp;0,001&nbsp;g. Zwischen zwei Messungen lagen etwa 40&nbsp;s." }
-	});
-});
-
-/* ---------- Aufgabe ---------- */
-const VERSTECKT = ["zeile-u", "zeile-rk", "zeile-feuchte", "zeile-influenz", "zeile-standard", "zeile-halbieren"];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	VERSTECKT.forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-	tabelle.leeren(); zustand.tSeit = 0;
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.R = P.runde(P.zufall(1.5, 2.5), 0.1);
-	aufgabe.U = P.runde(P.zufall(6, 10), 0.5);
-	aufgabe.Qangabe = Math.round(ladung(aufgabe.R, aufgabe.U) * 1e10) / 10;
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-u").innerHTML = P.de(aufgabe.U, 1) + "&nbsp;kV";
-	document.getElementById("aufgabe-c").innerHTML = P.de(aufgabe.Qangabe, 1) + "&nbsp;nC";
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	tabelle.leeren(); zustand.tSeit = 0;
+	updQ1(); updQ2(); updR();
 }
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, 8.854, 0.05, 0.15);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Sehr gut. Der Tabellenwert ist 8,854&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm)."); return; }
-	if (art === "knapp") { P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Haben Sie Messpunkte mit kleinem Abstand (Influenz) mitgenommen oder zu langsam gemessen?"); return; }
-	const v = ein / 8.854;
-	if (Math.abs(v - 0.5) < 0.08 || Math.abs(v - 2) < 0.3) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Beide Kugeln tragen die Ladung <i class='gr'>Q</i>, im Z&auml;hler steht also <i class='gr'>Q</i><sup>2</sup>.");
-	else if (v > 50 || v < 0.02) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten: mN, cm und nC umrechnen.");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie Ihre Steigung und den Term f&uuml;r &epsilon;<sub>0</sub>.");
+const updQ1 = P.regler("regler-q1", "wert-q1", formatQ, v => zustand.q1 = v, () => { document.getElementById("punkt-q1").style.background = farbe(zustand.q1); zeichne(); });
+const updQ2 = P.regler("regler-q2", "wert-q2", formatQ, v => zustand.q2 = v, () => { document.getElementById("punkt-q2").style.background = farbe(zustand.q2); zeichne(); });
+const updR = P.regler("regler-r", "wert-r", v => P.de(v, 1) + "&nbsp;cm", v => zustand.r = v, zeichne);
+K.bindeKnopfgruppe("massstab-knoepfe", w => zustand.massstab = +w, zeichne);
+K.bindeKnopfgruppe("achse-knoepfe", w => zustand.yMax = +w, zeichne);
+document.getElementById("btn-merken").addEventListener("click", () => {
+	zustand.vergleich = { q1: zustand.q1, q2: zustand.q2, r: zustand.r, F: kraft(zustand.q1, zustand.q2, zustand.r) };
+	zeichne();
 });
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: Aus der Steigung von <i class='gr'>F</i> &uuml;ber 1/<i class='gr'>r</i><sup>2</sup> folgt &epsilon;<sub>0</sub> &asymp; 8,85&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm).");
+document.getElementById("btn-standard").addEventListener("click", () => {
+	Object.assign(zustand, { q1: 2, q2: -1, r: 3, vergleich: null });
+	setzeRegler();
 });
+
+/* Q2 im Bild ziehen */
+P.ziehbar(canvas,
+	(x, y) => Math.hypot(x - xPix(X0_CM + zustand.r), y - yLinie()) < 22 ? "q2" : null,
+	(k, x) => {
+		const r = Math.round(Math.max(1, Math.min(10, xCm(x) - X0_CM)) * 10) / 10;
+		zustand.r = r; document.getElementById("regler-r").value = r; updR();
+	});
 
 function layout() {
-	({ W: WA, H: HA } = K.skaliereCanvas(cA, gA, b => b < 560 ? 1.0 : 0.6));
-	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, b => b < 560 ? 0.8 : 0.48));
-	aktualisiere();
+	({ W, H } = K.skaliereCanvas(canvas, ctx, w => w < 560 ? 0.5 : 0.28));
+	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, w => w < 560 ? 0.7 : 0.44));
+	zeichne();
 }
 window.addEventListener("resize", layout);
+setzeRegler();
 layout();
-K.nachFontLaden(aktualisiere);
+K.nachFontLaden(zeichne);
 </script>
 </body>
 </html>

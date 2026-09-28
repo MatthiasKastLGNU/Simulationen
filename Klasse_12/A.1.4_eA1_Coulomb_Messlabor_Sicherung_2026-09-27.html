@@ -213,8 +213,6 @@ table.messtabelle tr:last-child td, table.messtabelle tr:last-child th { border-
 table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
 .tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
 .verborgen { display: none !important; }
-/* Messmodus (?auswertung=aus): F-Spalte der Messtabelle ausblenden, F rechnen die Schueler selbst */
-.nur-messen #tabelle-simulation th:nth-child(6), .nur-messen #tabelle-simulation td:nth-child(6) { display: none; }
 
 .hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 .kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
@@ -764,7 +762,7 @@ window.SimPlus = (function () {
 		<div class="tcb-body">
 			<p class="aufgabe-text">
 				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Beide Kugeln sind mit <i class="gr">U</i> = <b id="aufgabe-u"></b> geladen. Die Ladung einer Kugel wurde mit dem Messverst&auml;rker gemessen: <i class="gr">Q</i> = <b id="aufgabe-c"></b>.
+				Beide Kugeln sind mit <i class="gr">U</i> = <b id="aufgabe-u"></b> geladen. Die Kapazit&auml;t einer Kugel wurde gemessen: <i class="gr">C</i> = <b id="aufgabe-c"></b>.
 				Nehmen Sie eine Messreihe auf und bestimmen Sie &epsilon;<sub>0</sub>.
 			</p>
 			<div class="antwortzeile">
@@ -778,17 +776,17 @@ window.SimPlus = (function () {
 			<div class="rueckmeldung" id="rueckmeldung"></div>
 			<details class="tipp-box">
 				<summary>Tipp 1: Was messen Sie?</summary>
-				<p class="tipp">Lesen Sie &Delta;<i class="gr">m</i> f&uuml;r mindestens f&uuml;nf Abst&auml;nde ab und berechnen Sie <i class="gr">F</i> = &Delta;<i class="gr">m</i>&thinsp;&middot;&thinsp;<i class="gr">g</i>. Werten Sie nur Abst&auml;nde ab dem 2,5-fachen Kugeldurchmesser aus. Messen Sie z&uuml;gig.</p>
+				<p class="tipp">Lesen Sie &Delta;<i class="gr">m</i> f&uuml;r mindestens f&uuml;nf Abst&auml;nde ab und berechnen Sie <i class="gr">F</i> = &Delta;<i class="gr">m</i>&thinsp;&middot;&thinsp;<i class="gr">g</i>. Bleiben Sie mit <i class="gr">r</i> deutlich &uuml;ber dem dreifachen Kugeldurchmesser. Messen Sie z&uuml;gig.</p>
 			</details>
 			<details class="tipp-box">
 				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span><i class="gr">F</i> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;&epsilon;<sub>0</sub>&thinsp;&middot;&thinsp;<i class="gr">r</i><sup>2</sup></span></span></p>
+				<p class="formelzeile"><span><i class="gr">F</i> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;&epsilon;<sub>0</sub>&thinsp;&middot;&thinsp;<i class="gr">r</i><sup>2</sup></span></span><span style="margin-left:1.2em"><i class="gr">Q</i> = <i class="gr">C</i>&thinsp;&middot;&thinsp;<i class="gr">U</i></span></p>
 				<p class="tipp">Tragen Sie <i class="gr">F</i> &uuml;ber 1/<i class="gr">r</i><sup>2</sup> auf. Die Steigung ist <i class="gr">Q</i><sup>2</sup>/(4&pi;&epsilon;<sub>0</sub>).</p>
 			</details>
 			<details class="tipp-box">
 				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="formelzeile"><span>&epsilon;<sub>0</sub> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;<i class="gr">m</i></span></span></p>
-				<p class="tipp">Achten Sie auf die Einheiten der Steigung <i class="gr">m</i> (mN&thinsp;&middot;&thinsp;cm<sup>2</sup>) und der Ladung (nC).</p>
+				<p class="formelzeile"><span>&epsilon;<sub>0</sub> =</span><span class="bruch"><span class="z"><i class="gr">C</i><sup>2</sup>&thinsp;&middot;&thinsp;<i class="gr">U</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;<i class="gr">m</i></span></span></p>
+				<p class="tipp">Achten Sie auf die Einheiten der Steigung <i class="gr">m</i> (mN&thinsp;&middot;&thinsp;cm<sup>2</sup>).</p>
 			</details>
 		</div>
 	</div>
@@ -805,12 +803,12 @@ window.SimPlus = (function () {
 				</div>
 				<div class="zeile" id="zeile-u">
 					<label>Ladespannung <i class="gr">U</i></label>
-					<input type="range" id="regler-u" min="2" max="10" step="0.5" value="10">
+					<input type="range" id="regler-u" min="5" max="30" step="0.5" value="24">
 					<span class="wert" id="wert-u"></span>
 				</div>
 				<div class="zeile" id="zeile-rk">
 					<label>Kugelradius <i class="gr">R</i></label>
-					<input type="range" id="regler-rk" min="1" max="2.5" step="0.1" value="2">
+					<input type="range" id="regler-rk" min="0.5" max="2.5" step="0.1" value="1.5">
 					<span class="wert" id="wert-rk"></span>
 				</div>
 				<div class="zeile" id="zeile-feuchte">
@@ -843,7 +841,7 @@ window.SimPlus = (function () {
 			</div>
 			<p class="fussnote" id="fussnote-zeit"></p>
 			<div class="tabelle-wrap">
-				<table class="messtabelle" id="tabelle-simulation">
+				<table class="messtabelle">
 					<thead><tr><th>Nr.</th><th><i class="gr">r</i> in cm</th><th><i class="gr">U</i> in kV</th><th><i class="gr">Q</i><sub>oben</sub>&thinsp;/&thinsp;<i class="gr">Q</i><sub>unten</sub></th><th>&Delta;<i class="gr">m</i> in g</th><th><i class="gr">F</i> in mN</th><th>Zeit nach dem Laden</th></tr></thead>
 					<tbody id="messtabelle-koerper"></tbody>
 				</table>
@@ -851,9 +849,7 @@ window.SimPlus = (function () {
 		</div>
 	</div>
 
-	<p class="fussnote verborgen" id="hinweis-nur-messen">Die Auswertung f&uuml;hren Sie selbst auf dem Arbeitsblatt durch. Die Diagramme zur Kontrolle finden Sie danach in der vollst&auml;ndigen Version der Simulation.</p>
-
-	<div class="tcb blau" id="auswertung-box">
+	<div class="tcb blau">
 		<div class="tcb-title">Auswertung der notierten Messwerte</div>
 		<div class="tcb-body">
 			<div class="zeile" style="margin-bottom:0.4rem">
@@ -864,7 +860,7 @@ window.SimPlus = (function () {
 					<button data-wert="ln">ln&thinsp;<i class="gr">F</i> &uuml;ber ln&thinsp;<i class="gr">r</i></button>
 				</span>
 			</div>
-			<div class="zeile"><span class="schalter" style="margin-left:0"><input type="checkbox" id="chk-ausschluss"><label for="chk-ausschluss" style="flex:0 0 auto">Punkte mit <i class="gr">r</i> &lt; 2,5&thinsp;&middot;&thinsp;2<i class="gr">R</i> bei der Regression nicht ber&uuml;cksichtigen</label></span></div>
+			<div class="zeile"><span class="schalter" style="margin-left:0"><input type="checkbox" id="chk-ausschluss"><label for="chk-ausschluss" style="flex:0 0 auto">Punkte mit <i class="gr">r</i> &lt; 3&thinsp;&middot;&thinsp;2<i class="gr">R</i> bei der Regression nicht ber&uuml;cksichtigen</label></span></div>
 			<canvas id="diagramm-canvas" class="sim"></canvas>
 			<div class="auswertung" id="auswertung"></div>
 		</div>
@@ -881,42 +877,17 @@ const EPS0 = 8.854e-12, KC = 1 / (4 * Math.PI * EPS0);
 /* Einheiten: r, R in cm; U in kV; feuchte in %; tSeit in s; Massen in g, Kraefte in N bzw. mN.
    fOben, fUnten: Anteil der Ladung nach dem Beruehren mit einer gleich grossen, ungeladenen Kugel (1, 1/2, 1/4, ...). */
 const G = 9.81;
-const STANDARD = { r: 8, U: 10, R: 2, feuchte: 30, influenz: true };   /* Tischtennisbaelle mit Leitlack, 10-kV-Netzgeraet */
+const STANDARD = { r: 8, U: 24, R: 1.5, feuchte: 30, influenz: true };
 const zustand = Object.assign({ tSeit: 0, darstellung: "Fr", ausschluss: false, modus: "erkunden", fOben: 1, fUnten: 1 }, STANDARD);
-const aufgabe = { nr: 0, U: 10, R: 2, Qangabe: 19.5 };
-/* Standard (Link ohne Zusatz): nur messen, keine Diagramme, keine Regression, keine F-Spalte, kein Aufgabenmodus;
-   ausgewertet wird von Hand auf dem Blatt. Vollstaendige Version mit ?auswertung=an */
-const NUR_MESSEN = new URLSearchParams(location.search).get("auswertung") !== "an";
-if (NUR_MESSEN) {
-	document.body.classList.add("nur-messen");
-	["modus-knoepfe", "auswertung-box", "btn-material"].forEach(id => document.getElementById(id).classList.add("verborgen"));
-	document.getElementById("hinweis-nur-messen").classList.remove("verborgen");
-}
+const aufgabe = { nr: 0, U: 24, R: 1.5, Cangabe: 1.67 };
 
-/* Ladung einer Kugel direkt nach dem Laden (bei grossem Abstand): Halterung und Umgebung verringern sie
-   gegenueber der frei stehenden Kugel (4*pi*eps0*R*U) auf etwa 88 %; so auch bei der Messung mit dem Kraftsensor (LEIFI). */
-const FAKTOR_LADUNG = 0.876;
-function ladung(R, U) { return FAKTOR_LADUNG * 4 * Math.PI * EPS0 * R / 100 * U * 1e3; }  /* C; R in cm, U in kV */
-/* Influenz: Kraft zweier gleicher, gleich geladener leitender Kugeln im Verhaeltnis zur Coulombkraft,
-   exakt mit Bildladungen (Reihen fuer die Kapazitaetskoeffizienten, Kraft aus der Energie bei fester Ladung); s = r/R */
-function summeS(s) {
-	const b = Math.acosh(s / 2), sh = Math.sinh(b), N = Math.ceil(40 / b) + 2;
-	let c = 0;
-	for (let n = 0; n < N; n++) c += 1 / Math.sinh((2 * n + 1) * b);
-	for (let n = 1; n < N; n++) c -= 1 / Math.sinh(2 * n * b);
-	return sh * c;
-}
-function influenzFaktor(s) {
-	if (s > 40) return 1;
-	const h = 1e-4, S0 = summeS(s);
-	return (summeS(s + h) - summeS(s - h)) / (2 * h) / (S0 * S0) * s * s;
-}
+function kapazitaet(R) { return 4 * Math.PI * EPS0 * R / 100; }          /* F */
 function tauLeck(feuchte) { return 4000 * Math.exp(-(feuchte - 30) / 20); } /* s */
 function kraft(z, t) {                                                      /* N */
-	const Q = ladung(z.R, z.U) * Math.exp(-t / tauLeck(z.feuchte));
+	const Q = kapazitaet(z.R) * z.U * 1e3 * Math.exp(-t / tauLeck(z.feuchte));
 	const fO = z.fOben ?? 1, fU = z.fUnten ?? 1;
 	let F = KC * (Q * fO) * (Q * fU) / Math.pow(z.r / 100, 2);
-	if (z.influenz) F *= influenzFaktor(z.r / z.R);
+	if (z.influenz) F *= Math.max(0, 1 - 2 * Math.pow(z.R / z.r, 3));
 	return F;
 }
 function aktiv() { return zustand.modus === "aufgabe" ? { r: zustand.r, U: aufgabe.U, R: aufgabe.R, feuchte: 30, influenz: true, fOben: 1, fUnten: 1 } : zustand; }
@@ -1010,7 +981,7 @@ function transformiere(p) {
 function zeichneDiagramm() {
 	gD.clearRect(0, 0, WD, HD);
 	const daten = tabelle.zeilen.filter(p => p.F > 0);
-	const pkt = daten.map(p => Object.assign(transformiere(p), { raus: zustand.ausschluss && p.r < 5 * p.R }));
+	const pkt = daten.map(p => Object.assign(transformiere(p), { raus: zustand.ausschluss && p.r < 6 * p.R }));
 	const beschr = {
 		Fr: ["r", "cm", "F", "mN"], Fr2: ["r", "cm", "F·r²", "mN·cm²"],
 		F1r2: ["1/r²", "1/cm²", "F", "mN"], ln: ["ln(r/cm)", "", "ln(F/mN)", ""]
@@ -1038,8 +1009,8 @@ function zeichneDiagramm() {
 		P.kurve(gD, u, x => r.m * x, 0, xMax, P.FARBEN.rot, { breite: 1.6 });
 		text = "Ursprungsgerade: Steigung <i class='gr'>m</i> = " + P.sig(r.m, 3) + "&nbsp;mN&thinsp;cm<sup>2</sup>, <i class='gr'>R</i><sup>2</sup> = " + P.de(r.R2, 4);
 		if (zustand.modus === "erkunden") {
-			const p0 = daten[0], Q = ladung(p0.R, p0.U);
-			text += "<br>Mit <i class='gr'>Q</i> = " + P.sig(Q, 3) + "&nbsp;C folgt &epsilon;<sub>0</sub> = " + P.sig(Q * Q / (4 * Math.PI * r.m * 1e-7), 4) + "&nbsp;As/(Vm) (Tabellenwert 8,854&middot;10<sup>&minus;12</sup>)";
+			const p0 = daten[0], Q = kapazitaet(p0.R) * p0.U * 1e3;
+			text += "<br>Mit <i class='gr'>Q</i> = <i class='gr'>C</i>&thinsp;&middot;&thinsp;<i class='gr'>U</i> = " + P.sig(Q, 3) + "&nbsp;C folgt &epsilon;<sub>0</sub> = " + P.sig(Q * Q / (4 * Math.PI * r.m * 1e-7), 4) + "&nbsp;As/(Vm) (Tabellenwert 8,854&middot;10<sup>&minus;12</sup>)";
 		}
 	} else if (zustand.darstellung === "Fr2") {
 		const mw = ys.reduce((a, b) => a + b, 0) / ys.length;
@@ -1069,7 +1040,7 @@ function aktualisiere() {
 	document.getElementById("wert-feuchte").innerHTML = zustand.feuchte + "&nbsp;%";
 	const min = Math.floor(zustand.tSeit / 60), sek = Math.floor(zustand.tSeit % 60);
 	document.getElementById("fussnote-zeit").innerHTML = "Zeit seit dem Laden: " + min + "&nbsp;min " + sek + "&nbsp;s (Zeitraffer 10-fach). Durch die Luft flie&szlig;t Ladung ab; bei hoher Luftfeuchte schneller." +
-		(zustand.modus === "erkunden" ? " Ladung einer Kugel direkt nach dem Laden (Messverst&auml;rker): <i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC" + (NUR_MESSEN ? "." : ", das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV.") + " Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
+		(zustand.modus === "erkunden" ? " Kapazit&auml;t einer Kugel: <i class='gr'>C</i> = " + P.de(kapazitaet(zustand.R) * 1e12, 2) + "&nbsp;pF. Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
 	zeichneAufbau(gA, WA, HA, Object.assign({}, z, { r: zustand.r }), anzeigeMasse());
 	zeichneDiagramm();
 }
@@ -1111,7 +1082,7 @@ document.getElementById("btn-material").addEventListener("click", () => {
 	zeichneAufbau(mc.ctx, 720, 300, Object.assign({}, z, { r: 8 }), null);
 	const zeilen = [];
 	let t = 0;
-	for (const r of [6, 7, 8, 10, 12, 14, 16]) {
+	for (const r of [4, 5, 6, 8, 10, 12, 15]) {
 		if (r < 2 * z.R + 0.3) continue;
 		const m = P.runde(kraft(Object.assign({}, z, { r }), t) / G * 1e3 + 0.0006 * P.gauss(), 0.001);
 		zeilen.push([P.de(r, 1), P.de(m, 3)]);
@@ -1119,9 +1090,9 @@ document.getElementById("btn-material").addEventListener("click", () => {
 	}
 	P.zeigeMaterial({
 		titel: "Material: Messwerte zur Coulombkraft",
-		text: "<p>Zwei gleiche leitende Kugeln mit dem Radius " + P.de(z.R, 1) + "&nbsp;cm werden mit <i class='gr'>U</i> = " + P.de(z.U, 1) + "&nbsp;kV geladen. Ladung einer Kugel (mit dem Messverst&auml;rker gemessen): <i class='gr'>Q</i> = (" + P.de(ladung(z.R, z.U) * 1e9, 1) + "&nbsp;&plusmn;&nbsp;0,4)&nbsp;nC. Luftfeuchte " + z.feuchte + "&nbsp;%.</p>",
+		text: "<p>Zwei gleiche leitende Kugeln mit dem Radius " + P.de(z.R, 1) + "&nbsp;cm werden mit <i class='gr'>U</i> = (" + P.de(z.U, 1) + "&nbsp;&plusmn;&nbsp;0,5)&nbsp;kV geladen. Kapazit&auml;t einer Kugel: <i class='gr'>C</i> = " + P.de(kapazitaet(z.R) * 1e12, 2) + "&nbsp;pF. Luftfeuchte " + z.feuchte + "&nbsp;%.</p>",
 		bilder: [{ canvas: mc.canvas, unterschrift: "Versuchsaufbau (schematisch)" }],
-		tabelle: { kopf: ["<i class='gr'>r</i> in cm", "&Delta;<i class='gr'>m</i> in g"], zeilen, unterschrift: "Unsicherheiten: <i class='gr'>r</i> &plusmn;&nbsp;0,1&nbsp;cm, &Delta;<i class='gr'>m</i> &plusmn;&nbsp;0,001&nbsp;g. Zwischen zwei Messungen lagen etwa 40&nbsp;s." }
+		tabelle: { kopf: ["<i class='gr'>r</i> in cm", "&Delta;<i class='gr'>m</i> in g"], zeilen, unterschrift: "Unsicherheiten: <i class='gr'>r</i> &plusmn;&nbsp;0,1&nbsp;cm, &Delta;<i class='gr'>m</i> &plusmn;&nbsp;0,002&nbsp;g. Zwischen zwei Messungen lagen etwa 40&nbsp;s." }
 	});
 });
 
@@ -1138,12 +1109,12 @@ P.bindeModus("modus-knoepfe", modus => {
 });
 function neueAufgabe() {
 	aufgabe.nr++;
-	aufgabe.R = P.runde(P.zufall(1.5, 2.5), 0.1);
-	aufgabe.U = P.runde(P.zufall(6, 10), 0.5);
-	aufgabe.Qangabe = Math.round(ladung(aufgabe.R, aufgabe.U) * 1e10) / 10;
+	aufgabe.R = P.runde(P.zufall(1.0, 2.0), 0.1);
+	aufgabe.U = P.runde(P.zufall(16, 28), 1);
+	aufgabe.Cangabe = Math.round(kapazitaet(aufgabe.R) * 1e14) / 100;
 	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
 	document.getElementById("aufgabe-u").innerHTML = P.de(aufgabe.U, 1) + "&nbsp;kV";
-	document.getElementById("aufgabe-c").innerHTML = P.de(aufgabe.Qangabe, 1) + "&nbsp;nC";
+	document.getElementById("aufgabe-c").innerHTML = P.de(aufgabe.Cangabe, 2) + "&nbsp;pF";
 	document.getElementById("antwort").value = "";
 	document.getElementById("rueckmeldung").textContent = "";
 	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
@@ -1158,8 +1129,8 @@ document.getElementById("btn-pruefen").addEventListener("click", () => {
 	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Sehr gut. Der Tabellenwert ist 8,854&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm)."); return; }
 	if (art === "knapp") { P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Haben Sie Messpunkte mit kleinem Abstand (Influenz) mitgenommen oder zu langsam gemessen?"); return; }
 	const v = ein / 8.854;
-	if (Math.abs(v - 0.5) < 0.08 || Math.abs(v - 2) < 0.3) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Beide Kugeln tragen die Ladung <i class='gr'>Q</i>, im Z&auml;hler steht also <i class='gr'>Q</i><sup>2</sup>.");
-	else if (v > 50 || v < 0.02) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten: mN, cm und nC umrechnen.");
+	if (Math.abs(v - 0.5) < 0.08 || Math.abs(v - 2) < 0.3) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Beide Kugeln tragen die Ladung <i class='gr'>Q</i> = <i class='gr'>C</i>&thinsp;&middot;&thinsp;<i class='gr'>U</i>, im Z&auml;hler steht also <i class='gr'>Q</i><sup>2</sup>.");
+	else if (v > 50 || v < 0.02) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten: mN, cm, pF und kV umrechnen.");
 	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie Ihre Steigung und den Term f&uuml;r &epsilon;<sub>0</sub>.");
 });
 document.getElementById("btn-loesung").addEventListener("click", () => {

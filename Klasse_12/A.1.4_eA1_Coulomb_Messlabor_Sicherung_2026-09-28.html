@@ -213,8 +213,6 @@ table.messtabelle tr:last-child td, table.messtabelle tr:last-child th { border-
 table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
 .tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
 .verborgen { display: none !important; }
-/* Messmodus (?auswertung=aus): F-Spalte der Messtabelle ausblenden, F rechnen die Schueler selbst */
-.nur-messen #tabelle-simulation th:nth-child(6), .nur-messen #tabelle-simulation td:nth-child(6) { display: none; }
 
 .hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 .kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
@@ -843,7 +841,7 @@ window.SimPlus = (function () {
 			</div>
 			<p class="fussnote" id="fussnote-zeit"></p>
 			<div class="tabelle-wrap">
-				<table class="messtabelle" id="tabelle-simulation">
+				<table class="messtabelle">
 					<thead><tr><th>Nr.</th><th><i class="gr">r</i> in cm</th><th><i class="gr">U</i> in kV</th><th><i class="gr">Q</i><sub>oben</sub>&thinsp;/&thinsp;<i class="gr">Q</i><sub>unten</sub></th><th>&Delta;<i class="gr">m</i> in g</th><th><i class="gr">F</i> in mN</th><th>Zeit nach dem Laden</th></tr></thead>
 					<tbody id="messtabelle-koerper"></tbody>
 				</table>
@@ -851,9 +849,7 @@ window.SimPlus = (function () {
 		</div>
 	</div>
 
-	<p class="fussnote verborgen" id="hinweis-nur-messen">Die Auswertung f&uuml;hren Sie selbst auf dem Arbeitsblatt durch. Die Diagramme zur Kontrolle finden Sie danach in der vollst&auml;ndigen Version der Simulation.</p>
-
-	<div class="tcb blau" id="auswertung-box">
+	<div class="tcb blau">
 		<div class="tcb-title">Auswertung der notierten Messwerte</div>
 		<div class="tcb-body">
 			<div class="zeile" style="margin-bottom:0.4rem">
@@ -884,14 +880,6 @@ const G = 9.81;
 const STANDARD = { r: 8, U: 10, R: 2, feuchte: 30, influenz: true };   /* Tischtennisbaelle mit Leitlack, 10-kV-Netzgeraet */
 const zustand = Object.assign({ tSeit: 0, darstellung: "Fr", ausschluss: false, modus: "erkunden", fOben: 1, fUnten: 1 }, STANDARD);
 const aufgabe = { nr: 0, U: 10, R: 2, Qangabe: 19.5 };
-/* Standard (Link ohne Zusatz): nur messen, keine Diagramme, keine Regression, keine F-Spalte, kein Aufgabenmodus;
-   ausgewertet wird von Hand auf dem Blatt. Vollstaendige Version mit ?auswertung=an */
-const NUR_MESSEN = new URLSearchParams(location.search).get("auswertung") !== "an";
-if (NUR_MESSEN) {
-	document.body.classList.add("nur-messen");
-	["modus-knoepfe", "auswertung-box", "btn-material"].forEach(id => document.getElementById(id).classList.add("verborgen"));
-	document.getElementById("hinweis-nur-messen").classList.remove("verborgen");
-}
 
 /* Ladung einer Kugel direkt nach dem Laden (bei grossem Abstand): Halterung und Umgebung verringern sie
    gegenueber der frei stehenden Kugel (4*pi*eps0*R*U) auf etwa 88 %; so auch bei der Messung mit dem Kraftsensor (LEIFI). */
@@ -1069,7 +1057,7 @@ function aktualisiere() {
 	document.getElementById("wert-feuchte").innerHTML = zustand.feuchte + "&nbsp;%";
 	const min = Math.floor(zustand.tSeit / 60), sek = Math.floor(zustand.tSeit % 60);
 	document.getElementById("fussnote-zeit").innerHTML = "Zeit seit dem Laden: " + min + "&nbsp;min " + sek + "&nbsp;s (Zeitraffer 10-fach). Durch die Luft flie&szlig;t Ladung ab; bei hoher Luftfeuchte schneller." +
-		(zustand.modus === "erkunden" ? " Ladung einer Kugel direkt nach dem Laden (Messverst&auml;rker): <i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC" + (NUR_MESSEN ? "." : ", das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV.") + " Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
+		(zustand.modus === "erkunden" ? " Ladung einer Kugel direkt nach dem Laden (Messverst&auml;rker): <i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC, das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV. Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
 	zeichneAufbau(gA, WA, HA, Object.assign({}, z, { r: zustand.r }), anzeigeMasse());
 	zeichneDiagramm();
 }
