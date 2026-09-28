@@ -753,7 +753,7 @@ window.SimPlus = (function () {
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Simulation: Elektrisches Feld und Potential</div>
+		<div class="tcb-title">Simulation: Elektrisches Feld von Punktladungen</div>
 		<div class="tcb-body">
 			<canvas id="feld-canvas" class="sim"></canvas>
 			<div class="steuerung">
@@ -761,28 +761,23 @@ window.SimPlus = (function () {
 					<span class="knopfleiste" id="ansicht-knoepfe">
 						<button data-wert="linien" class="aktiv">Feldlinien</button>
 						<button data-wert="richtung">Richtungsfeld</button>
-						<button data-wert="potential">Äquipotentiallinien</button>
-						<button data-wert="3d">Potential in 3D</button>
 					</span>
 				</div>
 				<div class="zeile" id="zeile-werkzeug">
 					<label>Werkzeug</label>
 					<span class="knopfleiste" id="werkzeug-knoepfe">
-						<button data-wert="verschieben" class="aktiv">Verschieben</button>
-						<button data-wert="plus">Ladung + setzen</button>
+						<button data-wert="verschieben">Verschieben</button>
+						<button data-wert="plus" class="aktiv">Ladung + setzen</button>
 						<button data-wert="minus">Ladung &minus; setzen</button>
 						<button data-wert="loeschen">Ladung löschen</button>
 					</span>
-				</div>
-				<div class="zeile" id="zeile-farbig">
-					<span class="schalter"><input type="checkbox" id="chk-farbig"><label for="chk-farbig" style="flex:0 0 auto">Potential farbig darstellen</label></span>
 				</div>
 				<div class="zeile">
 					<span class="schalter" style="margin-left:0"><input type="checkbox" id="chk-punkte"><label for="chk-punkte" style="flex:0 0 auto">Punkte <i class="gr">A</i>, <i class="gr">B</i>, <i class="gr">C</i> anzeigen</label></span>
 				</div>
 				<div class="zeile">
 					<span class="knopfleiste"><button id="btn-linien-weg">Hinzugefügte Linien entfernen</button></span>
-					<span class="knopfleiste"><button id="btn-standard">Standardwerte</button></span>
+					<span class="knopfleiste"><button id="btn-standard">Alles zurücksetzen</button></span>
 				</div>
 			</div>
 			<p class="fussnote" id="fussnote-text"></p>
@@ -806,22 +801,17 @@ const PUNKTE_ABC = [
 
 let naechsteId = 1;
 function neueLadung(x, y, q) { return { id: naechsteId++, x, y, q }; }
-function standardLadungen() { return [ neueLadung(0, 0, -1), neueLadung(4, 0, 1) ]; }
 
+/* Das Feld startet leer: Die Ladungen aus der Aufgabe setzen die Schueler selbst. */
 const zustand = {
-	ladungen: standardLadungen(),
+	ladungen: [],
 	ansicht: "linien",
-	werkzeug: "verschieben",
-	farbig: false,
+	werkzeug: "plus",
 	punkte: false,
-	zusatzlinien: [],
-	aequipotentiale: [],
-	rotation: { az: -0.7, el: 0.55 }
+	zusatzlinien: []
 };
 
-const ZKAPPE = 5;
-
-/* ---------- Feld und Potential ---------- */
+/* ---------- Feld ---------- */
 function feld(x, y) {
 	let Ex = 0, Ey = 0;
 	for (const L of zustand.ladungen) {
@@ -834,17 +824,6 @@ function feld(x, y) {
 	}
 	return { Ex, Ey };
 }
-function potential(x, y) {
-	let V = 0;
-	for (const L of zustand.ladungen) {
-		if (L.q === 0) continue;
-		const r = Math.hypot(x - L.x, y - L.y);
-		if (r < 0.02) return L.q > 0 ? Infinity : -Infinity;
-		V += L.q / r;
-	}
-	return V;
-}
-
 /* Eine Feldlinie ab einem Startpunkt entlang (vorwaerts) oder entgegen (rueckwaerts)
    des Feldes verfolgen, bis sie an einer Ladung endet oder das Blatt weit genug verlassen hat. */
 function spurFeldlinieRichtung(start, vorwaerts) {
@@ -871,6 +850,31 @@ function feldlinieDurchPunkt(start) {
 	const zurueck = spurFeldlinieRichtung(start, false);
 	zurueck.shift();
 	return zurueck.reverse().concat(vor);
+}
+
+/* Hinzugefuegte Feldlinien werden nicht als fertige Punktliste gespeichert, sondern als Anker:
+   Endet die Linie an einer Ladung, merkt sie sich diese Ladung und den Austrittswinkel und wandert
+   beim Verschieben mit. Sonst bleibt der angeklickte Punkt der Anker. Gezeichnet wird immer neu. */
+function ladungNahe(p, abstand) {
+	return zustand.ladungen.find(L => Math.hypot(p.x - L.x, p.y - L.y) < abstand) || null;
+}
+function ankerFuerKlick(klick) {
+	const linie = feldlinieDurchPunkt(klick);
+	if (linie.length < 2) return null;
+	const enden = [{ p: linie[0], vorwaerts: true }, { p: linie[linie.length - 1], vorwaerts: false }];
+	for (const e of enden) {
+		const L = ladungNahe(e.p, 0.25);
+		if (L) return { id: L.id, winkel: Math.atan2(e.p.y - L.y, e.p.x - L.x), vorwaerts: e.vorwaerts };
+	}
+	return { x: klick.x, y: klick.y };
+}
+function spurZusatzlinie(anker) {
+	if (anker.id === undefined) return feldlinieDurchPunkt(anker);
+	const L = zustand.ladungen.find(M => M.id === anker.id);
+	if (!L) return [];
+	const start = { x: L.x + 0.2 * Math.cos(anker.winkel), y: L.y + 0.2 * Math.sin(anker.winkel) };
+	const linie = spurFeldlinieRichtung(start, anker.vorwaerts);
+	return anker.vorwaerts ? linie : linie.reverse();
 }
 
 /* Startpunkte fuer die automatischen Feldlinien: an jeder positiven Ladung, Anzahl
@@ -901,48 +905,6 @@ function autoFeldlinien() {
 		}
 	}
 	return linien;
-}
-
-/* Aequipotentiallinie durch einen frei gewaehlten Punkt: Schritte senkrecht zum Feld,
-   mit einer Korrektur zurueck auf den Ausgangswert des Potentials (Newton-Schritt). */
-function spurAequipotential(start) {
-	const V0 = potential(start.x, start.y);
-	if (!isFinite(V0)) return [];
-	function seite(vorwaerts) {
-		const punkte = [];
-		let p = { x: start.x, y: start.y };
-		const schritt = 0.06, randX = X_MAX + 1, randY = Y_MAX + 1, vz = vorwaerts ? 1 : -1;
-		for (let i = 0; i < 3000; i++) {
-			const E = feld(p.x, p.y);
-			if (!E) break;
-			const mag = Math.hypot(E.Ex, E.Ey);
-			if (mag < 1e-9) break;
-			const tx = -E.Ey / mag, ty = E.Ex / mag;
-			let naechst = { x: p.x + vz * tx * schritt, y: p.y + vz * ty * schritt };
-			const En = feld(naechst.x, naechst.y);
-			if (En) {
-				const mag2 = En.Ex * En.Ex + En.Ey * En.Ey;
-				if (mag2 > 1e-9) {
-					const Vn = potential(naechst.x, naechst.y);
-					if (isFinite(Vn)) {
-						let f = (Vn - V0) / mag2;
-						const korrX = f * En.Ex, korrY = f * En.Ey, korrMag = Math.hypot(korrX, korrY), korrMax = schritt * 1.5;
-						if (korrMag > korrMax) f *= korrMax / korrMag;
-						naechst = { x: naechst.x + f * En.Ex, y: naechst.y + f * En.Ey };
-					}
-				}
-			}
-			if (Math.abs(naechst.x) > randX || Math.abs(naechst.y) > randY) { punkte.push(naechst); break; }
-			if (zustand.ladungen.some(L => Math.hypot(naechst.x - L.x, naechst.y - L.y) < 0.12)) break;
-			if (i > 20 && Math.hypot(naechst.x - start.x, naechst.y - start.y) < schritt * 1.5) { punkte.push(naechst); break; }
-			punkte.push(naechst);
-			p = naechst;
-		}
-		return punkte;
-	}
-	const vor = seite(true);
-	const zurueck = seite(false).reverse();
-	return zurueck.concat([start], vor);
 }
 
 /* ---------- Zeichnen ---------- */
@@ -1003,15 +965,8 @@ function zeichneLinienliste(linien, farbe, pfeile) {
 }
 function zeichneFeldlinien() {
 	zeichneLinienliste(autoFeldlinien(), P.FARBEN.gruen, true);
-	zeichneLinienliste(zustand.zusatzlinien, P.FARBEN.gruen, true);
+	zeichneLinienliste(zustand.zusatzlinien.map(spurZusatzlinie), P.FARBEN.gruen, true);
 }
-function zeichneAequipotentiale() {
-	ctx.save();
-	ctx.setLineDash([6, 4]);
-	zeichneLinienliste(zustand.aequipotentiale, P.FARBEN.orange, false);
-	ctx.restore();
-}
-
 function zeichneFaehnchen(px, py, winkel, farbe) {
 	const laenge = 15, kopf = 6;
 	const dx = Math.cos(winkel), dy = Math.sin(winkel);
@@ -1048,130 +1003,37 @@ function zeichnePunkteABC() {
 	}
 }
 
-/* Diverging Farbskala: negatives Potential blau, positives rot, Vorzeichenwechsel weiss
-   (dieselben Toene wie die Rahmenfarben der Arbeitsblaetter). Nur zum Vergleich der
-   Vorzeichen und des Verlaufs gedacht, nicht als Messwert. */
-function farbeRGB(v) {
-	const t = Math.max(-1, Math.min(1, v / ZKAPPE));
-	if (t >= 0) return [Math.round(255 - t * (255 - 191)), Math.round(255 - t * 255), Math.round(255 - t * 255)];
-	const s = -t;
-	return [Math.round(255 - s * 255), Math.round(255 - s * 255), Math.round(255 - s * (255 - 191))];
-}
-function farbeCSS(v) { const c = farbeRGB(v); return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")"; }
-
-const heatCanvas = document.createElement("canvas");
-heatCanvas.width = 174; heatCanvas.height = 134;
-const heatCtx = heatCanvas.getContext("2d");
-function zeichnePotentialFarbig() {
-	const img = heatCtx.createImageData(heatCanvas.width, heatCanvas.height);
-	const d = img.data;
-	for (let j = 0; j < heatCanvas.height; j++) {
-		const y = Y_MAX - (j / (heatCanvas.height - 1)) * 2 * Y_MAX;
-		for (let i = 0; i < heatCanvas.width; i++) {
-			const x = -X_MAX + (i / (heatCanvas.width - 1)) * 2 * X_MAX;
-			let v = potential(x, y);
-			if (!isFinite(v)) v = v > 0 ? ZKAPPE : -ZKAPPE;
-			const c = farbeRGB(v);
-			const idx = (j * heatCanvas.width + i) * 4;
-			d[idx] = c[0]; d[idx + 1] = c[1]; d[idx + 2] = c[2]; d[idx + 3] = 255;
-		}
-	}
-	heatCtx.putImageData(img, 0, 0);
-	ctx.drawImage(heatCanvas, xPix(-X_MAX), yPix(Y_MAX), xPix(X_MAX) - xPix(-X_MAX), yPix(-Y_MAX) - yPix(Y_MAX));
-}
-
-/* ---------- Potential in 3D ---------- */
-const Z_SKALIERUNG = 0.9;
-function projiziere(x, y, z, az, el, cx, cy, escala) {
-	const xr = x * Math.cos(az) - y * Math.sin(az);
-	const yr = x * Math.sin(az) + y * Math.cos(az);
-	const yr2 = yr * Math.cos(el) - z * Math.sin(el);
-	const zr2 = yr * Math.sin(el) + z * Math.cos(el);
-	return { sx: cx + xr * escala, sy: cy - zr2 * escala, tiefe: yr2 };
-}
-function zeichne3D() {
-	const cx = W / 2, cy = H * 0.56;
-	const escala = Math.min(W / (2 * X_MAX + 4), H / (2 * Y_MAX + 6));
-	const az = zustand.rotation.az, el = zustand.rotation.el;
-	const NX = 26, NY = 20;
-	const gitter = [];
-	for (let j = 0; j <= NY; j++) {
-		const y = -Y_MAX + (j / NY) * 2 * Y_MAX;
-		const zeile = [];
-		for (let i = 0; i <= NX; i++) {
-			const x = -X_MAX + (i / NX) * 2 * X_MAX;
-			let v = potential(x, y);
-			if (!isFinite(v)) v = v > 0 ? ZKAPPE : -ZKAPPE;
-			const vg = Math.max(-ZKAPPE, Math.min(ZKAPPE, v));
-			const proj = projiziere(x, y, vg * Z_SKALIERUNG, az, el, cx, cy, escala);
-			zeile.push({ px: proj.sx, py: proj.sy, tiefe: proj.tiefe, v: vg });
-		}
-		gitter.push(zeile);
-	}
-	const quads = [];
-	for (let j = 0; j < NY; j++) {
-		for (let i = 0; i < NX; i++) {
-			const a = gitter[j][i], b = gitter[j][i + 1], c = gitter[j + 1][i + 1], e = gitter[j + 1][i];
-			quads.push({ a, b, c, e, tiefe: (a.tiefe + b.tiefe + c.tiefe + e.tiefe) / 4, v: (a.v + b.v + c.v + e.v) / 4 });
-		}
-	}
-	quads.sort((p, q) => q.tiefe - p.tiefe);
-	for (const q of quads) {
-		ctx.beginPath();
-		ctx.moveTo(q.a.px, q.a.py); ctx.lineTo(q.b.px, q.b.py); ctx.lineTo(q.c.px, q.c.py); ctx.lineTo(q.e.px, q.e.py);
-		ctx.closePath();
-		ctx.fillStyle = farbeCSS(q.v);
-		ctx.fill();
-		ctx.strokeStyle = "rgba(0,0,0,0.15)"; ctx.lineWidth = 0.6; ctx.stroke();
-	}
-	for (const L of zustand.ladungen) {
-		const proj = projiziere(L.x, L.y, 0, az, el, cx, cy, escala);
-		ctx.beginPath(); ctx.arc(proj.sx, proj.sy, 5, 0, 2 * Math.PI);
-		ctx.fillStyle = L.q > 0 ? P.FARBEN.rot : (L.q < 0 ? P.FARBEN.blau : "#888");
-		ctx.fill();
-		ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
-	}
-}
-
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
-	if (zustand.ansicht === "3d") { zeichne3D(); return; }
-	if (zustand.ansicht === "potential" && zustand.farbig) zeichnePotentialFarbig();
 	zeichneGitter();
 	if (zustand.ansicht === "linien") zeichneFeldlinien();
 	else if (zustand.ansicht === "richtung") zeichneRichtungsfeld();
-	else if (zustand.ansicht === "potential") zeichneAequipotentiale();
 	if (zustand.punkte) zeichnePunkteABC();
 	for (const L of zustand.ladungen) zeichneLadung(L);
+	if (!zustand.ladungen.length) {
+		P.text(ctx, "Setzen Sie die Ladungen aus der Aufgabe mit „Ladung + setzen“ und „Ladung − setzen“.", W / 2, yPix(Y_MAX - 0.9), { ausrichtung: "center", groesse: 14, farbe: "#555" });
+	}
 }
 
 /* ---------- Bedienung ---------- */
 const FUSSNOTEN = {
-	linien: "Ladungen lassen sich mit der Maus verschieben. Ein Klick auf eine freie Stelle fügt eine weitere Feldlinie durch diesen Punkt hinzu. Blau steht für eine negative, rot für eine positive Ladung.",
-	richtung: "Die Fähnchen zeigen die Richtung des elektrischen Feldes an der jeweiligen Stelle. Ladungen lassen sich mit der Maus verschieben.",
-	potential: "Ein Klick auf eine freie Stelle fügt eine Äquipotentiallinie durch diesen Punkt hinzu. Mit dem Häkchen lässt sich das Potential stattdessen farbig darstellen.",
-	"3d": "Ziehen Sie mit der Maus, um die Ansicht zu drehen. Das Potential ist in unmittelbarer Ladungsnähe abgeschnitten, damit die Form insgesamt sichtbar bleibt."
+	linien: "Die Ladungen rasten auf ganze Kästchen ein und lassen sich mit der Maus verschieben. Mit „Verschieben“ fügt ein Klick auf eine freie Stelle eine weitere Feldlinie hinzu. Blau: negative, rot: positive Ladung.",
+	richtung: "Die Fähnchen zeigen die Richtung des elektrischen Feldes an der jeweiligen Stelle. Die Ladungen lassen sich mit der Maus verschieben."
 };
 function aktualisiereSteuerung() {
-	document.getElementById("zeile-werkzeug").style.display = zustand.ansicht === "3d" ? "none" : "flex";
-	document.getElementById("zeile-farbig").style.display = zustand.ansicht === "potential" ? "flex" : "none";
 	document.getElementById("fussnote-text").textContent = FUSSNOTEN[zustand.ansicht];
 }
 
 K.bindeKnopfgruppe("ansicht-knoepfe", w => zustand.ansicht = w, () => { aktualisiereSteuerung(); zeichne(); });
 K.bindeKnopfgruppe("werkzeug-knoepfe", w => zustand.werkzeug = w, () => {});
-document.getElementById("chk-farbig").addEventListener("change", ev => { zustand.farbig = ev.target.checked; zeichne(); });
 document.getElementById("chk-punkte").addEventListener("change", ev => { zustand.punkte = ev.target.checked; zeichne(); });
 document.getElementById("btn-linien-weg").addEventListener("click", () => {
-	if (zustand.ansicht === "linien") zustand.zusatzlinien = [];
-	else if (zustand.ansicht === "potential") zustand.aequipotentiale = [];
+	zustand.zusatzlinien = [];
 	zeichne();
 });
 document.getElementById("btn-standard").addEventListener("click", () => {
-	zustand.ladungen = standardLadungen();
+	zustand.ladungen = [];
 	zustand.zusatzlinien = [];
-	zustand.aequipotentiale = [];
-	zustand.rotation = { az: -0.7, el: 0.55 };
 	zeichne();
 });
 
@@ -1184,24 +1046,34 @@ function ladungBeiPixel(px, py) {
 	}
 	return treffer;
 }
+/* Ladungen rasten auf ganze Kaestchen (1 cm) ein, damit sich die Lage aus der Aufgabe genau einstellen laesst */
 function begrenze(x, y) {
-	return { x: Math.max(-X_MAX + 0.3, Math.min(X_MAX - 0.3, x)), y: Math.max(-Y_MAX + 0.3, Math.min(Y_MAX - 0.3, y)) };
+	const xr = Math.round(x), yr = Math.round(y);
+	return { x: Math.max(-Math.floor(X_MAX), Math.min(Math.floor(X_MAX), xr)), y: Math.max(-Math.floor(Y_MAX), Math.min(Math.floor(Y_MAX), yr)) };
+}
+function platzBelegt(p, ausser) {
+	return zustand.ladungen.some(L => L !== ausser && L.x === p.x && L.y === p.y);
 }
 
-let gezogen = null, dreht = false, letzterDrehpunkt = null;
+let gezogen = null;
 
 canvas.addEventListener("pointerdown", ev => {
 	const r = canvas.getBoundingClientRect();
 	const px = ev.clientX - r.left, py = ev.clientY - r.top;
 
-	if (zustand.ansicht === "3d") {
-		dreht = true; letzterDrehpunkt = { px, py };
-		canvas.setPointerCapture(ev.pointerId); ev.preventDefault();
-		return;
+	/* Eine vorhandene Ladung laesst sich auch beim Setzen greifen und verschieben */
+	if (zustand.werkzeug !== "loeschen") {
+		const treffer = ladungBeiPixel(px, py);
+		if (treffer) {
+			gezogen = treffer;
+			canvas.setPointerCapture(ev.pointerId); ev.preventDefault();
+			return;
+		}
 	}
 
 	if (zustand.werkzeug === "plus" || zustand.werkzeug === "minus") {
 		const p = begrenze(xWert(px), yWert(py));
+		if (platzBelegt(p, null)) return;
 		zustand.ladungen.push(neueLadung(p.x, p.y, zustand.werkzeug === "plus" ? 1 : -1));
 		zeichne();
 		return;
@@ -1215,22 +1087,12 @@ canvas.addEventListener("pointerdown", ev => {
 		return;
 	}
 
-	/* Werkzeug "Verschieben" */
-	const treffer = ladungBeiPixel(px, py);
-	if (treffer) {
-		gezogen = treffer;
-		canvas.setPointerCapture(ev.pointerId); ev.preventDefault();
-		return;
-	}
+	/* Werkzeug "Verschieben": Klick auf eine freie Stelle fuegt eine Feldlinie hinzu */
 	const klick = { x: xWert(px), y: yWert(py) };
 	if (Math.abs(klick.x) > X_MAX || Math.abs(klick.y) > Y_MAX) return;
 	if (zustand.ansicht === "linien") {
-		zustand.zusatzlinien.push(feldlinieDurchPunkt(klick));
-		zeichne();
-	} else if (zustand.ansicht === "potential") {
-		if (zustand.ladungen.some(L => Math.hypot(klick.x - L.x, klick.y - L.y) < 0.25)) return;
-		const linie = spurAequipotential(klick);
-		if (linie.length > 1) zustand.aequipotentiale.push(linie);
+		const anker = ankerFuerKlick(klick);
+		if (anker) zustand.zusatzlinien.push(anker);
 		zeichne();
 	}
 });
@@ -1239,25 +1101,19 @@ canvas.addEventListener("pointermove", ev => {
 	const r = canvas.getBoundingClientRect();
 	const px = ev.clientX - r.left, py = ev.clientY - r.top;
 
-	if (dreht && letzterDrehpunkt) {
-		zustand.rotation.az += (px - letzterDrehpunkt.px) * 0.008;
-		zustand.rotation.el = Math.max(0.12, Math.min(1.45, zustand.rotation.el - (py - letzterDrehpunkt.py) * 0.008));
-		letzterDrehpunkt = { px, py };
-		zeichne();
-		return;
-	}
 	if (gezogen) {
 		const p = begrenze(xWert(px), yWert(py));
+		if ((p.x === gezogen.x && p.y === gezogen.y) || platzBelegt(p, gezogen)) return;
 		gezogen.x = p.x; gezogen.y = p.y;
 		zeichne();
 		return;
 	}
-	if (zustand.ansicht !== "3d" && zustand.werkzeug === "verschieben") {
-		canvas.style.cursor = ladungBeiPixel(px, py) ? "grab" : "default";
-	}
+	const ueberLadung = ladungBeiPixel(px, py);
+	if (zustand.werkzeug === "loeschen") canvas.style.cursor = ueberLadung ? "pointer" : "default";
+	else canvas.style.cursor = ueberLadung ? "grab" : (zustand.werkzeug === "verschieben" ? "default" : "crosshair");
 });
 
-function loslassen() { gezogen = null; dreht = false; letzterDrehpunkt = null; }
+function loslassen() { gezogen = null; }
 canvas.addEventListener("pointerup", loslassen);
 canvas.addEventListener("pointercancel", loslassen);
 
