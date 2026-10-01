@@ -64,7 +64,20 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 	.fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
 	.kopf .nummer { color: var(--kopf-grau); font-weight: normal; }
 	.kopf .nummer.zwilling { visibility: hidden; }
-	.verborgen { display: none !important; }
+	.verborgen, .andere-station, .leer { display: none !important; }
+
+	/* Wichtiges hervorheben, Nebensaechliches zuruecknehmen */
+	.zaehlerzeile { display: flex; align-items: stretch; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.45rem; }
+	.zaehlerzeile .anzeige { margin-top: 0; flex: 1; min-width: 14em; }
+	.hauptknopf {
+		font: inherit; font-size: 0.95rem; font-weight: bold; padding: 0.3rem 0.9rem;
+		border: 1.5px solid var(--blue-frame); border-radius: 1mm;
+		background: var(--blue-frame); color: #fff; cursor: pointer;
+	}
+	.hauptknopf:hover { background: #00008C; }
+	.knopfleiste.senden button { font-weight: bold; }
+	.knopfleiste button.nebenknopf { border-color: #A0A0A0; color: #606060; font-size: 0.85rem; }
+	.knopfleiste button.nebenknopf:hover { background: #F2F2F2; }
 
 	.modusleiste { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0 0 0.5rem 0; }
 	.modusleiste button {
@@ -117,91 +130,92 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 		<div class="tcb-body">
 			<canvas id="aufbau" class="sim"></canvas>
 			<canvas id="schirm" class="sim"></canvas>
-			<div class="anzeige" id="zaehler"></div>
+			<div class="zaehlerzeile">
+				<div class="anzeige" id="zaehler"></div>
+				<button id="btn-png" class="hauptknopf" title="Schirmbild als PNG-Datei speichern">&#128247; Schirmbild herunterladen</button>
+			</div>
 			<div class="anzeige verborgen" id="zaehlbereich-anzeige"></div>
 			<canvas id="fotos" class="sim verborgen"></canvas>
 
-			<div class="steuerung">
+			<div class="steuerung" id="steuerung">
 				<div class="zeile">
 					<label>Senden</label>
-					<span class="knopfleiste">
-						<button id="btn-einzeln">1 Teilchen</button>
-						<button id="btn-langsam">Langsam</button>
-						<button id="btn-schnell">Schnell</button>
-						<button id="btn-plus1000">+1000</button>
-						<button id="btn-plus10000">+10&#8239;000</button>
+					<span class="knopfleiste senden">
+						<button id="btn-einzeln" data-st="1 2 4">1 Teilchen</button>
+						<button id="btn-langsam" data-st="2">Langsam</button>
+						<button id="btn-schnell" data-st="2 4">Schnell</button>
+						<button id="btn-plus1000" data-st="1">+1000</button>
+						<button id="btn-plus5000" data-st="3 4">+5&#8239;000</button>
+						<button id="btn-plus10000" data-st="2 5">+10&#8239;000</button>
 					</span>
 					<span class="knopfleiste schalter"><button id="btn-loeschen">Schirm l&ouml;schen</button></span>
 				</div>
 				<hr>
-				<div class="zeile">
+				<div class="zeile" data-st="1">
 					<label>Teilchen</label>
 					<span class="knopfleiste" id="teilchen-knoepfe">
 						<button data-wert="kugel">Kugeln</button>
 						<button data-wert="elektron">Elektronen</button>
 					</span>
 				</div>
-				<div class="zeile">
+				<div class="zeile" data-st="3">
 					<label>Blende</label>
 					<span class="knopfleiste">
 						<button id="btn-spalt1">Spalt 1 offen</button>
 						<button id="btn-spalt2">Spalt 2 offen</button>
 					</span>
 				</div>
-				<div class="zeile" id="zeile-E">
+				<div class="zeile" id="zeile-E" data-st="">
 					<label for="regler-E" class="breit">Energie <i class="gr">E</i></label>
 					<input type="range" id="regler-E" min="10" max="100" step="1" value="50">
 					<span class="wert" id="wert-E"></span>
 					<span class="lambda-info" id="lambda-info"></span>
 				</div>
-				<div class="zeile">
+				<div class="zeile" data-st="">
 					<label for="regler-b" class="breit">Spaltmittenabstand <i class="gr">b</i></label>
 					<input type="range" id="regler-b">
 					<span class="wert" id="wert-b"></span>
 				</div>
-				<div class="zeile">
+				<div class="zeile" data-st="">
 					<label for="regler-bS" class="breit">Spaltbreite <i class="gr">b</i><sub>S</sub></label>
 					<input type="range" id="regler-bS">
 					<span class="wert" id="wert-bS"></span>
 				</div>
-
-				<div id="lampen-block" class="steuerung" style="margin-top:0">
-					<hr>
-					<div class="zeile">
-						<label class="haken"><input type="checkbox" id="chk-lampe"> Lampe hinter dem Doppelspalt einschalten (Welcher-Weg-Messung)</label>
-					</div>
-					<div class="zeile lampen-regler">
-						<label for="regler-anteil" class="breit">Anteil beleuchteter Elektronen</label>
-						<input type="range" id="regler-anteil" min="0" max="100" step="1" value="100">
-						<span class="wert" id="wert-anteil"></span>
-					</div>
-					<div class="zeile lampen-regler">
-						<label for="regler-lamL" class="breit">Wellenl&auml;nge des Lichts <i class="gr">&lambda;</i><sub>L</sub></label>
-						<input type="range" id="regler-lamL" min="0.2" max="6" step="0.05" value="0.4">
-						<span class="wert" id="wert-lamL"></span>
-					</div>
-					<div class="zeile lampen-regler">
-						<label>Treffer zeigen</label>
-						<span class="haken-liste" id="gruppen">
-							<label class="haken"><input type="checkbox" data-gruppe="0" checked><span class="punkt" style="background:#111"></span> ohne Lichtblitz</label>
-							<label class="haken"><input type="checkbox" data-gruppe="1" checked><span class="punkt" style="background:#0000BF"></span> Blitz an Spalt 1</label>
-							<label class="haken"><input type="checkbox" data-gruppe="2" checked><span class="punkt" style="background:#E07000"></span> Blitz an Spalt 2</label>
-							<label class="haken"><input type="checkbox" data-gruppe="3" checked><span class="punkt" style="background:#A0A0A0"></span> Blitz nicht zuzuordnen</label>
-						</span>
-					</div>
+				<hr>
+				<div class="zeile nur-el" data-st="4">
+					<label class="haken"><input type="checkbox" id="chk-lampe"> Lampe hinter dem Doppelspalt einschalten (Welcher-Weg-Messung)</label>
+				</div>
+				<div class="zeile nur-el lampen-regler" data-st="4">
+					<label for="regler-anteil" class="breit">Anteil beleuchteter Elektronen</label>
+					<input type="range" id="regler-anteil" min="0" max="100" step="1" value="100">
+					<span class="wert" id="wert-anteil"></span>
+				</div>
+				<div class="zeile nur-el lampen-regler" data-st="">
+					<label for="regler-lamL" class="breit">Wellenl&auml;nge des Lichts <i class="gr">&lambda;</i><sub>L</sub></label>
+					<input type="range" id="regler-lamL" min="0.2" max="6" step="0.05" value="0.4">
+					<span class="wert" id="wert-lamL"></span>
+				</div>
+				<div class="zeile nur-el lampen-regler" data-st="4">
+					<label>Treffer zeigen</label>
+					<span class="haken-liste" id="gruppen">
+						<label class="haken"><input type="checkbox" data-gruppe="0" checked><span class="punkt" style="background:#111"></span> ohne Lichtblitz</label>
+						<label class="haken"><input type="checkbox" data-gruppe="1" checked><span class="punkt" style="background:#0000BF"></span> Blitz an Spalt 1</label>
+						<label class="haken"><input type="checkbox" data-gruppe="2" checked><span class="punkt" style="background:#E07000"></span> Blitz an Spalt 2</label>
+						<label class="haken"><input type="checkbox" data-gruppe="3" checked><span class="punkt" style="background:#A0A0A0"></span> Blitz nicht zuzuordnen</label>
+					</span>
 				</div>
 				<hr>
 				<div class="zeile">
 					<label>Anzeige</label>
 					<span class="haken-liste">
-						<label class="haken"><input type="checkbox" id="chk-histo"> Histogramm</label>
-						<label class="haken"><input type="checkbox" id="chk-theorie"> <span class="linie gestrichelt" style="border-color:#111"></span> berechnete Verteilung</label>
-						<label class="haken"><input type="checkbox" id="chk-nummern"> erste 10 Treffer nummerieren</label>
-						<label class="haken"><input type="checkbox" id="chk-zaehl"> Z&auml;hlbereich</label>
-						<label class="haken"><input type="checkbox" id="chk-behalten"> Treffer beim &Auml;ndern behalten</label>
+						<label class="haken" data-st="5"><input type="checkbox" id="chk-histo"> Histogramm</label>
+						<label class="haken" data-st=""><input type="checkbox" id="chk-theorie"> <span class="linie gestrichelt" style="border-color:#111"></span> berechnete Verteilung</label>
+						<label class="haken" data-st="2"><input type="checkbox" id="chk-nummern"> erste 10 Treffer nummerieren</label>
+						<label class="haken" data-st="2 3"><input type="checkbox" id="chk-zaehl"> Z&auml;hlbereich</label>
+						<label class="haken" data-st="3"><input type="checkbox" id="chk-behalten"> Treffer beim &Auml;ndern behalten</label>
 					</span>
 				</div>
-				<div class="zeile" id="zeile-terme">
+				<div class="zeile nur-el" id="zeile-terme" data-st="5">
 					<label>Wellenfunktion</label>
 					<span class="haken-liste" id="terme">
 						<label class="haken"><input type="checkbox" data-term="p1"><span class="linie" style="border-color:#0000BF"></span> <span>|&psi;<sub>1</sub>|&sup2;</span></label>
@@ -213,15 +227,14 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 				</div>
 				<hr>
 				<div class="zeile">
-					<label>Fotos</label>
+					<label data-st="1 3 4">Fotos</label>
 					<span class="knopfleiste" id="foto-knoepfe">
-						<button data-foto="0">Foto 1</button>
-						<button data-foto="1">Foto 2</button>
-						<button data-foto="2">Foto 3</button>
-						<button id="btn-fotos-loeschen">Fotos l&ouml;schen</button>
-						<button id="btn-png">Bild speichern</button>
+						<button data-foto="0" data-st="1 3 4">Foto 1</button>
+						<button data-foto="1" data-st="1 3 4">Foto 2</button>
+						<button data-foto="2" data-st="3">Foto 3</button>
+						<button id="btn-fotos-loeschen" class="nebenknopf">Fotos l&ouml;schen</button>
 					</span>
-					<span class="knopfleiste schalter"><button id="btn-standard">Standardwerte</button></span>
+					<span class="knopfleiste schalter"><button id="btn-standard" class="nebenknopf">Standardwerte</button></span>
 				</div>
 			</div>
 			<p class="fussnote">
@@ -312,11 +325,11 @@ const HINWEISE = {
 	2: ["Station 2: Einzelne Elektronen",
 		"Senden Sie mit &bdquo;1 Elektron&ldquo; einzelne Elektronen und beobachten Sie jeden Treffer. Schalten Sie dann auf &bdquo;Schnell&ldquo; und verfolgen Sie, wie das Schirmbild entsteht."],
 	3: ["Station 3: Ein Spalt oder zwei",
-		"Nur Spalt 1 ist offen: Senden Sie 5&#8239;000 Elektronen, Foto 1. Setzen Sie &bdquo;Treffer behalten&ldquo;, &ouml;ffnen Sie nur Spalt 2, weitere 5&#8239;000, Foto 2. Schirm l&ouml;schen, beide Spalte &ouml;ffnen, 10&#8239;000 senden, Foto 3."],
+		"Nur Spalt 1 ist offen: +5&#8239;000, Foto 1. Setzen Sie &bdquo;Treffer behalten&ldquo;, &ouml;ffnen Sie nur Spalt 2, +5&#8239;000, Foto 2. Schirm l&ouml;schen, beide Spalte &ouml;ffnen, zweimal +5&#8239;000, Foto 3."],
 	4: ["Station 4: Welcher Weg?",
-		"Die Lampe beleuchtet jedes Elektron hinter dem Doppelspalt. Senden Sie Elektronen und vergleichen Sie mit Station 2. Stellen Sie danach den Anteil auf 50&nbsp;% und blenden Sie die Farbgruppen einzeln aus."],
+		"Die Lampe beleuchtet jedes Elektron hinter dem Doppelspalt. Senden Sie +5&#8239;000 und machen Sie Foto 1, danach ohne Lampe Foto 2. Stellen Sie danach den Anteil auf 50&nbsp;% und blenden Sie die Farbgruppen einzeln aus."],
 	5: ["Station 5: Wellenfunktion",
-		"Senden Sie 20&#8239;000 Elektronen. Blenden Sie dann die Terme einzeln ein und vergleichen Sie |&psi;<sub>1</sub>|&sup2; + |&psi;<sub>2</sub>|&sup2; mit |&psi;<sub>1</sub> + &psi;<sub>2</sub>|&sup2;. Wo ist der Interferenzterm negativ?"],
+		"Senden Sie zweimal +10&#8239;000. Blenden Sie dann die Terme einzeln ein und vergleichen Sie |&psi;<sub>1</sub>|&sup2; + |&psi;<sub>2</sub>|&sup2; mit |&psi;<sub>1</sub> + &psi;<sub>2</sub>|&sup2;. Wo ist der Interferenzterm negativ?"],
 	0: ["Freies Experimentieren",
 		"Alle Einstellungen sind frei w&auml;hlbar."]
 };
@@ -541,11 +554,13 @@ function sendeSofort(anzahl) {
 
 /* ---------------- Fotos ---------------- */
 const fotos = [null, null, null];
+function versuchsText() {
+	return (versuche.length ? versuche.join(", danach ") : beschreibung()) + "; " + tausender(gesendet) + " gesendet";
+}
 function macheFoto(nr) {
 	const n = treffer.n;
 	fotos[nr] = {
-		text: "Foto " + (nr + 1) + ": " + (versuche.length ? versuche.join(", danach ") : beschreibung()) +
-			"; " + tausender(gesendet) + " gesendet",
+		text: "Foto " + (nr + 1) + ": " + versuchsText(),
 		X: Xmax(), einheit: einheit(), gesendet,
 		x: treffer.x.slice(0, n), y: treffer.y.slice(0, n), g: treffer.g.slice(0, n)
 	};
@@ -778,7 +793,7 @@ function zeichneSchirm(ctx, alsBild) {
 	ctx.strokeRect(L.sx0 + 0.5, L.sTop + 0.5, L.sx1 - L.sx0 - 1, L.sH - 1);
 
 	/* Nummern der ersten 10 Treffer */
-	if (zustand.nummern && !alsBild) {
+	if (zustand.nummern) {
 		ctx.font = "bold 12px " + SCHRIFT;
 		ctx.textAlign = "center";
 		let nr = 0;
@@ -976,9 +991,10 @@ function synchronisiereBedienung() {
 	$("btn-spalt2").textContent = "Spalt 2 " + (zustand.spalt2 ? "offen" : "zu");
 	$("btn-einzeln").textContent = el ? "1 Elektron" : "1 Kugel";
 	$("zeile-E").classList.toggle("verborgen", !el);
-	$("lampen-block").classList.toggle("verborgen", !el);
-	$("zeile-terme").classList.toggle("verborgen", !el);
-	document.querySelectorAll(".lampen-regler").forEach(z => z.classList.toggle("verborgen", !zustand.lampe));
+	document.querySelectorAll(".nur-el").forEach(z => z.classList.toggle("verborgen", !el));
+	document.querySelectorAll(".lampen-regler").forEach(z => z.classList.toggle("verborgen", !el || !zustand.lampe));
+	$("btn-fotos-loeschen").classList.toggle("verborgen", !fotos.some(f => f));
+	zeigeNurStationsElemente();
 
 	if (el) {
 		regler.b.min = 1; regler.b.max = 4; regler.b.step = 0.1;
@@ -1009,6 +1025,33 @@ function synchronisiereBedienung() {
 	document.querySelectorAll("#gruppen input").forEach(c => c.checked = zustand.gruppen[+c.dataset.gruppe]);
 	$("btn-langsam").classList.toggle("laeuft", zustand.rate > 0 && zustand.rate <= 5);
 	$("btn-schnell").classList.toggle("laeuft", zustand.rate > 5);
+}
+
+/* Pro Station nur die Bedienelemente zeigen, die dort gebraucht werden.
+   data-st = Liste der Stationen; ohne data-st immer sichtbar; "Frei" (0) zeigt alles. */
+function zeigeNurStationsElemente() {
+	const st = zustand.station;
+	document.querySelectorAll("#steuerung [data-st]").forEach(e => {
+		const liste = e.dataset.st.split(" ").filter(s => s).map(Number);
+		e.classList.toggle("andere-station", st !== 0 && !liste.includes(st));
+	});
+	/* Zeilen ohne sichtbaren Inhalt ausblenden (z. B. "Anzeige" ohne Haken) */
+	document.querySelectorAll("#steuerung > .zeile").forEach(z => {
+		const kinder = [...z.querySelectorAll("button, input, .haken")];
+		z.classList.toggle("leer", kinder.length > 0 && !kinder.some(k => !k.closest(".verborgen, .andere-station")));
+	});
+	/* Trennlinien nur zwischen sichtbaren Gruppen */
+	let davor = false, letzteHr = null;
+	for (const e of $("steuerung").children) {
+		const aus = e.classList.contains("verborgen") || e.classList.contains("andere-station") || e.classList.contains("leer");
+		if (e.tagName === "HR") {
+			e.classList.add("verborgen");
+			if (davor) { letzteHr = e; davor = false; }
+		} else if (!aus) {
+			if (letzteHr) { letzteHr.classList.remove("verborgen"); letzteHr = null; }
+			davor = true;
+		}
+	}
 }
 
 /* Aenderung eines Versuchsparameters: Schirm loeschen (ausser "Treffer behalten") */
@@ -1104,13 +1147,14 @@ $("btn-einzeln").addEventListener("click", () => { zustand.rate = 0; synchronisi
 $("btn-langsam").addEventListener("click", () => { zustand.rate = zustand.rate === 2 ? 0 : 2; synchronisiereBedienung(); });
 $("btn-schnell").addEventListener("click", () => { zustand.rate = zustand.rate === 400 ? 0 : 400; synchronisiereBedienung(); });
 $("btn-plus1000").addEventListener("click", () => sendeSofort(1000));
+$("btn-plus5000").addEventListener("click", () => sendeSofort(5000));
 $("btn-plus10000").addEventListener("click", () => sendeSofort(10000));
 $("btn-loeschen").addEventListener("click", () => loescheSchirm());
 $("foto-knoepfe").addEventListener("click", ev => {
 	const bt = ev.target.closest("button[data-foto]");
-	if (bt) macheFoto(+bt.dataset.foto);
+	if (bt) { macheFoto(+bt.dataset.foto); synchronisiereBedienung(); }
 });
-$("btn-fotos-loeschen").addEventListener("click", () => { fotos.fill(null); layoutFotos(); });
+$("btn-fotos-loeschen").addEventListener("click", () => { fotos.fill(null); layoutFotos(); synchronisiereBedienung(); });
 $("btn-png").addEventListener("click", speichereBild);
 
 /* Zaehlbereich im Bild ziehen */
@@ -1141,24 +1185,40 @@ const loslassen = () => { ziehe = null; };
 cB.addEventListener("pointerup", loslassen);
 cB.addEventListener("pointercancel", loslassen);
 
-/* Bild speichern (Schirm und Fotos, dreifache Aufloesung) */
+/* Schirmbild herunterladen: aktueller Schirm mit Beschriftung, darunter vorhandene Fotos (dreifache Aufloesung) */
 function speichereBild() {
-	const f = 3;
-	const W = WB, H = HB + HC;
+	const f = 3, KOPF = 22;
+	const W = WB, H = KOPF + HB + HC;
 	const c = document.createElement("canvas");
 	c.width = W * f; c.height = H * f;
 	const ctx = c.getContext("2d");
 	ctx.scale(f, f);
 	ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	ctx.font = "bold 13px " + SCHRIFT; ctx.fillStyle = "#111"; ctx.textAlign = "left";
+	ctx.fillText(versuchsText(), L.sx0, 15);
+	ctx.translate(0, KOPF);
 	zeichneSchirm(ctx, true);
 	if (HC > 0) { ctx.translate(0, HB); zeichneFotos(ctx); }
-	c.toBlob(blob => {
-		const a = document.createElement("a");
-		a.href = URL.createObjectURL(blob);
-		a.download = "Doppelspalt_Schirm.png";
-		document.body.appendChild(a); a.click(); a.remove();
-		setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-	});
+	/* Dateiname aus den Versuchsbedingungen, z. B. Doppelspalt_Elektronen_beide_Spalte_5000.png */
+	const name = ("Doppelspalt_" + (versuche.length ? versuche.join(" dann ") : beschreibung()) + "_" + gesendet)
+		.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+		.replace(/[^A-Za-z0-9]+/g, "_").replace(/_+$/, "") + ".png";
+	/* synchron umwandeln, damit das Teilen auf Tablets noch als Nutzeraktion gilt */
+	const daten = atob(c.toDataURL("image/png").split(",")[1]);
+	const bytes = new Uint8Array(daten.length);
+	for (let i = 0; i < daten.length; i++) bytes[i] = daten.charCodeAt(i);
+	const blob = new Blob([bytes], { type: "image/png" });
+	const datei = typeof File === "function" ? new File([blob], name, { type: "image/png" }) : null;
+	const tablet = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+	if (tablet && datei && navigator.canShare && navigator.canShare({ files: [datei] })) {
+		navigator.share({ files: [datei] }).catch(() => {});
+		return;
+	}
+	const a = document.createElement("a");
+	a.href = URL.createObjectURL(blob);
+	a.download = name;
+	document.body.appendChild(a); a.click(); a.remove();
+	setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
 /* ---------------- Hauptschleife ---------------- */
