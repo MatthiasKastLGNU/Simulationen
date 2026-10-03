@@ -51,8 +51,9 @@ body {
 	font: inherit; font-size: 0.95em; min-width: 3.1em; padding: 5px 10px; cursor: pointer;
 	border: 1.5px solid #c8c8d4; border-radius: 4px; background: #f3f3f6; color: var(--text);
 }
+a.chip { display: inline-block; text-align: center; text-decoration: none; }
 .chip:hover { border-color: var(--blue-frame); }
-.chip[aria-pressed="true"] {
+.chip[aria-current="page"] {
 	border-color: var(--blue-frame); background: var(--blue-frame); color: #fff;
 	box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
 }
@@ -77,7 +78,22 @@ h2.klasse {
 }
 h3.kapitel { margin: 18px 0 2px; font-size: 0.95em; font-weight: normal; color: var(--grau); }
 h3.kapitel b { color: var(--grau); font-weight: bold; }
-h4.abs { margin: 4px 0 8px; font-size: 1.12em; font-weight: bold; }
+h4.abs {
+	margin: 4px 0 8px; font-size: 1.12em; font-weight: bold;
+	display: flex; align-items: center; gap: 9px;
+	border-left: 4px solid var(--themafarbe, transparent); padding-left: 8px;
+}
+.pikto {
+	flex: none; width: 30px; height: 30px; border-radius: 6px; color: #fff;
+	display: grid; place-items: center;
+}
+.kopf > div { flex: 1; min-width: 0; }
+.seitenqr {
+	flex: none; width: 52px; height: 52px; cursor: pointer; border-radius: 4px;
+	border: 1.5px solid var(--blue-frame); background: #fff; color: var(--blue-frame);
+	display: grid; place-items: center;
+}
+.seitenqr:hover { background: var(--blue-frame); color: #fff; }
 .abschnitt > .titel .niveau { font-weight: normal; }
 .abschnitt {
 	border: 2px solid var(--blue-frame); border-radius: 4px; margin: 0 0 14px; overflow: hidden;
@@ -163,6 +179,9 @@ footer { margin-top: 30px; color: var(--grau); font-size: 0.8em; text-align: cen
 			<h1 id="ueberschrift">Physik-Simulationen</h1>
 			<p>Interaktive Simulationen zu den Arbeitsblättern · M. Kast</p>
 		</div>
+		<button class="seitenqr" id="seitenqr" type="button" title="QR-Code dieser Seite zeigen" aria-label="QR-Code dieser Seite zeigen">
+			<svg width="34" height="34" viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="M2 2h7v7H2zM4 4v3h3V4zM11 2h7v7h-7zM13 4v3h3V4zM2 11h7v7H2zM4 13v3h3v-3zM11 11h3v3h-3zM14 14h4v4h-4zM11 15h2v3h-2zM16 11h2v2h-2z"/></svg>
+		</button>
 	</header>
 
 	<nav class="leiste" aria-label="Filter">
@@ -205,10 +224,13 @@ const BASIS = 'https://matthiaskastlgnu.github.io/Simulationen/';
 const $ = id => document.getElementById(id);
 const klassen = Object.keys(DATEN.klassen).sort((a, b) => a - b);
 const param = new URLSearchParams(location.search);
-let aktiv = param.get('klasse') || START;
-if (aktiv && !klassen.includes(aktiv.padStart(2, '0'))) aktiv = '';
-if (aktiv) aktiv = aktiv.padStart(2, '0');
+const aktiv = START;
+// alte Links ?klasse=9 auf die Klassenseite Klasse_09/ umleiten
+const kParam = (param.get('klasse') || '').padStart(2, '0');
+if (param.has('klasse') && klassen.includes(kParam) && kParam !== START)
+	location.replace(PRAEFIX + 'Klasse_' + kParam + '/' + (param.get('suche') ? '?suche=' + encodeURIComponent(param.get('suche')) : ''));
 $('suche').value = param.get('suche') || '';
+const SEITE = BASIS + (aktiv ? 'Klasse_' + aktiv + '/' : '');
 
 const nr = s => s.replace(/^0/, '');
 const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
@@ -225,31 +247,62 @@ function markiere(text, woerter) {
 	return h;
 }
 
-// Klassen-Chips
+// Themen: Piktogramm + Farbe je Abschnitt (Reihenfolge = Vorrang; geprüft wird erst der Abschnitts-, dann der Kapitelname)
+const THEMEN = [
+	{name: 'Quanten & Atome', farbe: '#6a1b9a', re: /quant|elektronen|photon|broglie|atom|wasserstoff|franck/,
+	 svg: '<ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(-60 12 12)"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>'},
+	{name: 'Kernphysik', farbe: '#9a7b00', re: /radioakt|kern|zerfall|halbwert|strahlenschutz|strahlungsarten/,
+	 svg: '<circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 9.4 L8 2.6 A10 10 0 0 1 16 2.6 Z M14.3 13.3 L18.2 20.1 A10 10 0 0 0 22.1 13.2 Z M9.7 13.3 L1.9 13.2 A10 10 0 0 0 5.8 20.1 Z" fill="currentColor"/>'},
+	{name: 'Kondensator', farbe: '#00838f', re: /kondensator|kapazit|rc-/,
+	 svg: '<path d="M2 12h7M15 12h7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9.5 4v16M14.5 4v16" stroke="currentColor" stroke-width="3" fill="none"/>'},
+	{name: 'Induktion', farbe: '#b85c00', re: /indukt|generator|transformator|wechselspannung|schwing/,
+	 svg: '<path d="M3 15c0-4 3-4 3 0s3 4 3 0-3-4 3 0 3 4 3 0 3-4 3 0 3 4 3 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 6h14" stroke="currentColor" stroke-width="1.8"/><path d="M16 3l4 3-4 3z" fill="currentColor"/>'},
+	{name: 'Wellen & Interferenz', farbe: '#1565c0', re: /welle|interferenz|spalt|licht|beugung/,
+	 svg: '<path d="M2 9c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-2M2 16c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'},
+	{name: 'Wärmelehre', farbe: '#c62828', re: /wärme|waerme|therm|temperatur|innere energie|druck in gasen|treibhaus/,
+	 svg: '<path d="M10 4a2 2 0 0 1 4 0v9.5a4.5 4.5 0 1 1-4 0z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="17.5" r="2.4" fill="currentColor"/><path d="M12 9v8" stroke="currentColor" stroke-width="2"/>'},
+	{name: 'Magnetismus', farbe: '#2e7d32', re: /magnet|lorentz|kraft auf str|motor|b-feld|hall/,
+	 svg: '<path d="M5 3v9a7 7 0 0 0 14 0V3h-4.5v9a2.5 2.5 0 0 1-5 0V3z" fill="currentColor"/><path d="M5 3h4.5v3H5zM14.5 3H19v3h-4.5z" fill="#fff" opacity=".75"/>'},
+	{name: 'Elektrisches Feld', farbe: '#ad1457', re: /elektrisch|e-feld|ladung|coulomb|influenz|feldst|potential/,
+	 svg: '<circle cx="6" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.8 12h4.4M6 9.8v4.4" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.8 12h4.4" stroke="currentColor" stroke-width="1.8"/>'},
+	{name: 'Mechanik & Energie', farbe: '#455a64', re: /bewegung|impuls|wurf|kreis|energie|leistung|arbeit|kraft/,
+	 svg: '<circle cx="7" cy="12" r="4" fill="currentColor"/><path d="M12 12h9M17.5 8.5 21 12l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'},
+];
+function thema(k, s) {
+	const kn = DATEN.klassen[k];
+	for (const text of [kn[s.abs], kn[s.kap], s.titel]) {
+		if (!text) continue;
+		const t = text.toLowerCase();
+		const th = THEMEN.find(x => x.re.test(t));
+		if (th) return th;
+	}
+	return null;
+}
+const piktogramm = th => th
+	? '<span class="pikto" style="background:' + th.farbe + '" title="' + th.name + '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' + th.svg + '</svg></span>'
+	: '';
+
+// Klassen-Chips: echte Links auf Klasse_<nn>/
 function chipsBauen() {
 	const c = $('chips');
 	c.innerHTML = '';
 	for (const k of ['', ...klassen]) {
-		const b = document.createElement('button');
-		b.type = 'button'; b.className = 'chip';
-		b.textContent = k ? nr(k) : 'Alle';
-		b.title = k ? 'Klasse ' + nr(k) : 'Alle Klassen';
-		b.setAttribute('aria-pressed', String(k === aktiv));
-		b.onclick = () => { aktiv = k; zeigen(); };
-		c.appendChild(b);
+		const a = document.createElement('a');
+		a.className = 'chip';
+		a.textContent = k ? nr(k) : 'Alle';
+		a.title = k ? 'Klasse ' + nr(k) : 'Alle Klassen';
+		a.href = PRAEFIX + (k ? 'Klasse_' + k + '/' : '');
+		a.onclick = () => { const q = $('suche').value.trim(); if (q) a.href += '?suche=' + encodeURIComponent(q); };
+		if (k === aktiv) a.setAttribute('aria-current', 'page');
+		c.appendChild(a);
 	}
 }
 
 function zeigen() {
-	for (const b of $('chips').children) b.setAttribute('aria-pressed', String(b.textContent === (aktiv ? nr(aktiv) : 'Alle')));
 	const q = $('suche').value.trim();
 	$('suchfeld').classList.toggle('voll', !!q);
 	const woerter = norm(q).split(/\s+/).filter(Boolean);
-	const p = new URLSearchParams();
-	if (aktiv && aktiv !== START) p.set('klasse', nr(aktiv));
-	if (!aktiv && START) p.set('klasse', 'alle');
-	if (q) p.set('suche', q);
-	history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p : ''));
+	history.replaceState(null, '', location.pathname + (q ? '?suche=' + encodeURIComponent(q) : ''));
 	$('ueberschrift').textContent = aktiv ? 'Physik-Simulationen · Klasse ' + nr(aktiv) : 'Physik-Simulationen';
 	document.title = aktiv ? 'Simulationen Klasse ' + nr(aktiv) : 'Physik-Simulationen';
 
@@ -290,7 +343,9 @@ function zeigen() {
 				if (abs) {
 					const h = document.createElement('h4');
 					h.className = 'abs';
-					h.innerHTML = esc(abs) + ' ' + markiere(kn[abs] || '', woerter);
+					const th = thema(k, s);
+					if (th) h.style.setProperty('--themafarbe', th.farbe);
+					h.innerHTML = piktogramm(th) + '<span>' + esc(abs) + ' ' + markiere(kn[abs] || '', woerter) + '</span>';
 					main.appendChild(h);
 				}
 			}
@@ -325,10 +380,14 @@ function zeigen() {
 let qrZuletzt = null;
 function qrZeigen(s) {
 	const url = BASIS + s.pfad;
-	qrZuletzt = document.activeElement;
-	$('qrtitel').textContent = s.titel + (s.niveau ? ' (' + s.niveau + ')' : '');
+	qrOeffnen(s.titel + (s.niveau ? ' (' + s.niveau + ')' : ''), url, PRAEFIX + s.pfad);
+}
+function qrOeffnen(titel, url, link) {
+	$('qrtitel').textContent = titel;
 	$('qrurl').textContent = url;
-	$('qroeffnen').href = PRAEFIX + s.pfad;
+	$('qroeffnen').href = link || '#';
+	$('qroeffnen').style.display = link ? '' : 'none';
+	qrZuletzt = document.activeElement;
 	$('qrbild').innerHTML = '';
 	if (window.QRCode) new QRCode($('qrbild'), {text: url, width: 512, height: 512, correctLevel: QRCode.CorrectLevel.M});
 	else $('qrbild').textContent = 'QR-Code konnte nicht geladen werden.';
@@ -337,6 +396,7 @@ function qrZeigen(s) {
 }
 function qrZu() { $('overlay').classList.remove('offen'); if (qrZuletzt) qrZuletzt.focus(); }
 $('qrzu').onclick = qrZu;
+$('seitenqr').onclick = () => qrOeffnen(aktiv ? 'Simulationen Klasse ' + nr(aktiv) : 'Physik-Simulationen', SEITE);
 $('overlay').onclick = e => { if (e.target === $('overlay')) qrZu(); };
 
 document.addEventListener('keydown', e => {
