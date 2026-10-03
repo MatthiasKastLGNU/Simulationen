@@ -798,7 +798,7 @@ window.SimPlus = (function () {
 			</div>
 			<div class="tabelle-wrap" id="werte-wrap">
 				<table class="messtabelle">
-					<thead><tr><th></th><th><i class="gr">Q</i> in nC</th><th><i class="gr">U</i> in V</th><th><i class="gr">C</i> in pF</th><th><i class="gr">E</i><sub>Luft</sub> in kV/m</th><th><i class="gr">E</i><sub>Stoff</sub> in kV/m</th><th><i class="gr">E</i><sub>el</sub> in &micro;J</th></tr></thead>
+					<thead><tr><th></th><th><i class="gr">Q</i> in nC</th><th><i class="gr">U</i> in V</th><th><i class="gr">C</i> in pF</th><th><i class="gr">E</i><sub>Luft</sub> in kV/m</th><th><i class="gr">E</i><sub>Stoff</sub> in kV/m</th><th><i class="gr">C</i>&thinsp;:&thinsp;<i class="gr">C</i><sub>0</sub></th></tr></thead>
 					<tbody id="werte-koerper"></tbody>
 				</table>
 			</div>
@@ -945,10 +945,10 @@ function aktualisiere() {
 	zeichneEx(z);
 	const r = berechne(z);
 	const zahl = (w, fak) => isFinite(w) ? P.sig(w * fak, 3) : "&infin;";
-	const zeile = (name, Q, U, C, EL, ES, E) => "<tr><td style='text-align:left'>" + name + "</td><td>" + zahl(Q, 1e9) + "</td><td>" + (isFinite(U) ? P.sig(U, 3) : "0") + "</td><td>" + zahl(C, 1e12) + "</td><td>" + (isFinite(EL) ? P.sig(EL / 1000, 3) : "n. d.") + "</td><td>" + ES + "</td><td>" + (isFinite(E) ? P.sig(E * 1e6, 3) : "n. d.") + "</td></tr>";
+	const zeile = (name, Q, U, C, EL, ES, V) => "<tr><td style='text-align:left'>" + name + "</td><td>" + zahl(Q, 1e9) + "</td><td>" + (isFinite(U) ? P.sig(U, 3) : "0") + "</td><td>" + zahl(C, 1e12) + "</td><td>" + (isFinite(EL) ? P.sig(EL / 1000, 3) : "n. d.") + "</td><td>" + ES + "</td><td>" + (isFinite(V) ? P.de(V, 2) : "&infin;") + "</td></tr>";
 	const vorhanden = z.art === "schicht" ? z.s > 0 : z.f > 0;
-	let html = zeile("beim Laden (ohne Stoff)", r.Q0, U0, r.C0, U0 / 0.02, "", r.E0);
-	html += zeile("mit " + STOFFE[z.stoff].name, r.Q, r.U, r.C, r.EL, vorhanden ? P.sig(r.ES / 1000, 3) : "", r.Eel);
+	let html = zeile("beim Laden (ohne Stoff)", r.Q0, U0, r.C0, U0 / 0.02, "", 1);
+	html += zeile("mit " + STOFFE[z.stoff].name, r.Q, r.U, r.C, r.EL, vorhanden ? P.sig(r.ES / 1000, 3) : "", r.C / r.C0);
 	document.getElementById("werte-koerper").innerHTML = html;
 }
 
