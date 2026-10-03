@@ -157,6 +157,11 @@ button.haupt {
 	background: var(--blue-frame); color: #fff; cursor: pointer;
 }
 button.haupt.an { background: #fff; color: var(--blue-frame); }
+.knopfleiste button, button.haupt { display: inline-flex; align-items: center; gap: 0.3rem; }
+.knopfleiste button svg, button.haupt svg, .haken svg { display: block; }
+.knopfleiste button.dunkel { background: #333; border-color: #333; color: #fff; }
+.knopfleiste button.dunkel:hover { background: #555 !important; }
+.zeile > label.gruppe, .gruppe { font-size: 0.8rem; color: #777; min-width: 6.5em; }
 .knopfleiste.klein button { font-size: 0.85rem; padding: 0.2rem 0.55rem; border-color: #999; color: #666; }
 .knopfleiste.klein button:hover { background: #f2f2f2 !important; }
 .werte { display: flex; flex-wrap: wrap; gap: 0.3rem 1.6rem; font-variant-numeric: tabular-nums; }
@@ -195,10 +200,10 @@ p { margin: 0 0 0.5rem; }
 
 			<div class="steuerung">
 				<div class="zeile">
-					<button class="haupt" id="btn-strom">Strom einschalten</button>
+					<button class="haupt" id="btn-strom" title="Strom ein/aus" aria-label="Strom ein/aus"></button>
 					<span class="knopfleiste">
-						<button id="btn-anstossen" data-st="mit">Anstoßen</button>
-						<button id="btn-zeitlupe" data-st="mit zwei">Zeitlupe</button>
+						<button id="btn-anstossen" class="dunkel" data-st="mit" title="Anstoßen" aria-label="Anstoßen"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 14a7 7 0 1 0 2.5-7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M3 3l6 1-3.5 5z" fill="currentColor"/></svg></button>
+						<button id="btn-zeitlupe" data-st="mit zwei" title="Zeitlupe" aria-label="Zeitlupe"><svg viewBox="0 0 32 22" width="30" height="21"><path d="M2 19h26c2 0 3-2 2-3l-3-1" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="11" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 11m-3.5 0a3.5 3.5 0 1 0 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M26 15l2-7M28 15l3-6" stroke="currentColor" stroke-width="1.6"/></svg></button>
 					</span>
 				</div>
 
@@ -214,31 +219,31 @@ p { margin: 0 0 0.5rem; }
 				</div>
 
 				<div class="zeile" data-st="lauf">
-					<label for="regler-i">Stromstärke <i class="gr">I</i></label>
+					<label for="regler-i" class="gruppe" title="Stromstärke">Stromstärke <i class="gr">I</i></label>
 					<input type="range" id="regler-i" min="0" max="4" step="0.1" value="2">
 					<span class="wert" id="wert-i"></span>
 				</div>
 				<div class="zeile" data-st="lauf">
-					<span class="gruppe">Stärke des Magneten</span>
+					<span class="gruppe">Magnet</span>
 					<span class="knopfleiste" id="magnet-knoepfe">
-						<button data-wert="schwach">schwach</button>
-						<button data-wert="mittel" class="aktiv">mittel</button>
-						<button data-wert="stark">stark</button>
+						<button data-wert="schwach" title="schwacher Magnet" aria-label="schwach"><svg viewBox="0 0 44 20" width="44" height="20"><rect x="14" y="7" width="8" height="6" fill="#D72823"/><rect x="22" y="7" width="8" height="6" fill="#009141"/></svg></button>
+						<button data-wert="mittel" class="aktiv" title="mittlerer Magnet" aria-label="mittel"><svg viewBox="0 0 44 20" width="44" height="20"><rect x="9" y="4.5" width="13" height="11.0" fill="#D72823"/><rect x="22" y="4.5" width="13" height="11.0" fill="#009141"/></svg></button>
+						<button data-wert="stark" title="starker Magnet" aria-label="stark"><svg viewBox="0 0 44 20" width="44" height="20"><rect x="3" y="1.5" width="19" height="17.0" fill="#D72823"/><rect x="22" y="1.5" width="19" height="17.0" fill="#009141"/></svg></button>
 					</span>
 				</div>
 				<div class="zeile" data-st="lauf">
-					<span class="gruppe">Windungen der Spule</span>
+					<span class="gruppe">Windungen</span>
 					<span class="knopfleiste" id="windungen-knoepfe">
-						<button data-wert="1" class="aktiv">1</button>
-						<button data-wert="5">5</button>
-						<button data-wert="10">10</button>
+						<button data-wert="1" class="aktiv" title="1 Windung"><svg viewBox="0 0 36 20" width="36" height="20" fill="none" stroke="#C87837" stroke-width="2"><ellipse cx="18.0" cy="10" rx="3" ry="8"/></svg> 1</button>
+						<button data-wert="5" title="5 Windungen"><svg viewBox="0 0 36 20" width="36" height="20" fill="none" stroke="#C87837" stroke-width="2"><ellipse cx="13.0" cy="10" rx="3" ry="8"/><ellipse cx="18.0" cy="10" rx="3" ry="8"/><ellipse cx="23.0" cy="10" rx="3" ry="8"/></svg> 5</button>
+						<button data-wert="10" title="10 Windungen"><svg viewBox="0 0 36 20" width="36" height="20" fill="none" stroke="#C87837" stroke-width="2"><ellipse cx="8.0" cy="10" rx="3" ry="8"/><ellipse cx="13.0" cy="10" rx="3" ry="8"/><ellipse cx="18.0" cy="10" rx="3" ry="8"/><ellipse cx="23.0" cy="10" rx="3" ry="8"/><ellipse cx="28.0" cy="10" rx="3" ry="8"/></svg> 10</button>
 					</span>
 				</div>
 				<div class="zeile" data-st="lauf">
 					<span class="gruppe">Polung</span>
 					<span class="knopfleiste">
-						<button id="btn-umpolen">Umpolen</button>
-						<button id="btn-umdrehen">Magnet umdrehen</button>
+						<button id="btn-umpolen" title="Umpolen" aria-label="Umpolen"><svg viewBox="0 0 54 22" width="52" height="21"><path d="M3 11h8M7 7v8" stroke="#BF0000" stroke-width="2.6"/><path d="M43 11h8" stroke="#0000BF" stroke-width="2.6"/><path d="M16 8h20" stroke="currentColor" stroke-width="2"/><path d="M38 8l-5-4v8z" fill="currentColor"/><path d="M38 15H18" stroke="currentColor" stroke-width="2"/><path d="M15 15l5-4v8z" fill="currentColor"/></svg></button>
+						<button id="btn-umdrehen" title="Magnet umdrehen" aria-label="Magnet umdrehen"><svg viewBox="0 0 44 26" width="42" height="25"><rect x="8" y="12" width="14" height="10" fill="#D72823"/><rect x="22" y="12" width="14" height="10" fill="#009141"/><path d="M10 8a14 7 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M36 9l-6 0 4-6z" fill="currentColor"/></svg></button>
 					</span>
 				</div>
 				<div class="werte" data-st="lauf">
@@ -248,8 +253,8 @@ p { margin: 0 0 0.5rem; }
 				<div data-st="lauf">
 					<div class="zeile">
 						<span class="knopfleiste"><button id="btn-notieren">Messwert notieren</button></span>
-						<span class="knopfleiste klein"><button id="btn-leeren">Tabelle leeren</button></span>
-						<span class="knopfleiste klein" style="margin-left:auto"><button id="btn-standard">Standardwerte</button></span>
+						<span class="knopfleiste klein"><button id="btn-leeren" title="Tabelle leeren" aria-label="Tabelle leeren"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M8 5V3h4v2M5 5l1 12h8l1-12M8.5 8v6M11.5 8v6"/></svg></button></span>
+						<span class="knopfleiste klein" style="margin-left:auto"><button id="btn-standard" title="Standardwerte" aria-label="Standardwerte"><svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 10a6 6 0 1 0 2-4.5"/><path d="M3 2v5h5" /></svg></button></span>
 					</div>
 					<table class="mess" id="tabelle" hidden>
 						<thead><tr><th>Nr.</th><th><i class="gr">I</i> in A</th><th>Magnet</th><th>Windungen</th><th>Polung</th><th>Drehzahl in U/min</th><th>Drehrichtung</th></tr></thead>
@@ -259,9 +264,9 @@ p { margin: 0 0 0.5rem; }
 
 				<div class="zeile">
 					<span class="gruppe">Anzeigen</span>
-					<label class="haken"><input type="checkbox" id="zeige-i" checked><span>Stromrichtung</span></label>
-					<label class="haken"><input type="checkbox" id="zeige-f" checked><span>Kräfte</span></label>
-					<label class="haken" data-st="zwei"><input type="checkbox" id="zeige-d"><span>Diagramm</span></label>
+					<label class="haken" title="Stromrichtung"><input type="checkbox" id="zeige-i" checked><svg viewBox="0 0 48 22" width="46" height="21" stroke="#111" stroke-width="1.8" fill="none"><circle cx="11" cy="11" r="8.5"/><path d="M5.5 5.5l11 11M5.5 16.5l11-11"/><circle cx="35" cy="11" r="8.5"/><circle cx="35" cy="11" r="2.3" fill="#111"/></svg></label>
+					<label class="haken" title="Kräfte"><input type="checkbox" id="zeige-f" checked><svg viewBox="0 0 30 22" width="28" height="21"><path d="M3 11h17" stroke="#BF0000" stroke-width="3"/><path d="M28 11l-9-6v12z" fill="#BF0000"/></svg><i class="gr">F</i></label>
+					<label class="haken" data-st="zwei" title="Diagramm"><input type="checkbox" id="zeige-d"><svg viewBox="0 0 30 22" width="28" height="21" fill="none" stroke="#111" stroke-width="1.6"><path d="M3 2v18h25"/><path d="M4 9q4-7 8 0t8 0 8 0" stroke="#0000BF" stroke-width="2"/></svg></label>
 				</div>
 			</div>
 			<canvas id="diagramm" class="sim"></canvas>
@@ -857,7 +862,8 @@ function richtungsText(w) { return Math.abs(w) < 0.15 ? "steht" : (w < 0 ? "im U
 function drehzahlUmin() { return Math.abs(zustand.drehzahl) / (2 * Math.PI) * 60; }
 function anzeigen() {
 	const btn = document.getElementById("btn-strom");
-	btn.textContent = zustand.strom ? "Strom ausschalten" : "Strom einschalten";
+	btn.innerHTML = '<svg viewBox="0 0 48 20" width="50" height="21" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M1 14h11M36 14h11"/><circle cx="14" cy="14" r="2.2" fill="currentColor"/><circle cx="34" cy="14" r="2.2" fill="currentColor"/><path d="' + (zustand.strom ? "M14 14L33 14" : "M14 14L32 3") + '"/></svg>';
+	btn.title = zustand.strom ? "Strom ausschalten" : "Strom einschalten";
 	btn.classList.toggle("an", zustand.strom);
 	document.getElementById("btn-zeitlupe").classList.toggle("aktiv", zustand.zeitlupe);
 	document.getElementById("wert-i").textContent = de(zustand.I, 1) + " A";
