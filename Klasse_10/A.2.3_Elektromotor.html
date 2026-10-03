@@ -203,7 +203,7 @@ p { margin: 0 0 0.5rem; }
 					<button class="haupt" id="btn-strom" title="Strom ein/aus" aria-label="Strom ein/aus"></button>
 					<span class="knopfleiste">
 						<button id="btn-anstossen" class="dunkel" data-st="mit" title="Anstoßen" aria-label="Anstoßen"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M5 14a7 7 0 1 0 2.5-7.5" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M3 3l6 1-3.5 5z" fill="currentColor"/></svg></button>
-						<button id="btn-zeitlupe" data-st="mit zwei" title="Zeitlupe" aria-label="Zeitlupe"><svg viewBox="0 0 32 22" width="30" height="21"><path d="M2 19h26c2 0 3-2 2-3l-3-1" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="14" cy="11" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 11m-3.5 0a3.5 3.5 0 1 0 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M26 15l2-7M28 15l3-6" stroke="currentColor" stroke-width="1.6"/></svg></button>
+						<button id="btn-zeitlupe" data-st="mit zwei" title="Zeitlupe" aria-label="Zeitlupe"><svg viewBox="0 0 40 26" width="46" height="30"><path d="M3 22.5H29c3.5 0 5.5-2.5 5.5-6.5v-2" fill="none" stroke="#8B9A3C" stroke-width="4.5" stroke-linecap="round"/><path d="M33 13.5l-2.5-8M35.5 13.5l3-7.5" stroke="#5E6B22" stroke-width="1.6" stroke-linecap="round"/><circle cx="30.4" cy="5" r="1.7" fill="#5E6B22"/><circle cx="38.6" cy="5.8" r="1.7" fill="#5E6B22"/><circle cx="16" cy="12" r="9.5" fill="#C87837" stroke="#7A4519" stroke-width="1.5"/><path d="M16 12.5a1.6 1.6 0 1 1 1.6-1.6a3.6 3.6 0 1 1-3.6-3.6a5.8 5.8 0 1 1 5.8 5.8" fill="none" stroke="#7A4519" stroke-width="1.6" stroke-linecap="round"/></svg></button>
 					</span>
 				</div>
 
@@ -463,6 +463,10 @@ const zustand = {
 	tabelle: []
 };
 const B_FAKTOR = { schwach: 0.5, mittel: 1, stark: 1.5 };
+const MAGNET_BREITE = { schwach: 0.6, mittel: 1, stark: 1.4 };   /* Dicke der Magnetblöcke im Schrägbild */
+const FELDLINIEN = { schwach: [-0.9, 0.9], mittel: [-1.2, -0.6, 0, 0.6, 1.2], stark: [-1.35, -1.05, -0.75, -0.45, -0.15, 0.15, 0.45, 0.75, 1.05, 1.35] };
+/* Drähte im Bündel: bis 5 Windungen jede einzeln, bei 10 ein dichtes Bündel */
+function buendel() { return zustand.N; }
 const K_MOTOR = 2.4;        /* Drehwirkung je A und Windung bei mittlerem Magneten */
 const TRAEGHEIT = 1;
 const REIB_LIN = 0.4, REIB_QUAD = 0.15, REIB_HAFT = 0.45;
@@ -568,9 +572,9 @@ function linie(punkte, f, d) {
 	ctx.strokeStyle = f; ctx.lineWidth = d; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
 }
 function magnetblock(links) {
-	const xa = links ? -3.6 : 2.6, xb = links ? -2.6 : 3.6;
+	const bm = MAGNET_BREITE[zustand.magnet], xa = links ? -2.6 - bm : 2.6, xb = links ? -2.6 : 2.6 + bm;
 	const nord = links === zustand.nordLinks, c = nord ? ROT : GRUEN;
-	const xs = links ? -2.6 : 3.6;   /* sichtbare Seitenfläche: innen beim linken, außen beim rechten Block */
+	const xs = links ? -2.6 : xb;   /* sichtbare Seitenfläche: innen beim linken, außen beim rechten Block */
 	flaeche([[xs, -1.3, -1.8], [xs, 1.3, -1.8], [xs, 1.3, 1.7], [xs, -1.3, 1.7]], farbe(c, 0.72));
 	flaeche([[xa, 1.3, -1.8], [xb, 1.3, -1.8], [xb, 1.3, 1.7], [xa, 1.3, 1.7]], farbe(c, 1.2));
 	flaeche([[xa, -1.3, 1.7], [xb, -1.3, 1.7], [xb, 1.3, 1.7], [xa, 1.3, 1.7]], farbe(c, 1));
@@ -653,11 +657,14 @@ function zeichneSchraeg() {
 	ctx.save();
 	ctx.beginPath(); ctx.rect(p3.x, p3.y, p3.w, p3.h); ctx.clip();
 	text(ctx, "Schrägbild", p3.x + 6, p3.y + 12, 13, "#666", "left");
+	if (zustand.N > 1) text(ctx, zustand.N + " Windungen", p3.x + p3.w - 6, p3.y + 12, 13, farbe(KUPFER, 0.72), "right", "bold");
 	magnetblock(true);
 	/* Feldrichtung: ein Pfeil hinter der Schleife */
-	const a = P(-2.6, 1.0, -1.6), b = P(2.6, 1.0, -1.6);
-	if (zustand.nordLinks) pfeil(ctx, a[0], a[1], b[0], b[1], "rgba(0,0,191,0.7)", 2); else pfeil(ctx, b[0], b[1], a[0], a[1], "rgba(0,0,191,0.7)", 2);
-	const m = P(0, 1.0, -1.6); text(ctx, "B", m[0], m[1] - s3 * 0.25, s3 * 0.36, BLAU, "center", "italic bold");
+	FELDLINIEN[zustand.magnet].filter((_, i, l) => l.length < 6 || i % 2 === 0).forEach(y => {
+		const a = P(-2.6, y * 0.8 + 0.1, -1.6), b = P(2.6, y * 0.8 + 0.1, -1.6);
+		if (zustand.nordLinks) pfeil(ctx, a[0], a[1], b[0], b[1], "rgba(0,0,191,0.55)", 1.8); else pfeil(ctx, b[0], b[1], a[0], a[1], "rgba(0,0,191,0.55)", 1.8);
+	});
+	const m = P(0, 1.25, -1.6); text(ctx, "B", m[0], m[1] - s3 * 0.25, s3 * 0.36, BLAU, "center", "italic bold");
 	linie([[0, 0, -2.4], [0, 0, mitKommutator() ? 2.1 : 2.5]], "#999", Math.max(2, s3 * 0.05));
 	/* Schleifenhälften von hinten nach vorne */
 	const pfade = [];
@@ -665,10 +672,14 @@ function zeichneSchraeg() {
 	pfade.forEach(p => { p.tiefe = 0.3 * R_SCHLEIFE * Math.cos(p.winkel) + 0.4 * R_SCHLEIFE * Math.sin(p.winkel); });
 	pfade.sort((u, v) => u.tiefe - v.tiefe);
 	const d = Math.max(3, s3 * 0.085);
+	const nb = buendel(), db = nb > 1 ? Math.max(1.6, d * (nb > 5 ? 0.38 : 0.55)) : d;
 	pfade.forEach(p => {
-		linie(p.punkte, "#fff", d * 1.8);
-		linie(p.punkte, farbe(KUPFER, 0.72), d);
-		linie(p.punkte, farbe(KUPFER, 1.45), d * 0.3);
+		const vorne = mitKommutator() ? 1 : 2;   /* die vorderen Punkte am Kommutator laufen zusammen */
+		const draht = f => p.punkte.map((q, i) => i < vorne ? q : [q[0] * f, q[1] * f, q[2] + (f - 1) * 1.2]);
+		const breite = nb > 1 ? 0.012 * (nb > 5 ? 1 : 2) : 0;
+		const faktoren = Array.from({ length: nb }, (_, k) => 1 + (k - (nb - 1) / 2) * breite * (nb > 5 ? 1.6 : 1.4));
+		faktoren.forEach(f => linie(draht(f), "#fff", db * 1.8));
+		faktoren.forEach(f => { linie(draht(f), farbe(KUPFER, 0.72), db); linie(draht(f), farbe(KUPFER, 1.45), db * 0.3); });
 		const mitte = P(...punktAufPfad(p.punkte, 0.55));
 		ctx.fillStyle = FARBE_SEITE[2 * p.k + p.seite]; ctx.beginPath(); ctx.arc(mitte[0], mitte[1] - s3 * 0.3, s3 * 0.17, 0, 2 * Math.PI); ctx.fill();
 		text(ctx, String(2 * p.k + p.seite + 1), mitte[0], mitte[1] - s3 * 0.3, s3 * 0.24, "#fff", "center", "bold");
@@ -695,13 +706,14 @@ function zeichneVorne() {
 	const c = ctx;
 	text(c, "Blick von vorne (entlang der Drehachse)", p2.x + 6, p2.y + 12, 13, "#666", "left");
 	/* Pole und Feld */
-	[[-2.75, -1.95, true], [1.95, 2.75, false]].forEach(([xa, xb, links]) => {
+	const bv = 0.8 * MAGNET_BREITE[zustand.magnet] * (zustand.magnet === "stark" ? 0.93 : 1);
+	[[-1.95 - bv, -1.95, true], [1.95, 1.95 + bv, false]].forEach(([xa, xb, links]) => {
 		const nord = links === zustand.nordLinks, a = Q(xa, 1.5), b = Q(xb, -1.5);
 		c.fillStyle = farbe(nord ? ROT : GRUEN, 1); c.fillRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
 		c.strokeStyle = "#111"; c.lineWidth = 1; c.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
 		const m = Q((xa + xb) / 2, 0); text(c, nord ? "N" : "S", m[0], m[1], s2 * 0.42, "#fff", "center", "bold");
 	});
-	for (let y = -1.2; y <= 1.21; y += 0.6) {
+	for (const y of FELDLINIEN[zustand.magnet]) {
 		const a = Q(-1.93, y), b = Q(1.93, y);
 		if (zustand.nordLinks) pfeil(c, a[0], a[1], b[0], b[1], "rgba(0,0,191,0.42)", 1.5); else pfeil(c, b[0], b[1], a[0], a[1], "rgba(0,0,191,0.42)", 1.5);
 	}
@@ -751,13 +763,21 @@ function zeichneVorne() {
 				pfeil(c, a1[0], a1[1], a2[0], a2[1], KRAFTROT, Math.max(2.5, s2 * 0.045));
 			}
 			c.fillStyle = "#fff"; c.strokeStyle = FARBE_SEITE[2 * k + j]; c.lineWidth = Math.max(2, s2 * 0.045);
+			if (zustand.N > 1) {   /* Drahtbündel: mehrere Drähte im Querschnitt */
+				const nr = zustand.N > 5 ? 2 : 1;
+				for (let ring = nr; ring >= 1; ring--) {
+					c.beginPath(); c.arc(q[0], q[1], r * (1 + 0.28 * ring), 0, 2 * Math.PI);
+					c.fillStyle = "#fff"; c.fill(); c.lineWidth = Math.max(1.5, s2 * 0.03); c.stroke();
+				}
+				c.fillStyle = "#fff"; c.lineWidth = Math.max(2, s2 * 0.045);
+			}
 			c.beginPath(); c.arc(q[0], q[1], r, 0, 2 * Math.PI); c.fill(); c.stroke();
 			if (zustand.zeigeI && st !== 0) {
 				c.strokeStyle = "#111"; c.fillStyle = "#111"; c.lineWidth = Math.max(1.6, s2 * 0.035);
 				if (st > 0) { const e = r * 0.6; c.beginPath(); c.moveTo(q[0] - e, q[1] - e); c.lineTo(q[0] + e, q[1] + e); c.moveTo(q[0] - e, q[1] + e); c.lineTo(q[0] + e, q[1] - e); c.stroke(); }
 				else { c.beginPath(); c.arc(q[0], q[1], r * 0.25, 0, 2 * Math.PI); c.fill(); }
 			}
-			const nx = x < -0.05 ? -0.5 : 0.5, t = Q(x + nx, y);
+			const ab = 0.5 + (zustand.N > 5 ? 0.24 : zustand.N > 1 ? 0.12 : 0), nx = x < -0.05 ? -ab : ab, t = Q(x + nx, y);
 			c.font = "bold " + Math.round(s2 * 0.28) + "px " + schrift;
 			const bw = c.measureText("0").width;
 			c.fillStyle = "#fff"; c.fillRect(t[0] - bw * 0.8, t[1] - s2 * 0.16, bw * 1.6, s2 * 0.32);
