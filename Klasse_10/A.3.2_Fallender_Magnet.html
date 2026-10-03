@@ -550,7 +550,7 @@ function zeichneLupe() {
 	ctx.fillStyle = "#fafafa"; ctx.fillRect(x, y, w, h);
 	ctx.strokeStyle = "#bbb"; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
 	text(ctx, "Lupe: " + st.name, x + 8, y + 14, 13, "#333", "left", "bold");
-	const cx = x + w * 0.42, cy = y + h * 0.52, s = Math.min(w / 4.2, h / 8.2);   /* Pixel je cm */
+	const cx = x + w * 0.42, cy = y + h * 0.55, s = Math.min(w / 4.2, h / 8.6);   /* Pixel je cm */
 	const rx = R_RING * s, ry = R_RING * s * 0.3, abstand = 0.6;
 	const leiter = st.leitwert > 0;
 	/* Ringe ziehen mit dem fallenden Magneten nach oben vorbei */
@@ -603,6 +603,7 @@ function zeichneLupe() {
 		const hinweis = !leiter ? "Kunststoff leitet nicht: keine Ringströme"
 			: r.stoff === "geschlitzt" ? "Schlitz: kaum Ringströme"
 			: r.v < 0.01 || r.fertig ? "Magnet ruht: keine Ringströme" : "blau: Ringströme, N/S: ihre Pole";
+		ctx.fillStyle = "rgba(250,250,250,0.92)"; ctx.fillRect(x + 1, y + h - 22, w - 2, 21);
 		text(ctx, hinweis, x + 8, y + h - 12, 12, "#333", "left");
 	}
 	ctx.restore();
@@ -686,10 +687,10 @@ function nachVersuch() {
    ========================================================================== */
 function layout() {
 	schrift = getComputedStyle(document.body).fontFamily;
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.62 : 1.35));
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.62 : 1.75));
 	breit = W >= 620;
 	if (breit) { rohrBereich = { x: 0, y: 0, w: W * 0.55, h: H }; lupe = { x: W * 0.58, y: 6, w: W * 0.4, h: zustand.zeigeEnergie ? H * 0.62 : H - 12 }; }
-	else { rohrBereich = { x: 0, y: 0, w: W, h: H * 0.55 }; lupe = { x: W * 0.05, y: H * 0.57, w: W * 0.9, h: zustand.zeigeEnergie ? H * 0.27 : H * 0.42 }; }
+	else { rohrBereich = { x: 0, y: 0, w: W, h: H * 0.56 }; lupe = { x: W * 0.05, y: H * 0.58, w: W * 0.9, h: zustand.zeigeEnergie ? H * 0.27 : H * 0.41 }; }
 	if (zustand.zeigeEnergie && !zustand.zeigeLupe) lupe.h = 0;
 	zeichne();
 }

@@ -631,8 +631,8 @@ function zeichneDiagramm(c = dctx, w = DW, h = DH) {
    ========================================================================== */
 function layout() {
 	schrift = getComputedStyle(document.body).fontFamily;
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.5 : 0.95));
-	sk = Math.min(H / 25.5, W / 34); ox = W / 2; oy = H * 0.05;
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.5 : 0.85));
+	sk = Math.min(H / 25.5, W / (W >= 620 ? 34 : 30)); ox = W / 2; oy = H * 0.05;
 	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, b => b >= 620 ? 0.26 : 0.45));
 	zeichne();
 }

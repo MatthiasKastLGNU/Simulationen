@@ -221,7 +221,7 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 						<button id="btn-hinein">Hineinschieben</button>
 						<button id="btn-heraus">Herausziehen</button>
 					</span>
-					<span class="fussnote" style="margin:0">oder den Magneten mit der Maus ziehen</span>
+					<span class="fussnote" style="margin:0">oder den Magneten ziehen</span>
 				</div>
 				<div class="zeile" data-st="messreihe">
 					<span class="gruppe">Geschwindigkeit</span>
@@ -707,7 +707,7 @@ function spielStart() {
 const canvas = document.getElementById("sim-canvas"), ctx = canvas.getContext("2d");
 const dCanvas = document.getElementById("diagramm"), dctx = dCanvas.getContext("2d");
 let W = 740, H = 330, DW = 740, DH = 220, schrift = "sans-serif";
-let sz = 14, ox = 0, oy = 0, mess = { x: 0, y: 0, r: 60 }, breit = true;
+let sz = 14, ox = 0, oy = 0, mess = { x: 0, y: 0, r: 60 }, breit = true, szeneRechts = 600;
 const BLAU = "#0000BF", ROT = "#D72823", GRUEN = "#009141", KUPFER = [200, 120, 55], FELD = "rgba(40,90,215,";
 
 function text(c, t, x, y, g, f, ausr = "center", stil = "") {
@@ -760,7 +760,7 @@ function zeichneFeldlinien() {
 	const vz = zustand.nordRechts ? 1 : -1;
 	const linien = FELDLINIEN[zustand.staerke];
 	ctx.save();
-	ctx.beginPath(); ctx.rect(0, 0, mess.x - mess.r * 1.25, H); ctx.clip();
+	ctx.beginPath(); ctx.rect(0, 0, szeneRechts, H); ctx.clip();
 	ctx.strokeStyle = FELD + "0.55)"; ctx.lineWidth = 1.2;
 	linien.forEach(l => [1, -1].forEach(sy => {
 		ctx.beginPath();
@@ -799,7 +799,7 @@ function zeichneMessgeraet() {
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
 	if (zustand.zeigeFeld) zeichneFeldlinien();
-	ctx.save(); ctx.beginPath(); ctx.rect(0, 0, mess.x - mess.r * 1.25, H); ctx.clip();
+	ctx.save(); ctx.beginPath(); ctx.rect(0, 0, szeneRechts, H); ctx.clip();
 	zeichneSpule(false);
 	zeichneMagnet();
 	ctx.restore();
@@ -807,14 +807,14 @@ function zeichne() {
 	zeichneMessgeraet();
 	if (zustand.modus === "spiel") {
 		const s = zustand.spiel;
-		if (s.phase === "vorlauf") text(ctx, String(Math.ceil(VORLAUF - s.t)), W * 0.36, H * 0.22, H * 0.22, BLAU, "center", "bold");
-		if (s.phase === "aufnahme") text(ctx, "Los!  " + K.de(DAUER - s.t, 1) + " s", W * 0.36, H * 0.12, H * 0.08, BLAU, "center", "bold");
+		if (s.phase === "vorlauf") text(ctx, String(Math.ceil(VORLAUF - s.t)), szeneRechts * 0.5, H * 0.22, H * 0.22, BLAU, "center", "bold");
+		if (s.phase === "aufnahme") text(ctx, "Los!  " + K.de(DAUER - s.t, 1) + " s", szeneRechts * 0.5, H * 0.12, H * 0.08, BLAU, "center", "bold");
 		if (s.phase === "fertig" && s.ergebnis) {
 			const e = s.ergebnis, lob = ["Versuch es noch einmal!", "Schon nicht schlecht!", "Gut gemacht!", "Ausgezeichnet!"][e.sterne];
-			ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.fillRect(W * 0.08, H * 0.12, W * 0.56, H * 0.42);
-			text(ctx, Math.round(e.anteil * 100) + " % getroffen", W * 0.36, H * 0.22, H * 0.09, BLAU, "center", "bold");
-			text(ctx, "★".repeat(e.sterne) + "☆".repeat(3 - e.sterne), W * 0.36, H * 0.34, H * 0.1, "#C8A000", "center");
-			text(ctx, lob, W * 0.36, H * 0.46, H * 0.06, "#111");
+			ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.fillRect(szeneRechts * 0.1, H * 0.12, szeneRechts * 0.8, H * 0.42);
+			text(ctx, Math.round(e.anteil * 100) + " % getroffen", szeneRechts * 0.5, H * 0.22, H * 0.09, BLAU, "center", "bold");
+			text(ctx, "★".repeat(e.sterne) + "☆".repeat(3 - e.sterne), szeneRechts * 0.5, H * 0.34, H * 0.1, "#C8A000", "center");
+			text(ctx, lob, szeneRechts * 0.5, H * 0.46, H * 0.06, "#111");
 		}
 	}
 	zeichneDiagramm();
@@ -852,13 +852,20 @@ function zeichneDiagramm(c = dctx, w = DW, h = DH) {
    ========================================================================== */
 function layout() {
 	schrift = getComputedStyle(document.body).fontFamily;
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.42 : 0.75));
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.42 : 0.95));
 	breit = W >= 620;
-	mess.r = breit ? Math.min(H * 0.3, W * 0.1) : Math.min(H * 0.22, W * 0.16);
-	mess.x = W - mess.r * 1.25; mess.y = breit ? H * 0.52 : H * 0.72;
-	const nutzbar = mess.x - mess.r * 1.3;
-	sz = nutzbar / 29;   /* sichtbar etwa von -17 cm bis +12 cm */
-	ox = sz * 17; oy = breit ? H * 0.45 : H * 0.36;
+	if (breit) {
+		mess.r = Math.min(H * 0.3, W * 0.1);
+		mess.x = W - mess.r * 1.25; mess.y = H * 0.52;
+		szeneRechts = mess.x - mess.r * 1.25;
+		sz = (szeneRechts - 4) / 29;   /* sichtbar etwa von -17 cm bis +12 cm */
+		ox = sz * 17; oy = H * 0.45;
+	} else {   /* schmal (Handy): Messgerät unter der Szene */
+		mess.r = W * 0.15;
+		mess.x = W * 0.7; mess.y = H * 0.83;
+		szeneRechts = W;
+		sz = W / 29; ox = sz * 17; oy = H * 0.36;
+	}
 	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, b => b >= 620 ? 0.3 : 0.5));
 	zeichne();
 }
