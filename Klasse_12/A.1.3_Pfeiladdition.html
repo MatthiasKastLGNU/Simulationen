@@ -313,6 +313,7 @@ window.SimUI = (function () {
 		stab_minus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#F4F4F4" stroke="#888" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.4"/><path d="M15.6 6h4.8" stroke="#0000E0" stroke-width="1.8"/>',
 		stab_plus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#D8EEF4" stroke="#6A9AA8" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.4"/><path d="M15.6 6h4.8M18 3.6v4.8" stroke="#E00000" stroke-width="1.8"/>',
 		kugel_teilen: '<path d="M0.5 12h3" stroke="#8B5A2B" stroke-width="2"/><circle cx="8.5" cy="12" r="5.2" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><circle cx="18.6" cy="12" r="5.2" fill="#FFE5E5" stroke="#E00000" stroke-width="1.3"/><path d="M16.4 12h4.4M18.6 9.8v4.4" stroke="#E00000" stroke-width="1.6"/><path d="M6.6 12h3.8M8.5 10.1v3.8" stroke="#E00000" stroke-width="1.3" opacity="0.55"/>',
+		kugel_platte: '<rect x="2" y="2" width="20" height="4" rx="0.6" fill="#E04848"/><path d="M8 4h3M9.5 2.5v3" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12.4" r="5.6" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><path d="M12 18v4" stroke="#C9B98A" stroke-width="2.4"/>',
 		finger: '<path d="M10 22v-4.5c-2-1.5-3.5-3.5-3.5-6V9.5c0-.9 1.6-.9 1.6 0v2.5V3c0-1.3 2.4-1.3 2.4 0v7V8.2c0-1.2 2.3-1.2 2.3 0V10V9c0-1.2 2.2-1.2 2.2 0v1.2c0-1 2-1 2 0v4.3c0 2-1 3.4-2.3 4.5V22z" fill="#F2C9A0" stroke="#9A6A40" stroke-width="1"/>',
 		alle_ladungen: '<circle cx="7" cy="8" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M5 8h4M7 6v4" stroke="#E00000" stroke-width="1.4"/><circle cx="17" cy="8" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M15.6 8h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="7" cy="17.5" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M5.6 17.5h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="17" cy="17.5" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M15 17.5h4M17 15.5v4" stroke="#E00000" stroke-width="1.4"/>',
 		platte_eine: '<rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M15 4v8" stroke="#777" stroke-width="1"/><circle cx="15" cy="14.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
@@ -373,7 +374,8 @@ window.SimUI = (function () {
 	/* Knopf mit Piktogramm versehen; titel kommt in title und aria-label */
 	function setzeIcon(btn, name, titel) {
 		if (!btn) return;
-		btn.innerHTML = svg(name);
+		/* nur bei Wechsel neu zeichnen: wird das Symbol in jedem Bild ersetzt, gehen Klicks im laufenden Betrieb verloren */
+		if (btn.dataset.ikAktuell !== name) { btn.innerHTML = svg(name); btn.dataset.ikAktuell = name; }
 		btn.classList.add("ik");
 		if (titel) { btn.title = titel; btn.setAttribute("aria-label", titel); }
 	}
