@@ -1,0 +1,39 @@
+# Baut die Übersichtsseiten (index.html, Klasse_<nn>/index.html) nach jedem Push neu.
+# Quelle: Documents/0_Einstellungen/Skript/simulationen_index/index.yml
+name: Übersicht aktualisieren
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Klasse_*/**.html"
+      - "!Klasse_*/index.html"
+      - ".github/index/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: uebersicht
+  cancel-in-progress: true
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Übersicht erzeugen
+        run: python3 .github/index/erzeugen.py
+      - name: Hochladen, falls geändert
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add -A index.html 'Klasse_*/index.html'
+          if git diff --cached --quiet; then echo "Übersicht unverändert"; exit 0; fi
+          git commit -m "Übersicht automatisch aktualisiert"
+          for i in 1 2 3 4 5; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            sleep 5
+          done
+          exit 1
