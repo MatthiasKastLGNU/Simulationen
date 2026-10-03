@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>RC-Glied: Euler-Verfahren, Linearisierung, Energie</title>
+	<title>RC-Glied: Euler-Verfahren, Linearisierung, Energie, Richtungsfeld</title>
 	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFWElEQVRYha2XW2wUVRjHf2dmOrPtblvSNkVaIEobLC1QBYrKNcErWhWkCcaClYCXGOILD5YXNBKER43xQYNSSauYcAkiGBLDQytRLFaU9GaIib1AKL1Ad9vuTHfm+LDtbnd3dmmV/9PMme87///5vnO+74xgEsXFRq7MeFNKXgEWI/Byb3FHQouQfDr4958nJgcFQO7C8kLpcBYpy+8xaTJ8OyhGa7h2zdQoLjZmSl6ao5Kmxo6N29A2aE93iq25eEMDsE3kFi19R8LH0xcPp5/3sqZAixlr6g2x6fuRmUyDlEqlIgXVqYwKfUrC2OW+xJX+ditxzM13KoRwditISpMZLMtXaarysWFudLWKgL5RmWB7c9RBEdH3DXM1mqp8LMtXE2yn4FGRU7Q0cbYJ8hPPecnSBV1+h2dOB9heovPaIoM5XuHmwvURhyNtFvUd45zf5GV+psKwJdlydoQWl6gBuAqYSj4JywE9dUQjMG2JoUZ9U4lIEFDoU2iq8pFtuK8S4LYpabweoscvEUJS6FNYX6Cl9LljStYeD9AbcGLGtXjD3oDD9vOjfLQ+nQXZsUvuH5McaA7yTaeFLcGZkK4IUAVUl+jsrfCQ54kV0uV32NM4lkAO4BrUizdCVJ4JYE2x7xhyePxkgKPtFooQXKvJwlAFhhp+VoSgrs3iiZN+OoaijqYteepUgAs9IdfIJM3q9hI9kvP+McnWcyP0TKwgTYFsQ5CmxD4DdPslL/8QoD8YDo+hCqof1JPRuAtQBNQsijodaA5GyDM0wY6yNABqVxjUrjAAeHWRjkeLijjUHIz47yjTEUm2h5qeM/t9gIWzVL58MoPiWSolOSqbisIkt03JWxdGMVTwpQl2LtbZXKTTOeTQOyqxAcuG5fkqPl3QOeQgBPxxy+aNJQaGKsjSBUOmZOP9aexZZtDS5zAwEaHIJtRVWFOgJZTYxushbAmd27Iiu/zijRCb48rudy942bfSw76VHu6YkuKvhmnsDVH5QHghB1elR2z1KbUp4RTEo2vYwZFQVj+MoQr2VhiYiZuZK/027YM2B5tNTFviSPjH72IYh7uWlmS5mw6UafjeNQLzfQqKgNa4FMTjoTyV1XM0dpUZkRTM96XsA7ECLBt+uh6i+abNrTHJh6s8AKwr1FBFNAU1pTqbFqRxqtLL7/3h0vpwnkpmmmD/r0Hq2ixMW6IJWFsYFVB7cYzZGQoVs1Us20XAX7dtXjwT3liKgN3lOgVehWxDUF2iU9dmMRaSfHbVZNyG/Y95aB2wIyLf+2WML1otxiaCs7NUj/SSbr/kcKuFdGl7rnvAkXCkzYq8763wMC8zPFkwBEfbw98OXTY5dNkEoK5tPEI+P1Ph3QpPxL+u3XQlTyoAoL5jHNMOe+V5BMc2+iIixp1wcxl3Yp8nyY9t9JI70Q9MW1LfYblyQJJ2vHqO5tqMBoKSg81BGjosQnHNSBOwbZFO7QpPhHwSk83IrR/8p3Y8bEkae0N0T5TneT6FdYVazP0hHsna8bQvJPGXjFSYyYXEdQ+09NlsOTvCsBXW1uV3KG/ws/9StCm5odsv+eBSkKUNfromquA0rmRL7oDIcvu4LF/l+LNedv04GsmfEPD6Yj2mtkP4nE89ahvmahx+IoOqc8nJQQ5rIH4Gnk4Wifi8SQmzMxIDd59XiTlqF3pCrjmPhWhTpFQ+SWHhOkFFfmIFX+Fy/U5NDgLZEP43LC6vl1Km/EGZinvwawaSK4Pp9iMawAAjO3PI0ICt0/GdEVEScqGJSlpbrZhzlbug/CUp5NvAcmDW/2NJQAC4KpBfD3icz2lttQD+BaeYX5auMkA0AAAAAElFTkSuQmCC">
 	<style>
 /* ==========================================================================
@@ -750,6 +750,10 @@ window.SimPlus = (function () {
 #sim-canvas { touch-action: none; }
 	</style>
 </head>
+<style>
+.knopfleiste button.neben { border-color: #9A9A9A; color: #555; font-size: 0.85rem; padding: 0.2rem 0.55rem; }
+.knopfleiste button.neben:hover { background: #F2F2F2; }
+</style>
 <body>
 <div class="blatt">
 
@@ -768,6 +772,7 @@ window.SimPlus = (function () {
 		<button data-wert="euler" class="aktiv">Euler-Verfahren</button>
 		<button data-wert="modell">Tangente und Linearisierung</button>
 		<button data-wert="energie">Energiebilanz</button>
+		<button data-wert="richtung">Richtungsfeld</button>
 	</div>
 
 	<div class="tcb gruen verborgen" id="aufgabenkarte">
@@ -822,6 +827,7 @@ window.SimPlus = (function () {
 				<div class="zeile" id="zeile-t"><label>Zeitachse bis</label>
 					<span class="knopfleiste" id="t-knoepfe"><button data-wert="5" class="aktiv">5&nbsp;s</button><button data-wert="20">20&nbsp;s</button><button data-wert="60">60&nbsp;s</button><button data-wert="300">300&nbsp;s</button></span>
 				</div>
+				<div class="zeile" id="zeile-rf"><span class="knopfleiste"><button id="btn-rf-loeschen">Lösungskurven löschen</button></span></div>
 				<div class="zeile" id="zeile-start"><span class="knopfleiste"><button id="btn-start">Laden starten</button><button id="btn-zurueck">Zur&uuml;cksetzen</button></span></div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
@@ -839,7 +845,7 @@ const K = window.SimKit, P = window.SimPlus;
 /* Einheiten im Zustand: R in kOhm, C in muF, U in V, t in s, dt in s */
 const U0 = 10;
 const zustand = { ansicht: "euler", modus: "erkunden", vorgang: "entladen", R: 10, C: 100, tAchse: 5, dt: 0.2, darstellung: "normal", tangente: true,
-	t: 0, laeuft: false, marke: { t: 1, y: 3.7 } };
+	t: 0, laeuft: false, marke: { t: 1, y: 3.7 }, kurven: [] };
 const aufgabe = { nr: 0, R: 0, C: 0, U0: 10, tAchse: 60, daten: [] };
 
 /* ---------- Physik ---------- */
@@ -958,20 +964,55 @@ function zeichneEnergie() {
 	document.getElementById("auswertung").innerHTML = "&tau; = <i class='gr'>R</i>&thinsp;&middot;&thinsp;<i class='gr'>C</i> = " + P.sig(tau(z), 3) + "&nbsp;s<span class='trenner'>|</span>Quellenspannung <i class='gr'>U</i><sub>0</sub> = " + U0 + "&nbsp;V";
 }
 
-const TITEL = { euler: "Simulation: Euler-Verfahren und exakte Lösung", modell: "Simulation: Tangente und Linearisierung", energie: "Simulation: Energiebilanz beim Laden" };
+/* Richtungsfeld der Differentialgleichung: an jedem Punkt (t, Q) ein Strich mit der Steigung Q-Punkt */
+const KURVENFARBEN = [P.FARBEN.rot, P.FARBEN.gruen, P.FARBEN.orange, P.FARBEN.lila, P.FARBEN.blau];
+function qPunkt(z, Q, Qmax) { return (z.vorgang === "laden" ? (Qmax - Q) : -Q) / tau(z); }
+function zeichneRichtung() {
+	const z = zustand, Qmax = z.C * 1e-6 * U0 * 1e3;          /* mC */
+	const yMax = P.schrittFuer(Qmax * 1.2, 5) * Math.ceil(Qmax * 1.2 / P.schrittFuer(Qmax * 1.2, 5));
+	if (!z.rfStart) { z.rfStart = true; z.kurven = [{ t: 0, Q: z.vorgang === "laden" ? 0 : Qmax }]; }
+	const u = P.achsen(ctx, { dx: LINKS, dy: 24, dw: W - LINKS - 20, dh: H - 70, xMin: 0, xMax: z.tAchse, yMin: 0, yMax, xLabel: "t", xEinheit: "s", yLabel: "Q", yEinheit: "mC" });
+	achsenAktuell = u;
+	const sx = u.o.dw / z.tAchse, sy = u.o.dh / yMax;     /* Pixel je s bzw. je mC */
+	const nx = W < 560 ? 12 : 22, ny = W < 560 ? 10 : 14, L = W < 560 ? 9 : 12;
+	ctx.save(); ctx.strokeStyle = "rgba(0,0,0,0.45)"; ctx.lineWidth = 1.1;
+	for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) {
+		const t = (i + 0.5) * z.tAchse / nx, Q = (j + 0.5) * yMax / ny;
+		const m = qPunkt(z, Q, Qmax);                          /* mC/s */
+		let dx = 1, dy = -m * sy / sx; const l = Math.hypot(dx, dy); dx *= L / 2 / l; dy *= L / 2 / l;
+		const px = u.xPix(t), py = u.yPix(Q);
+		ctx.beginPath(); ctx.moveTo(px - dx, py - dy); ctx.lineTo(px + dx, py + dy); ctx.stroke();
+	}
+	ctx.restore();
+	/* Lösungskurven durch die gewählten Anfangspunkte */
+	ctx.save(); ctx.beginPath(); ctx.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); ctx.clip();
+	z.kurven.forEach((k, n) => {
+		const T = tau(z), f = t => z.vorgang === "laden" ? Qmax - (Qmax - k.Q) * Math.exp(-(t - k.t) / T) : k.Q * Math.exp(-(t - k.t) / T);
+		P.kurve(ctx, u, f, 0, z.tAchse, KURVENFARBEN[n % KURVENFARBEN.length], { breite: 2.2 });
+		P.punkte(ctx, u, [{ x: k.t, y: k.Q }], KURVENFARBEN[n % KURVENFARBEN.length], { r: 5 });
+	});
+	ctx.restore();
+	document.getElementById("auswertung").innerHTML = (z.vorgang === "laden"
+		? "Differentialgleichung: <i class='gr'>Q&#775;</i> = (<i class='gr'>C</i>&thinsp;&middot;&thinsp;<i class='gr'>U</i><sub>0</sub> &minus; <i class='gr'>Q</i>)&thinsp;:&thinsp;(<i class='gr'>R</i>&thinsp;&middot;&thinsp;<i class='gr'>C</i>)"
+		: "Differentialgleichung: <i class='gr'>Q&#775;</i> = &minus;<i class='gr'>Q</i>&thinsp;:&thinsp;(<i class='gr'>R</i>&thinsp;&middot;&thinsp;<i class='gr'>C</i>)")
+		+ "<span class='trenner'>|</span>&tau; = " + P.sig(tau(z), 3) + "&nbsp;s<br>" + (z.kurven.length ? "Lösungskurven: " + z.kurven.length : "Klicken Sie in das Diagramm, um einen Anfangswert zu setzen.");
+}
+
+const TITEL = { euler: "Simulation: Euler-Verfahren und exakte Lösung", modell: "Simulation: Tangente und Linearisierung", energie: "Simulation: Energiebilanz beim Laden", richtung: "Simulation: Richtungsfeld der Differentialgleichung" };
 const FUSSNOTE = {
 	euler: "Das Euler-Verfahren rechnet in Schritten &Delta;<i class='gr'>t</i> mit der Änderungsrate am Anfang jedes Schritts. Quellenspannung <i class='gr'>U</i><sub>0</sub> = 10&nbsp;V.",
 	modell: "Ziehen Sie das grüne Fadenkreuz, um Werte abzulesen. Quellenspannung <i class='gr'>U</i><sub>0</sub> = 10&nbsp;V.",
-	energie: "Starten Sie den Ladevorgang und vergleichen Sie die Energien. Verändern Sie danach <i class='gr'>R</i>."
+	energie: "Starten Sie den Ladevorgang und vergleichen Sie die Energien. Verändern Sie danach <i class='gr'>R</i>.",
+	richtung: "Jeder Strich zeigt die Steigung, die die Differentialgleichung an dieser Stelle vorschreibt. Eine Lösung folgt überall den Strichen; der Anfangswert legt fest, welche."
 };
 /* sichtbare Bedienzeilen je Ansicht */
-const ZEILEN = { euler: ["zeile-vorgang", "zeile-dt", "zeile-r", "zeile-c", "zeile-t"], modell: ["zeile-vorgang", "zeile-darstellung", "zeile-r", "zeile-c", "zeile-t"], energie: ["zeile-r", "zeile-c", "zeile-t", "zeile-start"] };
-const ALLE_ZEILEN = ["zeile-vorgang", "zeile-dt", "zeile-darstellung", "zeile-r", "zeile-c", "zeile-t", "zeile-start"];
+const ZEILEN = { euler: ["zeile-vorgang", "zeile-dt", "zeile-r", "zeile-c", "zeile-t"], modell: ["zeile-vorgang", "zeile-darstellung", "zeile-r", "zeile-c", "zeile-t"], energie: ["zeile-r", "zeile-c", "zeile-t", "zeile-start"], richtung: ["zeile-vorgang", "zeile-r", "zeile-c", "zeile-t", "zeile-rf"] };
+const ALLE_ZEILEN = ["zeile-vorgang", "zeile-dt", "zeile-darstellung", "zeile-r", "zeile-c", "zeile-t", "zeile-start", "zeile-rf"];
 
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
 	const a = zustand.modus === "aufgabe" ? "modell" : zustand.ansicht;
-	if (a === "euler") zeichneEuler(); else if (a === "modell") zeichneModell(); else zeichneEnergie();
+	if (a === "euler") zeichneEuler(); else if (a === "modell") zeichneModell(); else if (a === "richtung") zeichneRichtung(); else zeichneEnergie();
 }
 function aktualisiere() {
 	document.getElementById("wert-r").innerHTML = zustand.R + "&nbsp;k&Omega;";
@@ -996,7 +1037,7 @@ function zeigeAnsicht() {
 /* ---------- Bedienung ---------- */
 P.regler("regler-r", "wert-r", v => v, v => { zustand.R = v; zustand.t = 0; stoppe(); }, aktualisiere);
 P.regler("regler-c", "wert-c", v => v, v => { zustand.C = v; zustand.t = 0; stoppe(); }, aktualisiere);
-K.bindeKnopfgruppe("vorgang-knoepfe", w => zustand.vorgang = w, aktualisiere);
+K.bindeKnopfgruppe("vorgang-knoepfe", w => { zustand.vorgang = w; zustand.kurven = []; zustand.rfStart = false; }, aktualisiere);
 K.bindeKnopfgruppe("dt-knoepfe", w => zustand.dt = parseFloat(w), aktualisiere);
 K.bindeKnopfgruppe("t-knoepfe", w => { zustand.tAchse = parseFloat(w); zustand.t = 0; stoppe(); }, aktualisiere);
 K.bindeKnopfgruppe("darstellung-knoepfe", w => {
@@ -1036,6 +1077,28 @@ P.ziehbar(canvas, (x, y) => {
 	zustand.marke.y = Math.max(u.o.yMin, Math.min(u.o.yMax, u.yWert(y)));
 	zeichne();
 });
+
+/* Richtungsfeld: Anfangspunkt setzen (Klick) und verschieben (Ziehen) */
+let rfZiehen = false;
+function rfWert(ev) {
+	const r = canvas.getBoundingClientRect(), u = achsenAktuell, x = ev.clientX - r.left, y = ev.clientY - r.top;
+	if (!u || x < u.o.dx || x > u.o.dx + u.o.dw || y < u.o.dy || y > u.o.dy + u.o.dh) return null;
+	return { t: u.xWert(x), Q: u.yWert(y) };
+}
+canvas.addEventListener("pointerdown", ev => {
+	if (zustand.modus === "aufgabe" || zustand.ansicht !== "richtung") return;
+	const w = rfWert(ev); if (!w) return;
+	if (zustand.kurven.length >= 5) zustand.kurven.shift();
+	zustand.kurven.push(w); rfZiehen = true; canvas.setPointerCapture(ev.pointerId); zeichne();
+});
+canvas.addEventListener("pointermove", ev => {
+	if (!rfZiehen) return;
+	const w = rfWert(ev); if (!w) return;
+	zustand.kurven[zustand.kurven.length - 1] = w; zeichne();
+});
+canvas.addEventListener("pointerup", () => { rfZiehen = false; });
+document.getElementById("btn-rf-loeschen").addEventListener("click", () => { zustand.kurven = []; zeichne(); });
+document.getElementById("btn-rf-loeschen").classList.add("neben");
 
 /* ---------- Aufgabenmodus ---------- */
 P.bindeModus("modus-knoepfe", modus => {
