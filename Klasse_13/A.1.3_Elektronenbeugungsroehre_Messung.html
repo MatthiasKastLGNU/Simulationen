@@ -790,6 +790,18 @@ button.haupt:hover { background: #2020d0; }
 .erklaerung { font-size: 0.92rem; margin: 0.2rem 0 0.4rem; color: #333; }
 .ergebnis-h { font-size: 1.05rem; margin-top: 0.4rem; }
 #diagramm-canvas { touch-action: none; }
+.eingabebox { margin-top: 0.7rem; max-width: 26rem; }
+.eingabebox .gk-titel { display: block; margin-bottom: 0.1rem; }
+table.eingabe td { padding: 0.15rem 0.4rem; }
+table.eingabe input {
+	font: inherit; font-size: 0.95rem; width: 5em; text-align: right;
+	padding: 0.15rem 0.35rem; border: 1.5px solid #bbb; border-radius: 1mm;
+	font-variant-numeric: tabular-nums;
+}
+table.eingabe input:focus { outline: none; border-color: var(--blue-frame); }
+table.eingabe input.fehlt { background: #fff6e0; }
+table.eingabe button.ik.grau { min-width: 1.8rem; height: 1.7rem; }
+.speicherhinweis { font-size: 0.8rem; color: #777; margin: 0.3rem 0 0; }
 </style>
 
 </head>
@@ -879,7 +891,7 @@ button.haupt:hover { background: #2020d0; }
 	<div class="tcb blau" data-st="auswertung">
 		<div class="tcb-title">Auswertung: Wellenlänge über 1/Impuls</div>
 		<div class="tcb-body">
-			<p class="erklaerung">Gezeigt werden Ihre Messwerte des <b>äußeren</b> Rings aus „Messen“ (<i class="gr">d</i> = 0,123 nm, <i class="gr">l</i> = 125 mm) mit Fehlerbalken (<i class="gr">λ</i>: ±5 %, 1/<i class="gr">p</i>: ±3 %). <b>Ziehen</b> Sie die Ursprungsgerade so, dass sie möglichst alle Fehlerbalken trifft.</p>
+			<p class="erklaerung">Gezeigt werden Ihre Messwerte des <b>äußeren</b> Rings (<i class="gr">d</i> = 0,123 nm, <i class="gr">l</i> = 125 mm) mit Fehlerbalken (<i class="gr">λ</i>: ±5 %, 1/<i class="gr">p</i>: ±3 %). <b>Ziehen</b> Sie die Ursprungsgerade so, dass sie möglichst alle Fehlerbalken trifft.</p>
 			<div class="leinwand">
 				<canvas id="diagramm-canvas" class="sim"></canvas>
 				<span class="bildknoepfe">
@@ -890,8 +902,8 @@ button.haupt:hover { background: #2020d0; }
 				<div class="gk">
 					<span class="gk-titel">Messwerte</span>
 					<span class="ik-leiste">
-						<button class="ik" id="btn-eigene" title="eigene Messwerte aus „Messen“">eigene</button>
-						<button class="ik" id="btn-beispiel" title="Beispielmesswerte (echte Röhre)">Beispiel</button>
+						<button class="ik" id="btn-eigene" title="eigene Messwerte">eigene</button>
+						<button class="ik" id="btn-beispiel" title="Beispielmesswerte einer echten Röhre">Beispiel</button>
 					</span>
 				</div>
 				<div class="gk">
@@ -903,6 +915,16 @@ button.haupt:hover { background: #2020d0; }
 			</div>
 			<div class="ergebnis-h" id="ergebnis-h"></div>
 			<p class="hinweis" id="hinweis-messwerte"></p>
+			<div class="eingabebox" id="eingabebox">
+				<span class="gk-titel">Ihre Messwerte (äußerer Ring): aus „Messen“ übernommen oder aus Ihrer Tabelle eintragen</span>
+				<div class="tabelle-wrap">
+					<table class="messtabelle eingabe"><thead><tr><th>Nr.</th><th><i class="gr">U</i><sub>B</sub> in kV</th><th>2<i class="gr">r</i> in mm</th><th></th></tr></thead><tbody id="eingabe-koerper"></tbody></table>
+				</div>
+				<div class="zeile" style="margin-top:0.4rem">
+					<button class="ik" id="btn-zeile" title="Zeile hinzufügen" aria-label="Zeile hinzufügen"><svg viewBox="0 0 14 14" width="13" height="13"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.4"/></svg></button>
+				</div>
+				<p class="speicherhinweis">Die Messwerte bleiben in diesem Browser auf diesem Gerät gespeichert, auch für die nächste Stunde. An einem anderen Gerät tragen Sie sie einfach hier ein.</p>
+			</div>
 		</div>
 	</div>
 
@@ -929,7 +951,18 @@ const BEISPIEL = [[1.6, 66], [2.1, 60], [2.5, 55], [3.0, 52], [3.5, 47], [4.0, 4
 /* ---------- Zustand ---------- */
 const STANDARD = { U: 3.0, I: 100, magnet: 0, wege: false, tempo: false, graphit: "poly", phi: 0, marken: [-18, 18], ring: "aussen" };
 const zustand = Object.assign({ modus: "messen", quelle: "eigene", steigung: 0.6, literatur: false }, JSON.parse(JSON.stringify(STANDARD)));
-const messungen = [];   /* {U, ring, d2} */
+const messungen = [];   /* {U, ring, d2}; bleibt im Browser gespeichert (auch fuer die Folgestunde und fuer ?modus=auswertung) */
+const SPEICHER = "A.1.3_Elektronenbeugungsroehre_Messwerte";
+function messungenLaden() {
+	let daten = [];
+	try { daten = JSON.parse(localStorage.getItem(SPEICHER) || "[]"); } catch (e) { daten = []; }
+	messungen.length = 0;
+	if (Array.isArray(daten)) daten.forEach(m => { if (m && (m.ring === "innen" || m.ring === "aussen")) messungen.push({ U: m.U === null ? NaN : Number(m.U), ring: m.ring, d2: m.d2 === null ? NaN : Number(m.d2) }); });
+}
+function messungenSpeichern() {
+	try { localStorage.setItem(SPEICHER, JSON.stringify(messungen.filter(m => isFinite(m.U) || isFinite(m.d2)).map(m => ({ U: isFinite(m.U) ? m.U : null, ring: m.ring, d2: isFinite(m.d2) ? m.d2 : null })))); } catch (e) {}
+}
+messungenLaden();
 
 /* ---------- Physik ---------- */
 function wellenlaenge(UkV) {
@@ -1113,7 +1146,7 @@ const D_AUSSEN = 0.123e-9, L_M = 0.125;
 function auswertungsPunkte() {
 	let roh;
 	if (zustand.quelle === "beispiel") roh = BEISPIEL.map(([U, d2]) => ({ U, d2 }));
-	else roh = messungen.filter(m => m.ring === "aussen").map(m => ({ U: m.U, d2: m.d2 }));
+	else roh = messungen.filter(m => m.ring === "aussen" && m.U > 0 && m.d2 > 0).map(m => ({ U: m.U, d2: m.d2 }));
 	if (!roh.length) return [];
 	return roh.map(m => {
 		const p = Math.sqrt(2 * M_E * E_LAD * m.U * 1000);
@@ -1152,7 +1185,7 @@ function zeichneDiagramm(gZiel, WZ, HZ) {
 	if (!gZiel) el.innerHTML = "Steigung der Geraden: <i class='gr'>h</i> = <span class='kennzahl'>" + P.de(h / 1e-34, 2) + "·10⁻³⁴&nbsp;J&nbsp;s</span>" +
 		(zustand.literatur ? " <span class='naeherung'>(Literaturwert 6,63·10⁻³⁴ J s, Abweichung " + P.de(Math.abs(h - H_PL) / H_PL * 100, 0) + " %)</span>" : "");
 	const hinw = document.getElementById("hinweis-messwerte");
-	if (!gZiel) hinw.textContent = pkt.length ? "" : (zustand.quelle === "eigene" ? "Noch keine Messwerte des äußeren Rings: Notieren Sie unter „Messen“ einige Messwerte oder wählen Sie die Beispielwerte." : "");
+	if (!gZiel) hinw.textContent = pkt.length ? "" : (zustand.quelle === "eigene" ? "Noch keine Messwerte des äußeren Rings: Tragen Sie Ihre Messwerte unten ein (oder notieren Sie sie unter „Messen“)." : "");
 	if (gZiel) P.text(g, "h = " + P.de(h / 1e-34, 2) + "·10⁻³⁴ J s", o.dx + 10, o.dy + 18, { groesse: 14, fett: true, farbe: "#BF0000" });
 }
 P.ziehbar(cD, (x, y) => (geoD && x > geoD.o.dx && y < geoD.o.dy + geoD.o.dh) ? "gerade" : null, (k, x, y) => {
@@ -1198,7 +1231,7 @@ document.getElementById("btn-diagramm-bild").addEventListener("click", () => {
 });
 document.getElementById("btn-tabelle-bild").addEventListener("click", () => {
 	const kopf = ["Nr.", "U_B in kV", "Ring", "2r in mm", "r in mm"];
-	const zeilen = messungen.map((m, i) => [String(i + 1), P.de(m.U, 2), m.ring === "innen" ? "innen" : "außen", P.de(m.d2, 1), P.de(m.d2 / 2, 2)]);
+	const zeilen = vollstaendig().map((m, i) => [String(i + 1), P.de(m.U, 2), m.ring === "innen" ? "innen" : "außen", P.de(m.d2, 1), P.de(m.d2 / 2, 2)]);
 	const bz = [60, 110, 80, 100, 100], zh = 26, W = bz.reduce((a, b) => a + b, 0) + 20, H = (zeilen.length + 1) * zh + 24;
 	const k = P.neuerCanvas(W, H, 2), g = k.ctx;
 	let y = 12;
@@ -1208,7 +1241,7 @@ document.getElementById("btn-tabelle-bild").addEventListener("click", () => {
 	g.lineWidth = 1; g.beginPath(); g.moveTo(10, y); g.lineTo(W - 10, y); g.stroke();
 	zeilen.forEach(z => { zeile(z, y + 18, false); y += zh; });
 	g.lineWidth = 1.5; g.beginPath(); g.moveTo(10, y); g.lineTo(W - 10, y); g.stroke();
-	speichereCanvas(k.canvas, "Elektronenbeugung_Messtabelle_" + messungen.length + "_Werte.png");
+	speichereCanvas(k.canvas, "Elektronenbeugung_Messtabelle_" + zeilen.length + "_Werte.png");
 });
 
 /* ---------- Bedienung ---------- */
@@ -1233,16 +1266,66 @@ P.ziehbar(cS, (x, y) => {
 });
 
 const tabKoerper = document.getElementById("messtabelle-koerper");
+const vollstaendig = () => messungen.filter(m => isFinite(m.U) && isFinite(m.d2));
 function tabelleZeigen() {
-	tabKoerper.innerHTML = messungen.map((m, i) => "<tr><td>" + (i + 1) + "</td><td>" + P.de(m.U, 2) + "</td><td>" + (m.ring === "innen" ? "innen" : "außen") +
+	const liste = vollstaendig();
+	tabKoerper.innerHTML = liste.map((m, i) => "<tr><td>" + (i + 1) + "</td><td>" + P.de(m.U, 2) + "</td><td>" + (m.ring === "innen" ? "innen" : "außen") +
 		"</td><td>" + P.de(m.d2, 1) + "</td><td>" + P.de(m.d2 / 2, 2) + "</td></tr>").join("");
-	document.getElementById("tabelle").hidden = messungen.length === 0;
+	document.getElementById("tabelle").hidden = liste.length === 0;
 }
-document.getElementById("btn-messwert").addEventListener("click", () => {
-	messungen.push({ U: Math.round(zustand.U * 100) / 100, ring: zustand.ring, d2: Math.round(Math.abs(zustand.marken[1] - zustand.marken[0]) * 10) / 10 });
-	tabelleZeigen();
+
+/* Eingabetabelle in der Auswertung: eigene Werte des aeusseren Rings eintragen und korrigieren */
+const eingabeKoerper = document.getElementById("eingabe-koerper");
+const leseEingabe = s => { const w = parseFloat(String(s).replace(",", ".").trim()); return isFinite(w) && w > 0 ? w : NaN; };
+const eingabeText = (w, n) => isFinite(w) ? String(Math.round(w * 10 ** n) / 10 ** n).replace(".", ",") : "";
+function eingabeZeigen() {
+	const aussen = messungen.filter(m => m.ring === "aussen");
+	if (!aussen.length) { messungen.push({ U: NaN, ring: "aussen", d2: NaN }); return eingabeZeigen(); }
+	eingabeKoerper.innerHTML = aussen.map((m, i) => "<tr data-i='" + messungen.indexOf(m) + "'><td>" + (i + 1) + "</td>" +
+		"<td><input type='text' inputmode='decimal' data-feld='U' value='" + eingabeText(m.U, 2) + "' placeholder='z. B. 3,0' aria-label='Spannung in kV'></td>" +
+		"<td><input type='text' inputmode='decimal' data-feld='d2' value='" + eingabeText(m.d2, 1) + "' placeholder='z. B. 52' aria-label='Durchmesser in mm'></td>" +
+		"<td><button class='ik grau' data-weg title='Zeile löschen' aria-label='Zeile löschen'><svg viewBox='0 0 16 16' width='12' height='12'><path d='M3 3l10 10M13 3L3 13' stroke='currentColor' stroke-width='1.6'/></svg></button></td></tr>").join("");
+	eingabeKoerper.querySelectorAll("input").forEach(el => el.classList.toggle("fehlt", el.value.trim() === ""));
+}
+eingabeKoerper.addEventListener("input", ev => {
+	const el = ev.target.closest("input"); if (!el) return;
+	const m = messungen[Number(el.closest("tr").dataset.i)]; if (!m) return;
+	m[el.dataset.feld] = leseEingabe(el.value);
+	el.classList.toggle("fehlt", el.value.trim() === "");
+	messungenSpeichern(); tabelleZeigen(); zeichneDiagramm();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => { messungen.length = 0; tabelleZeigen(); });
+eingabeKoerper.addEventListener("keydown", ev => {
+	if (ev.key !== "Enter" || !ev.target.closest("input")) return;
+	const felder = [...eingabeKoerper.querySelectorAll("input")], k = felder.indexOf(ev.target);
+	if (k === felder.length - 1) document.getElementById("btn-zeile").click();
+	else felder[k + 1].focus();
+});
+eingabeKoerper.addEventListener("click", ev => {
+	const b = ev.target.closest("button[data-weg]"); if (!b) return;
+	messungen.splice(Number(b.closest("tr").dataset.i), 1);
+	messungenSpeichern(); tabelleZeigen(); eingabeZeigen(); zeichneDiagramm();
+});
+document.getElementById("btn-zeile").addEventListener("click", () => {
+	messungen.push({ U: NaN, ring: "aussen", d2: NaN });
+	messungenSpeichern(); eingabeZeigen();
+	const felder = eingabeKoerper.querySelectorAll("input"); felder[felder.length - 2].focus();
+});
+/* in einem anderen Tab (z. B. ?modus=messen) notierte Werte sofort uebernehmen */
+window.addEventListener("storage", ev => {
+	if (ev.key !== SPEICHER) return;
+	messungenLaden(); tabelleZeigen();
+	if (!eingabeKoerper.contains(document.activeElement)) eingabeZeigen();
+	zeichneDiagramm();
+});
+document.getElementById("btn-messwert").addEventListener("click", () => {
+	for (let i = messungen.length - 1; i >= 0; i--) if (!isFinite(messungen[i].U) && !isFinite(messungen[i].d2)) messungen.splice(i, 1);
+	messungen.push({ U: Math.round(zustand.U * 100) / 100, ring: zustand.ring, d2: Math.round(Math.abs(zustand.marken[1] - zustand.marken[0]) * 10) / 10 });
+	messungenSpeichern(); tabelleZeigen(); eingabeZeigen();
+});
+document.getElementById("btn-leeren").addEventListener("click", () => {
+	if (messungen.length && !confirm("Alle notierten Messwerte löschen?")) return;
+	messungen.length = 0; messungenSpeichern(); tabelleZeigen(); eingabeZeigen();
+});
 document.getElementById("btn-standard").addEventListener("click", () => {
 	Object.assign(zustand, JSON.parse(JSON.stringify(STANDARD)));
 	document.getElementById("regler-u").value = zustand.U;
@@ -1255,6 +1338,7 @@ function quelleSetzen(q) {
 	zustand.quelle = q;
 	document.getElementById("btn-eigene").classList.toggle("aktiv", q === "eigene");
 	document.getElementById("btn-beispiel").classList.toggle("aktiv", q === "beispiel");
+	document.getElementById("eingabebox").hidden = q !== "eigene";
 	zeichneDiagramm();
 }
 document.getElementById("btn-eigene").addEventListener("click", () => quelleSetzen("eigene"));
@@ -1344,7 +1428,6 @@ function modusSetzen(m) {
 	document.querySelectorAll("#modusleiste button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
 	document.querySelectorAll("[data-st]").forEach(el => { el.hidden = !el.dataset.st.split(" ").includes(m); });
 	if (m === "aufgabe" && aufgabe.nr === 0) neueAufgabe();
-	if (m === "auswertung" && zustand.quelle === "eigene" && !messungen.some(x => x.ring === "aussen")) quelleSetzen("beispiel");
 	groesse();
 }
 const WUNSCH = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => MODI.includes(m));
@@ -1355,6 +1438,8 @@ document.getElementById("modusleiste").addEventListener("click", ev => { const b
 
 /* ---------- Start ---------- */
 updU();
+tabelleZeigen();
+eingabeZeigen();
 quelleSetzen("eigene");
 window.addEventListener("resize", groesse);
 modusSetzen(ERLAUBT[0]);
