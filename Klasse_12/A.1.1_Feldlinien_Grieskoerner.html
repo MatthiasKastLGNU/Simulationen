@@ -1143,6 +1143,12 @@ window.SimUI = (function () {
 	window.addEventListener("hashchange", () => { oeffneAnker(); neueAnordnung(); });
 	oeffneAnker();
 	neueAnordnung();
+	/* Modus per Link: ?modus=platten (oder mehrere: ?modus=platten,ring) zeigt nur diese Anordnungen */
+	if (!location.hash) {
+		const leiste = document.getElementById("anordnung-knoepfe");
+		SimUI.modusPerLink("anordnung-knoepfe", "wert");
+		if (leiste.classList.contains("per-link-aus")) leiste.closest(".bgruppe").classList.add("per-link-aus");
+	}
 	layout();
 	const NAMEN = { einzeln: "Einzelne Ladung", ungleich: "Ungleichnamige Ladungen", gleich: "Gleichnamige Ladungen", platten: "Plattenkondensator", ring: "Abschirmung", spitze: "Platte und Spitze" };
 	SimUI.bildKnopf("btn-bild", canvas, () => "Grieskoerner_" + zustand.anordnung,
