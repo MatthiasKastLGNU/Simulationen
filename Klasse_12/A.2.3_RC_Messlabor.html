@@ -915,7 +915,7 @@ const sb = document.getElementById("schaltung"), sctx = sb.getContext("2d");
 let SW = 760, SH = 280, geo = null;
 
 function berechneGeometrie() {
-	const x0 = SW * 0.09, xs = SW * 0.33, xr1 = SW * 0.42, xr2 = SW * 0.54, xc = SW * 0.62;
+	const x0 = SW * 0.14, xs = SW * 0.35, xr1 = SW * 0.42, xr2 = SW * 0.54, xc = SW * 0.62;
 	const yo = 46, yu = SH - 34, yq1 = yo + (yu - yo) * 0.38, yq2 = yo + (yu - yo) * 0.5;
 	const yc = (yo + yu) / 2 + 8, spalt = 14;
 	const k1 = { x: xs - 52, y: yo }, k2 = { x: xs - 30, y: yo + 44 }, dreh = { x: xs, y: yo };
