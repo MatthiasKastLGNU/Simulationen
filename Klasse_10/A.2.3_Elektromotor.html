@@ -197,8 +197,8 @@ p { margin: 0 0 0.5rem; }
 				<div class="zeile">
 					<button class="haupt" id="btn-strom">Strom einschalten</button>
 					<span class="knopfleiste">
-						<button id="btn-anstossen">Anstoßen</button>
-						<button id="btn-zeitlupe">Zeitlupe</button>
+						<button id="btn-anstossen" data-st="mit">Anstoßen</button>
+						<button id="btn-zeitlupe" data-st="mit zwei">Zeitlupe</button>
 					</span>
 				</div>
 
@@ -261,7 +261,7 @@ p { margin: 0 0 0.5rem; }
 					<span class="gruppe">Anzeigen</span>
 					<label class="haken"><input type="checkbox" id="zeige-i" checked><span>Stromrichtung</span></label>
 					<label class="haken"><input type="checkbox" id="zeige-f" checked><span>Kräfte</span></label>
-					<label class="haken" data-st="ohne mit zwei"><input type="checkbox" id="zeige-d"><span>Diagramm</span></label>
+					<label class="haken" data-st="zwei"><input type="checkbox" id="zeige-d"><span>Diagramm</span></label>
 				</div>
 			</div>
 			<canvas id="diagramm" class="sim"></canvas>
@@ -950,7 +950,13 @@ function schleife(t) {
 	requestAnimationFrame(schleife);
 }
 window.addEventListener("resize", layout);
-modusSetzen("ohne");
+/* Aufruf vom Arbeitsblatt: ?modus=mit zeigt nur diesen Teil (ohne Reiterleiste), ?modus=ohne,mit nur diese Reiter; ohne Angabe alle */
+const erlaubt = (new URLSearchParams(location.search).get("modus") || "").split(",").filter(m => TITEL[m]);
+if (erlaubt.length) {
+	document.querySelectorAll("#modusleiste button").forEach(b => { b.hidden = !erlaubt.includes(b.dataset.modus); });
+	document.getElementById("modusleiste").hidden = erlaubt.length === 1;
+}
+modusSetzen(erlaubt[0] || "ohne");
 werteAnzeigen();
 K.nachFontLaden(layout);
 requestAnimationFrame(schleife);
