@@ -746,18 +746,399 @@ window.SimPlus = (function () {
 
 	</script>
 
+	<style>
+/* ==========================================================================
+   Sim-UI 2026-10-03: Bedienung nach den neuen Vorgaben (Kast)
+   - Piktogramme statt Woerter, Bedeutung in title/aria-label
+   - Farben nach Rolle: Modusleiste und Hauptaktion blau, Bewegung dunkel,
+     Auswahl neutral grau (aktiv mit blauem Rahmen), Nebensaechliches hellgrau
+   - Gruppen mit kleinem grauem Titel
+   ========================================================================== */
+.knopfleiste button, button.wahl {
+	font: inherit; font-size: 0.95rem;
+	padding: 0.26rem 0.65rem;
+	border: 1.5px solid #B4B4B4; border-radius: 1mm;
+	background: #F4F4F4; color: #222; cursor: pointer;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.3em;
+	line-height: 1.2; min-height: 2.05rem;
+}
+.knopfleiste button:hover:not(.aktiv):not(:disabled), button.wahl:hover:not(.aktiv) { background: #E9E9E9; }
+.knopfleiste button.aktiv, button.wahl.aktiv {
+	background: #EEF0FF; color: var(--blue-frame); border-color: var(--blue-frame);
+	box-shadow: 0 0 0 1px var(--blue-frame) inset;
+}
+.knopfleiste button.laeuft { background: #fff; color: var(--blue-frame); border-color: var(--blue-frame); }
+.knopfleiste button:disabled { opacity: 0.4; cursor: default; }
+/* Hauptaktion: gefuellt blau und fett */
+.knopfleiste button.haupt, button.haupt {
+	background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; box-shadow: none;
+}
+.knopfleiste button.haupt:hover:not(:disabled), button.haupt:hover:not(:disabled) { background: #00008F; }
+.knopfleiste button.haupt.aktiv { background: #00006A; color: #fff; }
+/* Bewegungen: dunkel wie ein Geraetegehaeuse */
+.knopfleiste button.beweg, button.beweg {
+	background: #2E3238; border-color: #2E3238; color: #fff; box-shadow: none;
+}
+.knopfleiste button.beweg:hover:not(:disabled) { background: #474C54; }
+.knopfleiste button.beweg.aktiv { background: #2E3238; color: #FFD34D; border-color: #FFD34D; }
+/* Nebensaechliches: hellgrau und kleiner */
+.knopfleiste button.neben, button.neben {
+	background: transparent; border: 1px solid transparent; color: #8A8A8A; font-size: 0.8rem;
+	padding: 0.15rem 0.4rem; min-height: 1.85rem; min-width: 1.95rem; font-weight: normal; box-shadow: none;
+}
+.knopfleiste button.neben:hover, button.neben:hover { background: #EFEFEF; border-color: #DDD; color: #333; }
+/* Piktogramm-Knopf */
+button.ik { padding: 0.2rem 0.5rem; min-width: 2.3rem; }
+button.ik svg { width: 1.25rem; height: 1.25rem; display: block; flex: none; }
+button.ik.neben svg { width: 1.05rem; height: 1.05rem; }
+button.ik.gross svg { width: 1.75rem; height: 1.75rem; }
+button.ik.gross { padding: 0.12rem 0.4rem; }
+.bgruppe .zeile { gap: 0.4rem; flex-wrap: nowrap; }
+.bgruppe .wert { min-width: 2.2em; text-align: left; }
+button .chev { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+/* Bediengruppen mit kleinem grauem Titel */
+.bedienleiste { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; align-items: flex-end; margin-top: 0.55rem; }
+.bgruppe { display: inline-flex; flex-direction: column; gap: 0.18rem; }
+.bgruppe > .btitel { font-size: 0.72rem; color: #808080; letter-spacing: 0.02em; }
+.bgruppe > .knopfleiste { flex-wrap: wrap; }
+.bgruppe.rechts { margin-left: auto; }
+.bedienleiste .zeile { flex: 1 1 100%; }
+/* Knopfleiste direkt am Bild (Pause, Herunterladen) */
+.bildleiste { display: flex; justify-content: flex-end; gap: 0.35rem; margin: 0.25rem 0 0; flex-wrap: wrap; }
+/* kleines Farbmuster (Material) in Knoepfen */
+.muster { display: inline-block; width: 0.95em; height: 0.95em; border: 1px solid #888; border-radius: 2px; }
+/* Schalter-Chips: Haekchen als Knopf (Checkbox bleibt fuer die Logik erhalten) */
+label.chip {
+	display: inline-flex; align-items: center; gap: 0.35em; position: relative;
+	border: 1.5px solid #B4B4B4; background: #F4F4F4; border-radius: 1mm; color: #222;
+	padding: 0.2rem 0.6rem; cursor: pointer; min-height: 2.05rem; font-size: 0.92rem; min-width: 0 !important;
+}
+label.chip:hover { background: #E9E9E9; }
+label.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.chip:has(input:checked) { background: #EEF0FF; border-color: var(--blue-frame); color: var(--blue-frame); box-shadow: 0 0 0 1px var(--blue-frame) inset; }
+label.chip:has(input:focus-visible) { outline: 2px solid #8080FF; outline-offset: 1px; }
+label.chip:has(input:disabled) { opacity: 0.4; cursor: default; }
+span[data-chipicon] svg { width: 1.3em; height: 1.3em; display: block; }
+span[data-pfeil] svg { width: 1.7em; height: 0.75em; display: block; }
+/* Modusleiste in Blau (Erkunden | Aufgabe ...) */
+.knopfleiste.modus-blau button { background: #fff; color: var(--blue-frame); border: 1.5px solid var(--blue-frame); font-weight: normal; box-shadow: none; }
+.knopfleiste.modus-blau button:hover:not(.aktiv) { background: var(--blue-title); }
+.knopfleiste.modus-blau button.aktiv { background: var(--blue-frame); color: #fff; }
+/* Modus per Link: ausgeblendete Elemente */
+.per-link-aus { display: none !important; }
+	</style>
+	<script>
+/* ==========================================================================
+   Sim-UI: Piktogramme, Modus per Link, Bild herunterladen (Kast, 2026-10-03)
+   ========================================================================== */
+"use strict";
+window.SimUI = (function () {
+	const P = {
+		play: '<path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/>',
+		pause: '<rect x="6" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/>',
+		stopp: '<rect x="5.5" y="5.5" width="13" height="13" rx="1.5" fill="currentColor"/>',
+		reset: '<path d="M12 5V2L7.5 6.5 12 11V8a5 5 0 1 1-5 5H4a8 8 0 1 0 8-8z" fill="currentColor"/>',
+		muell: '<path d="M4.5 6.5h15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9.5 6V4h5v2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.5 8.5l1 11h9l1-11z" fill="currentColor"/>',
+		download: '<path d="M12 3.5v10" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 10.5L12 16l5.5-5.5z" fill="currentColor"/><path d="M4.5 16.5v3h15v-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+		rechts: '<path d="M2.5 9h11V4l8.5 8-8.5 8v-5h-11z" fill="currentColor"/>',
+		links: '<path d="M21.5 9h-11V4L2 12l8.5 8v-5h11z" fill="currentColor"/>',
+		hoch: '<path d="M9 21.5v-11H4L12 2l8 8.5h-5v11z" fill="currentColor"/>',
+		runter: '<path d="M9 2.5v11H4l8 8.5 8-8.5h-5v-11z" fill="currentColor"/>',
+		plus: '<path d="M12 4.5v15M4.5 12h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+		minus: '<path d="M4.5 12h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+		wuerfel: '<rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.3" cy="8.3" r="1.7" fill="currentColor"/><circle cx="15.7" cy="15.7" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="15.7" cy="8.3" r="1.7" fill="currentColor"/><circle cx="8.3" cy="15.7" r="1.7" fill="currentColor"/>',
+		auge: '<path d="M1.8 12C4.3 7.3 7.9 5.2 12 5.2s7.7 2.1 10.2 6.8C19.7 16.7 16.1 18.8 12 18.8S4.3 16.7 1.8 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/>',
+		haken: '<path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+		notieren: '<rect x="3" y="4" width="13" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9h7M6 13h7M6 17h4" stroke="currentColor" stroke-width="1.8"/><path d="M19 12v8M15 16h8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
+		schritt: '<path d="M4 4.5v15l11-7.5z" fill="currentColor"/><rect x="16" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
+		zurueck: '<path d="M20 4.5v15L9 12z" fill="currentColor"/><rect x="4.4" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
+		lupeplus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M10 7v6M7 10h6" stroke="currentColor" stroke-width="2"/>',
+		lupeminus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="2"/>',
+		drehen: '<path d="M18.5 12a6.5 6.5 0 1 1-2.2-4.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v6.3h-6.3z" fill="currentColor"/>',
+		tausch: '<path d="M3 8.5h13V5l5 5-5 5v-3.5H3z" fill="currentColor" transform="translate(0,-2)"/><path d="M21 15.5H8V12l-5 5 5 5v-3.5h13z" fill="currentColor" transform="translate(0,-1)"/>',
+		ziel: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+		stern: '<path d="M12 2.8l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 17l-5.8 3.3 1.4-6.4-4.9-4.4 6.5-.7z" fill="currentColor"/>',
+		blitz: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="currentColor"/>',
+		platten_an: '<rect x="1.5" y="3" width="4" height="18" rx="0.6" fill="#E04848"/><rect x="18.5" y="3" width="4" height="18" rx="0.6" fill="#4848E0"/><path d="M7 8h8M7 16h8" stroke="#333" stroke-width="1.7"/><path d="M14.5 5.6l3 2.4-3 2.4zM14.5 13.6l3 2.4-3 2.4z" fill="#333"/>',
+		platten_aus: '<rect x="1.5" y="3" width="4" height="18" rx="0.6" fill="#B8B8B8"/><rect x="18.5" y="3" width="4" height="18" rx="0.6" fill="#B8B8B8"/>',
+		puck_plus: '<circle cx="12" cy="12" r="9.5" fill="#222"/><path d="M7 12h10M12 7v10" stroke="#FF6B6B" stroke-width="2.6" stroke-linecap="round"/>',
+		puck_minus: '<circle cx="12" cy="12" r="9.5" fill="#222"/><path d="M7 12h10" stroke="#8A8AFF" stroke-width="2.6" stroke-linecap="round"/>',
+		ladung_plus: '<circle cx="12" cy="12" r="9.3" fill="#FFE5E5" stroke="#E00000" stroke-width="2"/><path d="M7.5 12h9M12 7.5v9" stroke="#E00000" stroke-width="2.2"/>',
+		ladung_minus: '<circle cx="12" cy="12" r="9.3" fill="#E5E5FF" stroke="#0000E0" stroke-width="2"/><path d="M7.5 12h9" stroke="#0000E0" stroke-width="2.2"/>',
+		feldpfeile: '<path d="M3 6h12M3 12h12M3 18h12" stroke="#555" stroke-width="1.8"/><path d="M14 3.5l5 2.5-5 2.5zM14 9.5l5 2.5-5 2.5zM14 15.5l5 2.5-5 2.5z" fill="#555"/>',
+		bahn: '<path d="M3 19C7 19 8 6 13 6s6 8 8 8" fill="none" stroke="#E04848" stroke-width="2.4" stroke-linecap="round"/><circle cx="21" cy="14" r="2.3" fill="#222"/>',
+		an_einzeln: '<path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4M4.6 4.6l2.8 2.8M16.6 16.6l2.8 2.8M4.6 19.4l2.8-2.8M16.6 7.4l2.8-2.8" stroke="#888" stroke-width="1.5"/><circle cx="12" cy="12" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.6"/><path d="M9.6 12h4.8M12 9.6v4.8" stroke="#E00000" stroke-width="1.6"/>',
+		an_ungleich: '<path d="M7 9.5Q12 4.5 17 9.5M7 14.5Q12 19.5 17 14.5M8.5 12h7" fill="none" stroke="#888" stroke-width="1.4"/><circle cx="5" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M3 12h4M5 10v4" stroke="#E00000" stroke-width="1.4"/><circle cx="19" cy="12" r="3.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.5"/><path d="M17 12h4" stroke="#0000E0" stroke-width="1.4"/>',
+		an_gleich: '<path d="M7 9Q9 4 8 1.5M17 9Q15 4 16 1.5M7 15Q9 20 8 22.5M17 15Q15 20 16 22.5" fill="none" stroke="#888" stroke-width="1.4"/><circle cx="5" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M3 12h4M5 10v4" stroke="#E00000" stroke-width="1.4"/><circle cx="19" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M17 12h4M19 10v4" stroke="#E00000" stroke-width="1.4"/>',
+		an_platten: '<path d="M7 6h10M7 10h10M7 14h10M7 18h10" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><rect x="17.5" y="3" width="4" height="18" rx="0.5" fill="#4848E0"/>',
+		an_ring: '<path d="M7 5h10M7 19h10" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><rect x="17.5" y="3" width="4" height="18" rx="0.5" fill="#4848E0"/><circle cx="12" cy="12" r="4.3" fill="#fff" stroke="#555" stroke-width="2.2"/>',
+		an_spitze: '<path d="M7 7l6.5 4M7 12h6.5M7 17l6.5-4" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M13 12l9-4v8z" fill="#4848E0"/>',
+		blitz_aus: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="#C8C8C8"/>',
+		blitz_an: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="#F2B400" stroke="#8A6400" stroke-width="0.8"/>',
+		dipol: '<ellipse cx="12" cy="12" rx="9.5" ry="4.2" fill="#E7DEC8" stroke="#8A7A55" stroke-width="1.2"/><path d="M5 12h3" stroke="#0000E0" stroke-width="1.8"/><path d="M16 12h3M17.5 10.5v3" stroke="#E00000" stroke-width="1.8"/>',
+		zerlegung: '<path d="M3 20L17 6" stroke="#C00000" stroke-width="2.2"/><path d="M14.5 4.5l4.5-0.5-0.5 4.5z" fill="#C00000"/><path d="M3 20h12M3 20V8" stroke="#555" stroke-width="1.6" stroke-dasharray="2.5 2"/>',
+		feldlinien: '<path d="M2 7c6-4 14-4 20 0M2 12h20M2 17c6 4 14 4 20 0" fill="none" stroke="#555" stroke-width="1.7"/><path d="M14 10l3 2-3 2z" fill="#555"/>',
+		erde: '<path d="M12 3v9M4.5 12h15M7.5 15.5h9M10.3 19h3.4" stroke="#333" stroke-width="2.2" stroke-linecap="round"/>',
+		parallelogramm: '<path d="M3 19L8 6h13l-5 13z" fill="none" stroke="#888" stroke-width="1.8" stroke-dasharray="3 2"/>',
+		gewicht: '<path d="M12 3v15" stroke="#111" stroke-width="2.6"/><path d="M7 15l5 6.5 5-6.5z" fill="#111"/>',
+		winkel: '<path d="M3 20h18M3 20L16 6" stroke="#555" stroke-width="2"/><path d="M10 20a7 7 0 0 0-2-4.9" fill="none" stroke="#C00000" stroke-width="2"/>',
+		pf_rechtwinklig: '<path d="M4 20h13" stroke="#008040" stroke-width="2.4"/><path d="M15 16.5l6 3.5-6 3.5z" fill="#008040" transform="translate(0,-3.5)"/><path d="M4 20V7" stroke="#0000BF" stroke-width="2.4"/><path d="M0.5 9l3.5-6 3.5 6z" fill="#0000BF"/><path d="M4 16h4v4" fill="none" stroke="#777" stroke-width="1.2"/>',
+		pf_gleich: '<path d="M2 9h15" stroke="#008040" stroke-width="2.4"/><path d="M15 5.5l6 3.5-6 3.5z" fill="#008040"/><path d="M2 16h11" stroke="#0000BF" stroke-width="2.4"/><path d="M11 12.5l6 3.5-6 3.5z" fill="#0000BF"/>',
+		pf_gegen: '<path d="M2 9h15" stroke="#008040" stroke-width="2.4"/><path d="M15 5.5l6 3.5-6 3.5z" fill="#008040"/><path d="M22 16H11" stroke="#0000BF" stroke-width="2.4"/><path d="M13 12.5L7 16l6 3.5z" fill="#0000BF"/>',
+		anhaengen: '<path d="M2 18h9" stroke="#008040" stroke-width="2.2"/><path d="M9.5 15l4.5 3-4.5 3z" fill="#008040"/><path d="M14 18l5-11" stroke="#0000BF" stroke-width="2.2"/><path d="M16.3 7.8l3.6-3.6 0.3 5z" fill="#0000BF"/>',
+		komponenten: '<path d="M4 20L18 6" stroke="#C00000" stroke-width="2.2"/><path d="M4 20h14M18 20V6" stroke="#777" stroke-width="1.6" stroke-dasharray="3 2"/>',
+		linie_fertig: '<path d="M3 19C6 12 10 8 15 7" fill="none" stroke="#C00000" stroke-width="2.4"/><path d="M15 7c2.5-.4 4 0 6 1" fill="none" stroke="#C00000" stroke-width="2.4" stroke-dasharray="2.2 2"/><circle cx="3" cy="19" r="2.2" fill="#fff" stroke="#333" stroke-width="1.4"/><path d="M17.5 4.5l4 3.3-4.8 1.7z" fill="#C00000"/>',
+		elektroskop: '<rect x="3" y="7" width="18" height="15" rx="2" fill="#EEE" stroke="#666" stroke-width="1.4"/><circle cx="12" cy="11.5" r="5.5" fill="#fff" stroke="#999" stroke-width="1"/><path d="M12 1.5v14" stroke="#B07A2A" stroke-width="2"/><rect x="8" y="0.8" width="8" height="2" rx="0.8" fill="#B07A2A"/><path d="M12 9l4 5" stroke="#B07A2A" stroke-width="1.6"/>',
+		schnipsel: '<ellipse cx="12" cy="7" rx="7" ry="5.5" fill="#E04848"/><path d="M12 12.5l-1 2.5" stroke="#999" stroke-width="1"/><rect x="3" y="19" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6" transform="rotate(-12 5 20)"/><rect x="10" y="18.5" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6" transform="rotate(10 12 20)"/><rect x="17" y="19.5" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6"/>',
+		stab_minus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#F4F4F4" stroke="#888" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.4"/><path d="M15.6 6h4.8" stroke="#0000E0" stroke-width="1.8"/>',
+		stab_plus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#D8EEF4" stroke="#6A9AA8" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.4"/><path d="M15.6 6h4.8M18 3.6v4.8" stroke="#E00000" stroke-width="1.8"/>',
+		kugel_teilen: '<path d="M0.5 12h3" stroke="#8B5A2B" stroke-width="2"/><circle cx="8.5" cy="12" r="5.2" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><circle cx="18.6" cy="12" r="5.2" fill="#FFE5E5" stroke="#E00000" stroke-width="1.3"/><path d="M16.4 12h4.4M18.6 9.8v4.4" stroke="#E00000" stroke-width="1.6"/><path d="M6.6 12h3.8M8.5 10.1v3.8" stroke="#E00000" stroke-width="1.3" opacity="0.55"/>',
+		finger: '<path d="M10 22v-4.5c-2-1.5-3.5-3.5-3.5-6V9.5c0-.9 1.6-.9 1.6 0v2.5V3c0-1.3 2.4-1.3 2.4 0v7V8.2c0-1.2 2.3-1.2 2.3 0V10V9c0-1.2 2.2-1.2 2.2 0v1.2c0-1 2-1 2 0v4.3c0 2-1 3.4-2.3 4.5V22z" fill="#F2C9A0" stroke="#9A6A40" stroke-width="1"/>',
+		alle_ladungen: '<circle cx="7" cy="8" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M5 8h4M7 6v4" stroke="#E00000" stroke-width="1.4"/><circle cx="17" cy="8" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M15.6 8h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="7" cy="17.5" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M5.6 17.5h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="17" cy="17.5" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M15 17.5h4M17 15.5v4" stroke="#E00000" stroke-width="1.4"/>',
+		platte_eine: '<rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M15 4v8" stroke="#777" stroke-width="1"/><circle cx="15" cy="14.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
+		pendel_kond: '<rect x="1.5" y="3" width="3.6" height="18" rx="0.5" fill="#E04848"/><rect x="18.9" y="3" width="3.6" height="18" rx="0.5" fill="#4848E0"/><path d="M12 3v8" stroke="#777" stroke-width="1"/><circle cx="12" cy="13.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
+		schalter_zu: '<circle cx="4" cy="15" r="2" fill="currentColor"/><circle cx="20" cy="15" r="2" fill="currentColor"/><path d="M4 15h16" stroke="currentColor" stroke-width="2.4"/>',
+		schalter_offen: '<circle cx="4" cy="15" r="2" fill="currentColor"/><circle cx="20" cy="15" r="2" fill="currentColor"/><path d="M4 15L18 6" stroke="currentColor" stroke-width="2.4"/>',
+		zeitlupe: '<circle cx="12" cy="13" r="8.5" fill="none" stroke="#555" stroke-width="2"/><path d="M12 13V8M12 13l3.5 2" stroke="#555" stroke-width="2" stroke-linecap="round"/><path d="M9.5 2.5h5" stroke="#555" stroke-width="2"/>',
+		merken: '<path d="M6 2.5h12v19l-6-4.5-6 4.5z" fill="currentColor"/>',
+		fenster: '<rect x="4" y="4" width="16" height="16" fill="none" stroke="#C00000" stroke-width="2"/><circle cx="9" cy="9" r="1.6" fill="#333"/><circle cx="15" cy="14" r="1.6" fill="#333"/><circle cx="10" cy="16" r="1.6" fill="#333"/>',
+		richtungsfeld: '<g fill="#555" stroke="#555" stroke-width="1.5"><path d="M3 6h5M14 4l5 3M3 13l5-2M14 13h5M4 20l4-3M14 20l5 1"/><path d="M8 4.5l2 1.5-2 1.5zM19 5.6l1.6 2.4-2.8.2zM8 9.6l2 .9-1.8 1.4zM19 11.5l2 1.5-2 1.5zM8 15.6l1.1 2.3-2.4-.1zM19 19.5l2 1.7-2.5.6z"/></g>',
+		feldlinie_neu: '<path d="M2 18C6 18 8 6 14 6" fill="none" stroke="#555" stroke-width="2.2"/><path d="M12.5 3l4 3-4.3 2.6z" fill="#555"/><path d="M18 12v8M14 16h8" stroke="#295C06" stroke-width="2.4" stroke-linecap="round"/>',
+		radierer: '<path d="M3 15l9-9 7 7-6 6H8z" fill="#F4B8C0" stroke="#A04050" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 10.5l7 7" stroke="#A04050" stroke-width="1.4"/><path d="M13 20h8" stroke="#777" stroke-width="1.6"/>',
+		punkte_abc: '<circle cx="5" cy="17" r="2.3" fill="#333"/><circle cx="12" cy="7" r="2.3" fill="#333"/><circle cx="19" cy="15" r="2.3" fill="#333"/>',
+		iso: '<ellipse cx="12" cy="12" rx="9" ry="6" fill="none" stroke="#7A1FA2" stroke-width="1.8" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="2.2" fill="#C00000"/>',
+		st_qu: '<rect x="3" y="4" width="18" height="16" rx="2" fill="#2E3238"/><rect x="5.5" y="7" width="13" height="6" rx="1" fill="#7CFC7C"/><path d="M7 17h3M14 17h3" stroke="#bbb" stroke-width="1.6"/>',
+		st_abstand: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><path d="M7.5 12h9" stroke="#333" stroke-width="1.6"/><path d="M9.5 9.5L6.5 12l3 2.5zM14.5 9.5l3 2.5-3 2.5z" fill="#333"/>',
+		st_flaeche: '<path d="M3 8l6-5h12l-6 5z" fill="#E04848" opacity="0.85"/><path d="M3 19l6-5h12l-6 5z" fill="#4848E0" opacity="0.85"/><path d="M3 8v2M15 8v2" stroke="#999" stroke-width="1"/>',
+		st_material: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><rect x="7.5" y="5" width="9" height="14" rx="1" fill="#BFE3EC" stroke="#6A9AA8" stroke-width="1"/>',
+		an_fuell: '<rect x="2" y="2" width="20" height="3.5" rx="0.5" fill="#E04848"/><rect x="2" y="18.5" width="20" height="3.5" rx="0.5" fill="#4848E0"/><rect x="4" y="9" width="10" height="9.5" fill="#A8C8FF" stroke="#5A7AB0" stroke-width="1"/><path d="M18 17V9" stroke="#333" stroke-width="1.6"/><path d="M15.5 11l2.5-3.5 2.5 3.5z" fill="#333"/>',
+		an_schicht: '<rect x="2" y="2" width="20" height="3.5" rx="0.5" fill="#E04848"/><rect x="2" y="18.5" width="20" height="3.5" rx="0.5" fill="#4848E0"/><rect x="2" y="9.5" width="20" height="5" fill="#A8C8FF" stroke="#5A7AB0" stroke-width="1"/>',
+		kugel_kond: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><path d="M8 15h8" stroke="#888" stroke-width="1.2" stroke-dasharray="2 1.6"/><circle cx="12" cy="11" r="3.3" fill="#C8C8C8" stroke="#555" stroke-width="1"/><path d="M12 3v4.7" stroke="#777" stroke-width="0.9"/>',
+		motor_last: '<circle cx="8" cy="12" r="6" fill="#fff" stroke="#333" stroke-width="1.6"/><path d="M5.3 14.5V9.5L8 12.5l2.7-3v5" fill="none" stroke="#333" stroke-width="1.3"/><path d="M14 9l5-5" stroke="#777" stroke-width="1"/><path d="M19 4v10" stroke="#777" stroke-width="1"/><rect x="16.5" y="14" width="5" height="6" fill="#8A8A8A"/>',
+		vorspulen: '<path d="M3 5v14l9-7zM12 5v14l9-7z" fill="currentColor"/>',
+		w_halb: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M3 11h4.6M7.6 11v10" stroke="#C00000" stroke-width="1.5" stroke-dasharray="2 1.5"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
+		w_flaeche: '<path d="M3 4c3 9 7 13 18 15v2H3z" fill="#9FB4FF" opacity="0.7"/><path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
+		w_fit: '<circle cx="5" cy="7" r="1.5" fill="#333"/><circle cx="9" cy="13" r="1.5" fill="#333"/><circle cx="14" cy="16" r="1.5" fill="#333"/><circle cx="19" cy="18.3" r="1.5" fill="#333"/><path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#C86400" stroke-width="2"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
+		euler: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#999" stroke-width="1.4"/><path d="M3 4l5 9h0l5 4.5 6 2.5" fill="none" stroke="#C86400" stroke-width="2.2"/><circle cx="3" cy="4" r="1.5" fill="#C86400"/><circle cx="8" cy="13" r="1.5" fill="#C86400"/><circle cx="13" cy="17.5" r="1.5" fill="#C86400"/>',
+		tangente: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M2 2l9 17" stroke="#C00000" stroke-width="1.8"/><path d="M2 21h20" stroke="#555" stroke-width="1.3"/>',
+		energie: '<rect x="3" y="8" width="5" height="13" fill="#0000BF"/><rect x="10" y="13" width="5" height="8" fill="#C86400"/><rect x="17" y="4" width="5" height="17" fill="#295C06"/>',
+		schuetteln: '<rect x="8" y="4" width="8" height="16" rx="1.6" fill="#2E3238"/><rect x="9.3" y="6" width="5.4" height="10" fill="#9FC4FF"/><path d="M4.5 7c-1.5 3-1.5 7 0 10M2 5c-2 4-2 10 0 14M19.5 7c1.5 3 1.5 7 0 10M22 5c2 4 2 10 0 14" fill="none" stroke="#C86400" stroke-width="1.5"/>',
+		handy: '<rect x="6" y="2" width="12" height="20" rx="2.2" fill="#2E3238"/><rect x="7.6" y="4.5" width="8.8" height="14" fill="#9FC4FF"/><circle cx="12" cy="20.2" r="0.9" fill="#ccc"/>',
+		handschuh: '<path d="M7 22v-6c-2-1-3.5-3-3.5-5.5 0-1.2 1.6-1.4 2.2-.3L7 13V5c0-1.6 2.4-1.6 2.4 0v5V3.6c0-1.6 2.4-1.6 2.4 0V10V4.5c0-1.6 2.4-1.6 2.4 0V11V6.5c0-1.5 2.3-1.5 2.3 0V15c0 3-1.3 5-3 7z" fill="#B03030" stroke="#6A1A1A" stroke-width="0.9"/><path d="M7 19h9M7 21h9" stroke="#E8A0A0" stroke-width="0.8"/>',
+		stift: '<path d="M5 19L17 7l2 2L7 21H5z" fill="#2B6CB0"/><path d="M17 7l1.5-1.5a1.4 1.4 0 0 1 2 2L19 9z" fill="#333"/><path d="M5 19v2h2" fill="#777"/><circle cx="5.2" cy="20.8" r="1.5" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/>',
+		stift_alu: '<path d="M5 19L17 7l2 2L7 21H5z" fill="#2B6CB0"/><path d="M17 7l1.5-1.5a1.4 1.4 0 0 1 2 2L19 9z" fill="#333"/><path d="M3 17.5l3.5-3.5 3.5 3.5L6.5 21z" fill="#D8DDE2" stroke="#7A8590" stroke-width="0.9"/>',
+		aequi: '<circle cx="12" cy="12" r="3" fill="#E04848"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#7A1FA2" stroke-width="1.5"/><circle cx="12" cy="12" r="10" fill="none" stroke="#7A1FA2" stroke-width="1.5"/>',
+		aequi_neu: '<path d="M3 16c3-6 9-8 13-7" fill="none" stroke="#7A1FA2" stroke-width="2"/><path d="M18 12v8M14 16h8" stroke="#295C06" stroke-width="2.4" stroke-linecap="round"/>',
+		pot3d: '<path d="M2 18l8 4 12-6-8-4z" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/><path d="M5 17c3-1 4-12 6-12s2 9 4 10 4 0 5 .5" fill="none" stroke="#C00000" stroke-width="1.8"/>',
+		farbig: '<rect x="2" y="4" width="20" height="16" rx="2" fill="url(#g)"/><defs><linearGradient id="g"><stop offset="0" stop-color="#3050E0"/><stop offset="0.5" stop-color="#F0F0F0"/><stop offset="1" stop-color="#E03030"/></linearGradient></defs>',
+		wanne_platten: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><rect x="3.5" y="5" width="2.6" height="14" fill="#E04848"/><rect x="17.9" y="5" width="2.6" height="14" fill="#555"/>',
+		wanne_ring: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="#555" stroke-width="2"/><circle cx="12" cy="12" r="2.4" fill="#E04848"/>',
+		wanne_dipol: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><circle cx="7" cy="12" r="2.6" fill="#E04848"/><circle cx="17" cy="12" r="2.6" fill="#555"/>',
+		sonde: '<path d="M4 20l9-9" stroke="#111" stroke-width="2.2"/><circle cx="14" cy="10" r="3" fill="#111"/><path d="M15.5 8.5L21 3" stroke="#C00000" stroke-width="1.4"/>',
+		t_elektron: '<circle cx="12" cy="12" r="5" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.5"/><path d="M9.5 12h5" stroke="#0000E0" stroke-width="1.8"/>',
+		t_proton: '<circle cx="12" cy="12" r="8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="#E00000" stroke-width="2"/>',
+		t_alpha: '<circle cx="8.5" cy="8.5" r="5" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><circle cx="15.5" cy="15.5" r="5" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><circle cx="15.5" cy="8.5" r="5" fill="#E8E8E8" stroke="#777" stroke-width="1.2"/><circle cx="8.5" cy="15.5" r="5" fill="#E8E8E8" stroke="#777" stroke-width="1.2"/><path d="M6.3 8.5h4.4M8.5 6.3v4.4M13.3 15.5h4.4M15.5 13.3v4.4" stroke="#E00000" stroke-width="1.4"/>',
+		stoppuhr: '<circle cx="12" cy="13.5" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 13.5V9M12 13.5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 2.5h5M12 2.5v3" stroke="currentColor" stroke-width="2"/>',
+		sp_lang: '<rect x="2" y="5" width="20" height="14" rx="2" fill="#F4E2BC" stroke="#8B6508" stroke-width="0.8"/><path d="M4 5v14M6.5 5v14M9 5v14M11.5 5v14M14 5v14M16.5 5v14M19 5v14" stroke="#B87333" stroke-width="1.3"/>',
+		sp_helmholtz: '<ellipse cx="7" cy="12" rx="3" ry="9" fill="none" stroke="#B87333" stroke-width="2.6"/><ellipse cx="17" cy="12" rx="3" ry="9" fill="none" stroke="#B87333" stroke-width="2.6"/><path d="M1 12h22" stroke="#999" stroke-width="1" stroke-dasharray="2 1.5"/>',
+		sp_kurz: '<ellipse cx="12" cy="12" rx="3.5" ry="6" fill="none" stroke="#B87333" stroke-width="3"/><path d="M1 12h22" stroke="#999" stroke-width="1" stroke-dasharray="2 1.5"/>',
+		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
+		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
+		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
+		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
+	};
+	function svg(name) {
+		return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + (P[name] || "") + "</svg>";
+	}
+	/* Knopf mit Piktogramm versehen; titel kommt in title und aria-label */
+	function setzeIcon(btn, name, titel) {
+		if (!btn) return;
+		btn.innerHTML = svg(name);
+		btn.classList.add("ik");
+		if (titel) { btn.title = titel; btn.setAttribute("aria-label", titel); }
+	}
+	/* Alle <button data-icon="..."> beim Laden fuellen (Text dahinter bleibt, falls data-text gesetzt) */
+	function fuelleIcons(wurzel) {
+		(wurzel || document).querySelectorAll("button[data-icon]").forEach(b => {
+			if (b.querySelector("svg")) return;
+			const t = b.getAttribute("title") || b.getAttribute("aria-label") || "";
+			const zusatz = b.dataset.text ? '<span>' + b.dataset.text + "</span>" : "";
+			b.innerHTML = svg(b.dataset.icon) + zusatz;
+			b.classList.add("ik");
+			if (t) { b.title = t; b.setAttribute("aria-label", t); }
+		});
+		(wurzel || document).querySelectorAll("span[data-chipicon]").forEach(sp => { sp.innerHTML = svg(sp.dataset.chipicon); });
+		(wurzel || document).querySelectorAll("span[data-pfeil]").forEach(sp => {
+			const f = sp.dataset.pfeil, gestr = sp.dataset.gestrichelt ? ' stroke-dasharray="4 3"' : "";
+			sp.innerHTML = '<svg viewBox="0 0 34 14" aria-hidden="true"><path d="M1 7h24" stroke="' + f + '" stroke-width="2.6"' + gestr + '/><path d="M23 1.5l10 5.5-10 5.5z" fill="' + f + '"/></svg>';
+		});
+	}
+	/* Modus per Link: ?modus=a,b zeigt nur diese Modi; bei genau einem Modus verschwindet die Leiste.
+	   leisteId: Container mit <button data-modus="...">. Liefert die erlaubten Modi. */
+	function modusPerLink(leisteId, attr) {
+		attr = attr || "modus";
+		const leiste = document.getElementById(leisteId);
+		if (!leiste) return null;
+		let roh = "";
+		try { roh = new URLSearchParams(location.search).get("modus") || ""; } catch (e) { roh = ""; }
+		const wunsch = roh.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+		const knoepfe = Array.from(leiste.querySelectorAll("button[data-" + attr + "]"));
+		const erlaubt = knoepfe.filter(b => !wunsch.length || wunsch.includes(String(b.dataset[attr]).toLowerCase()));
+		if (!erlaubt.length) return null;
+		knoepfe.forEach(b => b.classList.toggle("per-link-aus", !erlaubt.includes(b)));
+		if (erlaubt.length === 1 && wunsch.length) leiste.classList.add("per-link-aus");
+		const aktiv = knoepfe.find(b => b.classList.contains("aktiv"));
+		if (wunsch.length && (!aktiv || !erlaubt.includes(aktiv))) erlaubt[0].click();
+		return erlaubt.map(b => b.dataset[attr]);
+	}
+	function istTablet() {
+		return (navigator.maxTouchPoints || 0) > 1 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+	}
+	/* Canvas als PNG speichern, mit weissem Grund und Beschriftungszeilen darunter.
+	   zeilen: Array von Strings (oder Funktion, die eins liefert). Auf Tablets ueber das Teilen-Menue. */
+	function speichereBild(canvas, dateiname, zeilen) {
+		/* Kein Text unter dem Bild (Kast, 2026-10-03): die Bedingungen stehen nur im Dateinamen */
+		zeilen = [];
+		const f = Math.max(1, canvas.width / (canvas.clientWidth || canvas.width));
+		const zh = Math.round(19 * f), rand = Math.round(10 * f);
+		const schrift = Math.round(14 * f) + "px 'Libertinus Sans', 'Segoe UI', sans-serif";
+		/* Beschriftung auf die Bildbreite umbrechen, nie abschneiden */
+		const mess = document.createElement("canvas").getContext("2d");
+		mess.font = schrift;
+		const breite = canvas.width - 2 * rand;
+		const umbrochen = [];
+		zeilen.forEach(z => {
+			let zeile = "";
+			String(z).split(" ").forEach(wort => {
+				const probe = zeile ? zeile + " " + wort : wort;
+				if (zeile && mess.measureText(probe).width > breite) { umbrochen.push(zeile); zeile = wort; }
+				else zeile = probe;
+			});
+			if (zeile) umbrochen.push(zeile);
+		});
+		const c = document.createElement("canvas");
+		c.width = canvas.width;
+		c.height = canvas.height + (umbrochen.length ? umbrochen.length * zh + 2 * rand : 0);
+		const g = c.getContext("2d");
+		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#222";
+		g.font = schrift;
+		g.textBaseline = "top";
+		umbrochen.forEach((z, i) => g.fillText(z, rand, canvas.height + rand + i * zh));
+		const name = String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
+		c.toBlob(blob => {
+			if (!blob) return;
+			try {
+				const datei = new File([blob], name, { type: "image/png" });
+				if (istTablet() && navigator.canShare && navigator.canShare({ files: [datei] })) {
+					navigator.share({ files: [datei], title: name }).catch(() => {});
+					return;
+				}
+			} catch (e) { /* weiter mit normalem Download */ }
+			const a = document.createElement("a");
+			a.href = URL.createObjectURL(blob);
+			a.download = name;
+			document.body.appendChild(a); a.click(); a.remove();
+			setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+		}, "image/png");
+	}
+	/* Knopf "Bild herunterladen" an ein Canvas binden */
+	function bildKnopf(btnId, canvasOderFn, dateiname, zeilenFn) {
+		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
+		if (!btn) return;
+		btn.addEventListener("click", () => {
+			const cv = typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn;
+			const name = typeof dateiname === "function" ? dateiname() : dateiname;
+			speichereBild(cv, name, zeilenFn);
+		});
+	}
+	/* Zelleninhalt als Text, Indizes/Hochzahlen als Unicode */
+	const TIEF = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "a": "ₐ", "e": "ₑ", "o": "ₒ", "x": "ₓ", "h": "ₕ", "k": "ₖ", "l": "ₗ", "m": "ₘ", "n": "ₙ", "p": "ₚ", "s": "ₛ", "t": "ₜ", "r": "ᵣ", "i": "ᵢ", "u": "ᵤ", "v": "ᵥ" };
+	const HOCH = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "-": "⁻", "−": "⁻", "+": "⁺" };
+	function zellText(el) {
+		const k = el.cloneNode(true);
+		k.querySelectorAll("button, input, select").forEach(x => x.remove());
+		k.querySelectorAll("sub").forEach(s => {
+			const t = s.textContent;
+			s.replaceWith(t.split("").every(c => TIEF[c]) ? t.split("").map(c => TIEF[c]).join("") : "_" + t);
+		});
+		k.querySelectorAll("sup").forEach(s => {
+			const t = s.textContent;
+			s.replaceWith(t.split("").every(c => HOCH[c]) ? t.split("").map(c => HOCH[c]).join("") : "^" + t);
+		});
+		return k.textContent.replace(/\s+/g, " ").trim();
+	}
+	/* Messtabelle als PNG speichern (Kopf fett, Linien wie booktabs, darunter Beschriftung) */
+	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
+		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
+		if (typeof zeilen === "function") zeilen = zeilen();
+		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
+			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => z.offsetParent !== null || !tabelle.offsetParent).map(zellText) }))
+			.filter(r => r.zellen.length);
+		const f = 2, schrift = "'Libertinus Sans', 'Segoe UI', sans-serif";
+		const m = document.createElement("canvas").getContext("2d");
+		const spalten = Math.max(...reihen.map(r => r.zellen.length));
+		const breiten = new Array(spalten).fill(30);
+		reihen.forEach(r => r.zellen.forEach((z, i) => {
+			m.font = (r.kopf ? "bold " : "") + "15px " + schrift;
+			breiten[i] = Math.max(breiten[i], m.measureText(z).width + 24);
+		}));
+		const rand = 16, zh = 26, kopfH = titel ? 30 : 0;
+		const W = breiten.reduce((a, b) => a + b, 0) + 2 * rand;
+		const extra = (zeilen || []).length * 19;
+		const H = kopfH + reihen.length * zh + 2 * rand + (extra ? extra + 10 : 0);
+		const c = document.createElement("canvas");
+		c.width = W * f; c.height = H * f;
+		const g = c.getContext("2d");
+		g.scale(f, f);
+		g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+		g.fillStyle = "#111"; g.textBaseline = "middle";
+		if (titel) { g.font = "bold 16px " + schrift; g.fillText(titel, rand, rand + 10); }
+		let y = rand + kopfH;
+		const linie = (yy, d) => { g.strokeStyle = "#111"; g.lineWidth = d; g.beginPath(); g.moveTo(rand, yy); g.lineTo(W - rand, yy); g.stroke(); };
+		linie(y, 1.4);
+		reihen.forEach((r, ri) => {
+			let x = rand;
+			g.font = (r.kopf ? "bold " : "") + "15px " + schrift;
+			g.textAlign = "center";
+			r.zellen.forEach((z, i) => { g.fillText(z, x + breiten[i] / 2, y + zh / 2); x += breiten[i]; });
+			y += zh;
+			if (r.kopf && (!reihen[ri + 1] || !reihen[ri + 1].kopf)) linie(y, 0.8);
+		});
+		linie(y, 1.4);
+		g.textAlign = "left"; g.font = "13px " + schrift; g.fillStyle = "#333";
+		(zeilen || []).forEach((z, i) => g.fillText(z, rand, y + 18 + i * 19));
+		/* ueber speichereBild ausgeben (ohne weitere Beschriftung) */
+		speichereBild(c, dateiname, []);
+	}
+	/* Knopf "Tabelle als Bild speichern" binden */
+	function tabelleKnopf(btnId, tabelle, dateiname, titel, zeilenFn) {
+		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
+		if (!btn) return;
+		btn.addEventListener("click", () => speichereTabelle(tabelle, typeof dateiname === "function" ? dateiname() : dateiname, titel, zeilenFn));
+	}
+	/* Vorzeichen einer Ladung als gezeichnete Striche genau in der Kreismitte (nie als Textzeichen) */
+	function ladungsZeichen(g, x, y, r, q, farbe, breite) {
+		const k = Math.max(3.5, 0.48 * r);
+		g.save();
+		g.strokeStyle = farbe || "#fff"; g.lineWidth = breite || Math.max(2, r / 5); g.lineCap = "butt";
+		g.beginPath();
+		if (q !== 0) { g.moveTo(x - k, y); g.lineTo(x + k, y); }
+		if (q > 0) { g.moveTo(x, y - k); g.lineTo(x, y + k); }
+		g.stroke();
+		g.restore();
+	}
+	document.addEventListener("DOMContentLoaded", () => fuelleIcons());
+	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet };
+})();
+	</script>
+
 </head>
 <style>
 /* Ergänzungen RC-Messlabor */
-.knopfleiste button.haupt { background: var(--blue-frame); color: #fff; font-weight: bold; }
-.knopfleiste button.haupt:hover:not(.aktiv) { background: #00008F; }
-.knopfleiste button.haupt:disabled { opacity: 0.4; cursor: default; }
-.knopfleiste button.neben { border-color: #9A9A9A; color: #555; font-size: 0.85rem; padding: 0.2rem 0.55rem; }
-.knopfleiste button.neben:hover { background: #F2F2F2; }
 .werkzeugleiste { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin: 0.45rem 0 0.2rem; }
-.werkzeugleiste .titel { font-size: 0.9rem; color: #444; margin-right: 0.3rem; }
-.werkzeugleiste button { font: inherit; font-size: 0.9rem; padding: 0.2rem 0.6rem; border: 1.5px solid var(--green-frame); border-radius: 1mm; background: #fff; color: var(--green-frame); cursor: pointer; }
-.werkzeugleiste button.aktiv { background: var(--green-frame); color: #fff; }
+.werkzeugleiste .titel { font-size: 0.72rem; color: #808080; margin-right: 0.2rem; }
 .auswertung .zeile-aus { display: block; }
 .legende-punkt { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.3em; vertical-align: -0.05em; }
 .echt-info { font-size: 0.9rem; color: #333; margin: 0.4rem 0 0; }
@@ -783,23 +1164,27 @@ window.SimPlus = (function () {
 		<div class="tcb-body">
 			<canvas id="schaltung" class="sim"></canvas>
 			<div class="steuerung" id="steuerung">
-				<div class="zeile" data-modi="erkunden"><label>Widerstand <i class="gr">R</i></label>
+				<div class="bedienleiste" data-modi="erkunden" style="margin-top:0">
+				<div class="bgruppe"><span class="btitel">Widerstand <i class="gr">R</i></span>
 					<span class="knopfleiste" id="r-knoepfe"><button data-wert="680">680&nbsp;Ω</button><button data-wert="2000">2&nbsp;kΩ</button><button data-wert="10000" class="aktiv">10&nbsp;kΩ</button><button data-wert="47000">47&nbsp;kΩ</button></span></div>
-				<div class="zeile" data-modi="erkunden"><label>Kapazität <i class="gr">C</i></label>
+				<div class="bgruppe"><span class="btitel">Kapazität <i class="gr">C</i></span>
 					<span class="knopfleiste" id="c-knoepfe"><button data-wert="2e-6">2&nbsp;µF</button><button data-wert="96e-6" class="aktiv">96&nbsp;µF</button><button data-wert="470e-6">470&nbsp;µF</button><button data-wert="2200e-6">2200&nbsp;µF</button></span></div>
-				<div class="zeile" data-modi="erkunden"><label>Quellenspannung <i class="gr">U</i><sub>0</sub></label><input type="range" id="regler-u" min="2" max="10" step="0.1" value="8"><span class="wert" id="wert-u"></span></div>
+				<div class="bgruppe" style="flex:1 1 12rem"><span class="btitel">Quellenspannung <i class="gr">U</i><sub>0</sub></span>
+					<div class="zeile"><input type="range" id="regler-u" min="2" max="10" step="0.1" value="8" aria-label="Quellenspannung"><span class="wert" id="wert-u" style="min-width:3.2em"></span></div></div>
+				<div class="bgruppe"><span class="btitel">Anzeigen</span>
+					<span class="knopfleiste"><label class="chip" title="technische Stromrichtung zeigen"><input type="checkbox" id="stromrichtung"><span data-pfeil="#C00000"></span>Stromrichtung</label></span></div>
+				</div>
 				<div class="zeile" data-modi="erkunden aufgabe">
 					<span class="knopfleiste">
-						<button class="haupt" id="btn-laden" data-modi="erkunden">Laden (Schalter auf 1)</button>
-						<button class="haupt" id="btn-entladen" data-modi="erkunden aufgabe">Entladen (Schalter auf 2)</button>
+						<button class="haupt" id="btn-laden" data-modi="erkunden" data-icon="schalter_zu" data-text="Laden (Schalter auf 1)" title="Laden (Schalter auf 1)"></button>
+						<button class="haupt" id="btn-entladen" data-modi="erkunden aufgabe" data-icon="schalter_offen" data-text="Entladen (Schalter auf 2)" title="Entladen (Schalter auf 2)"></button>
 					</span>
 				</div>
-				<div class="zeile" data-modi="erkunden"><label><input type="checkbox" id="stromrichtung"> technische Stromrichtung zeigen</label></div>
 				<div data-modi="vergleich">
 					<div class="zeile"><label>Verändert wird</label>
-						<span class="knopfleiste" id="vergleich-knoepfe"><button data-wert="R" class="aktiv">der Widerstand <i class="gr">R</i></button><button data-wert="C">die Kapazität <i class="gr">C</i></button></span></div>
+						<span class="knopfleiste" id="vergleich-knoepfe"><button data-wert="R" class="aktiv" title="der Widerstand R">Widerstand <i class="gr">R</i></button><button data-wert="C" title="die Kapazität C">Kapazität <i class="gr">C</i></button></span></div>
 					<p class="hinweis" id="vergleich-text"></p>
-					<div class="knopfleiste" style="margin-top:0.4rem"><button class="haupt" id="btn-reihe">Messreihe aufnehmen</button></div>
+					<div class="knopfleiste" style="margin-top:0.4rem"><button class="haupt" id="btn-reihe" data-icon="play" data-text="Messreihe aufnehmen" title="Messreihe aufnehmen"></button></div>
 				</div>
 				<div data-modi="echt">
 					<div class="zeile"><label>Messreihe</label>
@@ -837,16 +1222,17 @@ window.SimPlus = (function () {
 				<span class="knopfleiste" id="groesse-knoepfe" style="margin-left:auto"><button data-wert="U" class="aktiv"><i class="gr">U</i><sub>R</sub> in V</button><button data-wert="I"><i class="gr">I</i> in mA</button></span>
 			</div>
 			<canvas id="diagramm" class="sim"></canvas>
-			<div class="werkzeugleiste" id="werkzeuge">
-				<span class="titel">Werkzeuge:</span>
-				<button data-w="halb">Halbwertszeit</button>
-				<button data-w="flaeche">Fläche</button>
-				<button data-w="fit">Kurvenanpassung</button>
-				<span class="knopfleiste" style="margin-left:auto"><button class="neben" id="btn-png">Messkurve herunterladen</button><button class="neben" id="btn-loeschen">Messungen löschen</button></span>
+			<div class="werkzeugleiste knopfleiste" id="werkzeuge">
+				<span class="titel">Werkzeuge</span>
+				<button data-w="halb" class="gross" data-icon="w_halb" data-text="Halbwertszeit" title="Halbwertszeit"></button>
+				<button data-w="flaeche" class="gross" data-icon="w_flaeche" data-text="Fläche" title="Fläche unter der Kurve"></button>
+				<button data-w="fit" class="gross" data-icon="w_fit" data-text="Anpassung" title="Kurvenanpassung"></button>
+				<span class="knopfleiste" style="margin-left:auto"><button id="btn-dia-pause" data-icon="pause" title="Messung anhalten"></button><button class="neben" id="btn-loeschen" data-icon="muell" title="Messungen löschen"></button><button class="neben" id="btn-png" data-icon="download" title="Messkurve herunterladen"></button></span>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
 			<div class="tabelle-wrap verborgen" id="vergleich-tabelle-wrap">
-				<table class="messtabelle"><thead><tr><th></th><th><i class="gr">R</i></th><th><i class="gr">C</i></th><th><i class="gr">τ</i> aus Anpassung</th><th><i class="gr">R</i>&thinsp;·&thinsp;<i class="gr">C</i></th><th><i class="gr">Q</i> aus der Fläche</th><th><i class="gr">C</i>&thinsp;·&thinsp;<i class="gr">U</i><sub>0</sub></th></tr></thead><tbody id="vergleich-tabelle"></tbody></table>
+				<table class="messtabelle" id="vergleich-tab"><thead><tr><th></th><th><i class="gr">R</i></th><th><i class="gr">C</i></th><th><i class="gr">τ</i> aus Anpassung</th><th><i class="gr">R</i>&thinsp;·&thinsp;<i class="gr">C</i></th><th><i class="gr">Q</i> aus der Fläche</th><th><i class="gr">C</i>&thinsp;·&thinsp;<i class="gr">U</i><sub>0</sub></th></tr></thead><tbody id="vergleich-tabelle"></tbody></table>
+				<div class="bildleiste knopfleiste"><button class="neben" id="btn-tab-bild" data-icon="download" title="Tabelle als Bild speichern"></button></div>
 			</div>
 			<p class="fussnote" id="fussnote">Ziehen Sie im Diagramm, um den Cursor zu setzen. Die Werkzeuge beziehen sich auf die zuletzt aufgenommene Messung.</p>
 		</div>
@@ -1221,7 +1607,7 @@ let letzterRahmen = null;
 function rahmen(zeit) {
 	const dt = letzterRahmen === null ? 0 : Math.min(0.5, (zeit - letzterRahmen) / 1000);
 	letzterRahmen = zeit;
-	if (zustand.phase !== "ruhe") {
+	if (zustand.phase !== "ruhe" && !zustand.pausiert) {
 		zustand.tPhase += dt * zustand.faktor;
 		zustand.uC = spannungC(zustand.tPhase);
 		const s = aktiv(), I0 = (zustand.phase === "laden" ? s.U0 - zustand.uStart : zustand.uStart) / s.R;
@@ -1353,28 +1739,17 @@ P.regler("regler-u", "wert-u", v => P.de(v, 1) + "&nbsp;V", v => zustand.U0 = v,
 P.ziehbar(db, (x, y) => (ach && x >= ach.o.dx - 4 && x <= ach.o.dx + ach.o.dw + 4 && y >= ach.o.dy && y <= ach.o.dy + ach.o.dh) ? "cursor" : null,
 	(k, x) => { zustand.cursor = Math.max(0, Math.min(ach.o.xMax, ach.xWert(x))); zeichneDiagramm(); });
 
-/* Messkurve als PNG mit Versuchsbedingungen herunterladen (Tablet: Teilen-Menü) */
-document.getElementById("btn-png").addEventListener("click", async () => {
+/* Messkurve als PNG herunterladen (Tablet: Teilen-Menü); die Bedingungen stehen im Dateinamen */
+SimUI.bildKnopf("btn-png", db, () => {
 	const m = zustand.messungen[zustand.messungen.length - 1];
-	const kopf = 46, b = db.width, h = db.height, dpr = window.devicePixelRatio || 1;
-	const cv = document.createElement("canvas"); cv.width = b; cv.height = h + kopf * dpr;
-	const c = cv.getContext("2d");
-	c.fillStyle = "#fff"; c.fillRect(0, 0, cv.width, cv.height);
-	c.drawImage(db, 0, kopf * dpr);
-	c.setTransform(dpr, 0, 0, dpr, 0, 0);
-	let zeile1 = "RC-Messlabor: Spannung am Widerstand", zeile2 = "";
-	if (zustand.modus === "echt") { const i = ECHT_INFO[zustand.echt]; zeile1 = "Echte Messung vom 18.11.2024"; zeile2 = "R = " + formatR(i.R) + ", C = " + formatC(i.C) + " (Aufdruck)"; }
-	else if (m) zeile2 = (zustand.modus === "aufgabe" ? "R = " + formatR(m.R) + ", C unbekannt" : "R = " + formatR(m.R) + ", C = " + formatC(m.C)) + ", U0 = " + P.de(m.U0, 1) + " V";
-	P.text(c, zeile1, 10, 18, { groesse: 14, fett: true }); P.text(c, zeile2, 10, 36, { groesse: 13 });
-	const name = "RC_Messkurve_" + (m ? (m.echt ? "echt_" + zustand.echt : formatR(m.R).replace(/\s|Ω/g, "") + "Ohm") : "leer") + ".png";
-	cv.toBlob(async blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) {
-			try { await navigator.share({ files: [datei], title: "Messkurve" }); return; } catch (e) { /* abgebrochen: normal herunterladen */ }
-		}
-		const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
-		setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-	});
+	return "RC_Messkurve_" + (zustand.modus === "echt" ? "echt_" + zustand.echt : m ? formatR(m.R).replace(/\s|Ω/g, "") + "Ohm" + (zustand.modus === "aufgabe" ? "" : "_" + formatC(m.C).replace(/\s/g, "")) + "_U0_" + P.de(m.U0, 1) + "V" : "leer");
+});
+SimUI.tabelleKnopf("btn-tab-bild", "vergleich-tab", () => "RC_Messreihe_" + zustand.vergleich, "Entladen mit verschiedenen Bauteilen");
+const btnDiaPause = document.getElementById("btn-dia-pause");
+btnDiaPause.addEventListener("click", () => {
+	zustand.pausiert = !zustand.pausiert;
+	letzterRahmen = null;
+	SimUI.setzeIcon(btnDiaPause, zustand.pausiert ? "play" : "pause", zustand.pausiert ? "Messung fortsetzen" : "Messung anhalten");
 });
 
 /* ---------- Modus ---------- */
@@ -1409,6 +1784,7 @@ window.addEventListener("resize", layout);
 layout();
 zeigeElemente();
 ausHash();
+SimUI.modusPerLink("modus-knoepfe");
 requestAnimationFrame(rahmen);
 K.nachFontLaden(layout);
 </script>
