@@ -747,6 +747,12 @@ window.SimPlus = (function () {
 	</script>
 
 </head>
+<style>
+.knopfleiste button.haupt { background: var(--blue-frame); color: #fff; font-weight: bold; }
+.knopfleiste button.haupt:hover:not(.aktiv) { background: #00008F; }
+.knopfleiste button.neben { border-color: #9A9A9A; color: #555; font-size: 0.85rem; padding: 0.2rem 0.55rem; }
+.knopfleiste button.neben:hover { background: #F2F2F2; }
+</style>
 <body>
 <div class="blatt">
 
@@ -764,6 +770,7 @@ window.SimPlus = (function () {
 	<div class="knopfleiste" id="versuch-knoepfe" style="margin-bottom:0.3rem">
 		<button data-wert="kugel" class="aktiv">Gedankenexperiment: Kugel</button>
 		<button data-wert="motor">Versuch: Motor hebt Last</button>
+		<button data-wert="abstand">Plattenabstand ändern</button>
 	</div>
 
 	<!-- Gedankenexperiment Kugel -->
@@ -773,7 +780,7 @@ window.SimPlus = (function () {
 			<canvas id="kugel-bild" class="sim"></canvas>
 			<div class="steuerung">
 				<div class="zeile"><label>Kugelgröße</label><input type="range" id="regler-n" min="2" max="40" step="1" value="8"><span class="wert" id="wert-n" style="min-width:12em"></span></div>
-				<div class="knopfleiste"><button id="btn-schritt">Eine Überfahrt</button><button id="btn-alle">Bis zur Entladung</button><button id="btn-zurueck">Neu laden</button></div>
+				<div class="knopfleiste"><button id="btn-schritt" class="haupt">Eine Überfahrt</button><button id="btn-alle">Bis zur Entladung</button><button id="btn-zurueck" class="neben">Neu laden</button></div>
 			</div>
 			<div class="auswertung" id="kugel-auswertung"></div>
 			<p class="fussnote">Vereinfachung wie auf dem Arbeitsblatt: Die Kugel bringt bei jeder Überfahrt dieselbe Ladung Δ<i class="gr">Q</i> von einer Platte zur anderen. Kondensator: <i class="gr">C</i> = 1,0&nbsp;nF, <i class="gr">U</i><sub>1</sub> = 200&nbsp;V.</p>
@@ -790,7 +797,7 @@ window.SimPlus = (function () {
 				<div class="zeile"><label>Kapazität <i class="gr">C</i></label>
 					<span class="knopfleiste" id="c-knoepfe"><button data-wert="0.01">10&nbsp;mF</button><button data-wert="0.022" class="aktiv">22&nbsp;mF</button><button data-wert="0.047">47&nbsp;mF</button></span>
 				</div>
-				<div class="knopfleiste"><button id="btn-start">Laden und über den Motor entladen</button><button id="btn-notieren">Messwert notieren</button><button id="btn-leeren">Tabelle leeren</button></div>
+				<div class="knopfleiste"><button id="btn-start" class="haupt">Laden und über den Motor entladen</button><button id="btn-notieren">Messwert notieren</button><button id="btn-leeren" class="neben">Tabelle leeren</button></div>
 				<p class="hinweis" id="motor-meldung" style="color:var(--red-frame)"></p>
 			</div>
 			<div class="zeile" style="margin-top:0.6rem"><label>Diagramm</label>
@@ -801,6 +808,22 @@ window.SimPlus = (function () {
 			<p class="hinweis" id="regression"></p>
 			<div class="tabelle-wrap"><table class="messtabelle"><thead><tr><th>Nr.</th><th><i class="gr">C</i> in mF</th><th><i class="gr">U</i> in V</th><th><i class="gr">U</i><sup>2</sup> in V<sup>2</sup></th><th><i class="gr">h</i> in cm</th></tr></thead><tbody id="tabelle"></tbody></table></div>
 			<p class="fussnote">Masse des Massestücks: <i class="gr">m</i> = 100&nbsp;g. Ein Teil der Energie wird im Motor und in den Leitungen in innere Energie umgesetzt.</p>
+		</div>
+	</div>
+
+	<!-- Plattenabstand ändern -->
+	<div class="tcb blau verborgen" id="box-abstand">
+		<div class="tcb-title">Simulation: Wie ändert sich die Feldenergie, wenn man die Platten auseinanderzieht?</div>
+		<div class="tcb-body">
+			<canvas id="abstand-bild" class="sim"></canvas>
+			<div class="steuerung">
+				<div class="zeile"><label>Spannungsquelle</label>
+					<span class="knopfleiste" id="quelle-knoepfe"><button data-wert="aus" class="aktiv">getrennt (<i class="gr">Q</i> bleibt gleich)</button><button data-wert="an">angeschlossen (<i class="gr">U</i> bleibt gleich)</button></span></div>
+				<div class="zeile"><label>Plattenabstand <i class="gr">d</i></label><input type="range" id="regler-d" min="1" max="10" step="0.1" value="3"><span class="wert" id="wert-d"></span></div>
+				<div class="knopfleiste"><button id="btn-d-start">Zurück auf 3,0&nbsp;mm</button></div>
+			</div>
+			<div class="auswertung" id="abstand-auswertung"></div>
+			<p class="fussnote">Plattengröße <i class="gr">A</i> = 530&nbsp;cm<sup>2</sup>, geladen bei <i class="gr">d</i> = 3,0&nbsp;mm mit <i class="gr">U</i> = 200&nbsp;V. Ziehen Sie auch direkt an der oberen Platte.</p>
 		</div>
 	</div>
 
@@ -1007,6 +1030,105 @@ document.getElementById("btn-notieren").addEventListener("click", () => {
 });
 document.getElementById("btn-leeren").addEventListener("click", () => { motor.liste = []; baueTabelle(); zeichneMotorDiagramm(); });
 
+/* ---------- Plattenabstand ändern ---------- */
+/* Einheiten: A in m^2, d in m, U in V, Q in C, Energie in J */
+const EPS0 = 8.8541878188e-12, A_P = 530e-4, D0 = 3e-3, U0_P = 200;
+const Q_P = EPS0 * A_P / D0 * U0_P;
+const ab = { d: 3, quelle: "aus" };   /* d in mm */
+const abb = document.getElementById("abstand-bild"), actx = abb.getContext("2d");
+let AW = 760, AH = 330, abPlatte = null;
+function abGroessen(dmm) {
+	const d = dmm * 1e-3, C = EPS0 * A_P / d;
+	if (ab.quelle === "aus") { const U = Q_P / C; return { C, Q: Q_P, U, E: 0.5 * Q_P * U, F: Q_P * Q_P / (2 * EPS0 * A_P) }; }
+	const Q = C * U0_P; return { C, Q, U: U0_P, E: 0.5 * C * U0_P * U0_P, F: Q * Q / (2 * EPS0 * A_P) };
+}
+function quaderE(c, x, y, w, h, tx, ty, oben, vorn, seite) {
+	c.lineWidth = 1; c.strokeStyle = "rgba(60,60,60,0.8)";
+	c.fillStyle = oben; c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y); c.lineTo(x + w + tx, y + ty); c.lineTo(x + tx, y + ty); c.closePath(); c.fill(); c.stroke();
+	c.fillStyle = seite; c.beginPath(); c.moveTo(x + w, y); c.lineTo(x + w + tx, y + ty); c.lineTo(x + w + tx, y + ty + h); c.lineTo(x + w, y + h); c.closePath(); c.fill(); c.stroke();
+	c.fillStyle = vorn; c.fillRect(x, y, w, h); c.strokeRect(x, y, w, h);
+}
+function zeichneAbstand() {
+	const c = actx; c.clearRect(0, 0, AW, AH);
+	const g = abGroessen(ab.d), g0 = abGroessen(3);
+	/* Kondensator links: waagrechte Platten, 1 mm = 18 px */
+	const breiteL = AW * 0.42, kante = Math.min(breiteL * 0.62, 210), tx = kante * 0.4, ty = -kante * 0.24, dicke = 9;
+	const spalt = ab.d * 18, cx = breiteL * 0.57, cy = AH * 0.52;
+	const xl = cx - kante / 2 - tx / 2, yO = cy - spalt / 2 - dicke, yU = cy + spalt / 2;
+	abPlatte = { x1: xl, x2: xl + kante + tx, y1: yO + ty - 8, y2: yO + dicke + 8, cy };
+	quaderE(c, xl, yU, kante, dicke, tx, ty, "#D2D2D2", "#9A9A9A", "#B4B4B4");
+	/* Feld: Linienabstand umgekehrt proportional zu E */
+	const Efeld = g.U / (ab.d * 1e-3), abst = Math.max(6, 22 * (200 / 3e-3) / Efeld);
+	for (const [tiefe, alpha] of [[0.7, 0.25], [0.35, 0.4], [0.05, 0.75]]) {
+		for (let x = xl + abst / 2; x < xl + kante; x += abst) {
+			const px = x + tx * tiefe;
+			P.pfeil(c, px, yO + dicke + ty * tiefe + 1, px, yU + ty * tiefe - 1, "rgba(0,0,191," + alpha + ")", 1, Math.min(7, spalt * 0.3));
+		}
+	}
+	/* Feldvolumen schraffiert andeuten */
+	c.fillStyle = "rgba(0,0,191,0.06)"; c.fillRect(xl, yO + dicke, kante, spalt);
+	quaderE(c, xl, yO, kante, dicke, tx, ty, "#DCDCDC", "#A2A2A2", "#BEBEBE");
+	const n = Math.min(20, Math.round(g.Q / Q_P * 10));
+	for (let k = 0; k < n; k++) {
+		const x = xl + (k + 0.5) * kante / n;
+		c.strokeStyle = P.FARBEN.rot; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x - 3, yO + dicke / 2); c.lineTo(x + 3, yO + dicke / 2); c.moveTo(x, yO + dicke / 2 - 3); c.lineTo(x, yO + dicke / 2 + 3); c.stroke();
+		c.strokeStyle = P.FARBEN.blau; c.beginPath(); c.moveTo(x - 3, yU + dicke / 2); c.lineTo(x + 3, yU + dicke / 2); c.stroke();
+	}
+	/* Kraft auf die obere Platte (Anziehung) */
+	P.pfeil(c, xl + kante + tx + 14, yO + ty / 2, xl + kante + tx + 14, yO + ty / 2 + 26 * Math.min(2, g.F / g0.F), P.FARBEN.rot, 2.2, 8);
+	P.text(c, "F", xl + kante + tx + 22, yO + ty / 2 + 16, { groesse: 13, kursiv: true, farbe: P.FARBEN.rot });
+	/* Bemaßung */
+	const xd = xl - 12;
+	c.strokeStyle = "#555"; c.lineWidth = 1;
+	c.beginPath(); c.moveTo(xd, yO + dicke); c.lineTo(xd, yU); c.moveTo(xd - 4, yO + dicke); c.lineTo(xd + 4, yO + dicke); c.moveTo(xd - 4, yU); c.lineTo(xd + 4, yU); c.stroke();
+	P.text(c, "d", xd - 6, cy + 4, { groesse: 13, kursiv: true, ausrichtung: "right" });
+	/* Zuleitungen */
+	const yq = AH - 22;
+	c.strokeStyle = "#111"; c.lineWidth = 1.5;
+	c.beginPath(); c.moveTo(xl + kante, yO + dicke / 2); c.lineTo(xl + kante + 16, yO + dicke / 2); c.lineTo(xl + kante + 16, yq); c.lineTo(cx + 34, yq);
+	c.moveTo(xl + kante * 0.2, yU + dicke); c.lineTo(xl + kante * 0.2, yq); c.lineTo(cx - 34, yq); c.stroke();
+	if (ab.quelle === "aus") {
+		for (const x of [cx - 34, cx + 34]) { c.fillStyle = "#fff"; c.beginPath(); c.arc(x, yq, 3.5, 0, 2 * Math.PI); c.fill(); c.stroke(); }
+		P.text(c, "getrennt", cx, yq + 4, { groesse: 12, ausrichtung: "center", farbe: "#555" });
+	} else {
+		c.fillStyle = "#fff"; c.fillRect(cx - 34, yq - 12, 68, 24); c.strokeRect(cx - 34, yq - 12, 68, 24);
+		P.text(c, "200 V", cx, yq + 5, { groesse: 12, ausrichtung: "center" });
+	}
+	P.text(c, "obere Platte ziehen ⇕", cx + tx / 2, yO + ty - 10, { groesse: 11, farbe: P.FARBEN.blau, ausrichtung: "center" });
+	P.text(c, "schematisch", 6, 14, { groesse: 10, farbe: "#888" });
+	/* Diagramm rechts: Feldenergie über d */
+	const u = P.achsen(c, { dx: breiteL + 56, dy: 24, dw: AW - breiteL - 84, dh: AH - 70, xMin: 0, xMax: 10, yMin: 0, yMax: 12,
+		xSchritt: 1, ySchritt: 2, xLabel: "d", xEinheit: "mm", yLabel: "E", yEinheit: "µJ (Feldenergie)", xStellen: 0, yStellen: 0 });
+	c.save(); c.beginPath(); c.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); c.clip();
+	P.kurve(c, u, x => abGroessen(Math.max(0.05, x)).E * 1e6, 0.3, 10, "rgba(0,0,191,0.35)", { breite: 2 });
+	c.restore();
+	/* Startpunkt, aktueller Punkt und Energieänderung */
+	const x0 = u.xPix(3), y0 = u.yPix(g0.E * 1e6), x1 = u.xPix(ab.d), y1 = u.yPix(g.E * 1e6);
+	c.strokeStyle = P.FARBEN.gruen; c.lineWidth = 1.5; c.setLineDash([4, 3]);
+	c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y0); c.stroke(); c.setLineDash([]);
+	if (Math.abs(y1 - y0) > 3) P.pfeil(c, x1 + 6, y0, x1 + 6, y1, P.FARBEN.gruen, 2, 8);
+	P.punkte(c, u, [{ x: 3, y: g0.E * 1e6 }], "#777", { r: 4 });
+	P.punkte(c, u, [{ x: ab.d, y: g.E * 1e6 }], P.FARBEN.rot, { r: 5 });
+	/* Auswertung */
+	const dE = (g.E - g0.E) * 1e6;
+	document.getElementById("abstand-auswertung").innerHTML =
+		"<i class='gr'>C</i> = <span class='wert'>" + P.de(g.C * 1e12, 0) + "&nbsp;pF</span><span class='trenner'>|</span>" +
+		"<i class='gr'>Q</i> = <span class='wert'>" + P.de(g.Q * 1e9, 1) + "&nbsp;nC</span><span class='trenner'>|</span>" +
+		"<i class='gr'>U</i> = <span class='wert'>" + P.de(g.U, 0) + "&nbsp;V</span><span class='trenner'>|</span>" +
+		"<i class='gr'>E</i><sub>el</sub> = <span class='wert'>" + P.de(g.E * 1e6, 2) + "&nbsp;µJ</span><br>" +
+		"Änderung der Feldenergie gegenüber 3,0&nbsp;mm: Δ<i class='gr'>E</i><sub>el</sub> = <span class='wert'>" + (dE >= 0 ? "+" : "−") + P.de(Math.abs(dE), 2) + "&nbsp;µJ</span>" +
+		"<span class='trenner'>|</span>Kraft zwischen den Platten: <i class='gr'>F</i> = <span class='wert'>" + P.sig(g.F * 1000, 3) + "&nbsp;mN</span>";
+}
+P.regler("regler-d", "wert-d", v => P.de(v, 1) + "&nbsp;mm", v => ab.d = v, zeichneAbstand);
+K.bindeKnopfgruppe("quelle-knoepfe", w => ab.quelle = w, zeichneAbstand);
+document.getElementById("btn-d-start").addEventListener("click", () => { ab.d = 3; document.getElementById("regler-d").value = 3; document.getElementById("wert-d").innerHTML = "3,0&nbsp;mm"; zeichneAbstand(); });
+P.ziehbar(abb, (x, y) => (abPlatte && x > abPlatte.x1 && x < abPlatte.x2 && y > abPlatte.y1 && y < abPlatte.y2) ? "platte" : null, (k, x, y) => {
+	let d = (2 * (abPlatte.cy - y) - 9) / 18;
+	d = Math.max(1, Math.min(10, Math.round(d * 10) / 10));
+	ab.d = d; document.getElementById("regler-d").value = d; document.getElementById("wert-d").innerHTML = P.de(d, 1) + "&nbsp;mm"; zeichneAbstand();
+});
+document.getElementById("wert-d").innerHTML = "3,0&nbsp;mm";
+
 /* ---------- Aufgabe ---------- */
 const aufgabe = { nr: 0, C: 0, U: 0, soll: 0 };
 function neueAufgabe() {
@@ -1042,6 +1164,7 @@ function zeige() {
 	document.getElementById("versuch-knoepfe").classList.toggle("verborgen", auf);
 	document.getElementById("box-kugel").classList.toggle("verborgen", auf || zustand.versuch !== "kugel");
 	document.getElementById("box-motor").classList.toggle("verborgen", auf || zustand.versuch !== "motor");
+	document.getElementById("box-abstand").classList.toggle("verborgen", auf || zustand.versuch !== "abstand");
 	document.getElementById("aufgabe-box").classList.toggle("verborgen", !auf);
 	document.querySelectorAll("#versuch-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === zustand.versuch));
 	document.querySelectorAll("#modus-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === zustand.modus));
@@ -1056,13 +1179,14 @@ P.bindeModus("modus-knoepfe", m => { zustand.modus = m; history.replaceState(nul
 function ausHash() {
 	const h = location.hash.replace("#", "");
 	if (h === "aufgabe") zustand.modus = "aufgabe";
-	else if (h === "kugel" || h === "motor") { zustand.modus = "erkunden"; zustand.versuch = h; }
+	else if (h === "kugel" || h === "motor" || h === "abstand") { zustand.modus = "erkunden"; zustand.versuch = h; }
 	zeige();
 }
 window.addEventListener("hashchange", ausHash);
 
 function layout() {
 	if (!document.getElementById("box-kugel").classList.contains("verborgen")) { ({ W: KW, H: KH } = K.skaliereCanvas(kb, kctx, w => w < 560 ? 0.9 : 0.44)); zeichneKugel(); }
+	if (!document.getElementById("box-abstand").classList.contains("verborgen")) { ({ W: AW, H: AH } = K.skaliereCanvas(abb, actx, w => w < 560 ? 0.9 : 0.44)); zeichneAbstand(); }
 	if (!document.getElementById("box-motor").classList.contains("verborgen")) {
 		({ W: MW, H: MH } = K.skaliereCanvas(mb, mctx, w => w < 560 ? 0.7 : 0.38)); zeichneMotor();
 		({ W: DW, H: DH } = K.skaliereCanvas(md, mdctx, w => w < 560 ? 0.7 : 0.42)); zeichneMotorDiagramm();
