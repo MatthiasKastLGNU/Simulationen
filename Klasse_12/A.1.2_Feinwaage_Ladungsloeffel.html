@@ -462,6 +462,7 @@ window.SimUI = (function () {
 		stab_minus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#F4F4F4" stroke="#888" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.4"/><path d="M15.6 6h4.8" stroke="#0000E0" stroke-width="1.8"/>',
 		stab_plus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#D8EEF4" stroke="#6A9AA8" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.4"/><path d="M15.6 6h4.8M18 3.6v4.8" stroke="#E00000" stroke-width="1.8"/>',
 		kugel_teilen: '<path d="M0.5 12h3" stroke="#8B5A2B" stroke-width="2"/><circle cx="8.5" cy="12" r="5.2" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><circle cx="18.6" cy="12" r="5.2" fill="#FFE5E5" stroke="#E00000" stroke-width="1.3"/><path d="M16.4 12h4.4M18.6 9.8v4.4" stroke="#E00000" stroke-width="1.6"/><path d="M6.6 12h3.8M8.5 10.1v3.8" stroke="#E00000" stroke-width="1.3" opacity="0.55"/>',
+		kugel_platte: '<rect x="2" y="2" width="20" height="4" rx="0.6" fill="#E04848"/><path d="M8 4h3M9.5 2.5v3" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12.4" r="5.6" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><path d="M12 18v4" stroke="#C9B98A" stroke-width="2.4"/>',
 		finger: '<path d="M10 22v-4.5c-2-1.5-3.5-3.5-3.5-6V9.5c0-.9 1.6-.9 1.6 0v2.5V3c0-1.3 2.4-1.3 2.4 0v7V8.2c0-1.2 2.3-1.2 2.3 0V10V9c0-1.2 2.2-1.2 2.2 0v1.2c0-1 2-1 2 0v4.3c0 2-1 3.4-2.3 4.5V22z" fill="#F2C9A0" stroke="#9A6A40" stroke-width="1"/>',
 		alle_ladungen: '<circle cx="7" cy="8" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M5 8h4M7 6v4" stroke="#E00000" stroke-width="1.4"/><circle cx="17" cy="8" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M15.6 8h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="7" cy="17.5" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M5.6 17.5h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="17" cy="17.5" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M15 17.5h4M17 15.5v4" stroke="#E00000" stroke-width="1.4"/>',
 		platte_eine: '<rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M15 4v8" stroke="#777" stroke-width="1"/><circle cx="15" cy="14.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
@@ -522,7 +523,8 @@ window.SimUI = (function () {
 	/* Knopf mit Piktogramm versehen; titel kommt in title und aria-label */
 	function setzeIcon(btn, name, titel) {
 		if (!btn) return;
-		btn.innerHTML = svg(name);
+		/* nur bei Wechsel neu zeichnen: wird das Symbol in jedem Bild ersetzt, gehen Klicks im laufenden Betrieb verloren */
+		if (btn.dataset.ikAktuell !== name) { btn.innerHTML = svg(name); btn.dataset.ikAktuell = name; }
 		btn.classList.add("ik");
 		if (titel) { btn.title = titel; btn.setAttribute("aria-label", titel); }
 	}
@@ -716,7 +718,7 @@ window.SimUI = (function () {
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Ladungslöffel an der Feinwaage</div>
 		<div class="tcb-body">
-			<p style="margin:0 0 0.5rem">Laden Sie den Löffel und halbieren Sie seine Ladung Schritt für Schritt mit einer gleich großen, ungeladenen Kugel (dazu wird er aus dem Feld gefahren). Notieren Sie jedes Mal die Anzeige der Waage. Welcher Zusammenhang besteht zwischen Kraft und Ladung?</p>
+			<p style="margin:0 0 0.5rem">Laden Sie den Löffel an der oberen Platte und halbieren Sie seine Ladung Schritt für Schritt mit einer gleich großen, ungeladenen Kugel (dazu wird er aus dem Feld gefahren). Notieren Sie jedes Mal die Anzeige der Waage. Welcher Zusammenhang besteht zwischen Kraft und Ladung?</p>
 
 			<canvas id="sim-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste"><button id="btn-standard" class="neben" data-icon="reset" title="Standardwerte"></button><button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
@@ -725,9 +727,9 @@ window.SimUI = (function () {
 				<div class="bgruppe">
 					<span class="btitel">Löffel</span>
 					<span class="knopfleiste">
-						<button id="btn-laden" class="gross" data-icon="ladung_plus" title="Am Pluspol laden"></button>
+						<button id="btn-laden" class="gross" data-icon="kugel_platte" title="Laden: Löffel berührt die obere (positive) Platte"></button>
 						<button id="btn-halbieren" title="Ladung halbieren (mit der ungeladenen Kugel)"><b style="font-size:1.15rem">½</b></button>
-						<button id="btn-entladen" class="gross" data-icon="erde" title="Entladen (erden)"></button>
+						<button id="btn-entladen" class="gross" data-icon="finger" title="Entladen: Löffel mit dem Finger berühren"></button>
 					</span>
 				</div>
 				<div class="bgruppe" style="flex:1 1 12rem">
@@ -742,7 +744,7 @@ window.SimUI = (function () {
 					</span>
 				</div>
 			</div>
-			<p class="fussnote">Schematisch, nicht maßstäblich. Plattenabstand 6&nbsp;cm. Die Ladung des Löffels wird in Vielfachen der Anfangsladung <i class="gr">q</i><sub>0</sub> angegeben. Kräfte durch Influenz an den Platten sind vernachlässigt.</p>
+			<p class="fussnote">Schematisch, nicht maßstäblich. Plattenabstand 6&nbsp;cm. Beim Berühren der oberen Platte erhält der Löffel immer dieselbe Ladung <i class="gr">q</i><sub>0</sub> (bei gleicher Spannung). Die Ladung des Löffels wird in Vielfachen dieser Anfangsladung <i class="gr">q</i><sub>0</sub> angegeben. Kräfte durch Influenz an den Platten sind vernachlässigt.</p>
 		</div>
 	</div>
 
@@ -797,6 +799,7 @@ window.SimUI = (function () {
 		rauschen: 0,              // aktuelle Schwankung der Anzeige in mg
 		anim: null,               // laufende Animation beim Halbieren {t, geteilt}
 		aus: 0,                   // 0: Löffel im Kondensator, 1: ganz herausgefahren (zum Halbieren)
+		hub: 0,                   // 0: Ruhelage, 1: Löffel berührt die obere Platte (zum Laden)
 		zweiteLadung: 0,          // Ladung der zweiten Kugel in Vielfachen von q0
 		messwerte: []
 	};
@@ -883,7 +886,9 @@ window.SimUI = (function () {
 
 		/* Isolierende Halterung: Stütze auf der Waage, Arm in den Kondensator */
 		const verschiebung = Math.min(8, kraft() / G * 1e6 * 0.25) * s;   // kleine sichtbare Auslenkung (übertrieben)
-		const yArm = (yO + yU) / 2 + dicke / 2 + verschiebung;
+		const yRuhe = (yO + yU) / 2 + dicke / 2 + verschiebung;
+		const rK = 22 * s;
+		const yArm = yRuhe - zustand.hub * (yRuhe - (yO + dicke + rK));
 		ctx.fillStyle = "#F4F1E4"; ctx.strokeStyle = "#999";
 		ctx.fillRect(wx - 8 * s, yArm, 16 * s, wy - 8 * s - yArm); ctx.strokeRect(wx - 8 * s, yArm, 16 * s, wy - 8 * s - yArm);
 		const kx = loeffelX() * s;
@@ -892,7 +897,6 @@ window.SimUI = (function () {
 		ctx.fillText("isolierende Halterung", wx + 14 * s, (yArm + wy) / 2);
 
 		/* Löffel (Kugel) */
-		const rK = 22 * s;
 		const grad = ctx.createRadialGradient(kx - 7 * s, yArm - 7 * s, 3 * s, kx, yArm, rK);
 		grad.addColorStop(0, "#FFFFFF"); grad.addColorStop(1, "#8A8A8A");
 		ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(kx, yArm, rK, 0, 2 * Math.PI); ctx.fill();
@@ -900,7 +904,21 @@ window.SimUI = (function () {
 		plusZeichen(kx, yArm, rK, Math.round(16 * zustand.anteil), "#BF0000");
 
 		/* Zweite Kugel: kommt außerhalb des Kondensators von oben, berührt den Löffel und fährt wieder weg */
-		if (zustand.anim && zustand.anim.t > 1 && zustand.anim.t < 3.4) {
+		/* Finger beim Entladen: kommt von links zwischen den Platten und berührt den Löffel */
+		if (zustand.anim && zustand.anim.art === "entladen") {
+			const a = zustand.anim;
+			const weg = a.t < 1 ? glatt(a.t) : a.t < 1.3 ? 1 : 1 - glatt(a.t - 1.3);
+			const xSpitze = -10 * s + weg * (kx - rK + 2 * s + 10 * s), h = 20 * s, lang = 170 * s;
+			ctx.fillStyle = "#F2C6A0"; ctx.strokeStyle = "#B07850"; ctx.lineWidth = 1.3;
+			ctx.beginPath();
+			if (ctx.roundRect) ctx.roundRect(xSpitze - lang, yArm - h / 2, lang, h, h / 2); else ctx.rect(xSpitze - lang, yArm - h / 2, lang, h);
+			ctx.fill(); ctx.stroke();
+			ctx.fillStyle = "#FBE3D3";
+			ctx.beginPath(); ctx.ellipse(xSpitze - 9 * s, yArm - 2 * s, 6 * s, 5 * s, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+			ctx.strokeStyle = "rgba(176,120,80,0.6)"; ctx.lineWidth = 1;
+			for (const dx of [32, 38]) { ctx.beginPath(); ctx.moveTo(xSpitze - dx * s, yArm - h / 2 + 3 * s); ctx.lineTo(xSpitze - dx * s, yArm + h / 2 - 3 * s); ctx.stroke(); }
+		}
+		if (zustand.anim && zustand.anim.art === "halb" && zustand.anim.t > 1 && zustand.anim.t < 3.4) {
 			const a = zustand.anim;
 			const weg = a.t < 2 ? glatt(a.t - 1) : (a.t < 2.4 ? 1 : glatt(1 - (a.t - 2.4)));
 			const x2 = kx, yZiel = yArm - 2 * rK, yStart = -rK - 4 * s;
@@ -987,7 +1005,17 @@ window.SimUI = (function () {
 			zustand.rauschen = (Math.random() - 0.5) * 0.2;   // Schwankung bis etwa ±0,1 mg
 			naechstesRauschen = 0.4;
 		}
-		if (zustand.anim) {
+		if (zustand.anim && zustand.anim.art !== "halb") {
+			/* Laden (hoch an die Platte) und Entladen (Finger): 0-1 hin, bei 1 Berührung, 1,3-2,3 zurück */
+			const a = zustand.anim;
+			a.t += dt * 1.4;
+			if (a.art === "laden") zustand.hub = a.t < 1 ? glatt(a.t) : a.t < 1.3 ? 1 : 1 - glatt(a.t - 1.3);
+			if (a.t >= 1 && !a.geteilt) {
+				a.geteilt = true; zustand.halbierungen = 0;
+				zustand.anteil = a.art === "laden" && zustand.U > 0 ? 1 : 0;
+			}
+			if (a.t >= 2.3) { zustand.anim = null; zustand.hub = 0; knoepfe(); }
+		} else if (zustand.anim) {
 			const a = zustand.anim;
 			/* Ablauf: 0-1 Löffel aus dem Feld, 1-2 Kugel kommt, bei 2 Berührung, 2,4-3,4 Kugel weg, 3,4-4,4 Löffel zurück */
 			a.t += dt * 1.4;
@@ -998,7 +1026,7 @@ window.SimUI = (function () {
 				zustand.halbierungen++;
 				a.geteilt = true;
 			}
-			if (a.t >= 4.4) { zustand.anim = null; zustand.aus = 0; zustand.zweiteLadung = 0; knoepfe(); }
+			if (a.t >= 4.4) { zustand.anim = null; zustand.aus = 0; zustand.hub = 0; zustand.zweiteLadung = 0; knoepfe(); }
 		}
 		zeichne();
 		return true;
@@ -1014,10 +1042,10 @@ window.SimUI = (function () {
 
 	/* ---------- Bedienung ---------- */
 
-	document.getElementById("btn-laden").addEventListener("click", () => { zustand.anteil = 1; zustand.halbierungen = 0; knoepfe(); });
-	document.getElementById("btn-entladen").addEventListener("click", () => { zustand.anteil = 0; zustand.halbierungen = 0; knoepfe(); });
+	document.getElementById("btn-laden").addEventListener("click", () => { zustand.anim = { art: "laden", t: 0, geteilt: false }; knoepfe(); });
+	document.getElementById("btn-entladen").addEventListener("click", () => { zustand.anim = { art: "entladen", t: 0, geteilt: false }; knoepfe(); });
 	document.getElementById("btn-halbieren").addEventListener("click", () => {
-		zustand.zweiteLadung = 0; zustand.anim = { t: 0, geteilt: false }; knoepfe();
+		zustand.zweiteLadung = 0; zustand.anim = { art: "halb", t: 0, geteilt: false }; knoepfe();
 	});
 	document.getElementById("btn-tara").addEventListener("click", () => { zustand.tara = anzeigeRoh(); });
 	const reglerU = document.getElementById("regler-u");
@@ -1033,7 +1061,7 @@ window.SimUI = (function () {
 	document.getElementById("btn-leeren").addEventListener("click", () => { zustand.messwerte = []; aktualisiereTabelle(); });
 	document.getElementById("btn-standard").addEventListener("click", () => {
 		zustand.U = 3000; reglerU.value = 3; document.getElementById("wert-u").textContent = "3,0 kV";
-		zustand.anteil = 0; zustand.halbierungen = 0; zustand.tara = 0; zustand.anim = null; zustand.aus = 0; zustand.zweiteLadung = 0;
+		zustand.anteil = 0; zustand.halbierungen = 0; zustand.tara = 0; zustand.anim = null; zustand.aus = 0; zustand.hub = 0; zustand.zweiteLadung = 0;
 		knoepfe();
 	});
 
