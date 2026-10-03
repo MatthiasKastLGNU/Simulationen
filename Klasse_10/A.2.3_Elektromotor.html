@@ -462,7 +462,6 @@ const K_MOTOR = 2.4;        /* Drehwirkung je A und Windung bei mittlerem Magnet
 const TRAEGHEIT = 1;
 const REIB_LIN = 0.4, REIB_QUAD = 0.15, REIB_HAFT = 0.45;
 const LUECKE = 7 * Math.PI / 180;   /* halbe Breite der Lücke zwischen den Kommutatorteilen */
-const BUERSTE = 11 * Math.PI / 180;     /* halbe Breite des Schleifkontakts (nur bei zwei Schleifen wirksam) */
 const R_SCHLEIFE = 1.45;            /* 3D-Maße wie auf dem Arbeitsblatt */
 const ROT = [215, 40, 35], GRUEN = [0, 145, 65], KUPFER = [200, 120, 55];
 const FARBE_SEITE = ["#E17300", "#7D3CAF", "#00838F", "#8D5A3B"];   /* Seiten 1, 2 (Schleife 1) und 3, 4 (Schleife 2) */
@@ -479,9 +478,13 @@ function stromSeite(pk, an = zustand.strom) {
 	if (!an) return 0;
 	if (!mitKommutator()) return zustand.pol;
 	const c = Math.cos(pk);
-	/* Bei zwei Schleifen ist der Schleifkontakt breiter als die Lücke: an der Grenze bekommen kurz beide Schleifen Strom */
-	const grenze = zweiSchleifen() ? Math.cos(Math.PI / 4 - LUECKE + BUERSTE) : Math.sin(LUECKE);
-	if (Math.abs(c) <= grenze) return 0;
+	if (zweiSchleifen()) {
+		/* Bei zwei Schleifen wird genau bei 45° umgeschaltet: immer genau eine Schleife hat Strom (halboffene Bereiche, keine Doppelzählung) */
+		const a = ((pk % Math.PI) + Math.PI) % Math.PI;
+		if (a >= Math.PI / 4 && a < 3 * Math.PI / 4) return 0;
+		return zustand.pol * Math.sign(c);
+	}
+	if (Math.abs(c) <= Math.sin(LUECKE)) return 0;
 	return zustand.pol * Math.sign(c);
 }
 function staerke() { return zustand.N * zustand.I * B_FAKTOR[zustand.magnet]; }
