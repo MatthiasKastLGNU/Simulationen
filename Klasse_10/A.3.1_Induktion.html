@@ -215,6 +215,9 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 .rueckmeldung { font-weight: bold; margin-top: 0.4rem; }
 .rueckmeldung.gut { color: var(--green-frame); }
 .rueckmeldung.schlecht { color: var(--red-frame); }
+.tabellenbox { display: inline-block; padding-right: 2.6rem; }
+.tabellenbox > .bildknopf { position: absolute; right: 0; top: 0.35rem; }
+@media (max-width: 560px) { button.ik.pfeil { min-width: 2.75rem; padding: 0 0.3rem; } }
 
 </style>
 </head>
@@ -231,6 +234,7 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 		<button data-modus="versuch" class="aktiv">Magnet und Spule</button>
 		<button data-modus="messreihe">Wovon hängt die Spannung ab?</button>
 		<button data-modus="spiel">Spiel: Kurven nachfahren</button>
+		<button data-modus="polplatten">Spule zwischen Polplatten</button>
 	</div>
 
 	<div class="tcb blau">
@@ -238,6 +242,9 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 		<div class="tcb-body">
 			<div class="leinwand">
 				<canvas id="sim-canvas" class="sim"></canvas>
+				<span class="bildknoepfe" data-st="polplatten">
+					<button class="bildknopf" id="btn-pp-zurueck" title="Spule zurück in die Mitte" aria-label="Spule zurück in die Mitte"><svg viewBox="0 0 16 16" width="13" height="13"><path d="M3 8a5 5 0 1 0 1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 1.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+				</span>
 			</div>
 
 			<div class="steuerung">
@@ -286,6 +293,25 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 							<button class="ik" data-wert="2" title="2 Magnete nebeneinander" aria-label="2 Magnete nebeneinander"><svg viewBox="0 0 36 22" width="36" height="22"><rect x="1" y="1" width="17" height="9" fill="#009141"/><rect x="18" y="1" width="17" height="9" fill="#D72823"/><rect x="1" y="12" width="17" height="9" fill="#009141"/><rect x="18" y="12" width="17" height="9" fill="#D72823"/></svg></button>
 						</span>
 					</div>
+					<div class="gk" data-st="polplatten">
+						<span class="gk-titel">Spule bewegen</span>
+						<span class="ik-leiste">
+							<button class="ik pfeil" id="btn-pp-links" title="im Feld nach links verschieben" aria-label="im Feld nach links verschieben"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M22 9H11V3L1.5 12 11 21v-6h11z" fill="currentColor"/></svg></button>
+							<button class="ik pfeil" id="btn-pp-rechts" title="im Feld nach rechts verschieben" aria-label="im Feld nach rechts verschieben"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M2 9h11V3l9.5 9L13 21v-6H2z" fill="currentColor"/></svg></button>
+							<button class="ik pfeil" id="btn-pp-hoch" title="nach oben in das Feld hinein" aria-label="nach oben in das Feld hinein"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M9 22V11H3l9-9.5 9 9.5h-6v11z" fill="currentColor"/></svg></button>
+							<button class="ik pfeil" id="btn-pp-runter" title="nach unten aus dem Feld heraus" aria-label="nach unten aus dem Feld heraus"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M9 2v11H3l9 9.5 9-9.5h-6V2z" fill="currentColor"/></svg></button>
+							<button class="ik pfeil" id="btn-pp-drehen" title="um 90° drehen" aria-label="um 90 Grad drehen"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M19.5 12A7.5 7.5 0 1 1 12 4.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M11 0.5l6.5 4-6.5 4z" fill="currentColor"/></svg></button>
+							<span class="gk-hinweis">oder<br>ziehen</span>
+						</span>
+					</div>
+					<div class="gk" data-st="polplatten">
+						<span class="gk-titel">Dauer der Bewegung</span>
+						<span class="ik-leiste" id="dauer-knoepfe">
+							<button class="ik zahl" data-wert="1" title="Bewegung dauert 1 s">1 s</button>
+							<button class="ik zahl aktiv" data-wert="2" title="Bewegung dauert 2 s">2 s</button>
+							<button class="ik zahl" data-wert="5" title="Bewegung dauert 5 s">5 s</button>
+						</span>
+					</div>
 					<div class="gk" data-st="spiel">
 						<span class="gk-titel">Stufe</span>
 						<span class="ik-leiste stufen" id="stufen-knoepfe"></span>
@@ -301,9 +327,24 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 					<button class="haupt" id="btn-start"><svg viewBox="0 0 12 14" width="11" height="13"><path d="M1 1l10 6-10 6z" fill="currentColor"/></svg> <span id="start-text">Start</span></button>
 					<span class="anzeige" id="anz-sterne"></span>
 				</div>
-				<div class="werte" data-st="versuch messreihe">
+				<div class="werte" data-st="versuch messreihe polplatten">
 					<span>größter Ausschlag: <span class="anzeige" id="anz-max"></span></span>
-					<span>Feldlinien durch die Spulenmitte: <span class="anzeige" id="anz-linien"></span></span>
+					<span><span id="linien-text">Feldlinien durch die Spulenmitte</span>: <span class="anzeige" id="anz-linien"></span></span>
+				</div>
+				<div data-st="polplatten">
+					<div class="zeile">
+						<button class="haupt klein" id="btn-pp-notieren"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.6"/></svg> Messwert notieren</button>
+						<span class="ik-leiste neben">
+							<button class="ik grau" id="btn-pp-leeren" title="Tabelle leeren" aria-label="Tabelle leeren"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M2 4h12M6 4V2h4v2M4 4l1 10h6l1-10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+						</span>
+					</div>
+					<div class="leinwand tabellenbox" id="pp-tabelle" hidden>
+						<table class="mess">
+							<thead><tr><th>Nr.</th><th>Bewegung</th><th>Dauer in s</th><th>größter Ausschlag in mV</th></tr></thead>
+							<tbody id="pp-tabelle-body"></tbody>
+						</table>
+						<button class="bildknopf" id="btn-pp-tabelle-bild" title="Tabelle als Bild speichern" aria-label="Tabelle als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+					</div>
 				</div>
 				<div data-st="messreihe">
 					<div class="zeile">
@@ -313,10 +354,13 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 							<button class="ik grau" id="btn-standard" title="Standardwerte" aria-label="Standardwerte"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M3 8a5 5 0 1 0 1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 1.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
 						</span>
 					</div>
-					<table class="mess" id="tabelle" hidden>
-						<thead><tr><th>Nr.</th><th>Windungszahl</th><th>Magnet</th><th>Bewegung</th><th>größter Ausschlag in mV</th></tr></thead>
-						<tbody id="tabelle-body"></tbody>
-					</table>
+					<div class="leinwand tabellenbox" id="tabelle" hidden>
+						<table class="mess">
+							<thead><tr><th>Nr.</th><th>Windungszahl</th><th>Magnet</th><th>Bewegung</th><th>größter Ausschlag in mV</th></tr></thead>
+							<tbody id="tabelle-body"></tbody>
+						</table>
+						<button class="bildknopf" id="btn-tabelle-bild" title="Tabelle als Bild speichern" aria-label="Tabelle als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+					</div>
 				</div>
 			</div>
 			<div class="leinwand">
@@ -548,7 +592,12 @@ const zustand = {
 	zeit: 0, plotZeit: 0, ruhe: 0, angehalten: false,
 	tabelle: [],
 	letzteBewegung: "von Hand",
-	spiel: { stufe: 0, phase: "bereit", t: 0, aufnahme: [], ergebnis: null, sterne: [0, 0, 0, 0, 0] }
+	spiel: { stufe: 0, phase: "bereit", t: 0, aufnahme: [], ergebnis: null, sterne: [0, 0, 0, 0, 0] },
+	pp: { x: 0, y: 0, w: 0,          /* Spulenmitte (cm) und Drehwinkel (Grad) zwischen den Polplatten */
+		dauer: 2,                    /* s für die Bewegungsknöpfe */
+		auto: null,                  /* {art: "x" | "y" | "w", von, nach, t, dauer} */
+		ziehen: null, versatz: { x: 0, y: 0, w: 0 },   /* "schieben" oder "drehen" mit der Maus */
+		letzteBewegung: "von Hand", letzteDauer: null, tabelle: [] }
 };
 
 /* Fluss durch die Spule (Mittel über die Windungen) bei Relativlage d = Spulenanfang minus Magnetmitte */
@@ -574,6 +623,52 @@ let kU = 1;
 	kU = 18 / (600 * max * 16);
 })();
 function spannung(xm, xs, v, nordRechts, staerke, N) { return kU * N * flussSteigung(xm, xs, nordRechts, staerke) * v; }
+
+/* ==========================================================================
+   Modus "Spule zwischen Polplatten": homogenes Feld zwischen zwei Polplatten (Nordplatte links, Südplatte rechts),
+   vereinfacht außerhalb der Platten kein Feld. Spule (Radius R, Länge L) mit Mitte (x, y) und Drehwinkel w
+   (0°: Spulenachse parallel zu den Feldlinien). Fluss durch eine Windung: B * (Kreisfläche im Feld) * cos w,
+   gemittelt über die Windungen; normiert auf 1 für die ganze Spule im Feld mit w = 0.
+   Die Kreisfläche steht senkrecht zur Zeichenebene; ihre Sehne in der Zeichenebene läuft von -R bis +R (Parameter u von -1 bis 1),
+   der Anteil im Feld ist das Integral von sqrt(1 - u^2) über den Teil der Sehne zwischen den Platten (exakt, damit U glatt bleibt).
+   ========================================================================== */
+const PP = { XP: 12, HP: 6, R: 2.7, L: 4, WINDUNGEN: 8, LINIEN: [-5, -3.75, -2.5, -1.25, 0, 1.25, 2.5, 3.75, 5] };   /* Längen in cm */
+function ppStammfunktion(u) { return (u * Math.sqrt(1 - u * u) + Math.asin(u)) / 2; }
+function ppIntervall(a, b, grenze, lo, hi) {   /* Teil von u in [lo, hi] mit |a + b u| < grenze */
+	if (Math.abs(b) < 1e-9) return Math.abs(a) < grenze ? [lo, hi] : [0, 0];
+	let u1 = (-grenze - a) / b, u2 = (grenze - a) / b;
+	if (u1 > u2) [u1, u2] = [u2, u1];
+	return [Math.max(lo, u1), Math.min(hi, u2)];
+}
+function ppFluss(x, y, wGrad) {
+	const w = wGrad * Math.PI / 180, c = Math.cos(w), s = Math.sin(w);
+	let summe = 0;
+	for (let k = 0; k < PP.WINDUNGEN; k++) {
+		const a = -PP.L / 2 + (k + 0.5) * PP.L / PP.WINDUNGEN, cx = x + a * c, cy = y + a * s;
+		/* Punkt der Sehne: (cx - u R s, cy + u R c) */
+		let [u1, u2] = ppIntervall(cx, -PP.R * s, PP.XP, -1, 1);
+		[u1, u2] = ppIntervall(cy, PP.R * c, PP.HP, u1, u2);
+		if (u2 > u1) summe += ppStammfunktion(u2) - ppStammfunktion(u1);
+	}
+	return c * summe / (PP.WINDUNGEN * Math.PI / 2);
+}
+/* Geht die Feldlinie in Höhe yl durch die Spule (durch die mittlere Windung)? */
+function ppLinieDurch(yl, x, y, wGrad) {
+	const w = wGrad * Math.PI / 180, c = Math.cos(w), s = Math.sin(w);
+	if (Math.abs(c) < 1e-6) return false;
+	const u = (yl - y) / (PP.R * c);
+	return Math.abs(u) < 1 && Math.abs(x - u * PP.R * s) < PP.XP && Math.abs(yl) < PP.HP;
+}
+function ppLinienAnzahl() { const p = zustand.pp; return PP.LINIEN.filter(yl => ppLinieDurch(yl, p.x, p.y, p.w)).length; }
+/* Kalibrierung: Herausziehen in 1 s (von der Mitte bis ganz aus dem Feld) ergibt etwa 24 mV bei 600 Windungen */
+const PP_UNTEN = -9.5, PP_N = 600;
+let kP = 1;
+(function () {
+	let max = 0;
+	const lage = t => PP_UNTEN * glatt(t);
+	for (let t = 0; t <= 1; t += 0.002) max = Math.max(max, Math.abs(ppFluss(0, lage(t + 0.001), 0) - ppFluss(0, lage(t - 0.001), 0)) / 0.002);
+	kP = 24 / (PP_N * max);
+})();
 
 /* Feldlinien: Höhenlinien des Flusses, auf den Polflächen gleichmäßig verteilt (wie auf dem Arbeitsblatt).
    So treten alle Linien durch die Pole aus und ein; keine engen Schleifen mit Knick an den Magnetecken.
@@ -631,13 +726,22 @@ function schritt(dt) {
 	/* Spannung aus der Flussänderung seit dem letzten Bild (U = kU * N * dPhi/dt).
 	   Nicht "Steigung an der aktuellen Stelle mal Geschwindigkeit": Das liefert bei ruckartigem Ziehen
 	   mit der Maus falsche Werte (beim Herausziehen viel zu klein). Umdrehen oder Umschalten erzeugt keinen Sprung. */
-	const phi = fluss(zustand.xm, zustand.xs, zustand.nordRechts, zustand.staerke);
-	const schluessel = zustand.nordRechts + "/" + zustand.staerke + "/" + zustand.spuleBewegen;
+	const pp = zustand.modus === "polplatten", p = zustand.pp;
+	if (pp && p.auto) {
+		const a = p.auto;
+		a.t += dt;
+		const f = Math.min(1, a.t / a.dauer);
+		p[a.art] = a.von + (a.nach - a.von) * glatt(f);
+		ppKlemmen();
+		if (f >= 1) { p.auto = null; p.w = ((p.w % 360) + 360) % 360; }
+	}
+	const phi = pp ? ppFluss(p.x, p.y, p.w) : fluss(zustand.xm, zustand.xs, zustand.nordRechts, zustand.staerke);
+	const schluessel = pp ? "polplatten" : zustand.nordRechts + "/" + zustand.staerke + "/" + zustand.spuleBewegen;
 	if (zustand.flussAlt === null || schluessel !== zustand.flussSchluessel) { zustand.flussAlt = phi; zustand.flussSchluessel = schluessel; }
-	const Uroh = kU * zustand.N * (phi - zustand.flussAlt) / dt;
+	const Uroh = (pp ? kP * PP_N : kU * zustand.N) * (phi - zustand.flussAlt) / dt;
 	zustand.flussAlt = phi;
 	/* Von Hand: leicht glätten, weil Mausbewegungen nicht in jedem Bild ankommen */
-	zustand.U = zustand.ziehen ? zustand.U + (Uroh - zustand.U) * Math.min(1, dt / 0.035) : Uroh;
+	zustand.U = zustand.ziehen || (pp && p.ziehen) ? zustand.U + (Uroh - zustand.U) * Math.min(1, dt / 0.035) : Uroh;
 	zustand.Umax = Math.max(zustand.Umax, Math.abs(zustand.U));
 	/* Zeiger: gedämpfte Schwingung, Eigenfrequenz 2,5 Hz */
 	const w0 = 2 * Math.PI * 2.5, ziel = Math.max(-1.08 * zustand.bereich, Math.min(1.08 * zustand.bereich, zustand.U));
@@ -649,7 +753,7 @@ function schritt(dt) {
 	if (zustand.modus === "spiel") spielSchritt(dt);
 	else {
 		/* Diagramm läuft nur bei Bewegung und kurz danach weiter; in Ruhe bleibt die letzte Kurve stehen */
-		const aktiv = zustand.auto || zustand.ziehen || Math.abs(zustand.U) > 0.05;
+		const aktiv = zustand.auto || zustand.ziehen || (pp && (p.auto || p.ziehen)) || Math.abs(zustand.U) > 0.05;
 		zustand.ruhe = aktiv ? 0 : zustand.ruhe + dt;
 		if (!zustand.angehalten && zustand.ruhe < NACHLAUF) {
 			zustand.plotZeit += dt;
@@ -683,6 +787,28 @@ function bewegeNach(nach) {
 	zustand.Umax = 0;
 	zustand.letzteBewegung = { 8: "langsam", 16: "mittel", 32: "schnell" }[zustand.tempo] || "von Hand";
 	zustand.auto = { von, nach, t: 0, dauer };
+}
+/* Polplatten: Spule bleibt zwischen den Platten und im Bild */
+function ppAusdehnung() {   /* halbe Breite der gedrehten Spule in x-Richtung */
+	const w = zustand.pp.w * Math.PI / 180;
+	return PP.L / 2 * Math.abs(Math.cos(w)) + (PP.R + 0.1) * Math.abs(Math.sin(w)) + 0.2;
+}
+function ppKlemmen() {
+	const p = zustand.pp, e = ppAusdehnung();
+	p.x = Math.max(-PP.XP + e, Math.min(PP.XP - e, p.x));
+	p.y = Math.max(PP_UNTEN, Math.min(3.5, p.y));
+}
+function ppBewege(art, nach, name) {
+	const p = zustand.pp;
+	if (p.auto || Math.abs(nach - p[art]) < 0.01) return;
+	p.ziehen = null;
+	p.auto = { art, von: p[art], nach, t: 0, dauer: p.dauer };
+	p.letzteBewegung = name; p.letzteDauer = p.dauer;
+	zustand.Umax = 0;
+}
+function ppSchritt(art, r, punkte, name) {   /* zum nächsten Haltepunkt in Richtung r */
+	const x = zustand.pp[art], ziele = punkte.filter(h => r * (h - x) > 0.05).sort((a, b) => r * (a - b));
+	if (ziele.length) ppBewege(art, ziele[0], name);
 }
 
 /* ==========================================================================
@@ -902,7 +1028,70 @@ function zeichneMessgeraet() {
 	text(ctx, "Messbereich " + B + " mV", x, y + r * 0.42, r * 0.15, "#fff");
 	if (Math.abs(zustand.U) > B * 1.02) text(ctx, "Messbereich überschritten", x, y - r * 1.2, r * 0.17, "#BF0000", "center", "bold");
 }
+/* Polplatten: Spule als Ellipsen im gedrehten Koordinatensystem der Spule */
+function ppSpule(vorne) {
+	const p = zustand.pp;
+	ctx.save();
+	ctx.translate(X(p.x), Y(p.y)); ctx.rotate(-p.w * Math.PI / 180);
+	ctx.lineWidth = vorne ? Math.max(1.4, sz * 0.13) : Math.max(1, sz * 0.09);
+	ctx.strokeStyle = vorne ? kupfer(0.75) : kupfer(1.5);
+	for (let i = 0; i < PP.WINDUNGEN; i++) {
+		const u = (-PP.L / 2 + (i + 0.5) * PP.L / PP.WINDUNGEN) * sz;
+		ctx.beginPath();
+		ctx.ellipse(u, 0, sz * 0.35, PP.R * sz, 0, vorne ? -Math.PI / 2 : Math.PI / 2, vorne ? Math.PI / 2 : 3 * Math.PI / 2);
+		ctx.stroke();
+	}
+	ctx.restore();
+}
+function ppLokal(u, v) {   /* Punkt im Koordinatensystem der Spule (cm) in Bildpunkten */
+	const p = zustand.pp, w = p.w * Math.PI / 180;
+	return [X(p.x + u * Math.cos(w) - v * Math.sin(w)), Y(p.y + u * Math.sin(w) + v * Math.cos(w))];
+}
+const PP_GRIFF = [PP.L / 2 + 1.3, 0];   /* Drehgriff auf der verlängerten Spulenachse */
+function zeichnePP() {
+	const p = zustand.pp, { XP, HP } = PP;
+	ctx.clearRect(0, 0, W, H);
+	ctx.save(); ctx.beginPath(); ctx.rect(0, 0, szeneRechts, H); ctx.clip();
+	/* Feldbereich zart getönt, damit "im Feld" und "außerhalb" auch ohne Feldlinien erkennbar sind */
+	ctx.fillStyle = "rgba(40,90,215,0.06)"; ctx.fillRect(X(-XP), Y(HP), X(XP) - X(-XP), Y(-HP) - Y(HP));
+	ppSpule(false);
+	if (zustand.zeigeFeld) {
+		const radius = Math.hypot(PP.L / 2, PP.R) + 0.6;
+		PP.LINIEN.forEach(yl => {
+			const durch = ppLinieDurch(yl, p.x, p.y, p.w);
+			ctx.strokeStyle = durch ? FELD + "1)" : FELD + "0.4)"; ctx.lineWidth = durch ? 2.6 : 1.2;
+			ctx.beginPath(); ctx.moveTo(X(-XP), Y(yl)); ctx.lineTo(X(XP), Y(yl)); ctx.stroke();
+			[-8.5, 8.5, -4, 4].filter(xa => Math.hypot(xa - p.x, yl - p.y) > radius).slice(0, 2).forEach(xa =>
+				pfeil(ctx, X(xa) - 9, Y(yl), X(xa) + 3, Y(yl), durch ? FELD + "1)" : FELD + "0.55)", durch ? 2 : 1.5));
+		});
+	}
+	ppSpule(true);
+	/* Polplatten */
+	[[-XP - 0.8, ROT, "N"], [XP, GRUEN, "S"]].forEach(([x0, farbe, b]) => {
+		ctx.fillStyle = farbe; ctx.fillRect(X(x0), Y(HP + 0.4), 0.8 * sz, (2 * HP + 0.8) * sz);
+		ctx.strokeStyle = "#111"; ctx.lineWidth = 1.2; ctx.strokeRect(X(x0), Y(HP + 0.4), 0.8 * sz, (2 * HP + 0.8) * sz);
+		text(ctx, b, X(x0 + 0.4), Y(HP - 0.6), sz * 0.75, "#fff", "center", "bold");
+	});
+	/* Drehgriff */
+	const [gx, gy] = ppLokal(...PP_GRIFF), [ax, ay] = ppLokal(PP.L / 2 + 0.3, 0);
+	ctx.strokeStyle = "#888"; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+	ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(gx, gy); ctx.stroke(); ctx.setLineDash([]);
+	const gr = Math.max(7, sz * 0.5);
+	ctx.fillStyle = "#2b3346"; ctx.beginPath(); ctx.arc(gx, gy, gr, 0, 2 * Math.PI); ctx.fill();
+	ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(1.3, gr * 0.18);
+	ctx.beginPath(); ctx.arc(gx, gy, gr * 0.55, -Math.PI * 0.9, Math.PI * 0.5); ctx.stroke();
+	ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(gx - gr * 0.05, gy + gr * 0.55 - gr * 0.3); ctx.lineTo(gx - gr * 0.05, gy + gr * 0.55 + gr * 0.3); ctx.lineTo(gx - gr * 0.45, gy + gr * 0.55); ctx.closePath(); ctx.fill();
+	ctx.restore();
+	/* Zuleitungen zum Messgerät, folgen der Spule */
+	ctx.strokeStyle = "#222"; ctx.lineWidth = Math.max(1.5, sz * 0.09);
+	[[-PP.L / 2 + 0.25, -1], [PP.L / 2 - 0.25, 1]].forEach(([u, seite]) => {
+		const [x0, y0] = ppLokal(u, -PP.R), zx = mess.x + seite * mess.r * 0.35, zy = mess.y + mess.r * 0.35;
+		ctx.beginPath(); ctx.moveTo(x0, y0);
+		ctx.bezierCurveTo(x0, y0 + 3 * sz, zx, zy + mess.r * 1.2, zx, zy); ctx.stroke();
+	});
+}
 function zeichne() {
+	if (zustand.modus === "polplatten") { zeichnePP(); zeichneMessgeraet(); zeichneDiagramm(); return; }
 	ctx.clearRect(0, 0, W, H);
 	ctx.save(); ctx.beginPath(); ctx.rect(0, 0, szeneRechts, H); ctx.clip();
 	zeichneSpule(false);
@@ -960,9 +1149,24 @@ function zeichneDiagramm(c = dctx, w = DW, h = DH) {
    ========================================================================== */
 function layout() {
 	schrift = getComputedStyle(document.body).fontFamily;
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.42 : 0.95));
+	const pp = zustand.modus === "polplatten";
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? (pp ? 0.55 : 0.42) : (pp ? 1.08 : 0.95)));
 	breit = W >= 620;
-	if (breit) {
+	if (pp) {   /* sichtbar etwa x von -13,4 bis 13,4 cm, y von -12,8 bis 7,8 cm */
+		if (breit) {
+			mess.r = Math.min(H * 0.25, W * 0.1);
+			mess.x = W - mess.r * 1.25; mess.y = H * 0.6;
+			szeneRechts = mess.x - mess.r * 1.35;
+			sz = Math.min(szeneRechts / 27, H / 21);
+			ox = szeneRechts / 2; oy = 7.8 * sz + (H - 20.6 * sz) / 2;
+		} else {
+			mess.r = W * 0.14;
+			mess.x = W * 0.72; mess.y = H * 0.86;
+			szeneRechts = W;
+			sz = Math.min(W / 27, H * 0.72 / 20.6);
+			ox = W / 2; oy = 7.8 * sz + 4;
+		}
+	} else if (breit) {
 		mess.r = Math.min(H * 0.3, W * 0.1);
 		mess.x = W - mess.r * 1.25; mess.y = H * 0.52;
 		szeneRechts = mess.x - mess.r * 1.25;
@@ -980,9 +1184,10 @@ function layout() {
 const AUFTRAG = {
 	versuch: "Schiebe den Magneten mit der Maus in die Spule, lass ihn ruhen und ziehe ihn wieder heraus. Wann schlägt der Zeiger aus, wann nicht? Probiere auch den umgedrehten Magneten und die bewegte Spule.",
 	messreihe: "Verändere immer nur eine Größe: Windungszahl, Stärke des Magneten oder Geschwindigkeit. Notiere jeweils den größten Ausschlag und formuliere Je-desto-Sätze.",
-	spiel: "Fahre die graue Kurve nach, indem du den Magneten mit der Maus bewegst. Nach dem Start hast du drei Sekunden Zeit. Je genauer deine Kurve passt, desto mehr Sterne."
+	spiel: "Fahre die graue Kurve nach, indem du den Magneten mit der Maus bewegst. Nach dem Start hast du drei Sekunden Zeit. Je genauer deine Kurve passt, desto mehr Sterne.",
+	polplatten: "Verschiebe die Spule im Feld, drehe sie und ziehe sie aus dem Feld heraus. Achte darauf, wie viele Feldlinien durch die Spule gehen und wie der Zeiger reagiert. Vergleiche das Herausziehen in 1 s, 2 s und 5 s."
 };
-const TITEL = { versuch: "Magnet und Spule", messreihe: "Wovon hängt die Induktionsspannung ab?", spiel: "Kurven nachfahren" };
+const TITEL = { versuch: "Magnet und Spule", messreihe: "Wovon hängt die Induktionsspannung ab?", spiel: "Kurven nachfahren", polplatten: "Spule zwischen zwei Polplatten" };
 function anzeigen() {
 	document.querySelectorAll("#modusleiste button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === zustand.modus));
 	document.querySelectorAll("[data-st]").forEach(el => { el.hidden = !el.dataset.st.split(" ").includes(zustand.modus); });
@@ -994,6 +1199,9 @@ function anzeigen() {
 	document.querySelectorAll("#magnet-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.staerke));
 	document.querySelectorAll("#tempo-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.tempo));
 	document.getElementById("btn-feld").classList.toggle("aktiv", zustand.zeigeFeld);
+	document.querySelectorAll("#dauer-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.pp.dauer));
+	document.getElementById("pp-tabelle").hidden = zustand.modus !== "polplatten" || zustand.pp.tabelle.length === 0;
+	document.getElementById("linien-text").textContent = zustand.modus === "polplatten" ? "Feldlinien durch die Spule" : "Feldlinien durch die Spulenmitte";
 	/* Piktogramm im Umdrehen-Knopf zeigt die aktuelle Lage des Magneten */
 	const links = zustand.nordRechts ? ["#009141", "S"] : ["#D72823", "N"], rechts = zustand.nordRechts ? ["#D72823", "N"] : ["#009141", "S"];
 	document.getElementById("umdrehen-magnet").innerHTML =
@@ -1010,6 +1218,8 @@ function anzeigen() {
 	document.getElementById("anz-sterne").textContent = "Stufe " + STUFEN_SPIEL[s.stufe].name + ": " + STUFEN_SPIEL[s.stufe].titel;
 	document.getElementById("fussnote").textContent = zustand.modus === "spiel"
 		? "Grau: Zielkurve, blau: deine Kurve. Kleine Zeitverschiebungen werden nicht gewertet."
+		: zustand.modus === "polplatten"
+		? "Kräftig gezeichnet: Feldlinien durch die Spule. Drehen am runden Griff. Vereinfacht: Außerhalb der Platten gibt es kein Magnetfeld."
 		: "Zeiger nach rechts: positive Spannung (wie beim Hineinschieben des Nordpols). Das Diagramm bleibt stehen, sobald sich nichts mehr bewegt.";
 }
 function stufenKnoepfe() {
@@ -1029,7 +1239,7 @@ function stufenKnoepfe() {
 }
 function werteAnzeigen() {
 	document.getElementById("anz-max").textContent = K.de(zustand.Umax, 1) + " mV";
-	document.getElementById("anz-linien").textContent = String(linienDurchSpule());
+	document.getElementById("anz-linien").textContent = String(zustand.modus === "polplatten" ? ppLinienAnzahl() : linienDurchSpule());
 }
 function modusSetzen(m, ohneHash) {
 	zustand.modus = m;
@@ -1037,12 +1247,46 @@ function modusSetzen(m, ohneHash) {
 	if (m === "versuch") { zustand.N = 600; zustand.staerke = 1; zustand.bereich = 30; }
 	if (m === "messreihe") zustand.bereich = 100;
 	if (m === "spiel") { zustand.spiel.phase = "bereit"; zustand.spiel.aufnahme = []; zustand.bereich = 30; }
+	if (m === "polplatten") { ppZuruecksetzen(); zustand.bereich = 30; }
 	zustand.verlauf = []; zustand.Umax = 0; zustand.flussAlt = null; zustand.angehalten = false; zustand.plotZeit = 0; zustand.ruhe = NACHLAUF;
 	if (!ohneHash) history.replaceState(null, "", "#" + m);
 	stufenKnoepfe(); anzeigen(); layout();
 }
+/* Modi per Link auswählen: ?modus=polplatten oder ?modus=versuch,messreihe zeigt nur diese; bei genau einem entfällt die Modusleiste */
+const WUNSCH = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => AUFTRAG[m]);
+const ERLAUBT = WUNSCH.length ? WUNSCH : Object.keys(AUFTRAG);
+document.querySelectorAll("#modusleiste button").forEach(b => { b.hidden = !ERLAUBT.includes(b.dataset.modus); });
+document.getElementById("modusleiste").hidden = ERLAUBT.length === 1;
 document.getElementById("modusleiste").addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) modusSetzen(b.dataset.modus); });
-window.addEventListener("hashchange", () => { const m = location.hash.slice(1); if (AUFTRAG[m] && m !== zustand.modus) modusSetzen(m, true); });
+window.addEventListener("hashchange", () => { const m = location.hash.slice(1); if (ERLAUBT.includes(m) && m !== zustand.modus) modusSetzen(m, true); });
+function ppZuruecksetzen() {
+	const p = zustand.pp;
+	p.x = 0; p.y = 0; p.w = 0; p.auto = null; p.ziehen = null; p.letzteBewegung = "von Hand"; p.letzteDauer = null;
+	zustand.flussAlt = null;
+}
+document.getElementById("btn-pp-links").addEventListener("click", () => ppSchritt("x", -1, [-6, 0, 6], "verschoben"));
+document.getElementById("btn-pp-rechts").addEventListener("click", () => ppSchritt("x", 1, [-6, 0, 6], "verschoben"));
+document.getElementById("btn-pp-hoch").addEventListener("click", () => ppSchritt("y", 1, [PP_UNTEN, 0], "hineingeschoben"));
+document.getElementById("btn-pp-runter").addEventListener("click", () => ppSchritt("y", -1, [PP_UNTEN, 0], "herausgezogen"));
+document.getElementById("btn-pp-drehen").addEventListener("click", () => ppBewege("w", Math.round(zustand.pp.w / 90) * 90 + 90, "um 90° gedreht"));
+document.getElementById("btn-pp-zurueck").addEventListener("click", () => { ppZuruecksetzen(); zustand.Umax = 0; });
+K.bindeKnopfgruppe("dauer-knoepfe", w => zustand.pp.dauer = +w, anzeigen);
+document.getElementById("btn-pp-notieren").addEventListener("click", () => {
+	const p = zustand.pp;
+	p.tabelle.push([p.letzteBewegung, p.letzteDauer === null ? "" : String(p.letzteDauer), K.de(zustand.Umax, 1)]);
+	ppTabelleZeigen();
+});
+document.getElementById("btn-pp-leeren").addEventListener("click", () => { zustand.pp.tabelle = []; ppTabelleZeigen(); });
+function ppTabelleZeigen() {
+	const tb = document.getElementById("pp-tabelle-body");
+	tb.innerHTML = "";
+	zustand.pp.tabelle.forEach((z, i) => {
+		const tr = document.createElement("tr");
+		[i + 1, ...z].forEach(w => { const td = document.createElement("td"); td.textContent = w; tr.appendChild(td); });
+		tb.appendChild(tr);
+	});
+	anzeigen();
+}
 document.getElementById("btn-links").addEventListener("click", () => bewegeRichtung(-1));
 document.getElementById("btn-rechts").addEventListener("click", () => bewegeRichtung(1));
 document.getElementById("btn-umdrehen").addEventListener("click", () => { zustand.nordRechts = !zustand.nordRechts; anzeigen(); });
@@ -1081,8 +1325,27 @@ function getroffen(p) {
 	if (zustand.spuleBewegen) return p.x > SP_X1 + zustand.xs - 0.8 && p.x < SP_X2 + zustand.xs + 0.8 && Math.abs(p.y) < SP_R + 0.8;
 	return Math.abs(p.x - zustand.xm) < MAG_L / 2 + 0.8 && Math.abs(p.y) < 2.2;
 }
+/* Polplatten: Spule schieben (am Körper) oder drehen (am runden Griff) */
+function ppWinkelZu(p) { return Math.atan2(p.y - zustand.pp.y, p.x - zustand.pp.x) * 180 / Math.PI; }
+function ppGetroffen(p) {
+	const s = zustand.pp, w = s.w * Math.PI / 180, dx = p.x - s.x, dy = p.y - s.y;
+	const u = dx * Math.cos(w) + dy * Math.sin(w), v = -dx * Math.sin(w) + dy * Math.cos(w);
+	if (Math.hypot(u - PP_GRIFF[0], v) < 1.0) return "drehen";
+	if (Math.abs(u) < PP.L / 2 + 0.5 && Math.abs(v) < PP.R + 0.5) return "schieben";
+	return null;
+}
 canvas.addEventListener("pointerdown", ev => {
 	const p = weltX(ev);
+	if (zustand.modus === "polplatten") {
+		const art = ppGetroffen(p), s = zustand.pp;
+		if (!art) return;
+		s.auto = null; s.ziehen = art;
+		s.versatz = { x: s.x - p.x, y: s.y - p.y, w: s.w - ppWinkelZu(p) };
+		s.letzteBewegung = "von Hand"; s.letzteDauer = null;
+		zustand.Umax = 0;
+		canvas.setPointerCapture(ev.pointerId);
+		return;
+	}
 	if (!getroffen(p)) return;
 	if (zustand.modus === "spiel" && zustand.spiel.phase === "fertig") return;
 	zustand.auto = null; zustand.ziehen = true; zustand.ziehVersatz = aktuelleLage() - p.x; zustand.letzteZiehX = null;
@@ -1092,29 +1355,65 @@ canvas.addEventListener("pointerdown", ev => {
 });
 canvas.addEventListener("pointermove", ev => {
 	const p = weltX(ev);
+	if (zustand.modus === "polplatten") {
+		const s = zustand.pp;
+		if (s.ziehen === "schieben") { s.x = p.x + s.versatz.x; s.y = p.y + s.versatz.y; ppKlemmen(); }
+		else if (s.ziehen === "drehen") {
+			let w = ppWinkelZu(p) + s.versatz.w;
+			const naechster = Math.round(w / 90) * 90;
+			if (Math.abs(w - naechster) < 4) w = naechster;   /* rastet bei 0°, 90°, ... leicht ein */
+			s.w = ((w % 360) + 360) % 360;
+			ppKlemmen();
+		}
+		else { const art = ppGetroffen(p); canvas.style.cursor = art === "drehen" ? "alias" : art ? "grab" : "default"; }
+		return;
+	}
 	if (zustand.ziehen) setzeLage(p.x + zustand.ziehVersatz);
 	else canvas.style.cursor = getroffen(p) ? "grab" : "default";
 });
-["pointerup", "pointercancel"].forEach(t => canvas.addEventListener(t, () => { zustand.ziehen = false; zustand.letzteZiehX = null; }));
+["pointerup", "pointercancel"].forEach(t => canvas.addEventListener(t, () => { zustand.ziehen = false; zustand.letzteZiehX = null; zustand.pp.ziehen = null; }));
 
-/* Diagramm herunterladen: mit Beschriftung der Versuchsbedingungen */
-document.getElementById("btn-bild").addEventListener("click", () => {
-	const dpr = 2, w = DW, h = DH + 34, c = document.createElement("canvas");
-	c.width = w * dpr; c.height = h * dpr;
-	const k = c.getContext("2d"); k.scale(dpr, dpr);
-	k.fillStyle = "#fff"; k.fillRect(0, 0, w, h);
-	const info = zustand.modus === "spiel" ? "Spiel, Stufe " + STUFEN_SPIEL[zustand.spiel.stufe].name + ": " + STUFEN_SPIEL[zustand.spiel.stufe].titel
-		: "N = " + zustand.N + ", " + (zustand.staerke === 1 ? "1 Magnet" : "2 Magnete") + ", Messbereich " + zustand.bereich + " mV";
-	text(k, "Induktionsspannung: " + info, 8, 16, 14, "#111", "left", "bold");
-	k.translate(0, 34);
-	zeichneDiagramm(k, w, DH);
-	const name = "Induktion_Spannungsverlauf_" + (zustand.modus === "spiel" ? "Spiel_Stufe" + STUFEN_SPIEL[zustand.spiel.stufe].name : "N" + zustand.N + "_" + zustand.staerke + "Magnet") + ".png";
+/* Bild speichern: auf Tablets über das Teilen-Menü, sonst als Download. Ohne Text am Bild; die Versuchsbedingungen stehen im Dateinamen. */
+function bildSpeichern(c, name) {
 	c.toBlob(blob => {
 		const datei = new File([blob], name, { type: "image/png" });
 		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) navigator.share({ files: [datei] }).catch(() => {});
 		else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 	});
+}
+function dateiTeil(t) { return String(t).replace(/°/g, "Grad").replace(/\s+/g, "_").replace(/[^\wäöüÄÖÜß.,-]/g, ""); }
+document.getElementById("btn-bild").addEventListener("click", () => {
+	const dpr = 2, c = document.createElement("canvas");
+	c.width = DW * dpr; c.height = DH * dpr;
+	const k = c.getContext("2d"); k.scale(dpr, dpr);
+	zeichneDiagramm(k, DW, DH);
+	const p = zustand.pp;
+	const teil = zustand.modus === "spiel" ? "Spiel_Stufe" + STUFEN_SPIEL[zustand.spiel.stufe].name
+		: zustand.modus === "polplatten" ? "Polplatten_" + dateiTeil(p.letzteBewegung) + (p.letzteDauer === null ? "" : "_in_" + p.letzteDauer + "s")
+		: "N" + zustand.N + "_" + zustand.staerke + "Magnet";
+	bildSpeichern(c, "Induktion_Spannungsverlauf_" + teil + ".png");
 });
+/* Messtabelle als Bild (booktabs-Optik wie auf dem Arbeitsblatt) */
+function tabelleSpeichern(box, name) {
+	const zeilen = [...box.querySelectorAll("tr")].map(tr => [...tr.children].map(z => z.textContent));
+	const m = document.createElement("canvas").getContext("2d");
+	m.font = "15px " + schrift;
+	const breiten = zeilen[0].map((_, j) => Math.max(...zeilen.map(z => m.measureText(z[j]).width)) + 28);
+	const zh = 28, rand = 12, w = breiten.reduce((a, b) => a + b, 0) + 2 * rand, h = zeilen.length * zh + 2 * rand + 6;
+	const dpr = 2, c = document.createElement("canvas");
+	c.width = w * dpr; c.height = h * dpr;
+	const k = c.getContext("2d"); k.scale(dpr, dpr);
+	k.fillStyle = "#fff"; k.fillRect(0, 0, w, h);
+	const strich = (y, d) => { k.fillStyle = "#111"; k.fillRect(rand, y, w - 2 * rand, d); };
+	strich(rand, 1.5); strich(rand + zh + 2, 1); strich(rand + zeilen.length * zh + 4.5, 1.5);
+	zeilen.forEach((z, i) => {
+		let x = rand;
+		z.forEach((t, j) => { text(k, t, x + breiten[j] / 2, rand + 2 + (i + 0.5) * zh + (i ? 2 : 0), 15, "#111"); x += breiten[j]; });
+	});
+	bildSpeichern(c, name);
+}
+document.getElementById("btn-tabelle-bild").addEventListener("click", () => tabelleSpeichern(document.getElementById("tabelle"), "Induktion_Messtabelle_Wovon_haengt_U_ab.png"));
+document.getElementById("btn-pp-tabelle-bild").addEventListener("click", () => tabelleSpeichern(document.getElementById("pp-tabelle"), "Induktion_Messtabelle_Polplatten.png"));
 
 let letzteZeit = null, zaehler = 0;
 function schleife(t) {
@@ -1126,7 +1425,7 @@ function schleife(t) {
 }
 window.addEventListener("resize", layout);
 const start = location.hash.slice(1);
-modusSetzen(AUFTRAG[start] ? start : "versuch", true);
+modusSetzen(ERLAUBT.includes(start) ? start : ERLAUBT[0], true);
 K.nachFontLaden(layout);
 requestAnimationFrame(schleife);
 
