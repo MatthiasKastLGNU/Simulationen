@@ -942,6 +942,13 @@ window.SimUI = (function () {
 		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
 		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
 		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
+		einzelkurven: '<path d="M2 4c4 1 6 6 8 16" fill="none" stroke="#C86400" stroke-width="2" stroke-dasharray="3 2"/><path d="M22 4c-4 1-6 6-8 16" fill="none" stroke="#7A1FA2" stroke-width="2" stroke-dasharray="3 2"/>',
+		einrasten: '<g stroke="#999" stroke-width="1"><path d="M3 6h18M3 12h18M3 18h18M6 3v18M12 3v18M18 3v18"/></g><circle cx="12" cy="12" r="3.2" fill="#111"/>',
+		bsp_ms: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#BF0000"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4M18.5 16.3v3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 7V1.5" stroke="#111" stroke-width="1.8"/><path d="M9.6 4L12 0.5 14.4 4z" fill="#111"/>',
+		bsp_ms_neg: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#0000BF"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 8h7.5" stroke="#111" stroke-width="1.8"/><path d="M18 5.6l4 2.4-4 2.4z" fill="#111"/>',
+		bsp_dreieck_mitte: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="15" r="2" fill="#111"/>',
+		bsp_dreieck_seite: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="20" r="2" fill="#111"/>',
+		gesamtpfeil_gruen: '<path d="M2 12h15" stroke="#295C06" stroke-width="2.8"/><path d="M15 6.5l7 5.5-7 5.5z" fill="#295C06"/>',
 		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
 	};
 	function svg(name) {
@@ -1152,11 +1159,11 @@ window.SimUI = (function () {
 			</div>
 			<div class="bedienleiste">
 				<div class="bgruppe" style="flex:1 1 12rem">
-					<span class="btitel"><span class="punkt" style="background:#BF0000"></span> Ladung <i class="gr">Q</i><sub>1</sub></span>
+					<span class="btitel"><span class="punkt" style="background:#C86400"></span> Ladung <i class="gr">Q</i><sub>1</sub></span>
 					<div class="zeile"><input type="range" id="regler-q1" min="-5" max="5" step="0.5" value="4" aria-label="Ladung Q1"><span class="wert" id="wert-q1" style="min-width:4.4em"></span></div>
 				</div>
 				<div class="bgruppe" style="flex:1 1 12rem">
-					<span class="btitel"><span class="punkt" style="background:#0000BF"></span> Ladung <i class="gr">Q</i><sub>2</sub></span>
+					<span class="btitel"><span class="punkt" style="background:#7A1FA2"></span> Ladung <i class="gr">Q</i><sub>2</sub></span>
 					<div class="zeile"><input type="range" id="regler-q2" min="-5" max="5" step="0.5" value="1" aria-label="Ladung Q2"><span class="wert" id="wert-q2" style="min-width:4.4em"></span></div>
 				</div>
 				<div class="bgruppe" style="flex:1 1 12rem">
@@ -1165,7 +1172,7 @@ window.SimUI = (function () {
 				</div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
-			<p class="fussnote">Ziehen Sie den Punkt <i class="gr">P</i> auf der Achse. Pfeile nach rechts bedeuten <i class="gr">E</i><sub>x</sub>&nbsp;&gt;&nbsp;0, Pfeile nach links <i class="gr">E</i><sub>x</sub>&nbsp;&lt;&nbsp;0.</p>
+			<p class="fussnote">Ziehen Sie den Punkt <i class="gr">P</i> auf der Achse. Pfeile nach rechts bedeuten <i class="gr">E</i><sub>x</sub>&nbsp;&gt;&nbsp;0, Pfeile nach links <i class="gr">E</i><sub>x</sub>&nbsp;&lt;&nbsp;0. <span style="color:#C86400">Orange</span>: Feld von <i class="gr">Q</i><sub>1</sub>, <span style="color:#7A1FA2">lila</span>: Feld von <i class="gr">Q</i><sub>2</sub>, schwarz: Summe.</p>
 		</div>
 	</div>
 
@@ -1180,7 +1187,7 @@ window.SimUI = (function () {
 				</span>
 			</div>
 			<div class="zeile knopfleiste">
-				<label class="chip" title="Einzelfelder E1,x und E2,x zeigen"><input type="checkbox" id="chk-einzeln">Einzelfelder <i class="gr">E</i><sub>1,x</sub>, <i class="gr">E</i><sub>2,x</sub></label>
+				<label class="chip" title="Einzelfelder E1,x und E2,x zeigen"><input type="checkbox" id="chk-einzeln"><span data-chipicon="einzelkurven"></span><span>Einzelfelder</span></label>
 				<label class="chip" title="Nullstellen markieren"><input type="checkbox" id="chk-null"><span data-chipicon="ziel"></span>Nullstellen</label>
 			</div>
 			<canvas id="diagramm-canvas" class="sim"></canvas>
@@ -1199,7 +1206,7 @@ const K = window.SimKit, P = window.SimPlus;
    KF: Feldstaerke von 1 nC im Abstand 1 cm, 1/(4 pi eps0) * 1e-9 C / (0,01 m)^2 = 89,875 kV/m */
 const KF = 89.875;
 const X_MIN = -20, X_MAX = 70;
-const FARBE1 = "#BF0000", FARBE2 = "#0000BF";
+const FARBE1 = "#C86400", FARBE2 = "#7A1FA2";   /* Kennfarben der Ladungen (Pfeile, Kurven); die Ladung selbst ist nach dem Vorzeichen gefaerbt */
 const STANDARD = { q1: 4, q2: 1, d: 30, p: 10, yMax: 4, einzeln: false, null: false };
 const zustand = Object.assign({}, STANDARD);
 
@@ -1237,7 +1244,7 @@ function yAchse() { return HA * 0.62; }
 function zeichneLadung(x, q, farbe, name) {
 	const px = xPixA(x), py = yAchse();
 	const rk = 6 + 2.2 * Math.abs(q);   /* der Betrag der Ladung zeigt sich in der Größe */
-	gA.beginPath(); gA.arc(px, py, rk, 0, 2 * Math.PI); gA.fillStyle = q === 0 ? "#888" : farbe; gA.fill();
+	gA.beginPath(); gA.arc(px, py, rk, 0, 2 * Math.PI); gA.fillStyle = q === 0 ? "#888" : q > 0 ? "#BF0000" : "#0000BF"; gA.fill();   /* positiv rot, negativ blau */
 	SimUI.ladungsZeichen(gA, px, py, rk, q);
 	P.symbol(gA, "Q", name, px - 6, py - rk - 7, { groesse: 13, farbe });
 }
