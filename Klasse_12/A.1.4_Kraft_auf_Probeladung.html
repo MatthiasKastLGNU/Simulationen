@@ -942,6 +942,13 @@ window.SimUI = (function () {
 		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
 		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
 		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
+		einzelkurven: '<path d="M2 4c4 1 6 6 8 16" fill="none" stroke="#C86400" stroke-width="2" stroke-dasharray="3 2"/><path d="M22 4c-4 1-6 6-8 16" fill="none" stroke="#7A1FA2" stroke-width="2" stroke-dasharray="3 2"/>',
+		einrasten: '<g stroke="#999" stroke-width="1"><path d="M3 6h18M3 12h18M3 18h18M6 3v18M12 3v18M18 3v18"/></g><circle cx="12" cy="12" r="3.2" fill="#111"/>',
+		bsp_ms: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#BF0000"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4M18.5 16.3v3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 7V1.5" stroke="#111" stroke-width="1.8"/><path d="M9.6 4L12 0.5 14.4 4z" fill="#111"/>',
+		bsp_ms_neg: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#0000BF"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 8h7.5" stroke="#111" stroke-width="1.8"/><path d="M18 5.6l4 2.4-4 2.4z" fill="#111"/>',
+		bsp_dreieck_mitte: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="15" r="2" fill="#111"/>',
+		bsp_dreieck_seite: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="20" r="2" fill="#111"/>',
+		gesamtpfeil_gruen: '<path d="M2 12h15" stroke="#295C06" stroke-width="2.8"/><path d="M15 6.5l7 5.5-7 5.5z" fill="#295C06"/>',
 		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
 	};
 	function svg(name) {
@@ -1145,6 +1152,7 @@ window.SimUI = (function () {
 	<div class="modusleiste" id="modus-knoepfe">
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
 		<button data-modus="aufgabe">Selbstkontrolle</button>
+		<button data-modus="feldstaerke">Feldstärke</button>
 	</div>
 
 	<div class="tcb gruen verborgen" id="aufgabe-box">
@@ -1176,7 +1184,7 @@ window.SimUI = (function () {
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Simulation: Kräfte auf eine Probeladung im Feld zweier Punktladungen</div>
+		<div class="tcb-title"><span data-f="Simulation: Kräfte auf eine Probeladung im Feld zweier Punktladungen" data-e="Simulation: Feldstärke im Feld zweier Punktladungen">Simulation: Kräfte auf eine Probeladung im Feld zweier Punktladungen</span></div>
 		<div class="tcb-body">
 			<canvas id="feld-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste"><button id="btn-standard" class="neben" data-icon="reset" title="Standardwerte"></button><button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
@@ -1192,22 +1200,28 @@ window.SimUI = (function () {
 				<div class="bgruppe">
 					<span class="btitel">Pfeilmaßstab: 1&nbsp;cm&nbsp;&#8793;</span>
 					<span class="knopfleiste" id="massstab-knoepfe">
-						<button data-wert="2e-12">2&middot;10<sup>&minus;12</sup>&nbsp;N</button>
-						<button data-wert="5e-12" class="aktiv">5&middot;10<sup>&minus;12</sup>&nbsp;N</button>
-						<button data-wert="1e-11">1&middot;10<sup>&minus;11</sup>&nbsp;N</button>
+						<button data-wert="2e-12"><span data-f="2&middot;10<sup>&minus;12</sup>&nbsp;N" data-e="20&nbsp;V/m">2&middot;10<sup>&minus;12</sup>&nbsp;N</span></button>
+						<button data-wert="5e-12" class="aktiv"><span data-f="5&middot;10<sup>&minus;12</sup>&nbsp;N" data-e="50&nbsp;V/m">5&middot;10<sup>&minus;12</sup>&nbsp;N</span></button>
+						<button data-wert="1e-11"><span data-f="1&middot;10<sup>&minus;11</sup>&nbsp;N" data-e="100&nbsp;V/m">1&middot;10<sup>&minus;11</sup>&nbsp;N</span></button>
 					</span>
 				</div>
 				<div class="bgruppe" id="zeile-schalter">
 					<span class="btitel">Anzeigen</span>
 					<span class="knopfleiste">
-						<label class="chip" title="Einzelkräfte zeigen"><input type="checkbox" id="chk-einzel" checked><span data-chipicon="anhaengen"></span>Einzelkräfte</label>
+						<label class="chip" title="Einzelkräfte zeigen"><input type="checkbox" id="chk-einzel" checked><span data-chipicon="anhaengen"></span><span data-f="Einzelkräfte" data-e="Einzelfelder">Einzelkräfte</span></label>
 						<label class="chip" title="Parallelogramm zeigen"><input type="checkbox" id="chk-parallelogramm" checked><span data-chipicon="parallelogramm"></span>Parallelogramm</label>
-						<label class="chip" title="Gesamtkraft zeigen"><input type="checkbox" id="chk-gesamt" checked><span data-pfeil="#C00000"></span>Gesamtkraft</label>
+						<label class="chip" title="Gesamtkraft zeigen"><input type="checkbox" id="chk-gesamt" checked><span data-chipicon="gesamtpfeil_gruen"></span><span data-f="Gesamtkraft" data-e="Gesamtfeld">Gesamtkraft</span></label>
 						<label class="chip" title="Orte mit gleichem Kraftbetrag zeigen"><input type="checkbox" id="chk-iso"><span data-chipicon="iso"></span>gleicher Betrag</label>
 					</span>
 				</div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
+			<div class="tabelle-wrap verborgen" id="komponenten-wrap">
+				<table class="messtabelle">
+					<thead><tr><th>Feldstärke</th><th><i class="gr">E</i><sub>x</sub> in V/m</th><th><i class="gr">E</i><sub>y</sub> in V/m</th><th>|<i class="gr">E</i>| in V/m</th><th>Winkel zur <i class="gr">x</i>-Achse</th></tr></thead>
+					<tbody id="komponenten-koerper"></tbody>
+				</table>
+			</div>
 			<p class="fussnote" id="fussnote">Ziehen Sie die Probeladung <i class="gr">q</i> = 1,0&middot;10<sup>&minus;13</sup>&nbsp;C im Bild; sie rastet auf 0,5&nbsp;cm ein. Das Koordinatensystem entspricht dem auf dem Arbeitsblatt.</p>
 		</div>
 	</div>
@@ -1306,18 +1320,18 @@ function kraftpfeil(x0, y0, Fx, Fy, farbe, breite, name) {
 	P.pfeil(ctx, xPix(x0), yPix(y0), xPix(x1), yPix(y1), farbe, breite, 11);
 	if (name) {
 		const l = Math.hypot(x1 - x0, y1 - y0) || 1, nx = -(y1 - y0) / l, ny = (x1 - x0) / l;
-		P.symbol(ctx, "F", name, xPix((x0 + x1) / 2 + nx * 0.35) - 6, yPix((y0 + y1) / 2 + ny * 0.35) + 5, { groesse: 13, farbe });
+		P.symbol(ctx, zustand.modus === "feldstaerke" ? "E" : "F", name, xPix((x0 + x1) / 2 + nx * 0.35) - 6, yPix((y0 + y1) / 2 + ny * 0.35) + 5, { groesse: 13, farbe });
 	}
 	return { x: x1, y: y1 };
 }
 
-function pfeileSichtbar() { return zustand.modus === "erkunden" || zustand.geloest[zustand.aufgabe]; }
+function pfeileSichtbar() { return zustand.modus !== "aufgabe" || zustand.geloest[zustand.aufgabe]; }
 
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
 	zeichneGitter();
 	const p = zustand.p, g = gesamtkraft(p.x, p.y);
-	if (zustand.iso && g && zustand.modus === "erkunden") zeichneIsolinie(g.betrag);
+	if (zustand.iso && g && zustand.modus === "erkunden") zeichneIsolinie(g.betrag);   /* nur beim Erkunden */
 	for (const pk of PUNKTE) {
 		ctx.beginPath(); ctx.arc(xPix(pk.x), yPix(pk.y), 3, 0, 2 * Math.PI); ctx.fillStyle = "#111"; ctx.fill();
 		P.text(ctx, pk.name, xPix(pk.x) + 6, yPix(pk.y) - 6, { groesse: 13, fett: true, kursiv: true });
@@ -1352,12 +1366,36 @@ function aktualisiereAuswertung(g) {
 	if (!g) { el.innerHTML = ort + ": zu nah an einer Ladung."; return; }
 	if (!pfeileSichtbar()) { el.innerHTML = ort + '<br><span class="naeherung">Die Kräfte werden angezeigt, sobald Sie diesen Punkt richtig gelöst oder die Lösung aufgerufen haben.</span>'; return; }
 	const [fL, fR] = g.einzeln, s = zustand.massstab;
+	if (zustand.modus === "feldstaerke") { zeigeKomponenten(g); el.innerHTML = ort + '<br><span class="naeherung">Feldstärke <i class="gr">E</i> = <i class="gr">F</i>/<i class="gr">q</i> mit <i class="gr">q</i> = 1,0&middot;10<sup>&minus;13</sup>&nbsp;C; Pfeilmaßstab 1&nbsp;cm &#8793; ' + P.de(s / Q_PROBE, 0) + '&nbsp;V/m.</span>'; return; }
 	el.innerHTML = ort + "<br>" +
 		"<i class='gr'>F</i><sub>L</sub> = <span class='wert'>" + P.sig(fL.betrag, 3) + "&nbsp;N</span> (Pfeil " + P.de(fL.betrag / s, 1) + "&nbsp;cm)<span class='trenner'>|</span>" +
 		"<i class='gr'>F</i><sub>R</sub> = <span class='wert'>" + P.sig(fR.betrag, 3) + "&nbsp;N</span> (Pfeil " + P.de(fR.betrag / s, 1) + "&nbsp;cm)<br>" +
 		"<span class='folgerung'><i class='gr'>F</i><sub>ges</sub> = <span class='wert'>" + P.sig(g.betrag, 3) + "&nbsp;N</span></span> (Pfeil " + P.de(g.betrag / s, 1) + "&nbsp;cm), Winkel zur positiven <i class='gr'>x</i>-Achse: " + winkelText(g.winkel) + "<br><span class='naeherung'>Feldstärke am Ort der Probeladung: <i class='gr'>E</i> = <i class='gr'>F</i><sub>ges</sub>&thinsp;/&thinsp;<i class='gr'>q</i> = " + P.sig(g.betrag / Q_PROBE, 3) + "&nbsp;V/m</span>";
 }
 
+/* ---------- Feldstaerke in Komponenten (E = F/q, in V/m) ---------- */
+function zeigeKomponenten(g) {
+	const zahl = z => (Math.abs(z) < 0.005 ? "0,0" : P.de(z, 1)).replace("-", "−");
+	const zeile = (name, farbe, Fx, Fy) => {
+		const Ex = Fx / Q_PROBE, Ey = Fy / Q_PROBE;
+		return "<tr><td style='color:" + farbe + "'>" + name + "</td><td>" + zahl(Ex) + "</td><td>" + zahl(Ey) + "</td><td>" + zahl(Math.hypot(Ex, Ey)) + "</td><td>" + winkelText(Math.atan2(Ey, Ex) * 180 / Math.PI) + "</td></tr>";
+	};
+	const [fL, fR] = g.einzeln;
+	document.getElementById("komponenten-koerper").innerHTML =
+		zeile("<i class='gr'>E</i><sub>L</sub>", P.FARBEN.blau, fL.Fx, fL.Fy) + zeile("<i class='gr'>E</i><sub>R</sub>", P.FARBEN.rot, fR.Fx, fR.Fy) +
+		zeile("<b><i class='gr'>E</i></b>", P.FARBEN.gruen, g.Fx, g.Fy).replace("<tr>", "<tr style='font-weight:bold'>");
+}
+/* Beschriftungen je nach Modus: Kraefte (N) oder Feldstaerken (V/m) */
+function setzeBeschriftung() {
+	const e = zustand.modus === "feldstaerke";
+	document.querySelectorAll("[data-f][data-e]").forEach(sp => { sp.innerHTML = e ? sp.dataset.e : sp.dataset.f; });
+	document.getElementById("komponenten-wrap").classList.toggle("verborgen", !e);
+	/* Feldstaerke: groessere Pfeile (1 cm entspricht 20 V/m), damit sie im Punkt C lesbar sind */
+	const ziel = e ? "2e-12" : "5e-12";
+	zustand.massstab = +ziel;
+	document.querySelectorAll("#massstab-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === ziel));
+	if (!e) document.getElementById("komponenten-koerper").innerHTML = "";
+}
 /* ---------- Selbstkontrolle ---------- */
 function setzeAufgabe(i) {
 	zustand.aufgabe = i;
@@ -1411,7 +1449,8 @@ P.bindeModus("modus-knoepfe", m => {
 	const aufgabe = m === "aufgabe";
 	document.getElementById("aufgabe-box").classList.toggle("verborgen", !aufgabe);
 	document.getElementById("zeile-springen").classList.toggle("verborgen", aufgabe);
-	document.getElementById("chk-iso").parentElement.classList.toggle("verborgen", aufgabe);
+	document.getElementById("chk-iso").parentElement.classList.toggle("verborgen", m !== "erkunden");
+	setzeBeschriftung();
 	if (aufgabe) setzeAufgabe(zustand.aufgabe); else zeichne();
 });
 
@@ -1428,7 +1467,7 @@ document.getElementById("btn-standard").addEventListener("click", () => {
 });
 
 P.ziehbar(canvas,
-	(x, y) => zustand.modus === "erkunden" && Math.hypot(x - xPix(zustand.p.x), y - yPix(zustand.p.y)) < 16 ? "p" : null,
+	(x, y) => zustand.modus !== "aufgabe" && Math.hypot(x - xPix(zustand.p.x), y - yPix(zustand.p.y)) < 16 ? "p" : null,
 	(k, x, y) => {
 		let nx = Math.round(xWert(x) * 2) / 2, ny = Math.round(yWert(y) * 2) / 2;
 		nx = Math.max(-8.5, Math.min(8.5, nx)); ny = Math.max(-6.5, Math.min(6.5, ny));
@@ -1443,7 +1482,7 @@ function layout() {
 window.addEventListener("resize", layout);
 layout();
 SimUI.modusPerLink("modus-knoepfe");
-SimUI.bildKnopf("btn-bild", canvas, () => "Kraft_auf_Probeladung_" + P.de(zustand.p.x, 1) + "_" + P.de(zustand.p.y, 1),
+SimUI.bildKnopf("btn-bild", canvas, () => (zustand.modus === "feldstaerke" ? "Feldstaerke_" : "Kraft_auf_Probeladung_") + P.de(zustand.p.x, 1) + "_" + P.de(zustand.p.y, 1),
 	() => ["Kräfte auf eine Probeladung im Feld zweier Punktladungen: Probeladung bei (" + P.de(zustand.p.x, 1) + "|" + P.de(zustand.p.y, 1) + ")"]);
 K.nachFontLaden(zeichne);
 </script>
