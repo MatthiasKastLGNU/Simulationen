@@ -822,7 +822,10 @@ span[data-pfeil] svg { width: 1.7em; height: 0.75em; display: block; }
 .knopfleiste.modus-blau button.aktiv { background: var(--blue-frame); color: #fff; }
 /* Modus per Link: ausgeblendete Elemente */
 .per-link-aus { display: none !important; }
-	</style>
+	/* Anordnungen vom Blatt: grosse Piktogramme */
+#beispiel-knoepfe button.ik svg { width: 2.4rem; height: 2.4rem; }
+#beispiel-knoepfe button.ik { padding: 0.15rem 0.35rem; }
+</style>
 	<script>
 /* ==========================================================================
    Sim-UI: Piktogramme, Modus per Link, Bild herunterladen (Kast, 2026-10-03)
@@ -942,6 +945,13 @@ window.SimUI = (function () {
 		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
 		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
 		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
+		einzelkurven: '<path d="M2 4c4 1 6 6 8 16" fill="none" stroke="#C86400" stroke-width="2" stroke-dasharray="3 2"/><path d="M22 4c-4 1-6 6-8 16" fill="none" stroke="#7A1FA2" stroke-width="2" stroke-dasharray="3 2"/>',
+		einrasten: '<g stroke="#999" stroke-width="1"><path d="M3 6h18M3 12h18M3 18h18M6 3v18M12 3v18M18 3v18"/></g><circle cx="12" cy="12" r="3.2" fill="#111"/>',
+		bsp_ms: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#BF0000"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4M18.5 16.3v3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 7V1.5" stroke="#111" stroke-width="1.8"/><path d="M9.6 4L12 0.5 14.4 4z" fill="#111"/>',
+		bsp_ms_neg: '<path d="M2 18h20" stroke="#999" stroke-width="1"/><circle cx="5.5" cy="18" r="3.4" fill="#BF0000"/><circle cx="18.5" cy="18" r="3.4" fill="#0000BF"/><path d="M3.8 18h3.4M5.5 16.3v3.4M16.8 18h3.4" stroke="#fff" stroke-width="1.3"/><path d="M5.5 18L12 8l6.5 10" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="2 1.5"/><circle cx="12" cy="8" r="1.8" fill="#111"/><path d="M12 8h7.5" stroke="#111" stroke-width="1.8"/><path d="M18 5.6l4 2.4-4 2.4z" fill="#111"/>',
+		bsp_dreieck_mitte: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="15" r="2" fill="#111"/>',
+		bsp_dreieck_seite: '<path d="M3.5 20h17L12 5z" fill="none" stroke="#888" stroke-width="1"/><circle cx="3.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="20.5" cy="20" r="2.8" fill="#BF0000"/><circle cx="12" cy="5" r="2.8" fill="#BF0000"/><circle cx="12" cy="20" r="2" fill="#111"/>',
+		gesamtpfeil_gruen: '<path d="M2 12h15" stroke="#295C06" stroke-width="2.8"/><path d="M15 6.5l7 5.5-7 5.5z" fill="#295C06"/>',
 		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
 	};
 	function svg(name) {
@@ -1193,19 +1203,19 @@ window.SimUI = (function () {
 			<div class="bedienleiste" id="steuerung">
 				<div class="bgruppe" id="zeile-l0" style="flex:1 1 15rem">
 					<span class="btitel">Ladung <i class="gr">Q</i><sub>1</sub></span>
-					<div class="zeile"><label class="chip" title="Ladung Q1 ein- oder ausblenden"><input type="checkbox" id="an-0" checked><span class="punkt" style="background:#BF0000"></span></label><input type="range" id="q-0" min="-5" max="5" step="0.5" value="4" aria-label="Ladung Q1"><span class="wert" id="wq-0" style="min-width:4em"></span></div>
+					<div class="zeile"><label class="chip" title="Ladung Q1 ein- oder ausblenden"><input type="checkbox" id="an-0" checked><span class="punkt" style="background:#C86400"></span></label><input type="range" id="q-0" min="-5" max="5" step="0.5" value="4" aria-label="Ladung Q1"><span class="wert" id="wq-0" style="min-width:4em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-l1" style="flex:1 1 15rem">
 					<span class="btitel">Ladung <i class="gr">Q</i><sub>2</sub></span>
-					<div class="zeile"><label class="chip" title="Ladung Q2 ein- oder ausblenden"><input type="checkbox" id="an-1" checked><span class="punkt" style="background:#0000BF"></span></label><input type="range" id="q-1" min="-5" max="5" step="0.5" value="1" aria-label="Ladung Q2"><span class="wert" id="wq-1" style="min-width:4em"></span></div>
+					<div class="zeile"><label class="chip" title="Ladung Q2 ein- oder ausblenden"><input type="checkbox" id="an-1" checked><span class="punkt" style="background:#7A1FA2"></span></label><input type="range" id="q-1" min="-5" max="5" step="0.5" value="1" aria-label="Ladung Q2"><span class="wert" id="wq-1" style="min-width:4em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-l2" style="flex:1 1 15rem">
 					<span class="btitel">Ladung <i class="gr">Q</i><sub>3</sub></span>
-					<div class="zeile"><label class="chip" title="Ladung Q3 ein- oder ausblenden"><input type="checkbox" id="an-2"><span class="punkt" style="background:#C86400"></span></label><input type="range" id="q-2" min="-5" max="5" step="0.5" value="-2" aria-label="Ladung Q3"><span class="wert" id="wq-2" style="min-width:4em"></span></div>
+					<div class="zeile"><label class="chip" title="Ladung Q3 ein- oder ausblenden"><input type="checkbox" id="an-2"><span class="punkt" style="background:#00838F"></span></label><input type="range" id="q-2" min="-5" max="5" step="0.5" value="-2" aria-label="Ladung Q3"><span class="wert" id="wq-2" style="min-width:4em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-l3" style="flex:1 1 15rem">
 					<span class="btitel">Ladung <i class="gr">Q</i><sub>4</sub></span>
-					<div class="zeile"><label class="chip" title="Ladung Q4 ein- oder ausblenden"><input type="checkbox" id="an-3"><span class="punkt" style="background:#7A1FA2"></span></label><input type="range" id="q-3" min="-5" max="5" step="0.5" value="2" aria-label="Ladung Q4"><span class="wert" id="wq-3" style="min-width:4em"></span></div>
+					<div class="zeile"><label class="chip" title="Ladung Q4 ein- oder ausblenden"><input type="checkbox" id="an-3"><span class="punkt" style="background:#8B5A2B"></span></label><input type="range" id="q-3" min="-5" max="5" step="0.5" value="2" aria-label="Ladung Q4"><span class="wert" id="wq-3" style="min-width:4em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-hom" style="flex:1 1 12rem">
 					<span class="btitel">homogenes Feld <i class="gr">E</i><sub>h</sub></span>
@@ -1223,13 +1233,13 @@ window.SimUI = (function () {
 					<span class="btitel">Anzeigen</span>
 					<span class="knopfleiste">
 						<label class="chip" title="Komponenten zeigen"><input type="checkbox" id="chk-komp" checked><span data-chipicon="komponenten"></span>Komponenten</label>
-						<label class="chip" title="Feldrichtungen im Raster zeigen"><input type="checkbox" id="chk-gitter"><span data-chipicon="richtungsfeld"></span>Raster</label>
-						<label class="chip" title="Beim Ziehen auf 0,5 cm einrasten"><input type="checkbox" id="chk-raster" checked>einrasten</label>
+						<label class="chip" id="chip-gitter" title="Feldrichtungen im Raster zeigen"><input type="checkbox" id="chk-gitter"><span data-chipicon="richtungsfeld"></span>Raster</label>
+						<label class="chip" id="chip-einrasten" title="Beim Ziehen auf 0,5 cm einrasten"><input type="checkbox" id="chk-raster" checked><span data-chipicon="einrasten"></span>einrasten</label>
 					</span>
 				</div>
 				<div class="bgruppe" id="zeile-beispiele">
-					<span class="btitel">Beispiele vom Blatt</span>
-					<span class="knopfleiste" id="beispiel-knoepfe"><button data-wert="mittelsenkrechte" title="Mittelsenkrechte">Mittelsenkrechte</button><button data-wert="mittelsenkrechte-negativ" title="Mittelsenkrechte, Q2 negativ">… <i class="gr">Q</i><sub>2</sub>&nbsp;&lt;&nbsp;0</button><button data-wert="dreieck" title="Dreieck">Dreieck</button></span>
+					<span class="btitel" id="titel-beispiele">Beispiele vom Blatt</span>
+					<span class="knopfleiste" id="beispiel-knoepfe"><button data-wert="mittelsenkrechte" data-icon="bsp_ms" class="gross" title="Mittelsenkrechte: zwei gleiche positive Ladungen"></button><button data-wert="mittelsenkrechte-negativ" data-icon="bsp_ms_neg" class="gross" title="Mittelsenkrechte: Q2 negativ"></button><button data-wert="dreieck-mitte" data-icon="bsp_dreieck_mitte" class="gross" title="Dreieck: Punkt im Mittelpunkt"></button><button data-wert="dreieck" data-icon="bsp_dreieck_seite" class="gross" title="Dreieck: Punkt in der Mitte einer Seite"></button></span>
 				</div>
 			</div>
 			<div class="tabelle-wrap" id="ergebnis-wrap">
@@ -1258,7 +1268,7 @@ window.SimUI = (function () {
 "use strict";
 const K = window.SimKit, P = window.SimPlus;
 const KF = 89.875; /* kV/m fuer 1 nC im Abstand 1 cm */
-const FARBE = ["#BF0000", "#0000BF", "#C86400", "#7A1FA2"];
+const FARBE = ["#C86400", "#7A1FA2", "#00838F", "#8B5A2B"];   /* Kennfarben der Ladungen (Pfeile, Beschriftung); die Ladung selbst ist nach dem Vorzeichen gefaerbt */
 
 const STANDARD = () => ({
 	ladungen: [{ q: 4, x: 0, y: 0, an: true }, { q: 1, x: 6, y: 0, an: true }, { q: -2, x: 0, y: 5, an: false }, { q: 2, x: -6, y: -3, an: false }],
@@ -1312,9 +1322,10 @@ function zeichneEbene(g, W, H, ohnePfeile) {
 	}
 	const qs = quellen();
 	qs.forEach((l, k) => {
-		const farbe = zustand.modus === "aufgabe" ? (l.q > 0 ? "#BF0000" : "#0000BF") : FARBE[zustand.ladungen.indexOf(l)];
+		const vzFarbe = l.q > 0 ? "#BF0000" : "#0000BF";   /* positiv rot, negativ blau */
+		const farbe = zustand.modus === "aufgabe" ? vzFarbe : FARBE[zustand.ladungen.indexOf(l)];
 		const rk = 6 + 2.2 * Math.abs(l.q);   /* der Betrag der Ladung zeigt sich in der Größe */
-		g.fillStyle = farbe; g.beginPath(); g.arc(px(l.x), py(l.y), rk, 0, 2 * Math.PI); g.fill();
+		g.fillStyle = vzFarbe; g.beginPath(); g.arc(px(l.x), py(l.y), rk, 0, 2 * Math.PI); g.fill();
 		SimUI.ladungsZeichen(g, px(l.x), py(l.y), rk, l.q);
 		P.text(g, (zustand.modus === "aufgabe" ? "" : "Q" + (zustand.ladungen.indexOf(l) + 1) + " = ") + P.de(l.q, 1) + " nC", px(l.x) + 14, py(l.y) - 12, { groesse: 12, farbe });
 	});
@@ -1397,7 +1408,8 @@ const H3 = 5 * Math.sqrt(3) / 3;   /* Abstand Mittelpunkt zu Seite im gleichseit
 const BEISPIELE = {
 	"mittelsenkrechte": { ladungen: [{ q: 2, x: -3, y: 0, an: true }, { q: 2, x: 3, y: 0, an: true }, { q: -2, x: 0, y: 5, an: false }, { q: 2, x: -6, y: -3, an: false }], P: { x: 0, y: 4 }, mass: 8, raster: true },
 	"mittelsenkrechte-negativ": { ladungen: [{ q: 2, x: -3, y: 0, an: true }, { q: -2, x: 3, y: 0, an: true }, { q: -2, x: 0, y: 5, an: false }, { q: 2, x: -6, y: -3, an: false }], P: { x: 0, y: 4 }, mass: 8, raster: true },
-	"dreieck": { ladungen: [{ q: 1, x: -5, y: -H3, an: true }, { q: 1, x: 5, y: -H3, an: true }, { q: 1, x: 0, y: 2 * H3, an: true }, { q: 2, x: -6, y: -3, an: false }], P: { x: 0, y: -H3 }, mass: 30, raster: false }
+	"dreieck": { ladungen: [{ q: 1, x: -5, y: -H3, an: true }, { q: 1, x: 5, y: -H3, an: true }, { q: 1, x: 0, y: 2 * H3, an: true }, { q: 2, x: -6, y: -3, an: false }], P: { x: 0, y: -H3 }, mass: 30, raster: false },
+	"dreieck-mitte": { ladungen: [{ q: 1, x: -5, y: -H3, an: true }, { q: 1, x: 5, y: -H3, an: true }, { q: 1, x: 0, y: 2 * H3, an: true }, { q: 2, x: -6, y: -3, an: false }], P: { x: 0, y: 0 }, mass: 30, raster: false }
 };
 function setzeBeispiel(name) {
 	const b = BEISPIELE[name];
@@ -1509,7 +1521,27 @@ function layout() {
 }
 window.addEventListener("resize", layout);
 layout();
-if (location.hash.length > 1) setzeBeispiel(decodeURIComponent(location.hash.slice(1)));
+/* Stationen vom Arbeitsblatt: ?station=mittelsenkrechte oder ?station=dreieck (auch #mittelsenkrechte, #dreieck).
+   Es bleiben nur die Bedienelemente, die dort gebraucht werden; im freien Modus ist alles sichtbar. */
+const STATIONEN = {
+	"mittelsenkrechte": { ladungen: 2, beispiele: ["mittelsenkrechte", "mittelsenkrechte-negativ"], start: "mittelsenkrechte" },
+	"dreieck": { ladungen: 3, beispiele: ["dreieck-mitte", "dreieck"], start: "dreieck-mitte" }
+};
+function setzeStation(name) {
+	const st = STATIONEN[name];
+	if (!st) return false;
+	const aus = id => document.getElementById(id).classList.add("verborgen");
+	["modus-knoepfe", "zeile-hom", "zeile-homw", "zeile-mass", "btn-material", "chip-gitter", "chip-einrasten", "box-achse"].forEach(aus);
+	for (let k = st.ladungen; k < 4; k++) aus("zeile-l" + k);
+	document.querySelectorAll("#beispiel-knoepfe button").forEach(b => b.classList.toggle("verborgen", !st.beispiele.includes(b.dataset.wert)));
+	document.getElementById("titel-beispiele").textContent = "Anordnung";
+	setzeBeispiel(st.start);
+	return true;
+}
+let stationsName = "";
+try { stationsName = new URLSearchParams(location.search).get("station") || ""; } catch (e) { stationsName = ""; }
+if (!stationsName && location.hash.length > 1) stationsName = decodeURIComponent(location.hash.slice(1));
+if (!setzeStation(stationsName) && BEISPIELE[stationsName]) setzeBeispiel(stationsName);
 SimUI.modusPerLink("modus-knoepfe");
 SimUI.bildKnopf("btn-bild", cE, "Superposition_Feldstaerke");
 SimUI.bildKnopf("btn-dia-bild", cX, "Superposition_Ex_entlang_P");
