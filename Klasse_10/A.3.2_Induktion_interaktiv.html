@@ -1469,6 +1469,14 @@ const B_ = {
 const D_ = {};
 for (const k in diag) D_[k] = { svg: diag[k]() };
 
+/* SVG-Text in ein Canvas zeichnen (Ergebnisbild fürs Heft) */
+async function svgCanvas(svg, breite) {
+	const img = await KI.ladeSvg(svg), c = document.createElement("canvas");
+	c.width = breite; c.height = Math.round(breite * img.height / img.width);
+	const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+	return c;
+}
+
 /* ---------- Modusleiste ---------- */
 const MI = {
 	paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
@@ -2091,6 +2099,12 @@ BAU.tippen = function (b) {
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
 	const wahlFeld = KI.el("div", ""); b.insertBefore(wahlFeld, steuer);
+	const heft = KI.heftleiste(b, async () => nr === 0
+		? KI.blattBild([{ art: "titel", t: "Wo fließen Ströme? Pendelkörper schwingen ins Feld" },
+			{ art: "reihe", trenner: " ", elemente: KOERPER.map(k => ({ svg: strombild(k.art, k.opt.find(o => o.ok).s, true) })) },
+			{ art: "text", teile: [{ t: "Platte und Ring: große Strombahn, starke Bremsung. Kamm und geschlitzter Ring: nur kleine Wirbel, schwache Bremsung." }] }])
+		: KI.blattBild([{ art: "titel", t: RUNDEN[nr].name === "Rohr" ? "Ringströme im Aluminiumrohr" : "Wo wird die Platte gebremst?" }, { art: "bild", quelle: KI.canvasKopie(cv) }]),
+		"Wo_fliesst_Strom");
 	let nr = 0, gewaehlt = new Set(), geloest = false, versuche = 0, tipp = null, geo;
 	const RUNDEN = [
 		{ name: "Pendelkörper", mehrfach: false,
@@ -2107,13 +2121,13 @@ BAU.tippen = function (b) {
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
 		auftrag.innerHTML = RUNDEN[i].auftrag; rueck.innerHTML = "";
 		fertigK.hidden = !RUNDEN[i].mehrfach; fertigK.disabled = false;
-		lw.hidden = i === 0; wahlFeld.hidden = i !== 0; steuer.hidden = i === 0;
+		lw.hidden = i === 0; wahlFeld.hidden = i !== 0; steuer.hidden = i === 0; heft.hidden = true;
 		if (i === 0) { kNr = 0; fehlerGesamt = 0; koerperFrage(); } else zeichne();
 	}
 	/* ---------- Stufe 1: Pendelkörper, richtiges Strombild wählen ---------- */
 	const OR = "#E65100";
 	/* Bildchen 200 x 130: Feld links bis x = 100 (Feldrand), Körper (Mitte x = 120) schwingt nach links hinein */
-	function strombild(art, strom) {
+	function strombild(art, strom, roh) {
 		let t = S.feld(0, 4, 100, 122, 13) + '<line x1="100" y1="4" x2="100" y2="126" stroke="#4A63C8" stroke-width="1.2" stroke-dasharray="4 3"/>';
 		t += S.pendelkoerper(120, 65, 90, art, "rgba(158,167,176,0.8)", art.includes("ring") ? "#B4BAC1" : S.ALU_D);
 		t += S.pfeil(198, 65, 174, 65, "#111", 2.6);
@@ -2133,6 +2147,7 @@ BAU.tippen = function (b) {
 		if (strom === "ganzRing") t += schleife(120, 65, 36.9, 36.9, 3);
 		if (strom === "ringKlein") t += schleife(100, 34, 6, 4.5, 2.2) + schleife(100, 96, 6, 4.5, 2.2);
 		if (strom === "kein") t += '<text x="150" y="124" font-size="13" text-anchor="middle" fill="#555">kein Strom</text>';
+		if (roh) return S.rahmen(200, 130, t, 400);
 		return S.rahmen(200, 130, t, 200).replace('width="200"', 'width="100%"').replace(/height="\d+"/, 'style="display:block;height:auto"');
 	}
 	const KOERPER = [
@@ -2176,8 +2191,8 @@ BAU.tippen = function (b) {
 				rueck.innerHTML = h;
 				const l = KI.el("div", "leiste");
 				if (!letzter) { const w = KI.el("button", "haupt", "Weiter"); w.addEventListener("click", () => { kNr++; koerperFrage(); }); l.appendChild(w); }
-				else { KI.bestwert("tippen", st); l.appendChild(KI.symbolKnopf("zurueck", "Von vorn", () => runde(0))); }
-				rueck.appendChild(l);
+				else { KI.bestwert("tippen", st); l.appendChild(KI.symbolKnopf("zurueck", "Von vorn", () => runde(0))); heft.hidden = false; }
+				rueck.appendChild(l); b.appendChild(heft);
 				if (letzter) KI.funken(rueck, 6 * st);
 			});
 			raster.appendChild(kn);
@@ -2271,6 +2286,7 @@ BAU.tippen = function (b) {
 			const s = versuche === 1 ? 3 : versuche === 2 ? 2 : 1;
 			rueck.innerHTML = '<p class="rueck gut">' + KI.sterneHtml(s) + '</p><div class="erkl">' + text + "</div>";
 			KI.bestwert("tippen", s); KI.funken(rueck, 12);
+			heft.hidden = false; b.appendChild(heft);
 		} else rueck.innerHTML = '<p class="rueck schlecht">' + text + "</p>";
 		zeichne();
 	});
@@ -2290,13 +2306,14 @@ BAU.pole = function (b) {
 	const neu = KI.el("button", "", "Neue Situation"); neu.className = ""; const nk = KI.el("span", "knopfleiste"); nk.appendChild(neu); steuer.appendChild(nk);
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
-	let lage, eintrag, serie = 0, geloest = false;
+	let lage, eintrag, serie = 0, geloest = false, bildSvg = "";
+	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Pole und Stromrichtung der Ringströme" }, { art: "bild", quelle: await svgCanvas(bildSvg, 900) }]), "Pole_der_Ringstroeme");
 	const SL = ["obenOben", "obenUnten", "untenOben", "untenUnten"], SR = ["stromOben", "stromUnten"];
 	const STROMPFEIL = { rechts: "→", links: "←" };
 	function neueLage() {
 		const alt = lage;
 		lage = { nordUnten: alt ? !alt.nordUnten : Math.random() < 0.5, runter: true };
-		eintrag = { obenOben: "", obenUnten: "", untenOben: "", untenUnten: "", stromOben: "", stromUnten: "" }; geloest = false; rueck.innerHTML = ""; pruef.disabled = false;
+		eintrag = { obenOben: "", obenUnten: "", untenOben: "", untenUnten: "", stromOben: "", stromUnten: "" }; geloest = false; heft.hidden = true; rueck.innerHTML = ""; pruef.disabled = false;
 		zeichne();
 	}
 	function soll() {
@@ -2338,6 +2355,11 @@ BAU.pole = function (b) {
 		}
 		buehne.innerHTML = S.rahmen(W, H, s, 360).replace('width="360"', 'width="100%"').replace(/height="\d+"/, 'style="display:block;height:auto"');
 		const pos = { obenOben: rO - 36, obenUnten: rO + 36, untenOben: rU - 36, untenUnten: rU + 36 };
+		if (mitLoesung) {   /* Ergebnisbild: Pole als Kästchen mit Buchstaben ins SVG */
+			let p = "";
+			for (const k of SL) p += '<rect x="254" y="' + (pos[k] - 18) + '" width="36" height="36" rx="5" fill="#fff" stroke="' + (eintrag[k] === "N" ? "#D32F2F" : "#2E7D32") + '" stroke-width="2"/><text x="272" y="' + (pos[k] + 7) + '" font-size="20" font-weight="bold" text-anchor="middle" fill="' + (eintrag[k] === "N" ? "#D32F2F" : "#2E7D32") + '">' + eintrag[k] + "</text>";
+			bildSvg = S.rahmen(W + 20, H, s + p, W + 20);
+		}
 		const so = soll();
 		/* Stromrichtung: Knopf vorne am Ring (unterer Rand der Ellipse) */
 		for (const [k, y] of [["stromOben", rO + 16], ["stromUnten", rU + 16]]) {
@@ -2370,7 +2392,7 @@ BAU.pole = function (b) {
 			geloest = true; serie++; pruef.disabled = true;
 			rueck.innerHTML = '<p class="rueck gut">Richtig!</p><div class="erkl">Der Ring, auf den sich der Magnet zubewegt, stößt ihn ab. Der Ring, von dem er sich entfernt, zieht ihn zurück. Beide bremsen die Bewegung. In den beiden Ringen fließt der Strom deshalb in entgegengesetzte Richtungen.</div>';
 			KI.bestwert("pole", Math.min(3, serie)); KI.funken(rueck, 10);
-			zeichne(true);
+			zeichne(true); heft.hidden = false; b.appendChild(heft);
 		} else {
 			serie = 0;
 			const tipp = falschPole === 4 ? "Überlege für jeden Ring: Nähert sich der Magnet oder entfernt er sich? Abstoßen oder zurückhalten?"
@@ -2409,7 +2431,8 @@ BAU.bremse = function (b) {
 	steuer.appendChild(KI.symbolKnopf("zurueck", "Neu starten", () => stufe(nr)));
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
-	let nr = 0, z, laeuft = false, letzte = 0;
+	let nr = 0, z, laeuft = false, letzte = 0, ergebnis = "";
+	const heft = KI.heftleiste(b, () => KI.blattBild([{ art: "titel", t: "Bremsspiel ICE: " + STUFEN[nr].name }, { art: "bild", quelle: KI.canvasKopie(cv) }, { art: "text", teile: [{ t: ergebnis }] }]), "Bremsspiel_ICE");
 	const knoepfe = STUFEN.map((s, i) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => stufe(i)); chips.appendChild(k); return k; });
 	KI.chipsBeschraenken(chips, knoepfe);
 	function stufe(i) {
@@ -2417,7 +2440,7 @@ BAU.bremse = function (b) {
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
 		auftrag.textContent = s.text;
 		z = { x: 0, v: s.v0, wirbel: false, reib: false, eS: 0, eR: 0, eL: 0, t: 0, fertig: false, funken: [] };
-		laeuft = false; rueck.innerHTML = ""; start.disabled = false;
+		laeuft = false; rueck.innerHTML = ""; start.disabled = false; heft.hidden = true;
 		wirbelK.classList.remove("an"); reibK.classList.remove("an");
 		zeichne();
 	}
@@ -2466,7 +2489,8 @@ BAU.bremse = function (b) {
 			(st === 2 ? " Für drei Sterne: möglichst wenig Reibungsbremse." : "") +
 			(st === 0 && d < -KNAPP ? " Tipp: Die Wirbelstrombremse bremst bei hoher Geschwindigkeit stark. Später einschalten!" : "") + "</div>";
 		if (st) { KI.bestwert("bremse", st); KI.funken(rueck, 6 * st); }
-		zeichne();
+		ergebnis = text + " Energie: " + KI.de(anteilS, 0) + " % in der Schiene (Wirbelströme), " + KI.de(anteilR, 0) + " % in den Bremsbelägen.";
+		zeichne(); heft.hidden = false; b.appendChild(heft);
 	}
 	function zeichne() {
 		const { ctx: c, B, H } = KI.leinwand(cv, B => Math.max(250, B * 0.42));
