@@ -498,9 +498,20 @@ window.KI = (function () {
 	}
 	function de(z, st = 1) { return z.toFixed(st).replace(".", ","); }
 	/* Startstufe aus der Adresse: ?stufe=2 (1-basiert), für QR-Codes direkt zur passenden Stufe */
+	/* KI.festeStufen (0-basiert) setzt die Seite aus ?modus=kette-1 bzw. ?modus=vorhersage-1.2: Dann gibt es NUR diese Stufen
+	   (QR-Code auf dem Arbeitsblatt zeigt genau das, was dort angesagt ist). */
 	KI.startStufe = function (anzahl) {
+		if (KI.festeStufen && KI.festeStufen.length) return KI.festeStufen[0] < anzahl ? KI.festeStufen[0] : 0;
 		const n = parseInt(new URLSearchParams(location.search).get("stufe"), 10) || KI.vorgabeStufe;
 		return n >= 1 && n <= anzahl ? n - 1 : 0;
+	};
+	KI.stufeErlaubt = i => !KI.festeStufen || !KI.festeStufen.length || KI.festeStufen.includes(i);
+	/* nächste erlaubte Stufe nach i, sonst -1 */
+	KI.naechsteStufe = function (i, anzahl) { for (let j = i + 1; j < anzahl; j++) if (KI.stufeErlaubt(j)) return j; return -1; };
+	/* Stufen-Chips einer Übung auf die erlaubten beschränken; nur eine erlaubt: Chips ganz ausblenden */
+	KI.chipsBeschraenken = function (chips, knoepfe) {
+		knoepfe.forEach((k, i) => { k.hidden = !KI.stufeErlaubt(i); });
+		if (knoepfe.filter(k => !k.hidden).length <= 1) chips.hidden = true;
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
 
@@ -911,6 +922,7 @@ window.KI = (function () {
 			return b;
 		});
 		if (stufen.length > 1) leiste.appendChild(chips);
+		KI.chipsBeschraenken(chips, knoepfe);
 		const rechts = el("div", "rechts");
 		const status = el("div", "status");
 		rechts.appendChild(status);
@@ -1832,7 +1844,12 @@ const gebaut = {};
 function modusleiste() {
 	const leiste = document.getElementById("modusleiste");
 	const params = new URLSearchParams(location.search);
-	const erlaubt = params.get("modus") ? params.get("modus").split(",") : MODI.map(m => m[0]);
+	/* ?modus=kette-1: Übung „kette“, NUR Kette 1 (Gletscher); kette-2 nur Blob (für QR-Codes auf dem Arbeitsblatt) */
+	const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
+		const [name, stufe] = m.split("-");
+		if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
+		return name;
+	}) : MODI.map(m => m[0]);
 	const knoepfe = {};
 	for (const [id, name] of MODI) {
 		if (!erlaubt.includes(id)) { document.getElementById("m-" + id).remove(); continue; }
@@ -1864,16 +1881,16 @@ BAU.sortieren = (b) => KI.sortieren(b, {
 	auftrag: "Sortiere die Karten in die beiden Körbe (ziehen oder antippen). Tipp: Probiere es im Reiter <b>Nullniveau</b> aus.",
 	koerbe: [{ name: "hängt vom Nullniveau ab", farbe: "#BF0000" }, { name: "hängt nicht vom Nullniveau ab", farbe: "#295C06" }],
 	dinge: [
-		{ text: "Höhenenergie von Chrysogonus im Keller", korb: 0, warum: "Δh wird ab dem Nullniveau gemessen, also ändert sich E<sub>pot</sub> mit dem Nullniveau." },
+		{ text: "Höhenenergie von Chrysogonus im Keller", korb: 0, warum: "Die Höhe des Kellers wird ab dem Nullniveau gemessen, also ändert sich E<sub>pot</sub> mit dem Nullniveau." },
 		{ text: "ob die Höhenenergie positiv oder negativ ist", korb: 0, warum: "Unterhalb des Nullniveaus ist E<sub>pot</sub> negativ, oberhalb positiv." },
-		{ text: "Höhe Δh, mit der man rechnet", korb: 0, warum: "Δh ist die Höhe über dem Nullniveau." },
+		{ text: "Höhenangabe des 1.&nbsp;Stocks auf der Skala", korb: 0, warum: "Die Skala beginnt beim Nullniveau: Verschiebt man es, ändern sich alle Höhenangaben, aber nicht ihre Unterschiede." },
 		{ text: "Höhenenergie des Pkw auf dem Stilfser Joch", korb: 0, warum: "Ein Wert von E<sub>pot</sub> gilt immer nur zu einem bestimmten Nullniveau." },
 		{ text: "ob die Höhenenergie gerade null ist", korb: 0, warum: "Genau auf dem Nullniveau ist E<sub>pot</sub> = 0." },
 		{ text: "Höhenenergie des Karussells oben am Turm", korb: 0, warum: "Cletus und Felicitas kommen zu verschiedenen Werten, weil sie verschiedene Nullniveaus wählen." },
 		{ text: "Änderung der Höhenenergie beim Hochtragen", korb: 1, warum: "Die Änderung ist immer m · g · (Höhenunterschied), egal wo das Nullniveau liegt." },
 		{ text: "Energie, die man zum Hochziehen des Karussells braucht", korb: 1, warum: "Sie entspricht der Änderung der Höhenenergie." },
 		{ text: "Masse der Wasserkiste", korb: 1, warum: "Die Masse hat mit dem Nullniveau nichts zu tun." },
-		{ text: "Höhenunterschied zwischen Keller und 1.&nbsp;Stock", korb: 1, warum: "Ein Unterschied bleibt gleich, egal ab wo man misst." },
+		{ text: "Höhenunterschied Δh zwischen Keller und 1.&nbsp;Stock", korb: 1, warum: "Δh ist ein Unterschied zweier Höhen: Er bleibt gleich, egal ab wo man misst." },
 		{ text: "Fallbeschleunigung g", korb: 1, warum: "g hängt vom Ort ab (Erde, Mond), nicht vom Nullniveau." },
 		{ text: "Energie, die beim Gletscherabbruch umgewandelt wird", korb: 1, warum: "Umgewandelt wird die Änderung der Höhenenergie: m · g · 1200 m." }
 	]
