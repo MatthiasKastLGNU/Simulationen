@@ -140,58 +140,63 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 	.schalter { margin-left: 0; }
 }
 
+
 .kopf .zwilling { visibility: hidden; }
 .kopf .kapitel { flex: 1; }
 .modusleiste { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0.2rem 0 0.9rem; }
 .modusleiste button {
-	font: inherit; font-size: 0.95rem; padding: 0.34rem 0.9rem;
-	border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: #fff; color: var(--blue-frame); cursor: pointer;
+	font: inherit; font-size: 0.95rem; padding: 0.3rem 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem;
+	border: 1.5px solid var(--blue-frame); border-radius: 1mm; background: #fff; color: var(--blue-frame); cursor: pointer;
 }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
-.zeile > label, .gruppe { min-width: 9.5em; }
-.haken { min-width: 0 !important; display: inline-flex; align-items: center; gap: 0.3rem; }
-button.haupt {
-	font: inherit; font-size: 1.05rem; font-weight: bold; padding: 0.4rem 1.5rem;
-	border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: var(--blue-frame); color: #fff; cursor: pointer;
-}
-button.haupt.an { background: #fff; color: var(--blue-frame); }
-.knopfleiste.klein button { font-size: 0.85rem; padding: 0.2rem 0.55rem; border-color: #999; color: #666; }
-.knopfleiste.klein button:hover { background: #f2f2f2 !important; }
-.werte { display: flex; flex-wrap: wrap; gap: 0.3rem 1.6rem; font-variant-numeric: tabular-nums; }
-.anzeige { font-weight: bold; }
-table.mess { border-collapse: collapse; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
-table.mess th, table.mess td { padding: 0.15rem 0.8rem; text-align: center; }
-table.mess thead th { border-top: 1.5px solid #111; border-bottom: 1px solid #111; font-weight: normal; }
-table.mess tbody tr:last-child td { border-bottom: 1.5px solid #111; }
-canvas.sim { cursor: default; }
-canvas#diagramm { margin-top: 0.7rem; }
-.fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
+canvas.sim { display: block; width: 100%; height: auto; touch-action: none; }
+canvas#diagramm { margin-top: 0.4rem; }
 p { margin: 0 0 0.5rem; }
 [hidden] { display: none !important; }
-/* ---------- Ergänzungen für die Simulationen zu A.3 (Induktion) ---------- */
+.fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
+.wert { font-variant-numeric: tabular-nums; min-width: 4.6em; text-align: right; }
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; accent-color: var(--blue-frame); }
 .leinwand { position: relative; }
-.bildknopf {
-	position: absolute; right: 6px; top: 6px;
-	font: inherit; font-size: 0.82rem; padding: 0.18rem 0.55rem;
-	border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: rgba(255,255,255,0.92); color: var(--blue-frame); cursor: pointer;
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+.fussnote { font-size: 0.85rem; color: #555; margin: 0.55rem 0 0; }
+/* ---------- Spiel ---------- */
+.spielzeile { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: center; margin-top: 0.5rem; }
+.spielzeile .ergebnis { font-weight: bold; }
+.spielzeile .ergebnis.gut { color: var(--green-frame); }
+.spielzeile .ergebnis.schlecht { color: var(--red-frame); }
+.sterne { font-size: 1.3rem; letter-spacing: 0.1rem; color: #C8A000; }
+.sterne .leer { color: #ccc; }
+.stufen button .geschafft { color: #C8A000; font-size: 0.8rem; }
+@media (max-width: 560px) {
+	.blatt { padding: 1rem 0.8rem 1.4rem; }
+	.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+	.gruppen { gap: 0.6rem 0.9rem; }
 }
-.bildknopf:hover { background: var(--blue-title); }
-.erklaerung { font-size: 0.92rem; margin-top: 0.5rem; }
-details.tipp { margin: 0.35rem 0; }
-details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight: bold; }
-.sterne { font-size: 1.3rem; letter-spacing: 0.15rem; color: #C8A000; }
-.stufen button.geschafft { border-color: #C8A000; }
-.antwort { display: flex; gap: 0.4rem 1.2rem; flex-wrap: wrap; margin: 0.3rem 0; }
-.antwort label { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; }
-.rueckmeldung { font-weight: bold; margin-top: 0.4rem; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.schlecht { color: var(--red-frame); }
-
 </style>
 </head>
+
 <body>
 <div class="blatt">
 
@@ -202,52 +207,43 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 	</div>
 
 	<div class="modusleiste" id="modusleiste">
-		<button data-modus="erklaerung" class="aktiv">Warum entsteht eine Spannung?</button>
-		<button data-modus="lampe">Generator mit Lampe</button>
-		<button data-modus="kommutator">Mit Kommutator</button>
+		<button data-modus="erklaerung" title="Warum entsteht eine Spannung?"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="5" width="4" height="14" fill="#D32F2F"/><rect x="19" y="5" width="4" height="14" fill="#2E7D32"/><line x1="7" y1="16" x2="17" y2="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/><circle cx="7" cy="16" r="2.3" fill="#E17300"/><circle cx="17" cy="8" r="2.3" fill="#7D3CAF"/></svg><span>Warum Spannung?</span></button>
+		<button data-modus="lampe" title="Generator mit Lampe"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="6.5" fill="#FFD84D" stroke="currentColor" stroke-width="1.6"/><path d="M8 6l8 8M16 6l-8 8" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="17" width="6" height="4" fill="currentColor"/></svg><span>Mit Lampe</span></button>
+		<button data-modus="kommutator" title="Generator mit Kommutator"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 1 0 18z" fill="#E17300"/><path d="M12 3a9 9 0 0 0 0 18z" fill="#7D3CAF"/><rect x="11" y="2" width="2" height="20" fill="#fff"/></svg><span>Mit Kommutator</span></button>
+		<button data-modus="spiel" title="Spiel: Kurven nachfahren"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c3-9 6-9 9 0s6 9 9 0" fill="none" stroke="#999" stroke-width="2.4"/><path d="M2 12c3-8 6-8 9 0" fill="none" stroke="currentColor" stroke-width="2.4"/></svg><span>Spiel: Kurven nachfahren</span></button>
 	</div>
 
 	<div class="tcb blau">
 		<div class="tcb-title" id="box-titel">Simulation</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
-			<div class="steuerung">
-				<div class="zeile">
-					<button class="haupt" id="btn-kurbeln">Kurbeln</button>
-					<span class="knopfleiste">
-						<button id="btn-schritt">45° weiter</button>
-						<button id="btn-zeitlupe">Zeitlupe</button>
-					</span>
-					<span class="fussnote" style="margin:0">oder die Schleife in der Ansicht von vorne drehen</span>
-				</div>
-				<div class="zeile" data-st="erklaerung lampe kommutator">
-					<label for="regler-n">Drehzahl</label>
-					<input type="range" id="regler-n" min="0.2" max="2" step="0.05" value="0.5">
-					<span class="wert" id="wert-n"></span>
-				</div>
-				<div class="zeile" data-st="lampe">
-					<span class="gruppe">Stromkreis</span>
-					<span class="knopfleiste"><button id="btn-schalter">Schalter schließen</button></span>
-				</div>
-				<div class="zeile" data-st="erklaerung lampe">
-					<span class="gruppe">Windungen</span>
-					<span class="knopfleiste" id="windungen-knoepfe">
-						<button data-wert="1" class="aktiv">1</button>
-						<button data-wert="5">5</button>
-						<button data-wert="10">10</button>
-					</span>
-				</div>
-				<div class="zeile" data-st="erklaerung">
-					<span class="gruppe">Anzeigen</span>
-					<label class="haken"><input type="checkbox" id="zeige-v" checked><span>Bewegung</span></label>
-					<label class="haken"><input type="checkbox" id="zeige-f" checked><span>Kraft auf positive Ladungsträger</span></label>
-					<label class="haken"><input type="checkbox" id="zeige-linien"><span>Feldlinien durch die Schleife</span></label>
-				</div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr" data-st="erklaerung lampe kommutator"><div class="gt">Kurbeln</div><div class="kn">
+					<button class="haupt" id="btn-kurbeln" title="Kurbeln ein und aus" aria-label="Kurbeln ein und aus"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 1 1-8 5.6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M1.6 5.2l2.6 5.2 4.6-3.2z" fill="currentColor"/><line x1="12" y1="12" x2="17.5" y2="6.5" stroke="currentColor" stroke-width="2.4"/><circle cx="17.5" cy="6.5" r="2.4" fill="currentColor"/></svg><span id="kurbel-symbol"></span></button>
+					<button id="btn-schritt" title="45 Grad weiterdrehen" aria-label="45 Grad weiterdrehen"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0 1 8-8" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M11 0.5l5 3.5-5 3.5z" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg><span>45°</span></button>
+				</div></div>
+				<div class="gr" data-st="erklaerung lampe kommutator"><div class="gt">Tempo</div><div class="kn" id="tempo-knoepfe"><button data-wert="0.25" title="Zeitlupe" aria-label="Zeitlupe"><span class="tempo">›</span></button><button data-wert="1" class="aktiv" title="normal" aria-label="normal"><span class="tempo">›››</span></button></div></div>
+				<div class="gr" data-st="erklaerung lampe kommutator"><div class="gt">Drehzahl</div><div class="kn"><input type="range" id="regler-n" min="0.2" max="2" step="0.05" value="0.5" aria-label="Drehzahl"><span class="wert" id="wert-n"></span></div></div>
+				<div class="gr" data-st="erklaerung lampe"><div class="gt">Windungen</div><div class="kn" id="windungen-knoepfe">
+					<button data-wert="1" title="1 Windung" aria-label="1 Windung"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><rect x="5" y="4" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="2.4"/></svg>1</button>
+					<button data-wert="5" title="5 Windungen" aria-label="5 Windungen"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><rect x="4" y="3" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.6"/><rect x="5.5" y="4.5" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.6"/><rect x="7" y="6" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.6"/></svg>5</button>
+					<button data-wert="10" title="10 Windungen" aria-label="10 Windungen"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><rect x="2" y="1.5" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.4"/><rect x="3.5" y="3" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.4"/><rect x="5" y="4.5" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.4"/><rect x="6.5" y="6" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.4"/><rect x="8" y="7.5" width="16" height="14" rx="1.5" fill="none" stroke="#B5652A" stroke-width="1.4"/></svg>10</button>
+				</div></div>
+				<div class="gr" data-st="lampe"><div class="gt">Stromkreis</div><div class="kn">
+					<button id="btn-schalter" title="Schalter schließen oder öffnen" aria-label="Schalter schließen oder öffnen"><svg width="44" height="22" viewBox="0 0 44 22" aria-hidden="true"><circle cx="4" cy="15" r="2.2" fill="currentColor"/><circle cx="20" cy="15" r="2.2" fill="currentColor"/><line id="schalter-hebel" x1="4" y1="15" x2="18" y2="5" stroke="currentColor" stroke-width="2.4"/><circle cx="34" cy="11" r="7" fill="#fff" id="schalter-lampe" stroke="currentColor" stroke-width="1.6"/><path d="M29.5 6.5l9 9M38.5 6.5l-9 9" stroke="currentColor" stroke-width="1.3"/></svg></button>
+				</div></div>
+				<div class="gr" data-st="erklaerung"><div class="gt">Anzeigen</div><div class="kn">
+					<button id="zeige-v" title="Bewegungsrichtung der Seiten" aria-label="Bewegungsrichtung der Seiten"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><line x1="3" y1="15" x2="17" y2="15" stroke="#111" stroke-width="2.6"/><path d="M16 9.5l7 5.5-7 5.5z" fill="#111"/><text x="6" y="10" font-size="11" font-style="italic" font-family="serif">v</text></svg></button>
+					<button id="zeige-f" title="Kraft auf positive Ladungsträger" aria-label="Kraft auf positive Ladungsträger"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><circle cx="8" cy="11" r="6" fill="#fff" stroke="#BF0000" stroke-width="2"/><circle cx="8" cy="11" r="2" fill="#BF0000"/><circle cx="19" cy="11" r="6" fill="#fff" stroke="#BF0000" stroke-width="2"/><path d="M15.5 7.5l7 7M22.5 7.5l-7 7" stroke="#BF0000" stroke-width="2"/></svg></button>
+					<button id="zeige-linien" title="Feldlinien durch die Schleife" aria-label="Feldlinien durch die Schleife"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M1 6h24M1 11h24M1 16h24" stroke="#0000BF" stroke-width="1.6"/><line x1="13" y1="1" x2="13" y2="21" stroke="#555" stroke-width="2" stroke-dasharray="3 2"/><circle cx="13" cy="6" r="1.8" fill="#0000BF"/><circle cx="13" cy="11" r="1.8" fill="#0000BF"/><circle cx="13" cy="16" r="1.8" fill="#0000BF"/></svg></button>
+				</div></div>
+				<div class="gr" data-st="spiel"><div class="gt">Stufe</div><div class="kn stufen" id="stufen-knoepfe"></div></div>
+				<div class="gr" data-st="spiel"><div class="gt">Spiel</div><div class="kn">
+					<button class="haupt" id="btn-start" title="Spiel starten" aria-label="Spiel starten"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>Start</button>
+				</div></div>
 			</div>
-			<div class="leinwand">
-				<canvas id="diagramm" class="sim"></canvas>
-				<button class="bildknopf" id="btn-bild">Diagramm herunterladen</button>
-			</div>
+			<div class="spielzeile" data-st="spiel"><span id="spiel-hinweis"></span><span class="ergebnis" id="spiel-ergebnis"></span></div>
+			<div class="leinwand" id="diagramm-leinwand"><canvas id="diagramm" class="sim"></canvas></div>
 			<p class="fussnote" id="fussnote"></p>
 		</div>
 	</div>
@@ -413,6 +409,7 @@ window.SimKit = (function () {
 })();
 
 </script>
+
 <script>
 "use strict";
 const K = window.SimKit;
@@ -420,20 +417,21 @@ const K = window.SimKit;
    Zustand und Physik
    phi: Lage der Seite 1 gegen den Uhrzeigersinn ab der Waagrechten (Blick von vorne, wie in A.2.3).
    Gekurbelt wird im Uhrzeigersinn (omega < 0). Stellung a: phi = 0 (Schleife parallel zum Feld).
-   Lorentzkraft auf positive Ladungsträger in Seite 1: F_z ~ -omega * cos(phi) (aus der Zeichenebene positiv).
+   Lorentzkraft auf positive Ladungsträger in Seite 1: F_z ~ -omega * cos(phi) (aus der Zeichenebene positiv, also zu Ring 1).
    Induzierte Spannung zwischen den Schleifringen: U = U0 * N * f * cos(phi) mit f = Drehzahl in Umdrehungen je Sekunde;
    U0 = 2 V (Zahlen gewählt, damit die Werte gut ablesbar sind; die Abhängigkeiten sind physikalisch richtig).
    Lampe: Strom I = U / R; Leistung U*I muss beim Kurbeln zusätzlich aufgebracht werden (Lenzsche Regel):
    Bremswirkung ~ N^2 * cos^2(phi) * omega.
+   Diagramm: Die Zeitachse läuft nur, solange sich die Schleife dreht (plus 1,5 s Nachlauf), damit das Bild stehen bleibt.
    ========================================================================== */
 const zustand = {
 	modus: "erklaerung",
 	phi: 0, omega: 0,
-	kurbeln: false, f: 0.5, N: 1,
-	schalter: false, zeitlupe: false,
+	kurbeln: false, f: 0.5, N: 5,
+	schalter: false, tempo: 1,
 	zeigeV: true, zeigeF: true, zeigeLinien: false,
-	ziel: null, ziehen: false, ziehVersatz: 0, letzterWinkel: null,
-	U: 0, verlauf: [], zeit: 0, kraft: 0
+	ziel: null, ziehen: false, ziehVersatz: 0,
+	U: 0, verlauf: [], zeit: 0, nachlauf: 0, pause: false, kraft: 0
 };
 const U0 = 2, R_SCHLEIFE = 1.45, R1 = 1.25;
 const REIB = 0.25, BREMS = 0.06, TRAEGHEIT = 1;
@@ -446,9 +444,31 @@ function spannung(phi, omega) {
 	const u = -U0 * zustand.N * omega / (2 * Math.PI) * Math.cos(phi);
 	return kommutator() ? Math.abs(u) * (omega <= 0 ? 1 : -1) : u;
 }
+
+/* ---------- Spiel: Kurven nachfahren ---------- */
+const SPIEL_T = 8, SPIEL_N = 5, SPIEL_UMAX = 12;
+const STUFEN = [
+	{ name: "1", hinweis: "Drehe gleichmäßig im Uhrzeigersinn, etwa eine halbe Umdrehung pro Sekunde.", f: t => 0.5 },
+	{ name: "2", hinweis: "Jetzt doppelt so schnell: eine Umdrehung pro Sekunde.", f: t => 1.0 },
+	{ name: "3", hinweis: "Erst langsam, nach 4 Sekunden doppelt so schnell.", f: t => t < 4 ? 0.5 : 1.0 },
+	{ name: "4", hinweis: "Erst im Uhrzeigersinn, dann 2 Sekunden anhalten, dann rückwärts.", f: t => t < 3 ? 0.5 : t < 5 ? 0 : -0.5 }
+];
+const spiel = { stufe: 0, phase: "bereit", t: 0, countdown: 0, daten: [], ziel: [], sterne: null };
+/* Vorgabekurve mit derselben Physik aus der vorgegebenen Bewegung (Start in Stellung a) */
+function zielKurve(st) {
+	const pts = []; let phi = 0;
+	for (let t = 0; t <= SPIEL_T + 1e-9; t += 0.01) {
+		const om = -2 * Math.PI * st.f(t);
+		pts.push([t, -U0 * SPIEL_N * om / (2 * Math.PI) * Math.cos(phi)]);
+		phi += om * 0.01;
+	}
+	return pts;
+}
+function speicherLies(k, w) { try { const v = localStorage.getItem("a33_" + k); return v === null ? w : JSON.parse(v); } catch (e) { return w; } }
+function speicherSchreib(k, w) { try { localStorage.setItem("a33_" + k, JSON.stringify(w)); } catch (e) { /* ohne Speicher */ } }
+
 function schritt(dt) {
-	dt = Math.min(dt, 0.25) * (zustand.zeitlupe ? 0.25 : 1);
-	zustand.zeit += dt;
+	dt = Math.min(dt, 0.25) * zustand.tempo;
 	const n = Math.ceil(dt / 0.004), h = dt / n;
 	for (let i = 0; i < n; i++) {
 		if (zustand.ziehen) break;
@@ -462,7 +482,7 @@ function schritt(dt) {
 			/* auslaufen: Reibung und (bei geschlossenem Stromkreis) Bremswirkung des Induktionsstroms */
 			const w = zustand.omega, c = Math.cos(zustand.phi);
 			const brems = lampeAn() ? BREMS * zustand.N * zustand.N * c * c * w : 0;
-			let a = -(brems + REIB * Math.sign(w) + 0.05 * w) / TRAEGHEIT;
+			const a = -(brems + REIB * Math.sign(w) + 0.05 * w) / TRAEGHEIT;
 			if (Math.abs(w) < 0.05) { zustand.omega = 0; break; }
 			zustand.omega = Math.sign(w) === Math.sign(w + a * h) ? w + a * h : 0;
 			zustand.phi += zustand.omega * h;
@@ -471,8 +491,56 @@ function schritt(dt) {
 	const c = Math.cos(zustand.phi);
 	zustand.kraft = Math.abs(zustand.omega) < 0.01 ? 0 : REIB + (lampeAn() ? BREMS * zustand.N * zustand.N * c * c * Math.abs(zustand.omega) : 0);
 	zustand.U = spannung(zustand.phi, zustand.omega);
-	zustand.verlauf.push([zustand.zeit, zustand.U]);
-	while (zustand.verlauf.length && zustand.verlauf[0][0] < zustand.zeit - 8) zustand.verlauf.shift();
+	if (zustand.modus === "spiel") { spielSchritt(dt); return; }
+	/* Zeitachse nur bei Bewegung (plus Nachlauf), damit das Diagramm stehen bleibt */
+	const bewegt = Math.abs(zustand.omega) > 0.02 || zustand.ziehen;
+	if (bewegt) zustand.nachlauf = 1.5; else zustand.nachlauf -= dt;
+	if (!zustand.pause && (bewegt || zustand.nachlauf > 0)) {
+		zustand.zeit += dt;
+		zustand.verlauf.push([zustand.zeit, zustand.U]);
+		while (zustand.verlauf.length && zustand.verlauf[0][0] < zustand.zeit - 8) zustand.verlauf.shift();
+	}
+}
+function spielSchritt(dt) {
+	if (spiel.phase === "countdown") {
+		spiel.countdown -= dt; zustand.phi = 0;
+		if (spiel.countdown <= 0) { spiel.phase = "laeuft"; spiel.t = 0; spiel.daten = [[0, zustand.U]]; }
+	} else if (spiel.phase === "laeuft") {
+		spiel.t += dt;
+		spiel.daten.push([spiel.t, zustand.U]);
+		if (spiel.t >= SPIEL_T) { spiel.phase = "fertig"; bewerte(); anzeigen(); }
+	}
+}
+function bewerte() {
+	/* großzügig: eigene Kurve glätten, Zeitverschiebung bis 0,5 s und etwas falsche Höhe verzeihen */
+	const DT = 0.05, n = Math.round(SPIEL_T / DT);
+	const roh = [];
+	let j = 0;
+	for (let i = 0; i <= n; i++) {
+		const t = i * DT;
+		while (j < spiel.daten.length - 2 && spiel.daten[j + 1][0] < t) j++;
+		const [t1, u1] = spiel.daten[j], [t2, u2] = spiel.daten[Math.min(j + 1, spiel.daten.length - 1)];
+		roh.push(t2 > t1 ? u1 + (u2 - u1) * (t - t1) / (t2 - t1) : u1);
+	}
+	const glatt = roh.map((_, i) => { let s = 0, m = 0; for (let k = -3; k <= 3; k++) if (roh[i + k] !== undefined) { s += roh[i + k]; m++; } return s / m; });
+	const ziel = []; for (let i = 0; i <= n; i++) ziel.push(spiel.ziel[Math.min(spiel.ziel.length - 1, Math.round(i * DT / 0.01))][1]);
+	const A = Math.max(...ziel.map(Math.abs));
+	/* abschnittsweise (je 2 s) mit eigener Zeitverschiebung bis 0,4 s: langsames Auseinanderdriften wird verziehen */
+	const L = Math.round(2 / DT);
+	let summe = 0, abschnitte = 0;
+	for (let a = 0; a < n; a += L) {
+		let best = Infinity;
+		for (let v = -8; v <= 8; v++) for (const fak of [0.7, 0.85, 1, 1.2, 1.4]) {
+			let e = 0, m = 0;
+			for (let i = a; i < Math.min(a + L, n + 1); i++) { const w = glatt[i + v]; if (w === undefined) continue; e += Math.abs(fak * w - ziel[i]); m++; }
+			if (m) best = Math.min(best, e / m / A);
+		}
+		summe += best; abschnitte++;
+	}
+	const best = summe / abschnitte;
+	const st = best < 0.3 ? 3 : best < 0.45 ? 2 : best < 0.65 ? 1 : 0;
+	spiel.sterne = st;
+	speicherSchreib("sterne_" + spiel.stufe, Math.max(st, speicherLies("sterne_" + spiel.stufe, 0)));
 }
 function feldlinienDurchSchleife(phi) { const h = R1 * Math.abs(Math.sin(phi)); return FELDLINIEN_Y.filter(y => Math.abs(y) < h).length; }
 
@@ -532,7 +600,6 @@ function schleifringe3d() {
 		ctx.fillStyle = mische(FARBE_SEITE[j], "#ffffff", 0.45); ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
 		ctx.beginPath(); ctx.arc(m[0], m[1], s3 * 0.42, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
 		ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(m[0], m[1], s3 * 0.16, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-		/* Schleifkontakt unten am Ring */
 		flaeche([[-0.12, -0.42, z0 + 0.1], [0.12, -0.42, z0 + 0.1], [0.12, -0.72, z0 + 0.1], [-0.12, -0.72, z0 + 0.1]], "#666");
 	});
 }
@@ -558,9 +625,14 @@ function zeichneSchraeg() {
 	const pfade = schleifenPfade();
 	pfade.forEach(p => { p.tiefe = 0.3 * R_SCHLEIFE * Math.cos(p.winkel) + 0.4 * R_SCHLEIFE * Math.sin(p.winkel); });
 	pfade.sort((u, v) => u.tiefe - v.tiefe);
-	const d = Math.max(3, s3 * 0.085);
+	/* Windungszahl sichtbar: mehrere Drahtstränge nebeneinander */
+	const straenge = zustand.N >= 10 ? 5 : zustand.N >= 5 ? 3 : 1;
+	const d = Math.max(3, s3 * (straenge > 1 ? 0.06 : 0.085));
 	pfade.forEach(p => {
-		linie(p.punkte, "#fff", d * 1.8); linie(p.punkte, farbe(KUPFER, 0.72), d); linie(p.punkte, farbe(KUPFER, 1.45), d * 0.3);
+		for (let k = 0; k < straenge; k++) {
+			const v = (k - (straenge - 1) / 2) * 0.09, pk = p.punkte.map(([x, y, z], i) => i === 0 ? [x, y, z] : [x * (1 + v / R_SCHLEIFE), y * (1 + v / R_SCHLEIFE), z + v]);
+			linie(pk, "#fff", d * 1.8); linie(pk, farbe(KUPFER, 0.72), d); linie(pk, farbe(KUPFER, 1.45), d * 0.3);
+		}
 		const q = P(...p.punkte[2].map((v, k) => (v + p.punkte[1][k]) / 2));
 		ctx.fillStyle = FARBE_SEITE[p.seite]; ctx.beginPath(); ctx.arc(q[0], q[1] - s3 * 0.3, s3 * 0.17, 0, 2 * Math.PI); ctx.fill();
 		text(ctx, String(p.seite + 1), q[0], q[1] - s3 * 0.3, s3 * 0.24, "#fff", "center", "bold");
@@ -591,7 +663,11 @@ function lampe(x, y, r) {
 	ctx.fillStyle = leistung > 0.02 ? "rgb(255," + Math.round(230 - 60 * leistung) + ",90)" : "#f4f4f4";
 	ctx.strokeStyle = "#333"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
 	ctx.beginPath(); ctx.moveTo(x - r * 0.7, y - r * 0.7); ctx.lineTo(x + r * 0.7, y + r * 0.7); ctx.moveTo(x - r * 0.7, y + r * 0.7); ctx.lineTo(x + r * 0.7, y - r * 0.7); ctx.stroke();
-	text(ctx, zustand.schalter ? "Lampe" : "Schalter offen", x, y - r * 1.6, Math.max(11, r * 0.7), "#333");
+	/* Schalter im Bild: offen oder geschlossen */
+	const sx = x - r * 3.2, sy = y;
+	ctx.fillStyle = "#222"; [sx - r * 0.9, sx + r * 0.9].forEach(px => { ctx.beginPath(); ctx.arc(px, sy, r * 0.22, 0, 2 * Math.PI); ctx.fill(); });
+	ctx.strokeStyle = "#222"; ctx.lineWidth = Math.max(1.5, r * 0.18); ctx.beginPath(); ctx.moveTo(sx - r * 0.9, sy);
+	if (zustand.schalter) ctx.lineTo(sx + r * 0.9, sy); else ctx.lineTo(sx + r * 0.6, sy - r * 1.1); ctx.stroke();
 }
 function Q(x, y) { return [o2x + s2 * x, o2y - s2 * y]; }
 function zeichneVorne() {
@@ -615,11 +691,12 @@ function zeichneVorne() {
 		const t = Q(0, 1.82); text(c, "Feldlinien durch die Schleife: " + feldlinienDurchSchleife(zustand.phi), t[0], t[1], Math.max(12, s2 * 0.27), BLAU, "center", "bold");
 	}
 	const m = Q(0, 0); c.fillStyle = "#999"; c.beginPath(); c.arc(m[0], m[1], s2 * 0.08, 0, 2 * Math.PI); c.fill();
-	/* Seiten: Bewegungsrichtung (Kurbeln im Uhrzeigersinn) und Kraft auf positive Ladungsträger */
+	/* Seiten: Bewegungsrichtung und Kraft auf positive Ladungsträger */
 	const fz = -Math.sign(zustand.omega || -1) * Math.cos(zustand.phi);   /* bei Stillstand: Richtung beim Kurbeln */
+	const zeigeVF = zustand.modus !== "spiel";
 	[0, 1].forEach(j => {
 		const a = zustand.phi + j * Math.PI, x = R1 * Math.cos(a), y = R1 * Math.sin(a), q = Q(x, y), r = s2 * 0.25;
-		if (zustand.zeigeV) {
+		if (zustand.zeigeV && zeigeVF) {
 			const vr = (zustand.omega > 0.05 ? 1 : -1), da = a + vr * Math.PI / 2;
 			const v1 = Q(x + 0.3 * Math.cos(da), y + 0.3 * Math.sin(da)), v2 = Q(x + 0.85 * Math.cos(da), y + 0.85 * Math.sin(da));
 			pfeil(c, v1[0], v1[1], v2[0], v2[1], "#111", Math.max(2, s2 * 0.04));
@@ -627,7 +704,7 @@ function zeichneVorne() {
 		c.fillStyle = "#fff"; c.strokeStyle = FARBE_SEITE[j]; c.lineWidth = Math.max(2, s2 * 0.045);
 		c.beginPath(); c.arc(q[0], q[1], r, 0, 2 * Math.PI); c.fill(); c.stroke();
 		const fj = j === 0 ? fz : -fz;
-		if (zustand.zeigeF && Math.abs(fj) > 0.12) {
+		if (zustand.zeigeF && zeigeVF && Math.abs(fj) > 0.12) {
 			c.strokeStyle = KRAFTROT; c.fillStyle = KRAFTROT; c.lineWidth = Math.max(1.8, s2 * 0.04);
 			if (fj < 0) { const e = r * 0.6; c.beginPath(); c.moveTo(q[0] - e, q[1] - e); c.lineTo(q[0] + e, q[1] + e); c.moveTo(q[0] - e, q[1] + e); c.lineTo(q[0] + e, q[1] - e); c.stroke(); }
 			else { c.beginPath(); c.arc(q[0], q[1], r * 0.28, 0, 2 * Math.PI); c.fill(); }
@@ -635,7 +712,10 @@ function zeichneVorne() {
 		const t = Q(x + 0.5 * Math.cos(a), y + 0.5 * Math.sin(a));
 		text(c, String(j + 1), t[0], t[1], s2 * 0.28, FARBE_SEITE[j], "center", "bold");
 	});
-	if (zustand.zeigeF && Math.abs(Math.cos(zustand.phi)) <= 0.12) { const t = Q(0, -1.85); text(c, "Bewegung parallel zum Feld: keine Kraft", t[0], t[1], Math.max(12, s2 * 0.25), KRAFTROT, "center", "bold"); }
+	if (zustand.zeigeF && zeigeVF && Math.abs(Math.cos(zustand.phi)) <= 0.12) { const t = Q(0, -1.85); text(c, "Bewegung parallel zum Feld: keine Kraft", t[0], t[1], Math.max(12, s2 * 0.25), KRAFTROT, "center", "bold"); }
+	if (zustand.modus === "spiel" && spiel.phase !== "laeuft") {
+		const t = Q(0, -1.85); text(c, spiel.phase === "countdown" ? "Gleich geht es los: Schleife greifen!" : "Hier mit dem Finger drehen", t[0], t[1], Math.max(12, s2 * 0.25), "#555", "center", "bold");
+	}
 	if (zustand.modus === "lampe") {
 		const bx = p2.x + 12, by = p2.y + p2.h - 26, bw = p2.w * 0.55;
 		text(c, "Kraft beim Kurbeln", bx, by - 12, 12, "#333", "left");
@@ -652,18 +732,89 @@ function zeichne() {
 }
 function zeichneDiagramm(c = dctx, w = DW, h = DH) {
 	c.clearRect(0, 0, w, h); c.fillStyle = "#fff"; c.fillRect(0, 0, w, h);
-	const li = 50, re = 14, ob = 24, un = 26, bw = w - li - re, bh = h - ob - un, t0 = zustand.zeit - 8;
-	const XT = t => li + (t - t0) / 8 * bw, YU = u => ob + bh / 2 - Math.max(-1.1, Math.min(1.1, u / 10)) * bh / 2;
+	const spielModus = zustand.modus === "spiel";
+	const UM = spielModus ? SPIEL_UMAX : 10, schmal = w < 560;
+	const li = schmal ? 38 : 50, re = 14, ob = 24, un = 26, bw = w - li - re, bh = h - ob - un;
+	const t0 = spielModus ? 0 : zustand.zeit - 8, tl = spielModus ? SPIEL_T : 8;
+	const XT = t => li + (t - t0) / tl * bw, YU = u => ob + bh / 2 - Math.max(-1.1, Math.min(1.1, u / UM)) * bh / 2;
 	c.strokeStyle = "#e3e3e3"; c.lineWidth = 1;
-	for (let u = -10; u <= 10; u += 5) { c.beginPath(); c.moveTo(li, YU(u)); c.lineTo(li + bw, YU(u)); c.stroke(); }
-	for (let s = Math.ceil(t0); s <= t0 + 8; s++) { c.beginPath(); c.moveTo(XT(s), ob); c.lineTo(XT(s), ob + bh); c.stroke(); }
+	const us = spielModus ? [-12, -6, 0, 6, 12] : [-10, -5, 0, 5, 10];
+	for (const u of us) { c.beginPath(); c.moveTo(li, YU(u)); c.lineTo(li + bw, YU(u)); c.stroke(); }
+	for (let s = Math.ceil(t0); s <= t0 + tl; s++) { c.beginPath(); c.moveTo(XT(s), ob); c.lineTo(XT(s), ob + bh); c.stroke(); }
 	c.strokeStyle = "#111"; c.lineWidth = 1.2; c.beginPath(); c.moveTo(li, ob); c.lineTo(li, ob + bh); c.moveTo(li, YU(0)); c.lineTo(li + bw, YU(0)); c.stroke();
-	[-10, -5, 0, 5, 10].forEach(u => text(c, String(u), li - 6, YU(u), 11, "#111", "right"));
+	us.forEach(u => text(c, String(u), li - 6, YU(u), 11, "#111", "right"));
 	text(c, "U in V", 6, 10, 12, "#111", "left", "italic");
-	text(c, "t (letzte 8 s)", li + bw, h - 7, 12, "#111", "right", "italic");
+	if (spielModus) {
+		for (let s = 1; s <= SPIEL_T; s++) text(c, String(s), XT(s), ob + bh + 10, 11, "#111");
+		text(c, "t in s", li + bw, h - 5, 12, "#111", "right", "italic");
+		/* Vorgabe grau, eigene Kurve blau */
+		c.strokeStyle = "#AAA"; c.lineWidth = 6; c.lineJoin = "round"; c.beginPath();
+		spiel.ziel.forEach(([t, u], i) => { if (i) c.lineTo(XT(t), YU(u)); else c.moveTo(XT(t), YU(u)); }); c.stroke();
+		c.strokeStyle = BLAU; c.lineWidth = 2.4; c.beginPath();
+		spiel.daten.forEach(([t, u], i) => { if (i) c.lineTo(XT(t), YU(u)); else c.moveTo(XT(t), YU(u)); }); c.stroke();
+		if (spiel.phase === "laeuft") { c.strokeStyle = "rgba(191,0,0,0.6)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(XT(spiel.t), ob); c.lineTo(XT(spiel.t), ob + bh); c.stroke(); }
+		if (spiel.phase === "countdown") text(c, String(Math.ceil(spiel.countdown)), li + bw / 2, ob + bh / 2, Math.min(bh * 0.7, 80), "rgba(191,0,0,0.75)", "center", "bold");
+		return;
+	}
+	text(c, "t (letzte 8 s Drehung)", li + bw, h - 7, 12, "#111", "right", "italic");
 	c.strokeStyle = BLAU; c.lineWidth = 2.2; c.beginPath();
 	zustand.verlauf.forEach(([t, u], i) => { if (i) c.lineTo(XT(t), YU(u)); else c.moveTo(XT(t), YU(u)); });
 	c.stroke();
+	if (zustand.pause) text(c, "angehalten", li + bw / 2, ob + 10, 12, "#888", "center", "bold");
+}
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
 }
 
 /* ==========================================================================
@@ -677,99 +828,141 @@ function layout() {
 	else { p2 = { x: 0, y: 0, w: W, h: H * 0.5 }; p3 = { x: 0, y: H * 0.5, w: W, h: H * 0.5 }; }
 	s3 = Math.max(5, Math.min(p3.w / 8.6, (p3.h - 16) / 5.6));
 	o3x = p3.x + p3.w * 0.47; o3y = p3.y + 16 + (p3.h - 16) * 0.4;
-	s2 = Math.max(5, Math.min(p2.w / 6.1, (p2.h - 18) / 4.9));
-	o2x = p2.x + p2.w / 2; o2y = p2.y + 18 + (p2.h - 18) / 2;
-	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, b => b >= 620 ? 0.26 : 0.45));
+	const unten = zustand.modus === "lampe" ? 40 : 0;   /* Platz für die Anzeige „Kraft beim Kurbeln“ */
+	s2 = Math.max(5, Math.min(p2.w / 6.1, (p2.h - 18 - unten) / 4.9));
+	o2x = p2.x + p2.w / 2; o2y = p2.y + 18 + (p2.h - 18 - unten) / 2;
+	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, b => b >= 620 ? 0.28 : 0.6));
 	zeichne();
 }
 const AUFTRAG = {
-	erklaerung: "Drehe die Schleife mit „45° weiter“ Schritt für Schritt. In welchen Stellungen wirkt eine Kraft auf die Ladungsträger, wann nicht? Vergleiche mit der Zahl der Feldlinien durch die Schleife und mit dem Diagramm.",
+	erklaerung: "Drehe die Schleife mit 45° Schritt für Schritt oder ziehe sie im Bild von vorne. Wann wirkt eine Kraft auf die Ladungsträger, wann nicht? Vergleiche mit der Zahl der Feldlinien durch die Schleife und mit dem Diagramm.",
 	lampe: "Kurble bei offenem und bei geschlossenem Schalter und beobachte Lampe und Kraft beim Kurbeln. Höre dann auf zu kurbeln: Wann bleibt die Schleife schneller stehen? Erkläre mit der Lenzschen Regel.",
-	kommutator: "Statt der Schleifringe sitzt hier ein Kommutator wie beim Elektromotor auf der Achse. Wie sieht der Spannungsverlauf jetzt aus? Erkläre mit den Halbringen."
+	kommutator: "Statt der Schleifringe sitzt hier ein Kommutator wie beim Elektromotor auf der Achse. Wie sieht der Spannungsverlauf jetzt aus? Erkläre mit den beiden Halbringen.",
+	spiel: "Greife die Schleife im Bild von vorne mit dem Finger und drehe sie. Drücke Start: Nach dem Countdown soll deine blaue Spannungskurve die graue Vorgabe treffen."
 };
-const TITEL = { erklaerung: "Warum entsteht eine Spannung?", lampe: "Generator mit Lampe", kommutator: "Generator mit Kommutator" };
+const TITEL = { erklaerung: "Warum entsteht eine Spannung?", lampe: "Generator mit Lampe", kommutator: "Generator mit Kommutator", spiel: "Spiel: Kurven nachfahren" };
+const stufenKnoepfe = STUFEN.map((s, i) => {
+	const b = document.createElement("button"); b.title = "Stufe " + s.name; b.setAttribute("aria-label", "Stufe " + s.name);
+	b.addEventListener("click", () => spielStufe(i));
+	document.getElementById("stufen-knoepfe").appendChild(b); return b;
+});
+function sterneHtml(n) { return '<span class="sterne">' + "★".repeat(n) + '<span class="leer">' + "★".repeat(3 - n) + "</span></span>"; }
 function anzeigen() {
 	document.querySelectorAll("#modusleiste button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === zustand.modus));
 	document.querySelectorAll("[data-st]").forEach(el => { el.hidden = !el.dataset.st.split(" ").includes(zustand.modus); });
 	document.getElementById("box-titel").textContent = "Simulation: " + TITEL[zustand.modus];
 	document.getElementById("auftrag").textContent = AUFTRAG[zustand.modus];
 	const k = document.getElementById("btn-kurbeln");
-	k.textContent = zustand.kurbeln ? "Aufhören zu kurbeln" : "Kurbeln";
 	k.classList.toggle("an", zustand.kurbeln);
-	document.getElementById("btn-zeitlupe").classList.toggle("aktiv", zustand.zeitlupe);
-	document.getElementById("btn-schalter").textContent = zustand.schalter ? "Schalter öffnen" : "Schalter schließen";
-	document.getElementById("btn-schalter").classList.toggle("aktiv", zustand.schalter);
+	document.getElementById("kurbel-symbol").innerHTML = symbolSvg(zustand.kurbeln ? "pause" : "play", 16);
+	document.querySelectorAll("#tempo-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.tempo));
+	const sch = document.getElementById("btn-schalter");
+	sch.classList.toggle("an", zustand.schalter);
+	document.getElementById("schalter-hebel").setAttribute("y2", zustand.schalter ? "15" : "5");
+	document.getElementById("schalter-hebel").setAttribute("x2", zustand.schalter ? "20" : "18");
+	document.getElementById("schalter-lampe").setAttribute("fill", zustand.schalter ? "#FFD84D" : "#fff");
 	document.getElementById("wert-n").textContent = K.de(zustand.f, 2) + " U/s";
 	document.querySelectorAll("#windungen-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.N));
-	document.getElementById("zeige-v").checked = zustand.zeigeV; document.getElementById("zeige-f").checked = zustand.zeigeF; document.getElementById("zeige-linien").checked = zustand.zeigeLinien;
+	document.getElementById("zeige-v").classList.toggle("aktiv", zustand.zeigeV);
+	document.getElementById("zeige-f").classList.toggle("aktiv", zustand.zeigeF);
+	document.getElementById("zeige-linien").classList.toggle("aktiv", zustand.zeigeLinien);
+	pauseKnopf.innerHTML = symbolSvg(zustand.pause ? "play" : "pause"); pauseKnopf.title = zustand.pause ? "weiter aufzeichnen" : "Diagramm anhalten";
+	pauseKnopf.hidden = zustand.modus === "spiel";
+	stufenKnoepfe.forEach((b, i) => { b.classList.toggle("aktiv", i === spiel.stufe); const st = speicherLies("sterne_" + i, 0); b.innerHTML = STUFEN[i].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : ""); });
+	document.getElementById("spiel-hinweis").textContent = STUFEN[spiel.stufe].hinweis;
+	const erg = document.getElementById("spiel-ergebnis");
+	if (spiel.phase === "fertig" && spiel.sterne !== null) {
+		const lob = ["Da geht noch was. Vergleiche die Kurven und versuche es nochmal.", "Die Richtung stimmt schon!", "Gut nachgefahren!", "Ausgezeichnet!"][spiel.sterne];
+		erg.className = "ergebnis " + (spiel.sterne ? "gut" : "schlecht"); erg.innerHTML = lob + " " + sterneHtml(spiel.sterne);
+	} else { erg.textContent = ""; erg.className = "ergebnis"; }
+	const start = document.getElementById("btn-start");
+	start.disabled = spiel.phase === "countdown" || spiel.phase === "laeuft";
+	start.lastChild.textContent = spiel.phase === "fertig" ? "Nochmal" : "Start";
 	document.getElementById("fussnote").textContent = zustand.modus === "kommutator"
 		? "Der Kommutator polt nach jeder halben Umdrehung um: Die Spannung wechselt ihr Vorzeichen nicht mehr (pulsierende Gleichspannung)."
-		: "Gekurbelt wird im Uhrzeigersinn. Rot: Kraft auf positive Ladungsträger (⊙ aus der Zeichenebene heraus, ⊗ hinein). Spannung positiv, wenn sie in Seite 1 aus der Zeichenebene zeigt.";
+		: zustand.modus === "spiel" ? "Grau: Vorgabe, blau: deine Spannungskurve (5 Windungen). Schneller drehen gibt eine höhere und dichtere Kurve."
+		: "Gekurbelt wird im Uhrzeigersinn. Rot: Kraft auf positive Ladungsträger (Punkt: aus der Zeichenebene heraus, Kreuz: hinein). Die Spannung ist positiv, wenn diese Kraft in Seite 1 aus der Zeichenebene zeigt (Ring 1 Pluspol).";
 }
-function modusSetzen(m, ohneHash) {
-	zustand.modus = m; zustand.kurbeln = false; zustand.omega = 0; zustand.ziel = null; zustand.schalter = false;
-	zustand.phi = 0; zustand.verlauf = []; zustand.f = 0.5; document.getElementById("regler-n").value = 0.5;
-	zustand.N = m === "lampe" ? 10 : 5;
+function spielStufe(i) {
+	spiel.stufe = i; spiel.phase = "bereit"; spiel.daten = []; spiel.sterne = null; spiel.ziel = zielKurve(STUFEN[i]);
+	zustand.phi = 0; zustand.omega = 0;
+	anzeigen();
+}
+function modusSetzen(m, ohneAdresse) {
+	zustand.modus = m; zustand.kurbeln = false; zustand.omega = 0; zustand.ziel = null; zustand.schalter = false; zustand.pause = false;
+	zustand.phi = 0; zustand.verlauf = []; zustand.zeit = 0; zustand.nachlauf = 0; zustand.f = 0.5; document.getElementById("regler-n").value = 0.5;
+	zustand.N = m === "lampe" ? 10 : 5; zustand.tempo = 1;
 	zustand.zeigeLinien = false;
-	if (!ohneHash) history.replaceState(null, "", "#" + m);
+	if (m === "spiel") { zustand.N = SPIEL_N; spielStufe(spiel.stufe); }
 	anzeigen(); layout();
 }
+/* Modus per Adresse: ?modus=lampe oder ?modus=erklaerung,kommutator (nur diese Reiter; bei genau einem keine Modusleiste) */
+const params = new URLSearchParams(location.search);
+const erlaubt = params.get("modus") ? params.get("modus").split(",").filter(m => AUFTRAG[m]) : [];
+if (erlaubt.length) document.querySelectorAll("#modusleiste button").forEach(b => { b.hidden = !erlaubt.includes(b.dataset.modus); });
+if (erlaubt.length === 1) document.getElementById("modusleiste").hidden = true;
 document.getElementById("modusleiste").addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) modusSetzen(b.dataset.modus); });
-window.addEventListener("hashchange", () => { const m = location.hash.slice(1); if (AUFTRAG[m] && m !== zustand.modus) modusSetzen(m, true); });
 document.getElementById("btn-kurbeln").addEventListener("click", () => { zustand.kurbeln = !zustand.kurbeln; zustand.ziel = null; anzeigen(); });
 document.getElementById("btn-schritt").addEventListener("click", () => { zustand.kurbeln = false; const s = Math.round(zustand.phi / (Math.PI / 4)); zustand.ziel = (s - 1) * Math.PI / 4; anzeigen(); });
-document.getElementById("btn-zeitlupe").addEventListener("click", () => { zustand.zeitlupe = !zustand.zeitlupe; anzeigen(); });
+document.getElementById("tempo-knoepfe").addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) { zustand.tempo = +b.dataset.wert; anzeigen(); } });
 document.getElementById("btn-schalter").addEventListener("click", () => { zustand.schalter = !zustand.schalter; anzeigen(); });
 K.bindeSlider("regler-n", null, "", v => zustand.f = v, anzeigen);
-K.bindeKnopfgruppe("windungen-knoepfe", w => zustand.N = +w, anzeigen);
-document.getElementById("zeige-v").addEventListener("change", e => { zustand.zeigeV = e.target.checked; });
-document.getElementById("zeige-f").addEventListener("change", e => { zustand.zeigeF = e.target.checked; });
-document.getElementById("zeige-linien").addEventListener("change", e => { zustand.zeigeLinien = e.target.checked; });
-/* Schleife im rechten Bild drehen */
+document.getElementById("windungen-knoepfe").addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) { zustand.N = +b.dataset.wert; anzeigen(); } });
+document.getElementById("zeige-v").addEventListener("click", () => { zustand.zeigeV = !zustand.zeigeV; anzeigen(); });
+document.getElementById("zeige-f").addEventListener("click", () => { zustand.zeigeF = !zustand.zeigeF; anzeigen(); });
+document.getElementById("zeige-linien").addEventListener("click", () => { zustand.zeigeLinien = !zustand.zeigeLinien; anzeigen(); });
+document.getElementById("btn-start").addEventListener("click", () => {
+	spiel.phase = "countdown"; spiel.countdown = 3; spiel.daten = []; spiel.sterne = null; zustand.phi = 0; zustand.omega = 0;
+	anzeigen();
+});
+/* Schleife im Bild von vorne drehen (im Spiel: im ganzen rechten bzw. oberen Bildteil) */
 function zeigerWinkel(ev) { const r = canvas.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top; return { w: Math.atan2(-(y - o2y), x - o2x), d: Math.hypot(x - o2x, y - o2y), x, y }; }
+function imVorneBild(z) { return z.x >= p2.x && z.y >= p2.y && z.y <= p2.y + p2.h && (zustand.modus === "spiel" ? z.d > s2 * 0.15 : z.d <= s2 * 1.75); }
 canvas.addEventListener("pointerdown", ev => {
 	const z = zeigerWinkel(ev);
-	if (z.x < p2.x || z.y < p2.y || z.d > s2 * 1.75) return;
-	zustand.kurbeln = false; zustand.ziel = null; zustand.ziehen = true; zustand.ziehVersatz = zustand.phi - z.w; zustand.letzterWinkel = null;
+	if (!imVorneBild(z)) return;
+	zustand.kurbeln = false; zustand.ziel = null; zustand.ziehen = true; zustand.ziehVersatz = zustand.phi - z.w;
 	canvas.setPointerCapture(ev.pointerId); anzeigen();
 });
-let ziehZeit = 0;
+let ziehPhi = null;
 canvas.addEventListener("pointermove", ev => {
 	const z = zeigerWinkel(ev);
 	if (zustand.ziehen) {
-		const neu = z.w + zustand.ziehVersatz, jetzt = performance.now() / 1000;
+		if (zustand.modus === "spiel" && spiel.phase === "countdown") { zustand.ziehVersatz = -z.w; return; }   /* vor dem Start bleibt die Schleife in Stellung a */
+		const neu = z.w + zustand.ziehVersatz;
 		let d = neu - zustand.phi; d = Math.atan2(Math.sin(d), Math.cos(d));
-		const dt = Math.max(0.008, jetzt - ziehZeit); ziehZeit = jetzt;
-		zustand.omega += (d / dt - zustand.omega) * 0.35;
-		zustand.phi += d;
-	} else canvas.style.cursor = (z.x >= p2.x && z.y >= p2.y && z.d <= s2 * 1.75) ? "grab" : "default";
+		zustand.phi += d;   /* Winkelgeschwindigkeit ergibt sich in der Schleife aus der Änderung von phi */
+	} else canvas.style.cursor = imVorneBild(z) ? "grab" : "default";
 });
 ["pointerup", "pointercancel"].forEach(t => canvas.addEventListener(t, () => { zustand.ziehen = false; }));
-/* Diagramm herunterladen */
-document.getElementById("btn-bild").addEventListener("click", () => {
-	const dpr = 2, w = DW, h = DH + 34, c = document.createElement("canvas");
-	c.width = w * dpr; c.height = h * dpr;
-	const k = c.getContext("2d"); k.scale(dpr, dpr); k.fillStyle = "#fff"; k.fillRect(0, 0, w, h);
-	text(k, "Generator: " + TITEL[zustand.modus] + ", " + zustand.N + " Windung" + (zustand.N > 1 ? "en" : "") + ", " + K.de(zustand.f, 2) + " U/s", 8, 16, 14, "#111", "left", "bold");
-	k.translate(0, 34); zeichneDiagramm(k, w, DH);
-	const name = "Generator_" + zustand.modus + "_N" + zustand.N + ".png";
-	c.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) navigator.share({ files: [datei] }).catch(() => {});
-		else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
-	});
-});
+/* Bildleisten */
+const diagrammBild = () => {
+	const dpr = 2, c = document.createElement("canvas");
+	c.width = DW * dpr; c.height = DH * dpr;
+	const k = c.getContext("2d"); k.scale(dpr, dpr); zeichneDiagramm(k, DW, DH);
+	return c;
+};
+const pauseKnopf = symbolKnopf("pause", "Diagramm anhalten", () => { zustand.pause = !zustand.pause; anzeigen(); });
+const leerKnopf = symbolKnopf("zurueck", "Diagramm löschen", () => { zustand.verlauf = []; zustand.zeit = 0; if (zustand.modus === "spiel") spielStufe(spiel.stufe); anzeigen(); });
+bildLeiste(document.getElementById("diagramm-leinwand"), diagrammBild,
+	() => zustand.modus === "spiel" ? "Generator_Spiel_Stufe" + STUFEN[spiel.stufe].name + (spiel.sterne !== null ? "_" + spiel.sterne + "Sterne" : "")
+		: "Generator_" + zustand.modus + "_" + zustand.N + "Windungen_" + K.de(zustand.f, 2) + "Umdrehungen_pro_s", [pauseKnopf, leerKnopf]);
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas), () => "Generator_" + zustand.modus + "_Bild");
 let letzteZeit = null;
 function schleife(t) {
-	if (letzteZeit !== null) schritt((t - letzteZeit) / 1000);
+	const dt = letzteZeit === null ? 0 : (t - letzteZeit) / 1000;
+	if (zustand.ziehen && dt > 0) {   /* beim Ziehen: Winkelgeschwindigkeit aus der Drehung seit dem letzten Bild, leicht geglättet */
+		if (ziehPhi !== null) zustand.omega += ((zustand.phi - ziehPhi) / Math.max(dt, 0.005) - zustand.omega) * 0.25;
+		ziehPhi = zustand.phi;
+	} else ziehPhi = null;
+	if (letzteZeit !== null) schritt(dt);
 	letzteZeit = t;
-	if (zustand.ziehen) zustand.omega *= 0.9;
 	zeichne();
 	requestAnimationFrame(schleife);
 }
 window.addEventListener("resize", layout);
-const start = location.hash.slice(1);
-modusSetzen(AUFTRAG[start] ? start : "erklaerung", true);
+const startModus = erlaubt.length ? erlaubt[0] : (AUFTRAG[location.hash.slice(1)] ? location.hash.slice(1) : "erklaerung");
+modusSetzen(startModus, true);
 K.nachFontLaden(layout);
 requestAnimationFrame(schleife);
 
