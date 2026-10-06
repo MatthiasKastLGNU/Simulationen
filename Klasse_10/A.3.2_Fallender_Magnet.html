@@ -190,6 +190,34 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 .rueckmeldung.gut { color: var(--green-frame); }
 .rueckmeldung.schlecht { color: var(--red-frame); }
 
+
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } }
+
 </style>
 </head>
 <body>
@@ -209,31 +237,13 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 	<div class="tcb blau">
 		<div class="tcb-title" id="box-titel">Simulation: Fallender Magnet im Rohr</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
-			<div class="steuerung">
-				<div class="zeile">
-					<button class="haupt" id="btn-los">Magnete loslassen</button>
-					<span class="knopfleiste">
-						<button id="btn-zeitlupe">Zeitlupe</button>
-					</span>
-					<span class="knopfleiste klein"><button id="btn-zurueck">Zurücksetzen</button></span>
-				</div>
-				<div class="zeile" data-st="versuch">
-					<span class="gruppe">Rohre</span>
-					<select id="rohr-0"></select>
-					<select id="rohr-1"></select>
-					<select id="rohr-2"></select>
-				</div>
-				<div class="zeile" data-st="versuch">
-					<span class="gruppe">Magnet</span>
-					<span class="knopfleiste"><button id="btn-umdrehen">Magnet umdrehen</button></span>
-					<span class="fussnote" style="margin:0" id="anz-pol"></span>
-				</div>
-				<div class="zeile">
-					<span class="gruppe">Anzeigen</span>
-					<label class="haken"><input type="checkbox" id="zeige-lupe" checked><span>Lupe: Ringströme</span></label>
-					<label class="haken"><input type="checkbox" id="zeige-energie"><span>Energie</span></label>
-				</div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Magnete</div><div class="kn"><button class="haupt" id="btn-los" title="Magnete loslassen" aria-label="Magnete loslassen"><svg width="28" height="26" viewBox="0 0 28 26" aria-hidden="true"><rect x="2" y="0" width="12" height="5" fill="#D72823"/><rect x="2" y="5" width="12" height="5" fill="#009141"/><rect x="2" y="0" width="12" height="10" fill="none" stroke="#fff" stroke-width="1"/><path d="M20 2v15" stroke="currentColor" stroke-width="2.6"/><path d="M15 15h10l-5 9z" fill="currentColor"/><path d="M3 13v13M13 13v13" stroke="currentColor" stroke-width="1.6" opacity="0.7"/></svg><span id="los-text"></span></button></div></div>
+				<div class="gr"><div class="gt">Tempo</div><div class="kn" id="tempo-knoepfe"><button data-wert="0.2" title="Zeitlupe"><span class="tempo">›</span></button><button data-wert="1" class="aktiv" title="normal"><span class="tempo">›››</span></button></div></div>
+				<div class="gr" data-st="versuch"><div class="gt">Rohre</div><div class="kn"><select id="rohr-0" aria-label="linkes Rohr"></select><select id="rohr-1" aria-label="mittleres Rohr"></select><select id="rohr-2" aria-label="rechtes Rohr"></select></div></div>
+				<div class="gr" data-st="versuch"><div class="gt">Magnet</div><div class="kn"><button id="btn-umdrehen" class="dunkel" title="Magnete umdrehen" aria-label="Magnete umdrehen"><svg width="40" height="24" viewBox="0 0 40 24" aria-hidden="true"><rect x="4" y="2" width="10" height="10" fill="#D72823"/><rect x="4" y="12" width="10" height="10" fill="#009141"/><rect x="26" y="2" width="10" height="10" fill="#009141"/><rect x="26" y="12" width="10" height="10" fill="#D72823"/><path d="M16 9h6l-2-2.5M24 15h-6l2 2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button><span class="fussnote" style="margin:0" id="anz-pol"></span></div></div>
+				<div class="gr"><div class="gt">Anzeigen</div><div class="kn"><button id="zeige-lupe" title="Lupe: Ringströme"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/></svg><span>Lupe</span></button><button id="zeige-energie" title="Energie"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" fill="#2e7d32"/><rect x="3" y="10" width="11" height="4" fill="#BF0000"/><rect x="3" y="16" width="7" height="4" fill="#E17300"/></svg><span>Energie</span></button></div></div>
 			</div>
 			<p class="fussnote" id="fussnote">Die Metallrohre sind durchsichtig gezeichnet, damit man den Magneten sieht. Für die Lupe ein Rohr antippen.</p>
 		</div>
@@ -417,6 +427,77 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+
 /* ==========================================================================
    Physik
    Bewegung (SI): m dv/dt = m g - k v. Die Bremskraft der Ringströme ist proportional zur Geschwindigkeit
@@ -687,10 +768,12 @@ function nachVersuch() {
    ========================================================================== */
 function layout() {
 	schrift = getComputedStyle(document.body).fontFamily;
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.62 : 1.75));
+	/* schmal: Rohre oben, darunter Lupe und Energie; die Höhe wächst mit dem, was angezeigt wird (nichts abgeschnitten) */
+	const lu = zustand.zeigeLupe, en = zustand.zeigeEnergie;
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b >= 620 ? 0.62 : (en ? (lu ? 1.95 : 1.55) : (lu ? 1.75 : 1.02))));
 	breit = W >= 620;
-	if (breit) { rohrBereich = { x: 0, y: 0, w: W * 0.55, h: H }; lupe = { x: W * 0.58, y: 6, w: W * 0.4, h: zustand.zeigeEnergie ? H * 0.62 : H - 12 }; }
-	else { rohrBereich = { x: 0, y: 0, w: W, h: H * 0.56 }; lupe = { x: W * 0.05, y: H * 0.58, w: W * 0.9, h: zustand.zeigeEnergie ? H * 0.27 : H * 0.41 }; }
+	if (breit) { rohrBereich = { x: 0, y: 0, w: W * 0.55, h: H }; lupe = { x: W * 0.58, y: 6, w: W * 0.4, h: en ? H * 0.62 : H - 12 }; }
+	else { rohrBereich = { x: 0, y: 0, w: W, h: W * 0.98 }; lupe = { x: W * 0.05, y: W * 1.02, w: W * 0.9, h: en ? W * 0.5 : W * 0.7 }; }
 	if (zustand.zeigeEnergie && !zustand.zeigeLupe) lupe.h = 0;
 	zeichne();
 }
@@ -701,13 +784,12 @@ function auswahlenSetzen() {
 function anzeigen() {
 	document.querySelectorAll("#modusleiste button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === zustand.modus));
 	document.querySelectorAll("[data-st]").forEach(el => { el.hidden = !el.dataset.st.split(" ").includes(zustand.modus); });
-	document.getElementById("btn-zeitlupe").classList.toggle("aktiv", zustand.zeitlupe);
 	const los = document.getElementById("btn-los");
-	los.textContent = zustand.modus === "vorhersage" ? "Im Versuch prüfen" : "Magnete loslassen";
+	document.getElementById("los-text").textContent = zustand.modus === "vorhersage" ? "Im Versuch prüfen" : "";
 	los.disabled = zustand.laeuft;
 	document.getElementById("btn-pruefen").parentElement.hidden = true;
-	document.getElementById("zeige-lupe").checked = zustand.zeigeLupe;
-	document.getElementById("zeige-energie").checked = zustand.zeigeEnergie;
+	document.getElementById("zeige-lupe").classList.toggle("aktiv", zustand.zeigeLupe);
+	document.getElementById("zeige-energie").classList.toggle("aktiv", zustand.zeigeEnergie);
 }
 function modusSetzen(m, ohneHash) {
 	zustand.modus = m;
@@ -731,12 +813,15 @@ document.getElementById("btn-los").addEventListener("click", () => {
 	}
 	zuruecksetzen(); zustand.geprueft = false; zustand.laeuft = true; anzeigen();
 });
-document.getElementById("btn-zeitlupe").addEventListener("click", () => { zustand.zeitlupe = !zustand.zeitlupe; anzeigen(); });
-document.getElementById("btn-zurueck").addEventListener("click", () => { zuruecksetzen(); anzeigen(); });
+K.bindeKnopfgruppe("tempo-knoepfe", w => { zustand.zeitlupe = w !== "1"; }, anzeigen);
+const STOFFKURZ = () => zustand.rohre.filter(r => r.stoff !== "keins").map(r => r.stoff).join("_");
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
+	() => "Fallender_Magnet_" + STOFFKURZ() + (zustand.rohre.every(r => r.nordUnten) ? "_Nordpol_unten" : zustand.rohre.every(r => !r.nordUnten) ? "_Suedpol_unten" : ""),
+	[symbolKnopf("zurueck", "Zurücksetzen", () => { zuruecksetzen(); anzeigen(); })]);
 document.getElementById("btn-umdrehen").addEventListener("click", () => { const n = !zustand.rohre[0].nordUnten; zustand.rohre.forEach(r => r.nordUnten = n); zuruecksetzen(); auswahlenSetzen(); });
 document.getElementById("btn-weiter").addEventListener("click", () => { zustand.frage = (zustand.frage + 1) % FRAGEN.length; frageZeigen(); anzeigen(); });
-document.getElementById("zeige-lupe").addEventListener("change", e => { zustand.zeigeLupe = e.target.checked; layout(); });
-document.getElementById("zeige-energie").addEventListener("change", e => { zustand.zeigeEnergie = e.target.checked; layout(); });
+document.getElementById("zeige-lupe").addEventListener("click", () => { zustand.zeigeLupe = !zustand.zeigeLupe; anzeigen(); layout(); });
+document.getElementById("zeige-energie").addEventListener("click", () => { zustand.zeigeEnergie = !zustand.zeigeEnergie; anzeigen(); layout(); });
 canvas.addEventListener("pointerdown", ev => {
 	const r = canvas.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
 	if (x > rohrBereich.x + rohrBereich.w || y > rohrBereich.y + rohrBereich.h) return;
