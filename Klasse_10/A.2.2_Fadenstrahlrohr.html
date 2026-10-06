@@ -188,8 +188,38 @@ p { margin: 0 0 0.5rem; }
 .haken { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
 .haken input { accent-color: var(--blue-frame); width: 1.05em; height: 1.05em; }
 .zeit { font-variant-numeric: tabular-nums; color: #333; }
-.bildleiste { display: flex; justify-content: flex-end; margin-top: 0.45rem; }
 button.haupt.klein { font-size: 0.95rem; padding: 0.3rem 1rem; }
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } table.mess { font-size: 0.82rem; } table.mess th, table.mess td { padding: 0.15rem 0.35rem; } }
+
+.kn button.aus-an.aktiv { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn .anzeige-wert { font-variant-numeric: tabular-nums; min-width: 4.5em; min-height: 2.5rem; display: inline-flex; align-items: center; }
+.kn .wert { min-width: 4.6em; text-align: left; }
+.ziehhinweis { color: #777; font-size: 0.82rem; margin-top: 0.25rem; }
 </style>
 </head>
 <body>
@@ -201,32 +231,17 @@ button.haupt.klein { font-size: 0.95rem; padding: 0.3rem 1rem; }
 		<span class="nr zwilling">10</span>
 	</div>
 
-	<div class="modusleiste" id="ansicht">
-		<button data-wert="vorne" class="aktiv">Ansicht von vorne</button>
-		<button data-wert="seite">Ansicht von der Seite</button>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Fadenstrahlrohr</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
-			<div class="bildleiste">
-				<button class="haupt klein" id="btn-bild">Bild herunterladen</button>
-			</div>
-			<div class="steuerung">
-				<div class="zeile">
-					<label for="r-strom">Stärke des Magnetfelds</label>
-					<input type="range" id="r-strom" min="0" max="2.5" step="0.05" value="1.2">
-					<span class="wert" id="w-strom"></span>
-				</div>
-				<div class="zeile">
-					<label for="r-winkel">Rohr drehen (Winkel zwischen Strahl und Magnetfeld)</label>
-					<input type="range" id="r-winkel" min="50" max="90" step="5" value="90">
-					<span class="wert" id="w-winkel"></span>
-				</div>
-				<div class="zeile">
-					<span class="knopfleiste klein schalter"><button id="btn-standard">Standardwerte</button></span>
-				</div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Ansicht</div><div class="kn" id="ansicht">
+					<button data-wert="vorne" class="aktiv" type="button" title="Ansicht von vorne" aria-label="Ansicht von vorne"><svg width="40" height="34" viewBox="0 0 30 26" aria-hidden="true"><circle cx="15" cy="13" r="11.5" fill="none" stroke="#b0682c" stroke-width="2.6"/><circle cx="15" cy="13" r="8.6" fill="#1d1b2b" stroke="#999" stroke-width="0.8"/><path d="M9.5 8.5l2 2M11.5 8.5l-2 2M18.5 16l2 2M20.5 16l-2 2" stroke="#8c9cff" stroke-width="0.9"/><circle cx="15.5" cy="12.5" r="4.6" fill="none" stroke="#e1a6ee" stroke-width="1.7"/></svg></button>
+					<button data-wert="seite" type="button" title="Ansicht von der Seite" aria-label="Ansicht von der Seite"><svg width="40" height="34" viewBox="0 0 30 26" aria-hidden="true"><rect x="3" y="1" width="3" height="24" rx="0.8" fill="#b0682c"/><rect x="24" y="1" width="3" height="24" rx="0.8" fill="#b0682c"/><circle cx="15" cy="13" r="8.6" fill="#1d1b2b" stroke="#999" stroke-width="0.8"/><path d="M7.5 21.5h15" stroke="#8c9cff" stroke-width="1.2"/><path d="M23 21.5l-3-2v4z" fill="#8c9cff"/><path d="M10 16c1-6 3-6 3.5 0s3 6 3.5 0 3-6 3.5 0" fill="none" stroke="#e1a6ee" stroke-width="1.6"/></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Stärke des Magnetfelds</div><div class="kn"><input type="range" id="r-strom" min="0" max="2.5" step="0.05" value="1.2" aria-label="Stärke des Magnetfelds"><span class="wert" id="w-strom"></span></div></div>
+				<div class="gr"><div class="gt">Winkel zwischen Strahl und Magnetfeld (Rohr drehen)</div><div class="kn"><input type="range" id="r-winkel" min="50" max="90" step="5" value="90" aria-label="Winkel zwischen Strahl und Magnetfeld"><span class="wert" id="w-winkel"></span></div></div>
 			</div>
 		</div>
 	</div>
@@ -397,6 +412,67 @@ window.SimKit = (function () {
 const K = window.SimKit;
 
 /* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	schritt: '<path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>',
+	anfang: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>',
+	pruefen: '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
+	weiter: '<path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>',
+	auge: '<path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+
+
+/* ==========================================================================
    Physik (SI-Einheiten)
    v = Wurzel(2 e U / m), B = kB · I (Helmholtz-Spulen), Radius r = m v⊥ / (e B)
    Koordinaten: Kolbenmitte im Ursprung, x nach rechts, y nach oben (Ansicht von vorne),
@@ -477,7 +553,7 @@ function beschriftung(t, x, y, farbe, groesse, kursiv, ausrichtung) {
 
 function massstab() {
 	const s = Math.min(W, H) * 0.46 / (1.3 * R);   /* px pro m, fest für beide Ansichten */
-	return { s, cx: W / 2, cy: H / 2 };
+	return { s, cx: W / 2, cy: W < 560 ? H - W / 2 : H / 2 };
 }
 /* Projektion: von vorne (x, y) bzw. von der Seite (z nach rechts, Tiefe x schräg) */
 function projektion(q) {
@@ -622,39 +698,17 @@ function staerke(I) { return I < 0.01 ? "aus" : I < 0.8 ? "schwach" : I < 1.7 ? 
 function neu() { pktCache = null; anzeigen(); zeichne(); }
 document.getElementById("r-strom").addEventListener("input", e => { zustand.I = +e.target.value; neu(); });
 document.getElementById("r-winkel").addEventListener("input", e => { zustand.alpha = +e.target.value; neu(); });
-document.getElementById("btn-standard").addEventListener("click", () => {
+function standard() {
 	Object.assign(zustand, STANDARD);
 	document.getElementById("r-strom").value = STANDARD.I;
 	document.getElementById("r-winkel").value = STANDARD.alpha;
 	neu();
-});
+}
 K.bindeKnopfgruppe("ansicht", w => zustand.ansicht = w, neu);
 
-/* Bild mit Versuchsbedingungen herunterladen (Tablet: Teilen-Menü) */
-document.getElementById("btn-bild").addEventListener("click", () => {
-	const z = zustand, rand = 34 * (window.devicePixelRatio || 1);
-	const c = document.createElement("canvas");
-	c.width = canvas.width; c.height = canvas.height + rand;
-	const k = c.getContext("2d");
-	k.fillStyle = "#fff"; k.fillRect(0, 0, c.width, c.height);
-	k.drawImage(canvas, 0, 0);
-	k.fillStyle = "#111"; k.font = Math.round(rand * 0.45) + "px " + schrift(); k.textBaseline = "middle";
-	const text = "Fadenstrahlrohr: Magnetfeld " + staerke(z.I) + ", Winkel " + z.alpha + "°, Ansicht " + (z.ansicht === "vorne" ? "von vorne" : "von der Seite");
-	k.fillText(text, rand * 0.4, canvas.height + rand / 2);
-	const name = "Fadenstrahlrohr_Magnetfeld_" + staerke(z.I) + "_Winkel_" + z.alpha + "_" + z.ansicht + ".png";
-	c.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		const touch = navigator.maxTouchPoints > 0;
-		if (touch && navigator.canShare && navigator.canShare({ files: [datei] })) {
-			navigator.share({ files: [datei], title: "Fadenstrahlrohr" }).catch(() => {});
-		} else {
-			const a = document.createElement("a");
-			a.href = URL.createObjectURL(blob); a.download = name;
-			document.body.appendChild(a); a.click(); a.remove();
-			setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-		}
-	}, "image/png");
-});
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
+	() => "Fadenstrahlrohr_Magnetfeld_" + staerke(zustand.I) + "_Winkel_" + zustand.alpha + "_" + zustand.ansicht,
+	[symbolKnopf("zurueck", "Standardwerte", standard)]);
 
 /* Elektron läuft die Bahn entlang (rein zur Veranschaulichung, stark verlangsamt) */
 K.starteSchleife(dt => {
@@ -665,7 +719,7 @@ K.starteSchleife(dt => {
 });
 
 function layout() {
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 1.05 : 0.7));
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 1.2 : 0.7));
 	zeichne();
 }
 window.addEventListener("resize", layout);
