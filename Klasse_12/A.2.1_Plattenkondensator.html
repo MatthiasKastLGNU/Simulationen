@@ -1183,15 +1183,15 @@ window.SimUI = (function () {
 				</div>
 				<div class="bgruppe" id="zeile-u" style="flex:1 1 12rem">
 					<span class="btitel">Spannung <i class="gr">U</i></span>
-					<div class="zeile"><input type="range" id="regler-u" min="0" max="300" step="10" value="200" aria-label="Spannung"><span class="wert" id="wert-u" style="min-width:3.5em"></span></div>
+					<div class="zeile"><input type="range" id="regler-u" min="0" max="300" step="10" value="250" aria-label="Spannung"><span class="wert" id="wert-u" style="min-width:3.5em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-d" style="flex:1 1 12rem">
 					<span class="btitel">Plattenabstand <i class="gr">d</i></span>
-					<div class="zeile"><input type="range" id="regler-d" min="1" max="10" step="0.5" value="3" aria-label="Plattenabstand"><span class="wert" id="wert-d" style="min-width:4em"></span></div>
+					<div class="zeile"><input type="range" id="regler-d" min="1" max="10" step="0.5" value="2.5" aria-label="Plattenabstand"><span class="wert" id="wert-d" style="min-width:4em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-a" style="flex:1 1 12rem">
 					<span class="btitel">Plattengröße <i class="gr">A</i></span>
-					<div class="zeile"><input type="range" id="regler-a" min="100" max="700" step="10" value="530" aria-label="Plattengröße"><span class="wert" id="wert-a" style="min-width:4.5em"></span></div>
+					<div class="zeile"><input type="range" id="regler-a" min="100" max="800" step="10" value="710" aria-label="Plattengröße"><span class="wert" id="wert-a" style="min-width:4.5em"></span></div>
 				</div>
 				<div class="bgruppe" id="zeile-real">
 					<span class="btitel">Modell</span>
@@ -1201,7 +1201,7 @@ window.SimUI = (function () {
 			<div class="auswertung" id="auswertung">
 				<div class="knopfleiste" id="mess-knoepfe"><button class="haupt" id="btn-notieren" data-icon="notieren" data-text="notieren" title="Messwert notieren"></button></div>
 				<div class="knopfleiste verborgen" id="getrennt-knoepfe"><button id="btn-ausgang" data-icon="zurueck" data-text="Ausgangszustand" title="Zurück zum Ausgangszustand"></button></div>
-				<p class="hinweis verborgen" id="getrennt-hinweis">Der Kondensator wurde mit 200&nbsp;V geladen. Trennen Sie die Quelle oder lassen Sie sie angeschlossen. Ziehen Sie dann an der oberen Platte oder schieben Sie ein Dielektrikum ein.</p>
+				<p class="hinweis verborgen" id="getrennt-hinweis">Der Kondensator wurde mit 250&nbsp;V geladen. Trennen Sie die Quelle oder lassen Sie sie angeschlossen. Ziehen Sie dann an der oberen Platte oder schieben Sie ein Dielektrikum ein.</p>
 			</div>
 		</div>
 	</div>
@@ -1259,7 +1259,8 @@ const K = window.SimKit, P = window.SimPlus;
 /* Einheiten im Zustand: U in V, d in mm, A in cm^2, Q in C */
 const EPS0 = 8.8541878188e-12;   // C/(V m)
 const C_ZULEITUNG = 20e-12;      // F, Kapazität von Zuleitungen und Messverstärkereingang (realer Aufbau)
-const STANDARD = { U: 200, d: 3, A: 530, er: 1 };
+/* Standard wie im Arbeitsblatt: Q·d = 16·10⁻⁸ C·mm bei U = 250 V und A = 710 cm² (kreisförmig, r = 15 cm) */
+const STANDARD = { U: 250, d: 2.5, A: 710, er: 1 };
 const zustand = Object.assign({ versuch: "qu", modus: "erkunden", real: false, achse: "d", gerade: false,
 	rausch: 1, aufgabe: null, geloest: false, gezeigt: false, nr: 0,
 	quelle: "an", Qfest: 0, start: null }, STANDARD);
@@ -1306,7 +1307,7 @@ function zeichneBild() {
 	const s = zustand.modus === "aufgabe" && zustand.aufgabe ? Object.assign({}, zustand.aufgabe, { real: false, versuch: "qu" }) : zustand;
 	const g = groessen(s);
 	/* Geometrie: waagrechte Platten, schräg von vorn oben gesehen; Breite und Tiefe wachsen mit der Wurzel der Fläche */
-	const kante = Math.sqrt(s.A / 700) * Math.min(W * 0.34, 260);
+	const kante = Math.sqrt(s.A / 800) * Math.min(W * 0.34, 260);
 	const tx = kante * 0.42, ty = -kante * 0.26, dicke = 9;
 	const spalt = s.d * PX_JE_MM;
 	const cx = W * 0.335, cy = H * 0.48 + 12;
@@ -1414,9 +1415,9 @@ const diag = document.getElementById("diagramm"), dctx = diag.getContext("2d");
 let DW = 760, DH = 330;
 const ACHSEN = {
 	qu:       { titel: "Diagramm: Ladung in Abhängigkeit von der Spannung", x: m => m.U, xMax: 300, xs: 20, xL: "U", xE: "V", yMax: 9, ys: 1 },
-	abstand:  { titel: "Diagramm: Ladung in Abhängigkeit vom Plattenabstand", x: m => m.d, xMax: 10, xs: 1, xL: "d", xE: "mm", yMax: 15, ys: 1 },
+	abstand:  { titel: "Diagramm: Ladung in Abhängigkeit vom Plattenabstand", x: m => m.d, xMax: 10, xs: 1, xL: "d", xE: "mm", yMax: 18, ys: 2 },
 	flaeche:  { titel: "Diagramm: Ladung in Abhängigkeit von der Plattengröße", x: m => m.A, xMax: 800, xs: 100, xL: "A", xE: "cm²", yMax: 9, ys: 1 },
-	material: { titel: "Diagramm: Ladung in Abhängigkeit von der Spannung für verschiedene Materialien", x: m => m.U, xMax: 300, xs: 20, xL: "U", xE: "V", yMax: 30, ys: 5 }
+	material: { titel: "Diagramm: Ladung in Abhängigkeit von der Spannung für verschiedene Materialien", x: m => m.U, xMax: 300, xs: 20, xL: "U", xE: "V", yMax: 40, ys: 5 }
 };
 function achseAktuell() {
 	const a = Object.assign({}, ACHSEN[zustand.versuch]);
@@ -1492,7 +1493,7 @@ K.bindeKnopfgruppe("material-knoepfe", w => zustand.er = +w, neueSchwankung);
 K.bindeKnopfgruppe("quelle-knoepfe", w => {
 	if (w === "aus" && zustand.quelle === "an") zustand.Qfest = groessen(zustand).Q;   /* beim Trennen bleibt die momentane Ladung auf den Platten */
 	zustand.quelle = w;
-	if (w === "an") zustand.U = 200;
+	if (w === "an") zustand.U = STANDARD.U;
 }, alles);
 document.getElementById("real").addEventListener("change", e => { zustand.real = e.target.checked; neueSchwankung(); });
 document.getElementById("gerade").addEventListener("change", e => { zustand.gerade = e.target.checked; zeichneDiagramm(); });
@@ -1550,7 +1551,7 @@ document.getElementById("versuch-knoepfe").addEventListener("click", ev => {
 /* ---------- Aufgabenmodus ---------- */
 function neueAufgabe() {
 	const er = [1, 1, 3.3, 5.2][Math.floor(Math.random() * 4)];
-	zustand.aufgabe = { U: P.runde(P.zufall(50, 300), 10), d: P.runde(P.zufall(1, 6), 0.5), A: P.runde(P.zufall(150, 700), 10), er };
+	zustand.aufgabe = { U: P.runde(P.zufall(50, 300), 10), d: P.runde(P.zufall(1, 6), 0.5), A: P.runde(P.zufall(150, 800), 10), er };
 	zustand.geloest = false; zustand.gezeigt = false; zustand.nr++;
 	const a = zustand.aufgabe;
 	document.getElementById("aufgabe-nr").textContent = zustand.nr;
