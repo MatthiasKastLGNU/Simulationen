@@ -188,7 +188,6 @@ p { margin: 0 0 0.5rem; }
 .haken { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
 .haken input { accent-color: var(--blue-frame); width: 1.05em; height: 1.05em; }
 .zeit { font-variant-numeric: tabular-nums; color: #333; }
-.bildleiste { display: flex; justify-content: flex-end; margin-top: 0.45rem; }
 button.haupt.klein { font-size: 0.95rem; padding: 0.3rem 1rem; }
 
 .ziehhinweis { color: #666; font-size: 0.85rem; margin-right: auto; align-self: center; }
@@ -202,7 +201,39 @@ canvas.sim { user-select: none; }
 .paneltitel { font-size: 0.9rem; font-weight: bold; color: #333; margin-bottom: 0.2rem; }
 .farbe-par { color: #E07000; } .farbe-senk { color: #00897B; } .farbe-F { color: #D00000; }
 .zeilenlabel { color: #333; }
+.kn button.aus-an sub { font-size: 0.7em; }
 @media (max-width: 560px) { .panele { flex-direction: column; } .panel.schmal { flex: none; } }
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } table.mess { font-size: 0.82rem; } table.mess th, table.mess td { padding: 0.15rem 0.35rem; } }
+
+.kn button.aus-an.aktiv { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn .anzeige-wert { font-variant-numeric: tabular-nums; min-width: 4.5em; min-height: 2.5rem; display: inline-flex; align-items: center; }
+.kn .wert { min-width: 4.6em; text-align: left; }
+.ziehhinweis { color: #777; font-size: 0.82rem; margin-top: 0.25rem; }
 </style>
 </head>
 <body>
@@ -223,11 +254,8 @@ canvas.sim { user-select: none; }
 	<div class="tcb blau">
 		<div class="tcb-title" id="titel">Simulation: Kreisbahn im Magnetfeld</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
-			<div class="bildleiste">
-				<span class="ziehhinweis" data-st="2 f">Im Bild ziehen: Ansicht drehen</span>
-				<span class="knopfleiste klein"><button id="btn-bild">Bild herunterladen</button></span>
-			</div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="ziehhinweis" data-st="2 f">Im Bild ziehen: Ansicht drehen</div>
 			<div class="panele" data-st="2 f">
 				<div class="panel schmal">
 					<div class="paneltitel">Blick in Feldrichtung</div>
@@ -238,57 +266,36 @@ canvas.sim { user-select: none; }
 					<canvas id="c-linie" class="sim"></canvas>
 				</div>
 			</div>
-			<div class="steuerung">
-				<div class="zeile">
-					<button class="haupt" id="btn-start">Start</button>
-					<span class="knopfleiste">
-						<button id="btn-schritt">Ein Stück weiter</button>
-						<button id="btn-neu">Neu starten</button>
-					</span>
-					<label class="haken"><input type="checkbox" id="c-zeitlupe"> Zeitlupe</label>
-				</div>
-				<div class="zeile" data-st="2 f">
-					<label>Ansicht</label>
-					<span class="knopfleiste" id="ansicht">
-						<button data-wert="schraeg" class="aktiv">schräg</button>
-						<button data-wert="seite">von der Seite</button>
-						<button data-wert="feld">in Feldrichtung</button>
-					</span>
-				</div>
-				<div class="zeile" data-st="f">
-					<label>Teilchen</label>
-					<span class="knopfleiste" id="ladung">
-						<button data-wert="-1" class="aktiv">Elektron (negativ)</button>
-						<button data-wert="1">Positron (positiv)</button>
-					</span>
-				</div>
-				<div class="zeile" data-st="1 f">
-					<label for="r-feld">Magnetfeld</label>
-					<input type="range" id="r-feld" min="0" max="2.5" step="0.05" value="1">
-					<span class="wert" id="w-feld"></span>
-				</div>
-				<div class="zeile" data-st="2 f">
-					<label for="r-winkel">Winkel zwischen <i class="gr">v</i> und <i class="gr">B</i></label>
-					<input type="range" id="r-winkel" min="15" max="90" step="5" value="65">
-					<span class="wert" id="w-winkel"></span>
-				</div>
-				<div class="zeile" data-st="f">
-					<label for="r-v">Geschwindigkeit</label>
-					<input type="range" id="r-v" min="0.5" max="1.5" step="0.05" value="1">
-					<span class="wert" id="w-v"></span>
-				</div>
-				<div class="zeile hakenzeile" data-st="2 f">
-					<span class="zeilenlabel">Pfeile im großen Bild:</span>
-					<label class="haken"><input type="checkbox" id="c-v" checked> <i class="gr">v</i></label>
-					<label class="haken"><input type="checkbox" id="c-zerlegung"> <span class="farbe-par"><i class="gr">v</i><sub>∥</sub></span> und <span class="farbe-senk"><i class="gr">v</i><sub>⊥</sub></span></label>
-					<label class="haken"><input type="checkbox" id="c-kraft"> <span class="farbe-F"><i class="gr">F</i></span></label>
-				</div>
-				<div class="zeile hakenzeile" data-st="1">
-					<label class="haken"><input type="checkbox" id="c-spur"> Pfeile stehen lassen</label>
-				</div>
-				<div class="zeile">
-					<span class="knopfleiste klein schalter"><button id="btn-standard">Standardwerte</button></span>
-				</div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Ablauf</div><div class="kn">
+					<button class="haupt" id="btn-start" type="button"></button>
+					<button class="dunkel" id="btn-schritt" type="button" title="Ein Stück weiter" aria-label="Ein Stück weiter"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+					<button class="dunkel" id="btn-neu" type="button" title="Neu starten" aria-label="Neu starten"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Tempo</div><div class="kn" id="tempo">
+					<button data-wert="lupe" type="button" title="Zeitlupe" aria-label="Zeitlupe"><span class="tempo">›</span></button>
+					<button data-wert="normal" class="aktiv" type="button" title="normal" aria-label="normal"><span class="tempo">›››</span></button>
+				</div></div>
+				<div class="gr" data-st="2 f"><div class="gt">Ansicht</div><div class="kn" id="ansicht">
+					<button data-wert="schraeg" class="aktiv" type="button" title="Ansicht schräg von oben" aria-label="schräg"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23L9 16H34L27 23Z" fill="#E6E9FF" stroke="#9aa3d6" stroke-width="0.8"/><path d="M10 20.5H28" stroke="#4058E0" stroke-width="1.2"/><path d="M29 20.5l-3-1.8v3.6z" fill="#4058E0"/><path d="M5 11c1-7 5-7 5.5 0s4.5 7 5.5 0 4.5-7 5.5 0 4.5 7 5.5 0" fill="none" stroke="#7B1FA2" stroke-width="1.8" transform="translate(1 -1) skewX(-12)"/></svg></button>
+					<button data-wert="seite" type="button" title="Ansicht von der Seite" aria-label="von der Seite"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23H31" stroke="#4058E0" stroke-width="1.3"/><path d="M34 23l-4-2.4v4.8z" fill="#4058E0"/><path d="M3 11q3-9 6 0t6 0 6 0 6 0 6 0" fill="none" stroke="#7B1FA2" stroke-width="1.9"/></svg></button>
+					<button data-wert="feld" type="button" title="Blick in Feldrichtung" aria-label="in Feldrichtung"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><rect x="2" y="1" width="32" height="24" rx="1.5" fill="#F0F2FF"/><path d="M5 4l3 3M8 4l-3 3M28 4l3 3M31 4l-3 3M5 19l3 3M8 19l-3 3M28 19l3 3M31 19l-3 3" stroke="#6070E0" stroke-width="1"/><circle cx="18" cy="13" r="8" fill="none" stroke="#7B1FA2" stroke-width="1.9"/></svg></button>
+				</div></div>
+				<div class="gr" data-st="f"><div class="gt">Teilchen</div><div class="kn" id="ladung">
+					<button data-wert="-1" class="aktiv" type="button" title="Elektron (negativ)" aria-label="Elektron (negativ)"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><defs><radialGradient id="g0" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#B8B8B8"/></radialGradient></defs><circle cx="14" cy="14" r="11" fill="url(#g0)" stroke="#111" stroke-width="1.8"/><path d="M9 14h10" stroke="#111" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+					<button data-wert="1" type="button" title="Positron (positiv)" aria-label="Positron (positiv)"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><defs><radialGradient id="g2" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#F2A0A0"/></radialGradient></defs><circle cx="14" cy="14" r="11" fill="url(#g2)" stroke="#A00000" stroke-width="1.8"/><path d="M9 14h10" stroke="#A00000" stroke-width="2.4" stroke-linecap="round"/><path d="M14 9v10" stroke="#A00000" stroke-width="2.4" stroke-linecap="round"/></svg></button>
+				</div></div>
+				<div class="gr" data-st="1 f"><div class="gt">Magnetfeld</div><div class="kn"><input type="range" id="r-feld" min="0" max="2.5" step="0.05" value="1" aria-label="Magnetfeld"><span class="wert" id="w-feld"></span></div></div>
+				<div class="gr" data-st="2 f"><div class="gt">Winkel zwischen <i class="gr">v</i> und <i class="gr">B</i></div><div class="kn"><input type="range" id="r-winkel" min="15" max="90" step="5" value="65" aria-label="Winkel zwischen v und B"><span class="wert" id="w-winkel"></span></div></div>
+				<div class="gr" data-st="f"><div class="gt">Geschwindigkeit</div><div class="kn"><input type="range" id="r-v" min="0.5" max="1.5" step="0.05" value="1" aria-label="Geschwindigkeit"><span class="wert" id="w-v"></span></div></div>
+				<div class="gr" data-st="2 f"><div class="gt">Pfeile im großen Bild</div><div class="kn">
+					<button class="aus-an" data-schalter="pfeilV" type="button" title="Geschwindigkeit v zeigen" aria-label="Geschwindigkeit v zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><line x1="3" y1="11" x2="22.0" y2="11.0" stroke="#111111" stroke-width="2.6"/><path d="M27 11L20.0 7.5L20.0 14.5z" fill="#111111"/></svg><i class="gr">v</i></button>
+					<button class="aus-an" data-schalter="zerlegung" type="button" title="Zerlegung in v parallel und v senkrecht zeigen" aria-label="Zerlegung zeigen"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><line x1="4" y1="21" x2="22.0" y2="21.0" stroke="#E07000" stroke-width="2.6"/><path d="M27 21L20.0 17.5L20.0 24.5z" fill="#E07000"/><line x1="4" y1="21" x2="4.0" y2="7.0" stroke="#00897B" stroke-width="2.6"/><path d="M4 2L0.5 9.0L7.5 9.0z" fill="#00897B"/><path d="M27 21V3H5" fill="none" stroke="#999" stroke-width="1" stroke-dasharray="2 2"/></svg><span><span class="farbe-par"><i class="gr">v</i><sub>∥</sub></span> <span class="farbe-senk"><i class="gr">v</i><sub>⊥</sub></span></span></button>
+					<button class="aus-an" data-schalter="kraft" type="button" title="Lorentzkraft F zeigen" aria-label="Lorentzkraft F zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><line x1="3" y1="11" x2="22.0" y2="11.0" stroke="#D00000" stroke-width="2.6"/><path d="M27 11L20.0 7.5L20.0 14.5z" fill="#D00000"/></svg><i class="gr farbe-F">F</i></button>
+				</div></div>
+				<div class="gr" data-st="1"><div class="gt">Pfeile stehen lassen</div><div class="kn">
+					<button class="aus-an" data-schalter="spur" type="button" title="Pfeile stehen lassen" aria-label="Pfeile stehen lassen"><svg width="34" height="26" viewBox="0 0 34 26" aria-hidden="true"><line x1="3" y1="22" x2="10.6" y2="13.7" stroke="rgba(17,17,17,0.25)" stroke-width="2.6"/><path d="M14 10L6.7 12.8L11.8 17.5z" fill="rgba(17,17,17,0.25)"/><line x1="12" y1="13" x2="19.7" y2="8.5" stroke="rgba(17,17,17,0.5)" stroke-width="2.6"/><path d="M24 6L16.2 6.5L19.7 12.6z" fill="rgba(17,17,17,0.5)"/><line x1="21" y1="8" x2="28.0" y2="8.0" stroke="#111111" stroke-width="2.6"/><path d="M33 8L26.0 4.5L26.0 11.5z" fill="#111111"/></svg></button>
+				</div></div>
 			</div>
 		</div>
 	</div>
@@ -457,6 +464,67 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	schritt: '<path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>',
+	anfang: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>',
+	pruefen: '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
+	weiter: '<path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>',
+	auge: '<path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+
 
 /* ==========================================================================
    Physik in Modelleinheiten (qualitativ, Klasse 10)
@@ -676,7 +744,7 @@ function feldKreuze(eb) {
 	ctx.save(); ctx.strokeStyle = ctx.fillStyle = "rgba(60,80,230," + (0.3 + 0.6 * Math.min(1, zustand.b / 2.5)) + ")"; ctx.lineWidth = 1.4;
 	for (let y = -8; y <= 8; y++) for (let z = -14; z <= 14; z++) {
 		const [x, yy] = P([0, y, z]);
-		if (x < 6 || x > W - 6 || yy < 6 || yy > H - 6) continue;
+		if (x < 6 || x > W - 6 || yy < 32 || yy > H - 6) continue;
 		ctx.beginPath();
 		if (eb < 0) { ctx.moveTo(x - 4, yy - 4); ctx.lineTo(x + 4, yy + 4); ctx.moveTo(x - 4, yy + 4); ctx.lineTo(x + 4, yy - 4); ctx.stroke(); }
 		else { ctx.arc(x, yy, 2.6, 0, 2 * Math.PI); ctx.fill(); }
@@ -690,7 +758,10 @@ function zeichneKanone(m) {
 	ctx.strokeStyle = "#555"; ctx.lineWidth = 14; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 	ctx.strokeStyle = "#999"; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
 	ctx.restore();
-	if (zustand.st === "1") text("Elektronenkanone", x1 - 12, y1 - 6, "#555", 12, "right");
+	if (zustand.st === "1") {
+		if (W < 560) text("Elektronenkanone", Math.max(x1, 52), y1 + 14, "#555", 12, "center");
+		else text("Elektronenkanone", x1 - 12, y1 - 6, "#555", 12, "right");
+	}
 }
 function pfeileEben(m, t, alpha, mitNamen) {
 	const p = ort(m, t);
@@ -920,7 +991,11 @@ function anzeigen() {
 	$("w-feld").textContent = staerke(zustand.b);
 	$("w-winkel").textContent = zustand.alpha + "°";
 	$("w-v").textContent = zustand.v < 0.8 ? "klein" : zustand.v < 1.2 ? "mittel" : "groß";
-	$("btn-start").textContent = zustand.laeuft ? "Pause" : "Start";
+	const b = $("btn-start"), titel = zustand.laeuft ? "anhalten" : "starten";
+	b.innerHTML = symbolSvg(zustand.laeuft ? "pause" : "play", 24);
+	b.title = titel; b.setAttribute("aria-label", titel);
+	b.classList.toggle("an", zustand.laeuft);
+	document.querySelectorAll("[data-schalter]").forEach(k => k.classList.toggle("aktiv", !!zustand[k.dataset.schalter]));
 }
 function setzeAnsicht(name) {
 	[zustand.theta, zustand.phi] = ANSICHTEN[name];
@@ -933,7 +1008,6 @@ function station(st) {
 	const s = STANDARD[st];
 	Object.assign(zustand, { b: s.b, alpha: s.alpha, v: s.v, q: s.q, t: 0, laeuft: false, spur: false, pfeilV: true, zerlegung: false, kraft: false });
 	$("r-feld").value = s.b; $("r-winkel").value = s.alpha; $("r-v").value = s.v;
-	$("c-spur").checked = false; $("c-v").checked = true; $("c-zerlegung").checked = false; $("c-kraft").checked = false;
 	document.querySelectorAll("#ladung button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === s.q));
 	setzeAnsicht(s.ansicht);
 	document.querySelectorAll("#station button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === st));
@@ -964,15 +1038,13 @@ $("btn-schritt").addEventListener("click", () => {
 	if (ausserhalb(ort(m, zustand.t))) neuStart();
 	anzeigen(); zeichne();
 });
-$("c-zeitlupe").addEventListener("change", e => zustand.zeitlupe = e.target.checked);
-$("c-spur").addEventListener("change", e => { zustand.spur = e.target.checked; zeichne(); });
-$("c-v").addEventListener("change", e => { zustand.pfeilV = e.target.checked; zeichne(); });
-$("c-zerlegung").addEventListener("change", e => { zustand.zerlegung = e.target.checked; zeichne(); });
-$("c-kraft").addEventListener("change", e => { zustand.kraft = e.target.checked; zeichne(); });
+K.bindeKnopfgruppe("tempo", w => zustand.zeitlupe = w === "lupe");
+document.querySelectorAll("[data-schalter]").forEach(k => k.addEventListener("click", () => {
+	zustand[k.dataset.schalter] = !zustand[k.dataset.schalter]; anzeigen(); zeichne();
+}));
 $("r-feld").addEventListener("input", e => { zustand.b = +e.target.value; neuStart(); anzeigen(); zeichne(); });
 $("r-winkel").addEventListener("input", e => { zustand.alpha = +e.target.value; neuStart(); anzeigen(); zeichne(); });
 $("r-v").addEventListener("input", e => { zustand.v = +e.target.value; neuStart(); anzeigen(); zeichne(); });
-$("btn-standard").addEventListener("click", () => station(zustand.st));
 
 /* Ansicht durch Ziehen im Bild drehen */
 let zug = null;
@@ -992,34 +1064,28 @@ const zugEnde = () => { if (zug) { zug = null; canvas.style.cursor = "grab"; } }
 canvas.addEventListener("pointerup", zugEnde);
 canvas.addEventListener("pointercancel", zugEnde);
 
-/* Bild mit Versuchsbedingungen herunterladen (Tablet: Teilen-Menü); bei der Schraubenbahn mit beiden Teilbildern */
-$("btn-bild").addEventListener("click", () => {
-	const z = zustand, dpr = window.devicePixelRatio || 1, rand = 34 * dpr, luecke = 10 * dpr;
-	const mitTeil = z.st !== "1";
-	const hTeil = mitTeil ? Math.max(cKreis.height, cLinie.height) + luecke : 0;
+/* Bild für Heft und Teilen: bei der Schraubenbahn mit beiden Teilbildern (nebeneinander oder, am Handy, untereinander) */
+function gesamtBild() {
+	const dpr = window.devicePixelRatio || 1, luecke = Math.round(10 * dpr), mitTeil = zustand.st !== "1";
+	const nebeneinander = cKreis.width + cLinie.width + luecke <= canvas.width + 2;
+	const hTeil = !mitTeil ? 0 : nebeneinander ? Math.max(cKreis.height, cLinie.height) + luecke : cKreis.height + cLinie.height + 2 * luecke;
 	const c = document.createElement("canvas");
-	c.width = canvas.width; c.height = canvas.height + hTeil + rand;
+	c.width = canvas.width; c.height = canvas.height + hTeil;
 	const k = c.getContext("2d");
 	k.fillStyle = "#fff"; k.fillRect(0, 0, c.width, c.height);
 	k.drawImage(canvas, 0, 0);
-	if (mitTeil) { k.drawImage(cKreis, 0, canvas.height + luecke); k.drawImage(cLinie, c.width - cLinie.width, canvas.height + luecke); }
-	k.fillStyle = "#111"; k.font = Math.round(rand * 0.45) + "px " + schrift(); k.textBaseline = "middle";
-	const art = z.st === "1" ? "Kreisbahn" : z.st === "2" ? "Schraubenbahn" : "Teilchenbahn";
-	const teil = z.q < 0 ? "Elektron" : "Positron";
-	k.fillText(art + ": " + teil + ", Magnetfeld " + staerke(z.b) + ", Winkel zwischen v und B " + z.alpha + "°", rand * 0.4, c.height - rand / 2);
-	const name = art + "_" + teil + "_Magnetfeld_" + staerke(z.b) + "_Winkel_" + z.alpha + ".png";
-	c.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.maxTouchPoints > 0 && navigator.canShare && navigator.canShare({ files: [datei] })) {
-			navigator.share({ files: [datei], title: art }).catch(() => {});
-		} else {
-			const a = document.createElement("a");
-			a.href = URL.createObjectURL(blob); a.download = name;
-			document.body.appendChild(a); a.click(); a.remove();
-			setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-		}
-	}, "image/png");
-});
+	if (mitTeil) {
+		const y = canvas.height + luecke;
+		if (nebeneinander) { k.drawImage(cKreis, 0, y); k.drawImage(cLinie, c.width - cLinie.width, y); }
+		else { k.drawImage(cKreis, 0, y); k.drawImage(cLinie, 0, y + cKreis.height + luecke); }
+	}
+	return c;
+}
+function bildName() {
+	const z = zustand, art = z.st === "1" ? "Kreisbahn" : z.st === "2" ? "Schraubenbahn" : "Teilchenbahn";
+	return art + "_" + (z.q < 0 ? "Elektron" : "Positron") + "_Magnetfeld_" + staerke(z.b) + "_Winkel_" + z.alpha;
+}
+bildLeiste($("sim-leinwand"), gesamtBild, bildName, [symbolKnopf("zurueck", "Standardwerte", () => station(zustand.st))]);
 
 /* Ablauf (Zeit stark verlangsamt) */
 K.starteSchleife(dt => {
@@ -1034,14 +1100,15 @@ K.starteSchleife(dt => {
 function layout() {
 	({ W, H } = K.skaliereCanvas(canvas, ctx0, b => zustand.st === "1" ? (b < 560 ? 1.0 : 0.72) : (b < 560 ? 0.85 : 0.56)));
 	if (zustand.st !== "1") {
-		({ W: WK, H: HK } = K.skaliereCanvas(cKreis, ctxKreis, 0.8));
+		({ W: WK, H: HK } = K.skaliereCanvas(cKreis, ctxKreis, b => W < 560 ? 0.62 : 0.8));
 		const hoehe = HK;
-		({ W: WL, H: HL } = K.skaliereCanvas(cLinie, ctxLinie, b => hoehe / b));
+		({ W: WL, H: HL } = K.skaliereCanvas(cLinie, ctxLinie, b => W < 560 ? 0.42 : hoehe / b));
 	}
 	zeichne();
 }
 window.addEventListener("resize", layout);
 const start = new URLSearchParams(location.search).get("teil");
+if (start === "2" || start === "1") $("station").hidden = true;
 station(start === "2" ? "2" : start === "frei" ? "f" : "1");
 K.nachFontLaden(zeichne);
 </script>
