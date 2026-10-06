@@ -390,7 +390,7 @@
 		ctx.beginPath(); ctx.moveTo(gx, y - 8); ctx.lineTo(gx - 4.5, y - 2.5); ctx.lineTo(gx + 4.5, y - 2.5); ctx.closePath(); ctx.fill();
 		ctx.beginPath(); ctx.moveTo(gx, y + 8); ctx.lineTo(gx - 4.5, y + 2.5); ctx.lineTo(gx + 4.5, y + 2.5); ctx.closePath(); ctx.fill();
 		ctx.font = "bold 13px " + SCHRIFT; ctx.fillStyle = "#C81E1E"; ctx.textAlign = "left";
-		ctx.fillText("Nullniveau", 8, y - 6);
+		ctx.fillText("Nullniveau", geo.tx, y - 17);
 	}
 
 	function zeichne() {
