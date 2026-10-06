@@ -440,9 +440,20 @@ window.KI = (function () {
 	}
 	function de(z, st = 1) { return z.toFixed(st).replace(".", ","); }
 	/* Startstufe aus der Adresse: ?stufe=2 (1-basiert), für QR-Codes direkt zur passenden Stufe */
+	/* KI.festeStufen (0-basiert) setzt die Seite aus ?modus=kette-1 bzw. ?modus=vorhersage-1.2: Dann gibt es NUR diese Stufen
+	   (QR-Code auf dem Arbeitsblatt zeigt genau das, was dort angesagt ist). */
 	KI.startStufe = function (anzahl) {
+		if (KI.festeStufen && KI.festeStufen.length) return KI.festeStufen[0] < anzahl ? KI.festeStufen[0] : 0;
 		const n = parseInt(new URLSearchParams(location.search).get("stufe"), 10) || KI.vorgabeStufe;
 		return n >= 1 && n <= anzahl ? n - 1 : 0;
+	};
+	KI.stufeErlaubt = i => !KI.festeStufen || !KI.festeStufen.length || KI.festeStufen.includes(i);
+	/* nächste erlaubte Stufe nach i, sonst -1 */
+	KI.naechsteStufe = function (i, anzahl) { for (let j = i + 1; j < anzahl; j++) if (KI.stufeErlaubt(j)) return j; return -1; };
+	/* Stufen-Chips einer Übung auf die erlaubten beschränken; nur eine erlaubt: Chips ganz ausblenden */
+	KI.chipsBeschraenken = function (chips, knoepfe) {
+		knoepfe.forEach((k, i) => { k.hidden = !KI.stufeErlaubt(i); });
+		if (knoepfe.filter(k => !k.hidden).length <= 1) chips.hidden = true;
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
 
@@ -853,6 +864,7 @@ window.KI = (function () {
 			return b;
 		});
 		if (stufen.length > 1) leiste.appendChild(chips);
+		KI.chipsBeschraenken(chips, knoepfe);
 		const rechts = el("div", "rechts");
 		const status = el("div", "status");
 		rechts.appendChild(status);
@@ -1479,10 +1491,10 @@ const gebaut = {};
 function modusleiste() {
 	const leiste = document.getElementById("modusleiste");
 	const params = new URLSearchParams(location.search);
-	/* ?modus=tippen-3: Übung „tippen“, gleich Stufe 3 (für QR-Codes auf dem Arbeitsblatt) */
+	/* ?modus=tippen-3: Übung „tippen“, NUR Stufe 3; ?modus=vorhersage-1.2: nur Stufen 1 und 2 (für QR-Codes auf dem Arbeitsblatt) */
 	const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
 		const [name, stufe] = m.split("-");
-		if (stufe) KI.vorgabeStufe = parseInt(stufe, 10);
+		if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
 		return name;
 	}) : MODI.map(m => m[0]);
 	const knoepfe = {};
@@ -1658,6 +1670,22 @@ BAU.film = function (b) {
 	const frage = KI.el("p", "auftrag"); frage.style.fontWeight = "bold"; frage.style.marginTop = "0.6rem"; b.appendChild(frage);
 	const wahl = KI.el("div", "wahl"); b.appendChild(wahl);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
+	/* Selbst bewegen: Ring geschlossen/geschlitzt, Magnet umdrehen */
+	const freiLeiste = KI.el("div", "leiste"); freiLeiste.hidden = true; freiLeiste.style.justifyContent = "center"; b.insertBefore(freiLeiste, frage);
+	const RINGSYM = sl => '<svg width="16" height="22" viewBox="0 0 16 22" aria-hidden="true"><path d="' + (sl ? "M10.5 19.6 A6 9 0 1 1 13.6 15" : "M8 2 A6 9 0 1 1 7.99 2") + '" fill="none" stroke="#6E7780" stroke-width="3"/></svg>';
+	const freiChips = KI.el("div", "chips");
+	const kGeschl = KI.el("button", "", RINGSYM(false) + "<span>geschlossen</span>"), kSchlitz = KI.el("button", "", RINGSYM(true) + "<span>geschlitzt</span>");
+	kGeschl.title = "geschlossener Ring"; kSchlitz.title = "geschlitzter Ring";
+	const kDreh = KI.el("button", "", '<svg width="46" height="16" viewBox="0 0 46 16" aria-hidden="true"><rect x="1" y="2" width="22" height="12" fill="#D32F2F"/><rect x="23" y="2" width="22" height="12" fill="#2E7D32"/><text x="12" y="12" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">N</text><text x="34" y="12" font-size="10" fill="#fff" text-anchor="middle" font-weight="bold">S</text></svg><span>umdrehen</span>');
+	kDreh.title = "Magnet umdrehen";
+	const drehChips = KI.el("div", "chips");
+	[kGeschl, kSchlitz].forEach(k => freiChips.appendChild(k)); drehChips.appendChild(kDreh); freiLeiste.appendChild(freiChips); freiLeiste.appendChild(drehChips);
+	[kGeschl, kSchlitz, kDreh].forEach(k => { k.style.display = "inline-flex"; k.style.alignItems = "center"; k.style.gap = "0.35rem"; });
+	const freiSz = { geschlitzt: false, nordVorn: true };
+	function freiChipsZeigen() { kGeschl.classList.toggle("aktiv", !freiSz.geschlitzt); kSchlitz.classList.toggle("aktiv", freiSz.geschlitzt); }
+	kGeschl.addEventListener("click", () => { freiSz.geschlitzt = false; freiChipsZeigen(); });
+	kSchlitz.addEventListener("click", () => { freiSz.geschlitzt = true; freiChipsZeigen(); });
+	kDreh.addEventListener("click", () => { freiSz.nordVorn = !freiSz.nordVorn; });
 	const PF = {
 		links: '<svg width="40" height="18" viewBox="0 0 40 18"><path d="M2 9 L14 1 V6 H38 V12 H14 V17 Z" fill="#333"/></svg>',
 		rechts: '<svg width="40" height="18" viewBox="0 0 40 18"><path d="M38 9 L26 1 V6 H2 V12 H26 V17 Z" fill="#333"/></svg>',
@@ -1707,9 +1735,15 @@ BAU.film = function (b) {
 		}
 	];
 	const RING = 36, OMEGA = 5.5, GAMMA = 0.9, KOPPLUNG = 50;
+	let freiZiel = 70, zieht = false, griff = 0, geoF = { u: 1, rand: 0 }, bewegt = false;
 	let szNr = 0, stNr = 0, zustand, vorher, letzteRichtig = false, phase = "frage", tLauf = 0, letzte = 0, richtigGesamt = 0, gefragt = 0;
 	const knoepfe = SZENEN.map((s, i) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => szene(i)); chips.appendChild(k); return k; });
+	const freiK = KI.el("button", "", "Selbst bewegen"); freiK.addEventListener("click", () => frei()); chips.appendChild(freiK);
+	KI.chipsBeschraenken(chips, knoepfe);
+	if (KI.festeStufen && KI.festeStufen.length) { chips.hidden = false; freiK.hidden = false; }
+	const erlaubteSzenen = SZENEN.map((_, i) => i).filter(KI.stufeErlaubt);
 	function szene(i) {
+		phase = "frage"; freiK.classList.remove("aktiv"); freiLeiste.hidden = true;
 		szNr = i; stNr = 0;
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
 		const s = SZENEN[i];
@@ -1719,7 +1753,7 @@ BAU.film = function (b) {
 	function schritt() {
 		const st = SZENEN[szNr].schritte[stNr];
 		phase = "frage"; tLauf = 0;
-		auftrag.textContent = "Szene " + (szNr + 1) + " von " + SZENEN.length + ", Stopp " + (stNr + 1) + " von " + SZENEN[szNr].schritte.length;
+		auftrag.textContent = "Szene " + (erlaubteSzenen.indexOf(szNr) + 1) + " von " + erlaubteSzenen.length + ", Stopp " + (stNr + 1) + " von " + SZENEN[szNr].schritte.length;
 		frage.textContent = st.frage;
 		wahl.innerHTML = ""; rueck.innerHTML = "";
 		vorher = { xm: zustand.xm, vm: 0, xr: zustand.xr, vr: zustand.vr, strom: 0 };
@@ -1745,10 +1779,10 @@ BAU.film = function (b) {
 		for (const [d, w] of v) { if (t < t0 + d) return w; t0 += d; }
 		return 0;
 	}
+	const aktSz = () => phase === "frei" ? freiSz : SZENEN[szNr];
 	function physik(dt) {
-		const sz = SZENEN[szNr], z = zustand;
-		z.vm = geschwMagnet(tLauf);
-		z.xm += z.vm * dt;
+		const sz = aktSz(), z = zustand;
+		if (phase !== "frei") { z.vm = geschwMagnet(tLauf); z.xm += z.vm * dt; }
 		const d = z.xm - (RING + z.xr);
 		const g = 1 / (1 + Math.pow(Math.max(d, 1) / 8, 3));
 		const rel = z.vm - z.vr;
@@ -1756,7 +1790,34 @@ BAU.film = function (b) {
 		z.strom = (sz.geschlitzt ? 0.05 : 1) * g * rel;
 		const a = -OMEGA * OMEGA * z.xr - GAMMA * z.vr + k * g * rel;
 		z.vr += a * dt; z.xr += z.vr * dt;
+		if (phase === "frei") {   /* Ring darf nicht in den Magneten laufen und nicht zu weit ausschlagen */
+			if (z.xr > z.xm - RING - 2) { z.xr = z.xm - RING - 2; z.vr = Math.min(z.vr, z.vm); }
+			if (z.xr < -26) { z.xr = -26; z.vr = Math.max(0, z.vr); }
+		}
 	}
+	function frei() {
+		phase = "frei"; freiK.classList.add("aktiv"); knoepfe.forEach(k => k.classList.remove("aktiv"));
+		freiLeiste.hidden = false; freiChipsZeigen(); bewegt = false;
+		auftrag.innerHTML = "Ziehe den Magneten mit dem Finger zum Ring hin und wieder weg, mal schnell, mal langsam. Probiere auch den geschlitzten Ring und den umgedrehten Magneten.";
+		frage.textContent = ""; wahl.innerHTML = ""; rueck.innerHTML = "";
+		zustand = { xm: 70, vm: 0, xr: 0, vr: 0, strom: 0 }; freiZiel = 70;
+		letzte = performance.now(); requestAnimationFrame(freiLauf);
+	}
+	function freiLauf(jetzt) {
+		if (phase !== "frei") return;
+		const dt = Math.max(0.001, Math.min(0.05, (jetzt - letzte) / 1000)); letzte = jetzt;
+		const z = zustand, ziel = Math.max(RING + z.xr + 4, Math.min(74, freiZiel));
+		const vNeu = Math.max(-160, Math.min(160, (ziel - z.xm) / dt));
+		z.vm = 0.5 * z.vm + 0.5 * vNeu; z.xm = ziel;
+		for (let i = 0; i < 10; i++) physik(dt / 10);
+		if (b.offsetParent) zeichne();
+		requestAnimationFrame(freiLauf);
+	}
+	function xu(e) { const r = cv.getBoundingClientRect(); return (e.clientX - r.left) / geoF.u + geoF.rand; }
+	cv.addEventListener("pointerdown", (e) => { if (phase !== "frei") return; zieht = true; bewegt = true; cv.setPointerCapture(e.pointerId); griff = xu(e) - zustand.xm; if (Math.abs(griff) > 14) griff = 12; });
+	cv.addEventListener("pointermove", (e) => { if (zieht) { freiZiel = xu(e) - griff; e.preventDefault(); } });
+	["pointerup", "pointercancel"].forEach(ev => cv.addEventListener(ev, () => { zieht = false; }));
+	cv.style.touchAction = "none";
 	function lauf(jetzt) {
 		if (phase !== "laeuft") return;
 		const dtEcht = Math.min(0.05, (jetzt - letzte) / 1000); letzte = jetzt;
@@ -1772,11 +1833,11 @@ BAU.film = function (b) {
 		rueck.innerHTML = '<div class="erkl">' + st.erkl + "</div>";
 		const l = KI.el("div", "leiste");
 		const nochmal = KI.symbolKnopf("zurueck", "Stopp wiederholen", () => { zustand = Object.assign({}, vorher); gefragt--; if (letzteRichtig) richtigGesamt--; schritt(); });
-		const letzterSchritt = stNr === SZENEN[szNr].schritte.length - 1, letzteSzene = szNr === SZENEN.length - 1;
+		const letzterSchritt = stNr === SZENEN[szNr].schritte.length - 1, naechste = KI.naechsteStufe(szNr, SZENEN.length), letzteSzene = naechste < 0;
 		const w = KI.el("button", "haupt", letzterSchritt ? (letzteSzene ? "Fertig" : "Nächste Szene") : "Weiter");
 		w.addEventListener("click", () => {
 			if (!letzterSchritt) { stNr++; schritt(); }
-			else if (!letzteSzene) szene(szNr + 1);
+			else if (!letzteSzene) szene(naechste);
 			else ende();
 		});
 		l.appendChild(w); l.appendChild(nochmal); rueck.appendChild(l);
@@ -1784,13 +1845,17 @@ BAU.film = function (b) {
 	function ende() {
 		const s = richtigGesamt >= gefragt ? 3 : richtigGesamt >= gefragt - 2 ? 2 : 1;
 		frage.textContent = ""; wahl.innerHTML = "";
-		rueck.innerHTML = '<p class="rueck gut">Film zu Ende: ' + richtigGesamt + " von " + gefragt + " Vermutungen richtig. " + KI.sterneHtml(s) + "</p>";
+		rueck.innerHTML = '<p class="rueck gut">Film zu Ende: ' + richtigGesamt + " von " + gefragt + " Vermutungen richtig. " + KI.sterneHtml(s) + '</p><p class="auftrag">Jetzt du: Bewege den Magneten selbst und beobachte den Ring.</p>';
 		KI.bestwert("film", s); KI.funken(rueck, 18);
-		const l = KI.el("div", "leiste"); l.appendChild(KI.symbolKnopf("zurueck", "Von vorn", () => { richtigGesamt = 0; gefragt = 0; szene(0); })); rueck.appendChild(l);
+		const l = KI.el("div", "leiste");
+		const fk = KI.el("button", "haupt", "Selbst bewegen"); fk.addEventListener("click", () => frei()); l.appendChild(fk);
+		l.appendChild(KI.symbolKnopf("zurueck", "Von vorn", () => { richtigGesamt = 0; gefragt = 0; szene(erlaubteSzenen[0]); })); rueck.appendChild(l);
 	}
 	function zeichne() {
 		const { ctx: c, B, H } = KI.leinwand(cv, B => Math.max(240, B * 0.36));
-		const rand = B < 560 ? 16 : 0, u = B / (100 - 2 * rand), X = xu => (xu - rand) * u, sz = SZENEN[szNr], z = zustand;
+		/* schmal: links etwas abschneiden, damit Ring und Magnet groß bleiben; rechts muss der Magnet (bis 94) ganz zu sehen sein */
+		const rand = B < 560 ? 8 : 0, u = B / ((B < 560 ? 96 : 100) - rand), X = xu => (xu - rand) * u, sz = aktSz(), z = zustand;
+		geoF = { u, rand };
 		c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
 		const ym = H * 0.58, g = B < 560 ? 13 : 14;
 		/* Aufhängung */
@@ -1837,6 +1902,10 @@ BAU.film = function (b) {
 			} else KI.text(c, "Magnet ruht", mx + ml / 2, ym - mh / 2 - 18, g, "#333");
 		}
 		if (phase === "laeuft") KI.text(c, "Zeitlupe", B - 8, 14, g - 1, "#999", "right");
+		if (phase === "frei" && !bewegt) {
+			c.globalAlpha = 0.85; KI.pfeil(c, mx + ml / 2 + 8 * u, ym - mh / 2 - 16, mx + ml / 2 - 8 * u, ym - mh / 2 - 16, "#0000BF", 3); c.globalAlpha = 1;
+			KI.text(c, "Magnet ziehen", mx + ml / 2, ym - mh / 2 - 32, g, "#0000BF", "center", "bold");
+		}
 		if (I > 0.08) KI.text(c, "Induktionsstrom", xr, ym + ry + 16, g - 1, "#E65100");
 	}
 	szene(KI.startStufe(SZENEN.length));
@@ -1876,6 +1945,7 @@ BAU.vorhersage = function (b) {
 	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Vorhersage: Magnet im " + RUNDEN[nr].name }, { art: "bild", quelle: KI.canvasKopie(cv) }]), "Vorhersage_Fallender_Magnet");
 	let nr = 0, eigen = [], phase = "zeichnen", tMess = 0, letzte = 0, geo = null;
 	const knoepfe = RUNDEN.map((r, i) => { const k = KI.el("button", "", r.name); k.addEventListener("click", () => runde(i)); chips.appendChild(k); return k; });
+	KI.chipsBeschraenken(chips, knoepfe);
 	function runde(i) {
 		nr = i; eigen = new Array(Math.round(TMAX / DT) + 1).fill(null); phase = "zeichnen"; tMess = 0;
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
@@ -1928,7 +1998,7 @@ BAU.vorhersage = function (b) {
 		c.fillStyle = farbe[0]; c.globalAlpha = 0.3; c.fillRect(rx - rB / 2, top, rB, unten - top); c.globalAlpha = 1;
 		c.strokeStyle = farbe[1]; c.lineWidth = 4; c.beginPath(); c.moveTo(rx - rB / 2, top); c.lineTo(rx - rB / 2, unten); c.moveTo(rx + rB / 2, top); c.lineTo(rx + rB / 2, unten); c.stroke();
 		const s = phase === "zeichnen" ? 0 : r.f(tMess);
-		const mh = rB * 1.2, my = top + (unten - top) * s / L;
+		const mh = rB * 1.2, my = top + mh + (unten - top - mh) * s / L;   /* Magnet beginnt ganz im Bild (Unterkante bei s = 0) */
 		const fo = r.nordUnten ? "#2E7D32" : "#D32F2F", fu = r.nordUnten ? "#D32F2F" : "#2E7D32";
 		c.fillStyle = fo; c.fillRect(rx - rB * 0.42, my - mh, rB * 0.84, mh / 2);
 		c.fillStyle = fu; c.fillRect(rx - rB * 0.42, my - mh / 2, rB * 0.84, mh / 2);
@@ -2020,24 +2090,101 @@ BAU.tippen = function (b) {
 	steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => runde(nr)));
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
+	const wahlFeld = KI.el("div", ""); b.insertBefore(wahlFeld, steuer);
 	let nr = 0, gewaehlt = new Set(), geloest = false, versuche = 0, tipp = null, geo;
 	const RUNDEN = [
-		{ name: "Platte", mehrfach: false, hoehe: B => Math.max(220, B * 0.45),
-			auftrag: "Die Platte schwingt nach links in das Magnetfeld hinein. Tippe dorthin, wo in der Platte Wirbelströme fließen." },
+		{ name: "Pendelkörper", mehrfach: false,
+			auftrag: "Die Pendelkörper schwingen nach links in das Magnetfeld hinein. Welches Bild zeigt richtig, wo dabei Ströme fließen? Tippe es an." },
 		{ name: "Fünf Stellen", mehrfach: true, hoehe: B => Math.max(200, B * 0.36),
 			auftrag: "Die Platte bewegt sich von rechts nach links durch das Feld. Tippe <b>alle</b> Stellen an, an denen sie gebremst wird. Dann „Fertig“." },
 		{ name: "Rohr", mehrfach: true, hoehe: B => Math.max(300, Math.min(520, B * 0.7)),
 			auftrag: "Der Magnet fällt durch das Aluminiumrohr. Tippe die Ringe an, in denen gerade ein Strom fließt. Dann „Fertig“." }
 	];
 	const knoepfe = RUNDEN.map((r, i) => { const k = KI.el("button", "", r.name); k.addEventListener("click", () => runde(i)); chips.appendChild(k); return k; });
+	KI.chipsBeschraenken(chips, knoepfe);
 	function runde(i) {
 		nr = i; gewaehlt = new Set(); geloest = false; versuche = 0; tipp = null;
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
 		auftrag.innerHTML = RUNDEN[i].auftrag; rueck.innerHTML = "";
 		fertigK.hidden = !RUNDEN[i].mehrfach; fertigK.disabled = false;
-		zeichne();
+		lw.hidden = i === 0; wahlFeld.hidden = i !== 0; steuer.hidden = i === 0;
+		if (i === 0) { kNr = 0; fehlerGesamt = 0; koerperFrage(); } else zeichne();
+	}
+	/* ---------- Stufe 1: Pendelkörper, richtiges Strombild wählen ---------- */
+	const OR = "#E65100";
+	/* Bildchen 200 x 130: Feld links bis x = 100 (Feldrand), Körper (Mitte x = 120) schwingt nach links hinein */
+	function strombild(art, strom) {
+		let t = S.feld(0, 4, 100, 122, 13) + '<line x1="100" y1="4" x2="100" y2="126" stroke="#4A63C8" stroke-width="1.2" stroke-dasharray="4 3"/>';
+		t += S.pendelkoerper(120, 65, 90, art, "rgba(158,167,176,0.8)", art.includes("ring") ? "#B4BAC1" : S.ALU_D);
+		t += S.pfeil(198, 65, 174, 65, "#111", 2.6);
+		/* Stromschleife (Ellipse) mit Pfeilspitzen: gegen den Uhrzeigersinn (oben nach links, unten nach rechts) */
+		const schleife = (x, y, rx, ry, dicke = 2.6) => {
+			const sp = Math.max(5, Math.min(8, 0.5 * rx + 3));
+			const spitze = (yy, r) => '<polygon points="' + (x - r * sp * 0.6) + "," + yy + " " + (x + r * sp * 0.6) + "," + (yy - sp * 0.55) + " " + (x + r * sp * 0.6) + "," + (yy + sp * 0.55) + '" fill="' + OR + '"/>';
+			return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + OR + '" stroke-width="' + dicke + '"/>' +
+				(rx >= 5 ? spitze(y - ry, 1) + (ry > 12 ? spitze(y + ry, -1) : "") : "");
+		};
+		/* schmale Schleife (Zinke): Pfeilspitze an der Seite nach oben (rechts) */
+		const schmal = (x, y, rx, ry) => '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="none" stroke="' + OR + '" stroke-width="2.2"/>' +
+			'<polygon points="' + (x + rx) + "," + (y - 6) + " " + (x + rx - 3.6) + "," + (y + 2) + " " + (x + rx + 3.6) + "," + (y + 2) + '" fill="' + OR + '"/>';
+		if (strom === "rand") t += schleife(100, 65, 20, 30);
+		if (strom === "aussen") t += schleife(143, 65, 15, 30);
+		if (strom === "kammKlein") t += schmal(100, 80, 3, 16) + schleife(100, 32, 12, 6.5, 2.2);
+		if (strom === "ganzRing") t += schleife(120, 65, 36.9, 36.9, 3);
+		if (strom === "ringKlein") t += schleife(100, 34, 6, 4.5, 2.2) + schleife(100, 96, 6, 4.5, 2.2);
+		if (strom === "kein") t += '<text x="150" y="124" font-size="13" text-anchor="middle" fill="#555">kein Strom</text>';
+		return S.rahmen(200, 130, t, 200).replace('width="200"', 'width="100%"').replace(/height="\d+"/, 'style="display:block;height:auto"');
+	}
+	const KOERPER = [
+		{ art: "platte", name: "massive Platte", opt: [
+			{ s: "rand", ok: true, erkl: "Richtig: Nur am Feldrand ändert sich das Feld in der Platte. Dort wird eine Spannung induziert, und die Wirbelströme kreisen um den Feldrand. Große Strombahn: starke Bremsung." },
+			{ s: "aussen", ok: false, erkl: "Dort ist noch gar kein Magnetfeld. Wo ändert sich das Feld in der Platte gerade?" },
+			{ s: "kein", ok: false, erkl: "Doch: Am Feldrand ändert sich das Feld in der Platte." }] },
+		{ art: "kamm", name: "Kamm", opt: [
+			{ s: "rand", ok: false, erkl: "So müsste der Strom quer über die Schlitze fließen. Kann er das?" },
+			{ s: "kammKlein", ok: true, erkl: "Richtig: Die Schlitze unterbrechen die große Strombahn. Es fließen nur kleine Ströme in der Zinke am Feldrand und im Steg: schwache Bremsung." },
+			{ s: "kein", ok: false, erkl: "Ganz ohne Strom geht es nicht: Auch in der Zinke am Feldrand ändert sich das Feld." }] },
+		{ art: "ring", name: "Ring", opt: [
+			{ s: "ganzRing", ok: true, erkl: "Richtig: Das Feld in der Ringfläche ändert sich. Der Ring ist geschlossen: Der Strom fließt ganz herum. Starke Bremsung." },
+			{ s: "ringKlein", ok: false, erkl: "Der Ring ist geschlossen. Kann der Strom ganz herum fließen?" },
+			{ s: "kein", ok: false, erkl: "Doch: Das Feld in der Ringfläche ändert sich." }] },
+		{ art: "schlitzring", name: "geschlitzter Ring", opt: [
+			{ s: "ganzRing", ok: false, erkl: "Der Schlitz unterbricht diese Strombahn." },
+			{ s: "ringKlein", ok: true, erkl: "Richtig: Der Schlitz unterbricht den Ringstrom. Es fließen nur kleine Wirbelströme im Metall am Feldrand: schwache Bremsung." },
+			{ s: "kein", ok: false, erkl: "Ganz ohne Strom geht es nicht: Im Metall am Feldrand ändert sich das Feld, dort fließen kleine Wirbelströme." }] }
+	];
+	let kNr = 0, fehlerGesamt = 0;
+	function koerperFrage() {
+		const k = KOERPER[kNr];
+		wahlFeld.innerHTML = ""; rueck.innerHTML = "";
+		wahlFeld.appendChild(KI.el("p", "auftrag", "<b>" + (kNr + 1) + " von " + KOERPER.length + ": " + k.name + "</b>"));
+		const raster = KI.el("div", ""); raster.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.6rem;max-width:720px";
+		wahlFeld.appendChild(raster);
+		let fertig = false;
+		for (const o of KI.mischen(k.opt)) {
+			const kn = KI.el("button", "", strombild(k.art, o.s));
+			kn.style.cssText = "padding:4px;background:#fff;border:2px solid #ccc;border-radius:2mm;cursor:pointer";
+			kn.title = o.s === "kein" ? "kein Strom" : "Strombild";
+			kn.addEventListener("click", () => {
+				if (fertig) return;
+				kn.style.borderColor = o.ok ? "var(--gut)" : "var(--falsch)"; kn.style.background = o.ok ? "var(--gut-hg)" : "var(--falsch-hg)";
+				if (!o.ok) { fehlerGesamt++; rueck.innerHTML = '<p class="rueck schlecht">' + o.erkl + "</p>"; return; }
+				fertig = true;
+				let h = '<div class="erkl">' + o.erkl + "</div>";
+				const letzter = kNr === KOERPER.length - 1, st = fehlerGesamt === 0 ? 3 : fehlerGesamt <= 2 ? 2 : 1;
+				if (letzter) h += '<p class="rueck gut">Alle vier geschafft! ' + KI.sterneHtml(st) + "</p>";
+				rueck.innerHTML = h;
+				const l = KI.el("div", "leiste");
+				if (!letzter) { const w = KI.el("button", "haupt", "Weiter"); w.addEventListener("click", () => { kNr++; koerperFrage(); }); l.appendChild(w); }
+				else { KI.bestwert("tippen", st); l.appendChild(KI.symbolKnopf("zurueck", "Von vorn", () => runde(0))); }
+				rueck.appendChild(l);
+				if (letzter) KI.funken(rueck, 6 * st);
+			});
+			raster.appendChild(kn);
+		}
 	}
 	function zeichne() {
+		if (nr === 0) return;
 		const r = RUNDEN[nr];
 		const { ctx: c, B, H } = KI.leinwand(cv, r.hoehe);
 		const g = B < 560 ? 12 : 14;
@@ -2055,18 +2202,7 @@ BAU.tippen = function (b) {
 			KI.pfeil(c, x + 2, y - h, x - 10, y - h, "#E65100", 3);
 			KI.pfeil(c, x - 2, y + h, x + 10, y + h, "#E65100", 3);
 		}
-		if (nr === 0) {
-			const fx = 0.05 * B, fw = 0.5 * B, grenze = fx + fw;
-			feld(fx, 0.14 * H, fw, 0.8 * H);
-			KI.text(c, "Magnetfeld", fx + 8, 0.14 * H - 9, g, "#4A63C8", "left");
-			const pw = Math.min(0.3 * B, 0.62 * H), px = grenze - pw * 0.45, py = 0.3 * H;
-			geo = { px, py, pw, grenze };
-			c.strokeStyle = "#555"; c.lineWidth = 2; c.beginPath(); c.moveTo(px + pw / 2 + 0.15 * B, 0); c.lineTo(px + pw / 2, py); c.stroke();
-			c.fillStyle = "rgba(158,167,176,0.85)"; c.fillRect(px, py, pw, pw * 0.95); c.strokeStyle = "#6E7780"; c.strokeRect(px, py, pw, pw * 0.95);
-			KI.pfeil(c, px + pw + 50, py + pw * 0.45, px + pw + 12, py + pw * 0.45, "#111", 3);
-			if (tipp) { c.fillStyle = tipp.ok ? "#2E7D32" : "#C62828"; c.beginPath(); c.arc(tipp.x, tipp.y, 7, 0, Math.PI * 2); c.fill(); }
-			if (geloest) wirbel(grenze, py + pw * 0.47, Math.min(pw * 0.38, 0.12 * B), pw * 0.36);
-		} else if (nr === 1) {
+		if (nr === 1) {
 			const fx = 0.36 * B, fw = 0.28 * B;
 			feld(fx, 0.12 * H, fw, 0.76 * H);
 			const pw = 0.12 * B, ph = Math.min(pw, 0.5 * H), mitten = [0.12, 0.36, 0.5, 0.64, 0.88].map(f => f * B);
@@ -2106,23 +2242,9 @@ BAU.tippen = function (b) {
 		}
 	}
 	cv.addEventListener("click", (e) => {
-		if (geloest) return;
+		if (geloest || nr === 0) return;
 		const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-		if (nr === 0) {
-			const inPlatte = x >= geo.px && x <= geo.px + geo.pw && y >= geo.py && y <= geo.py + geo.pw * 0.95;
-			versuche++;
-			if (!inPlatte) { tipp = null; rueck.innerHTML = '<p class="rueck schlecht">Tippe in die Platte.</p>'; versuche--; zeichne(); return; }
-			const ok = Math.abs(x - geo.grenze) < Math.max(0.09 * geo.pw * 3, 22);
-			tipp = { x, y, ok };
-			if (ok) {
-				geloest = true;
-				const s = versuche === 1 ? 3 : versuche === 2 ? 2 : 1;
-				rueck.innerHTML = '<p class="rueck gut">Genau! ' + KI.sterneHtml(s) + '</p><div class="erkl">Am Feldrand ändert sich das Magnetfeld in der Platte: Dort werden Spannungen induziert, und die Wirbelströme kreisen um den Feldrand.</div>';
-				KI.bestwert("tippen", s); KI.funken(rueck, 12);
-			} else if (x < geo.grenze) rueck.innerHTML = '<p class="rueck schlecht">Dieser Teil ist schon ganz im Feld. Ändert sich dort das Feld in der Platte?</p>';
-			else rueck.innerHTML = '<p class="rueck schlecht">Dort ist noch gar kein Magnetfeld. Wo ändert sich das Feld gerade?</p>';
-			zeichne();
-		} else if (nr === 1) {
+		if (nr === 1) {
 			geo.mitten.forEach((m, i) => { if (Math.abs(x - m) < geo.pw / 2 + 6 && Math.abs(y - geo.y) < geo.ph / 2 + 18) gewaehlt.has(i) ? gewaehlt.delete(i) : gewaehlt.add(i); });
 			zeichne();
 		} else {
@@ -2160,7 +2282,7 @@ BAU.tippen = function (b) {
    Pole eintragen: Ringe über und unter dem Magneten im Rohr
    ========================================================================== */
 BAU.pole = function (b) {
-	b.appendChild(KI.el("p", "auftrag", "Trage die Pole der beiden Ringströme ein: Feld antippen wechselt zwischen N, S und leer. Dann prüfen."));
+	b.appendChild(KI.el("p", "auftrag", "Trage die Pole der beiden Ringe ein (Feld antippen: N, S, leer) und die Richtung des Stroms vorne am Ring (Pfeil antippen). Dann prüfen."));
 	const kopf = KI.el("div", "leiste"); const status = KI.el("div", "status"); kopf.appendChild(status); b.insertBefore(kopf, b.firstChild);
 	const buehne = KI.el("div", ""); buehne.style.cssText = "position:relative;max-width:360px;margin:0 auto;"; b.appendChild(buehne);
 	const steuer = KI.el("div", "leiste"); steuer.style.justifyContent = "center";
@@ -2169,24 +2291,37 @@ BAU.pole = function (b) {
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
 	let lage, eintrag, serie = 0, geloest = false;
-	const SL = ["obenOben", "obenUnten", "untenOben", "untenUnten"];
+	const SL = ["obenOben", "obenUnten", "untenOben", "untenUnten"], SR = ["stromOben", "stromUnten"];
+	const STROMPFEIL = { rechts: "→", links: "←" };
 	function neueLage() {
 		const alt = lage;
 		lage = { nordUnten: alt ? !alt.nordUnten : Math.random() < 0.5, runter: true };
-		eintrag = { obenOben: "", obenUnten: "", untenOben: "", untenUnten: "" }; geloest = false; rueck.innerHTML = ""; pruef.disabled = false;
+		eintrag = { obenOben: "", obenUnten: "", untenOben: "", untenUnten: "", stromOben: "", stromUnten: "" }; geloest = false; rueck.innerHTML = ""; pruef.disabled = false;
 		zeichne();
 	}
 	function soll() {
 		const vorn = lage.runter ? (lage.nordUnten ? "N" : "S") : (lage.nordUnten ? "S" : "N");
 		const gegen = vorn === "N" ? "S" : "N";
-		/* Die zum Magneten zeigenden Ringseiten tragen beide den vorderen Pol des Magneten */
-		return { untenOben: vorn, obenUnten: vorn, untenUnten: gegen, obenOben: gegen };
+		/* Die zum Magneten zeigenden Ringseiten tragen beide den vorderen Pol des Magneten.
+		   Strom vorne am Ring: Nordpol oben heißt (von oben gesehen) gegen den Uhrzeigersinn, vorne also nach rechts */
+		const p = { untenOben: vorn, obenUnten: vorn, untenUnten: gegen, obenOben: gegen };
+		p.stromOben = p.obenOben === "N" ? "rechts" : "links"; p.stromUnten = p.untenOben === "N" ? "rechts" : "links";
+		return p;
 	}
 	function zeichne(mitLoesung) {
 		const W = 320, H = 400, rO = 92, rU = 308, my = 200;
 		let s = '<rect x="60" y="10" width="200" height="380" fill="#9EA7B0" fill-opacity="0.18"/>' +
 			'<line x1="60" y1="10" x2="60" y2="390" stroke="#6E7780" stroke-width="4"/><line x1="260" y1="10" x2="260" y2="390" stroke="#6E7780" stroke-width="4"/>';
-		for (const y of [rO, rU]) s += '<ellipse cx="160" cy="' + y + '" rx="100" ry="16" fill="none" stroke="' + (mitLoesung ? "#E65100" : "#6E7780") + '" stroke-width="' + (mitLoesung ? 4 : 3) + '"/>';
+		const so0 = soll();
+		for (const [y, k] of [[rO, "stromOben"], [rU, "stromUnten"]]) {
+			s += '<ellipse cx="160" cy="' + y + '" rx="100" ry="16" fill="none" stroke="' + (mitLoesung ? "#E65100" : "#6E7780") + '" stroke-width="' + (mitLoesung ? 4 : 3) + '"/>';
+			if (mitLoesung) {   /* gebogener Strompfeil vorne am Ring */
+				const re = so0[k] === "rechts", a0 = re ? 125 : 55, a1 = re ? 62 : 118, pt = a => [160 + 100 * Math.cos(a * Math.PI / 180), y + 16 * Math.sin(a * Math.PI / 180)];
+				const [x0, y0] = pt(a0), [x1, y1] = pt(a1), [x2, y2] = pt(re ? 52 : 128);
+				s += '<path d="M' + x0.toFixed(1) + " " + y0.toFixed(1) + " A100 16 0 0 " + (re ? 0 : 1) + " " + x1.toFixed(1) + " " + y1.toFixed(1) + '" fill="none" stroke="#0000BF" stroke-width="3"/>' + S.pfeil(x1, y1, x2, y2, "#0000BF", 3);
+				s += '<text x="' + (x2 + (re ? 8 : -8)).toFixed(1) + '" y="' + (y2 + 2).toFixed(1) + '" font-size="15" font-style="italic" font-weight="bold" text-anchor="' + (re ? "start" : "end") + '" fill="#0000BF">I</text>';
+			}
+		}
 		s += '<text x="160" y="' + (rO - 26) + '" font-size="13" text-anchor="middle" fill="#555">oberer Ring</text>';
 		s += '<text x="160" y="' + (rU + 34) + '" font-size="13" text-anchor="middle" fill="#555">unterer Ring</text>';
 		s += S.magnet(160, my, 96, 52, !lage.nordUnten, true, true);
@@ -2198,12 +2333,23 @@ BAU.pole = function (b) {
 			s += S.pfeil(220, my + r * 6, 220, my - r * 40, "#0000BF", 3);
 			s += '<text x="232" y="' + (my - r * 20 + 4) + '" font-size="12" fill="#0000BF">Bremskraft</text>';
 			const vornY = lage.runter ? rU : rO, hintenY = lage.runter ? rO : rU;
-			s += '<text x="160" y="' + (vornY + (lage.runter ? -24 : 26)) + '" font-size="13" text-anchor="middle" fill="#E65100" font-weight="bold">stößt ab</text>';
-			s += '<text x="160" y="' + (hintenY + (lage.runter ? 26 : -24)) + '" font-size="13" text-anchor="middle" fill="#E65100" font-weight="bold">zieht zurück</text>';
+			s += '<text x="160" y="' + (vornY + (lage.runter ? -24 : 44)) + '" font-size="13" text-anchor="middle" fill="#E65100" font-weight="bold">stößt ab</text>';
+			s += '<text x="160" y="' + (hintenY + (lage.runter ? 44 : -24)) + '" font-size="13" text-anchor="middle" fill="#E65100" font-weight="bold">zieht zurück</text>';
 		}
 		buehne.innerHTML = S.rahmen(W, H, s, 360).replace('width="360"', 'width="100%"').replace(/height="\d+"/, 'style="display:block;height:auto"');
 		const pos = { obenOben: rO - 36, obenUnten: rO + 36, untenOben: rU - 36, untenUnten: rU + 36 };
 		const so = soll();
+		/* Stromrichtung: Knopf vorne am Ring (unterer Rand der Ellipse) */
+		for (const [k, y] of [["stromOben", rO + 16], ["stromUnten", rU + 16]]) {
+			if (geloest) break;
+			const f = KI.el("button", "", eintrag[k] ? '<span style="font-size:1.5rem;line-height:1">' + STROMPFEIL[eintrag[k]] + '</span><i style="font-size:0.95rem;margin-left:2px">I</i>' : "<span>?</span>");
+			const farbe = eintrag[k] ? "#0000BF" : "#999";
+			f.title = "Stromrichtung vorne am Ring";
+			f.style.cssText = "position:absolute;left:50%;top:" + (y / H * 100) + "%;transform:translate(-50%,-50%);min-width:54px;height:34px;border-radius:2mm;font:inherit;font-weight:bold;cursor:pointer;background:#fff;color:" + farbe + ";border:2px " + (eintrag[k] ? "solid " : "dashed ") + farbe + ";display:flex;align-items:center;justify-content:center;padding:0 6px";
+			if (rueck.dataset.markiert && eintrag[k]) f.style.background = eintrag[k] === so[k] ? "var(--gut-hg)" : "var(--falsch-hg)";
+			f.addEventListener("click", () => { eintrag[k] = eintrag[k] === "" ? "rechts" : eintrag[k] === "rechts" ? "links" : ""; delete rueck.dataset.markiert; rueck.innerHTML = ""; zeichne(); });
+			buehne.appendChild(f);
+		}
 		for (const k of SL) {
 			const f = KI.el("button", "", eintrag[k] || "?");
 			const farbe = eintrag[k] === "N" ? "#D32F2F" : eintrag[k] === "S" ? "#2E7D32" : "#999";
@@ -2217,16 +2363,19 @@ BAU.pole = function (b) {
 	function zeigeStatus() { status.innerHTML = "<span>Richtig in Folge: " + serie + "</span>" + KI.sterneHtml(Math.min(3, serie)); }
 	pruef.addEventListener("click", () => {
 		if (SL.some(k => !eintrag[k])) { rueck.innerHTML = '<p class="rueck schlecht">Trage alle vier Pole ein.</p>'; return; }
+		if (SR.some(k => !eintrag[k])) { rueck.innerHTML = '<p class="rueck schlecht">Trage auch die Stromrichtung vorne an beiden Ringen ein.</p>'; return; }
 		const so = soll();
-		const falsch = SL.filter(k => eintrag[k] !== so[k]).length;
+		const falschPole = SL.filter(k => eintrag[k] !== so[k]).length, falschStrom = SR.filter(k => eintrag[k] !== so[k]).length, falsch = falschPole + falschStrom;
 		if (!falsch) {
 			geloest = true; serie++; pruef.disabled = true;
-			rueck.innerHTML = '<p class="rueck gut">Richtig!</p><div class="erkl">Der Ring, auf den sich der Magnet zubewegt, stößt ihn ab. Der Ring, von dem er sich entfernt, zieht ihn zurück. Beide bremsen die Bewegung.</div>';
+			rueck.innerHTML = '<p class="rueck gut">Richtig!</p><div class="erkl">Der Ring, auf den sich der Magnet zubewegt, stößt ihn ab. Der Ring, von dem er sich entfernt, zieht ihn zurück. Beide bremsen die Bewegung. In den beiden Ringen fließt der Strom deshalb in entgegengesetzte Richtungen.</div>';
 			KI.bestwert("pole", Math.min(3, serie)); KI.funken(rueck, 10);
 			zeichne(true);
 		} else {
 			serie = 0;
-			const tipp = falsch === 4 ? "Überlege für jeden Ring: Nähert sich der Magnet oder entfernt er sich? Abstoßen oder zurückhalten?" : "Rot markierte Felder stimmen noch nicht.";
+			const tipp = falschPole === 4 ? "Überlege für jeden Ring: Nähert sich der Magnet oder entfernt er sich? Abstoßen oder zurückhalten?"
+				: !falschPole ? "Die Pole stimmen, die Stromrichtung noch nicht: In welche Richtung muss der Strom im Ring fließen, damit der Nordpol dort entsteht, wo du ihn eingetragen hast?"
+				: "Rot markierte Felder stimmen noch nicht.";
 			rueck.innerHTML = '<p class="rueck schlecht">' + tipp + "</p>"; rueck.dataset.markiert = "1";
 			zeichne();
 		}
@@ -2262,6 +2411,7 @@ BAU.bremse = function (b) {
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
 	let nr = 0, z, laeuft = false, letzte = 0;
 	const knoepfe = STUFEN.map((s, i) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => stufe(i)); chips.appendChild(k); return k; });
+	KI.chipsBeschraenken(chips, knoepfe);
 	function stufe(i) {
 		nr = i; const s = STUFEN[i];
 		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
