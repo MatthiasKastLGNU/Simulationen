@@ -151,15 +151,18 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 .aufgabe-text { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .antwortbereich { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; margin-top: 0.7rem; }
 .kompass { display: grid; grid-template-columns: repeat(3, 3.1rem); grid-template-rows: repeat(3, 3.1rem); gap: 0.25rem; }
-.kompass button, .ebene button {
-	font: inherit; font-size: 1.35rem; line-height: 1; border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: #fff; color: #111; cursor: pointer; padding: 0;
+.kompass button, .ebene button, .ladung button {
+	font: inherit; font-size: 1rem; line-height: 1; border: 1.5px solid #aaa; border-radius: 1mm;
+	background: #f4f4f4; color: #222; cursor: pointer; padding: 0;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
 }
-.kompass button.aktiv, .ebene button.aktiv { background: var(--blue-frame); color: #fff; }
+.kompass button.aktiv, .ebene button.aktiv, .ladung button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kompass button:disabled, .ebene button:disabled, .ladung button:disabled { cursor: default; }
 .kompass .mitte { display: flex; gap: 0.2rem; }
-.kompass .mitte button { flex: 1; font-size: 1.6rem; font-family: 'Segoe UI Symbol', 'Cambria Math', var(--schrift); }
+.kompass .mitte button { flex: 1; }
+.kompass .mitte button svg { width: 22px; height: 22px; }
 .ebene { display: flex; flex-direction: column; gap: 0.35rem; }
-.ebene button { font-size: 0.95rem; padding: 0.3rem 0.9rem; align-self: flex-start; }
+.ebene button { padding: 0.3rem 0.8rem; min-height: 2.6rem; align-self: flex-start; }
 .aktionen { display: flex; flex-direction: column; gap: 0.4rem; }
 button.haupt {
 	font: inherit; font-size: 1.05rem; font-weight: bold; padding: 0.4rem 1.5rem;
@@ -180,16 +183,42 @@ p { margin: 0 0 0.5rem; }
 [hidden] { display: none !important; }
 
 .ladung { display: flex; gap: 0.5rem; }
-.ladung button {
-	font: inherit; font-size: 1.05rem; padding: 0.45rem 1.2rem; border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: #fff; color: #111; cursor: pointer;
-}
-.ladung button.aktiv { background: var(--blue-frame); color: #fff; }
+.ladung button { width: 3.6rem; height: 3.2rem; }
 .haken { display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
 .haken input { accent-color: var(--blue-frame); width: 1.05em; height: 1.05em; }
 .zeit { font-variant-numeric: tabular-nums; color: #333; }
-.bildleiste { display: flex; justify-content: flex-end; margin-top: 0.45rem; }
 button.haupt.klein { font-size: 0.95rem; padding: 0.3rem 1rem; }
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } table.mess { font-size: 0.82rem; } table.mess th, table.mess td { padding: 0.15rem 0.35rem; } }
+
+.kn button.aus-an.aktiv { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn .anzeige-wert { font-variant-numeric: tabular-nums; min-width: 4.5em; min-height: 2.5rem; display: inline-flex; align-items: center; }
+.kn .wert { min-width: 4.6em; text-align: left; }
+.ziehhinweis { color: #777; font-size: 0.82rem; margin-top: 0.25rem; }
 </style>
 </head>
 <body>
@@ -213,35 +242,35 @@ button.haupt.klein { font-size: 0.95rem; padding: 0.3rem 1rem; }
 		<div class="tcb-title">Trainer: Richtung der Lorentzkraft</div>
 		<div class="tcb-body">
 			<p class="aufgabe-text" id="aufgabe-text"></p>
-			<canvas id="sim-canvas" class="sim"></canvas>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
 
 			<div class="antwortbereich">
 				<div class="kompass" id="kompass">
-					<button data-antwort="135" title="nach links oben">↖</button>
-					<button data-antwort="90" title="nach oben">↑</button>
-					<button data-antwort="45" title="nach rechts oben">↗</button>
-					<button data-antwort="180" title="nach links">←</button>
+					<button data-antwort="135" type="button" title="nach links oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-135 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="90" type="button" title="nach oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-90 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="45" type="button" title="nach rechts oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-45 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="180" type="button" title="nach links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-180 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
 					<div class="mitte">
-						<button data-antwort="aus" title="aus der Zeichenebene heraus">⊙</button>
-						<button data-antwort="ein" title="in die Zeichenebene hinein">⊗</button>
+						<button data-antwort="aus" type="button" title="aus der Zeichenebene heraus" aria-label="aus der Zeichenebene heraus"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.8" fill="currentColor"/></svg></button>
+						<button data-antwort="ein" type="button" title="in die Zeichenebene hinein" aria-label="in die Zeichenebene hinein"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.4 7.4l9.2 9.2M7.4 16.6l9.2-9.2" stroke="currentColor" stroke-width="2"/></svg></button>
 					</div>
-					<button data-antwort="0" title="nach rechts">→</button>
-					<button data-antwort="225" title="nach links unten">↙</button>
-					<button data-antwort="270" title="nach unten">↓</button>
-					<button data-antwort="315" title="nach rechts unten">↘</button>
+					<button data-antwort="0" type="button" title="nach rechts"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(0 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="225" type="button" title="nach links unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-225 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="270" type="button" title="nach unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-270 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
+					<button data-antwort="315" type="button" title="nach rechts unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-315 12 12)"><path d="M3.5 10.3h10.5V5.5l7.5 6.5-7.5 6.5v-4.8H3.5z" fill="currentColor"/></g></svg></button>
 				</div>
 				<div class="ebene" id="ebene">
-					<span class="zaehler" id="ebene-hinweis">Mitte: ⊙ aus der Zeichenebene heraus, ⊗ in sie hinein</span>
-					<button data-antwort="null" id="btn-keine">keine Kraft</button>
+					<span class="zaehler" id="ebene-hinweis">Mitte: <svg width="16" height="16" style="vertical-align:-3px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.8" fill="currentColor"/></svg> aus der Zeichenebene heraus, <svg width="16" height="16" style="vertical-align:-3px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7.4 7.4l9.2 9.2M7.4 16.6l9.2-9.2" stroke="currentColor" stroke-width="2"/></svg> in sie hinein</span>
+					<button data-antwort="null" id="btn-keine" type="button" title="keine Kraft" aria-label="keine Kraft"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><path d="M3 10.6h16V6l8 6-8 6v-4.6H3z" fill="#D00000"/><path d="M5 21L25 3" stroke="#fff" stroke-width="4.5"/><path d="M5 21L25 3" stroke="#222" stroke-width="2.2" stroke-linecap="round"/></svg><span><i class="gr">F</i>&nbsp;=&nbsp;0</span></button>
 				</div>
 				<div class="ladung" id="ladung" hidden>
-					<button data-antwort="+">positiv</button>
-					<button data-antwort="-">negativ</button>
+					<button data-antwort="+" type="button" title="positiv geladen" aria-label="positiv geladen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11" fill="#fde3e3" stroke="#BF0000" stroke-width="2.2"/><path d="M9 14h10" stroke="#BF0000" stroke-width="2.6" stroke-linecap="round"/><path d="M14 9v10" stroke="#BF0000" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+					<button data-antwort="-" type="button" title="negativ geladen" aria-label="negativ geladen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11" fill="#e9e9e9" stroke="#111" stroke-width="2.2"/><path d="M9 14h10" stroke="#111" stroke-width="2.6" stroke-linecap="round"/></svg></button>
 				</div>
-				<div class="aktionen">
-					<button class="haupt" id="btn-pruefen" disabled>Prüfen</button>
-					<span class="knopfleiste"><button id="btn-neu">Neue Aufgabe</button></span>
-					<span class="knopfleiste klein"><button id="btn-loesung">Lösung zeigen</button></span>
+				<div class="gruppen">
+					<div class="gr"><div class="gt">Prüfen</div><div class="kn"><button class="haupt" id="btn-pruefen" type="button" disabled title="Prüfen" aria-label="Prüfen"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></button></div></div>
+					<div class="gr"><div class="gt">Neue Aufgabe</div><div class="kn"><button class="dunkel" id="btn-neu" type="button" title="Neue Aufgabe" aria-label="Neue Aufgabe"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button></div></div>
+					<div class="gr"><div class="gt">Lösung</div><div class="kn"><button id="btn-loesung" type="button" title="Lösung zeigen" aria-label="Lösung zeigen"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button></div></div>
 				</div>
 			</div>
 			<div class="rueckmeldung" id="rueckmeldung"></div>
@@ -419,6 +448,67 @@ window.SimKit = (function () {
 const K = window.SimKit;
 
 /* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	schritt: '<path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>',
+	anfang: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>',
+	pruefen: '<path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
+	weiter: '<path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>',
+	auge: '<path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+
+
+/* ==========================================================================
    Richtungen: Winkel in Grad in der Zeichenebene (0 = nach rechts, 90 = nach oben)
    oder "aus" bzw. "ein" senkrecht zur Zeichenebene; für die Kraft auch "null"
    ========================================================================== */
@@ -566,7 +656,7 @@ function zeichneFeld(richtung, frei) {
 		for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) {
 			const x = rx + d * (i + 0.5), y = ry + d * (j + 0.5);
 			if (frei.some(f => abstandStrecke(x, y, f) < f[4] + d * 0.17)) continue;
-			if (y < ry + d && (x > rx + rb - d || x < rx + d)) continue;   /* Ecken für die Beschriftungen */
+			if (y < ry + d && (x > rx + rb - d || x < rx + (W < 560 ? 2 : 1) * d)) continue;   /* Ecken für die Beschriftungen */
 			symbol(x, y, d * 0.16, richtung, BLAU, 1.6);
 		}
 	} else if (richtung !== "leer") {
@@ -742,6 +832,10 @@ document.getElementById("modusleiste").addEventListener("click", ev => {
 	document.querySelectorAll("#modusleiste button").forEach(x => x.classList.toggle("aktiv", x === b));
 	neueAufgabe();
 });
+
+const NAMEN_GESUCHT = { F: "Kraft", q: "Ladung", B: "Feldrichtung", v: "Bewegungsrichtung" };
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
+	() => "Lorentzkraft_" + NAMEN_GESUCHT[zustand.gesucht] + "_gesucht" + (zustand.zeigeLoesung || zustand.geloest ? "_Loesung" : ""));
 
 function layout() {
 	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 0.9 : 0.6));
