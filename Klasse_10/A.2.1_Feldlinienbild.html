@@ -164,10 +164,38 @@ button.weiter-gross, button.haupt {
 }
 button.weiter-gross[disabled] { opacity: 0.4; cursor: default; }
 .knopfleiste.klein button { font-size: 0.85rem; padding: 0.2rem 0.55rem; border-color: #999; color: #666; }
-.bildknopf { display: flex; justify-content: flex-end; margin-top: 0.4rem; }
 .fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
 p { margin: 0 0 0.5rem; }
 [hidden] { display: none !important; }
+
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover:not(:disabled) { background: #eaeaea; }
+.kn button.aktiv, .kn button.aktiv:hover { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover:not(:disabled) { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt:hover:not(:disabled) { background: #00009A; }
+.kn button.haupt.an, .kn button.haupt.an:hover { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.leise { background: #fff; border-color: #ccc; color: #777; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn input[type="range"] { min-width: 120px; }
+.kn .wert { min-width: 3.4em; text-align: left; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } }
 </style>
 </head>
 <body>
@@ -187,47 +215,26 @@ p { margin: 0 0 0.5rem; }
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Warum wirkt eine Kraft auf den Leiter?</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
-			<div class="bildknopf"><span class="knopfleiste"><button id="btn-bild">Feldlinienbild herunterladen</button></span></div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
 
 			<div data-st="schritte">
 				<div class="schrittkasten"><span class="schrittnr" id="schritt-nr"></span><span id="schritt-text"></span></div>
-				<div class="weiterleiste">
-					<button class="weiter-gross" id="btn-weiter">Weiter</button>
-					<span class="knopfleiste klein"><button id="btn-vorne">Von vorne</button></span>
+				<div class="gruppen">
+					<div class="gr" ><div class="gt">Schritte</div><div class="kn" ><button id="btn-zurueck" title="einen Schritt zurück" aria-label="einen Schritt zurück"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button><button id="btn-weiter" class="haupt" title="Weiter" aria-label="Weiter"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button></div></div>
 				</div>
 			</div>
 
-			<div class="steuerung" data-st="frei">
-				<div class="zeile">
-					<span class="gruppe">Anzeigen</span>
-					<span class="knopfleiste" id="anzeige-knoepfe">
-						<button data-wert="magnet">Feld des Magneten</button>
-						<button data-wert="leiter">Feld des Leiters</button>
-						<button data-wert="gesamt" class="aktiv">Überlagerung</button>
-					</span>
-					<label class="haken"><input type="checkbox" id="zeige-f" checked><span>Kraftpfeil</span></label>
+			<div data-st="frei">
+				<div class="gruppen">
+					<div class="gr" ><div class="gt">Feldlinien</div><div class="kn" id="anzeige-knoepfe"><button data-wert="magnet" title="Feld des Magneten" aria-label="Feld des Magneten"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><rect x="1" y="1" width="28" height="3.5" fill="#00913F"/><rect x="1" y="19.5" width="28" height="3.5" fill="#D72823"/><path d="M7 19V5M15 19V5M23 19V5" stroke="#0000BF" stroke-width="1.5"/></svg></button><button data-wert="leiter" title="Feld des Leiters" aria-label="Feld des Leiters"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><circle cx="15" cy="12" r="5.5" fill="none" stroke="#0000BF" stroke-width="1.5"/><circle cx="15" cy="12" r="9.5" fill="none" stroke="#0000BF" stroke-width="1.5"/><circle cx="15" cy="12" r="2.4" fill="#fff" stroke="#111" stroke-width="1.2"/><circle cx="15" cy="12" r="0.8" fill="#111"/></svg></button><button data-wert="gesamt" class="aktiv" title="Überlagerung beider Felder" aria-label="Überlagerung beider Felder"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><rect x="1" y="1" width="28" height="3.5" fill="#00913F"/><rect x="1" y="19.5" width="28" height="3.5" fill="#D72823"/><path d="M4 19V5M8 19C8 15 7.5 9 8 5M21 19C27.5 15 27.5 9 21 5" fill="none" stroke="#0000BF" stroke-width="1.5"/><circle cx="15" cy="12" r="4.6" fill="none" stroke="#0000BF" stroke-width="1.5"/><circle cx="15" cy="12" r="2.4" fill="#fff" stroke="#111" stroke-width="1.2"/><circle cx="15" cy="12" r="0.8" fill="#111"/></svg></button></div></div>
+					<div class="gr" ><div class="gt">Kraft</div><div class="kn" ><button id="zeige-f" class="aktiv" title="Kraftpfeil zeigen" aria-label="Kraftpfeil zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 11h12" stroke="#BF0000" stroke-width="2.6"/><path d="M20 11l-7-4.5v9z" fill="#BF0000"/><text x="25" y="16.5" font-size="15" font-style="italic" font-weight="bold" fill="#BF0000" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">F</text></svg></button></div></div>
+					<div class="gr" ><div class="gt">Stromrichtung</div><div class="kn" ><button id="btn-strom" title="Strom umkehren" aria-label="Strom umkehren"><svg width="34" height="22" viewBox="0 0 34 22" aria-hidden="true"><circle cx="6" cy="11" r="5" fill="#fff" stroke="#111" stroke-width="1.5"/><circle cx="6" cy="11" r="1.5" fill="#111"/><circle cx="28" cy="11" r="5" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M24.5 7.5l7 7M31.5 7.5l-7 7" stroke="#111" stroke-width="1.5"/><path d="M13 8h6" stroke="currentColor" stroke-width="1.6"/><path d="M21.5 8l-3.5-2.4v4.8z" fill="currentColor"/><path d="M15 14h6" stroke="currentColor" stroke-width="1.6"/><path d="M12.5 14l3.5-2.4v4.8z" fill="currentColor"/></svg></button></div></div>
+					<div class="gr" ><div class="gt">Magnet</div><div class="kn" ><button id="btn-magnet" title="Magnet umdrehen" aria-label="Magnet umdrehen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="3" y="12" width="12" height="9" fill="#D72823"/><rect x="15" y="12" width="12" height="9" fill="#00913F"/><text x="9" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">N</text><text x="21" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">S</text><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button></div></div>
+					<div class="gr" ><div class="gt">Stromstärke</div><div class="kn" ><input type="range" id="regler-i" min="0" max="3" step="0.1" value="1.5" aria-label="Stromstärke"><span class="wert" id="wert-i"></span></div></div>
+					<div class="gr" ><div class="gt">Stärke des Magneten</div><div class="kn" ><input type="range" id="regler-b" min="0.5" max="2" step="0.1" value="1" aria-label="Stärke des Magneten"><span class="wert" id="wert-b"></span></div></div>
 				</div>
-				<div class="zeile">
-					<span class="gruppe">Richtungen</span>
-					<span class="knopfleiste">
-						<button id="btn-strom">Strom umkehren</button>
-						<button id="btn-magnet">Magnet umdrehen</button>
-					</span>
-				</div>
-				<div class="zeile">
-					<label for="regler-i">Stromstärke</label>
-					<input type="range" id="regler-i" min="0" max="3" step="0.1" value="1.5">
-					<span class="wert" id="wert-i"></span>
-				</div>
-				<div class="zeile">
-					<label for="regler-b">Stärke des Magneten</label>
-					<input type="range" id="regler-b" min="0.5" max="2" step="0.1" value="1">
-					<span class="wert" id="wert-b"></span>
-				</div>
-				<div class="zeile">
-					<span>Kraft auf den Leiter (relativ): <b id="anz-f" style="color:#BF0000"></b></span>
-					<span class="knopfleiste klein" style="margin-left:auto"><button id="btn-standard">Standardwerte</button></span>
+				<div class="steuerung">
+					<div class="zeile"><span>Kraft auf den Leiter (relativ): <b id="anz-f" style="color:#BF0000"></b></span></div>
 				</div>
 			</div>
 			<p class="fussnote">Schematisch: Feldlinien in der Ebene senkrecht zum Leiter. Dichte Feldlinien bedeuten ein starkes Feld.</p>
@@ -400,6 +407,89 @@ window.SimKit = (function () {
 const K = window.SimKit;
 
 /* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+/* Modus per Link: ?modus=a,b zeigt nur diese Modi, bei genau einem verschwindet die Modusleiste */
+function modusAusLink(standard) {
+	const leiste = document.getElementById("modusleiste");
+	const alle = [...leiste.querySelectorAll("[data-modus]")].map(b => b.dataset.modus);
+	const wunsch = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => alle.includes(m));
+	if (wunsch.length) {
+		leiste.querySelectorAll("[data-modus]").forEach(b => { b.hidden = !wunsch.includes(b.dataset.modus); });
+		if (wunsch.length === 1) leiste.hidden = true;
+	}
+	const m = wunsch[0] || standard;
+	leiste.querySelectorAll("[data-modus]").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
+	return m;
+}
+
+/* ==========================================================================
    Zustand (relative Einheiten, Längen in Zeichnungseinheiten)
    Feld des Magneten: homogen mit Betrag b, nach oben (N unten) oder unten
    Feld des Leiters: k/r, kreisförmig; k > 0 für Strom aus der Zeichenebene (⊙),
@@ -498,6 +588,7 @@ let W = 740, H = 470, s = 50, ox = 0, oy = 0;
 const BLAU = "#0000BF", ROT_F = "#BF0000", NORD = "rgb(215,40,35)", SUED = "rgb(0,145,65)";
 function schrift() { return getComputedStyle(document.body).fontFamily; }
 function Q(x, y) { return [ox + x * s, oy - y * s]; }
+function balken() { return Math.max(s * 0.55, 15); }   /* Dicke der Polbalken, am Handy nicht zu dünn */
 
 function pfeilspitze(x, y, ux, uy, g, farbe) {
 	ctx.fillStyle = farbe;
@@ -523,7 +614,7 @@ function zeichneLinie(linie, farbe) {
 }
 function polbalken() {
 	const [l, o] = [Q(-X, -Y), Q(X, Y)];
-	const d = s * 0.55;
+	const d = balken();
 	const unten = zustand.nordUnten ? NORD : SUED, oben = zustand.nordUnten ? SUED : NORD;
 	/* Polbalken am oberen und unteren Rand des Feldbereichs, innerhalb der Zeichenfläche */
 	ctx.fillStyle = unten; ctx.fillRect(l[0], l[1] - d, o[0] - l[0], d);
@@ -558,7 +649,7 @@ function zeichne(c) {
 	polbalken();
 	ctx.save();
 	const [l, o] = [Q(-X, -Y), Q(X, Y)];
-	ctx.beginPath(); ctx.rect(l[0], o[1] + s * 0.55, o[0] - l[0], l[1] - o[1] - s * 1.1); ctx.clip();
+	ctx.beginPath(); ctx.rect(l[0], o[1] + balken(), o[0] - l[0], l[1] - o[1] - 2 * balken()); ctx.clip();
 	feldlinien(v.art).forEach(li => zeichneLinie(li, BLAU));
 	ctx.restore();
 	if (v.art !== "magnet") leiter();   /* beim Feld des Magneten allein ist noch kein Leiter im Spiel */
@@ -566,14 +657,16 @@ function zeichne(c) {
 	if (v.dicht && Math.abs(kk) > 0.05) {
 		const [bx, by] = b0(), b = zustand.b;
 		const ex = -by / b * Math.sign(kk), ey = bx / b * Math.sign(kk);   /* Richtung zur schwachen Seite */
-		const a = Q(ex * 3.6, ey * 3.6 + 1.2), c2 = Q(-ex * 3.6, -ey * 3.6 + 1.2);
+		const sx = W < 560 ? 5.0 : 3.6, sy = W < 560 ? 2.2 : 1.2;   /* am Handy weiter nach außen, weg vom Kraftpfeil */
+		const a = Q(ex * sx, ey * sx + sy), c2 = Q(-ex * sx, -ey * sx + sy);
 		/* auf weißem Schild, damit die dichten Feldlinien die Schrift nicht stören */
 		[["Feld schwach", a], ["Feld stark", c2]].forEach(([t, p]) => {
-			ctx.font = Math.round(s * 0.34) + "px " + schrift();
-			const bt = ctx.measureText(t).width + 12, ht = s * 0.34 + 8;
+			const gs = Math.round(Math.max(12, s * 0.34));
+			ctx.font = gs + "px " + schrift();
+			const bt = ctx.measureText(t).width + 12, ht = gs + 8;
 			ctx.fillStyle = "rgba(255,255,255,0.92)"; ctx.fillRect(p[0] - bt / 2, p[1] - ht / 2, bt, ht);
 			ctx.strokeStyle = "#bbb"; ctx.lineWidth = 1; ctx.strokeRect(p[0] - bt / 2, p[1] - ht / 2, bt, ht);
-			beschrift(t, p[0], p[1], "#444", Math.round(s * 0.34), false);
+			beschrift(t, p[0], p[1], "#444", gs, false);
 		});
 		if (v.kraft) {
 			/* Pfeillänge proportional zu Stromstärke mal Stärke des Magneten (F = B·I·l) */
@@ -585,7 +678,7 @@ function zeichne(c) {
 			ctx.strokeStyle = ROT_F; ctx.lineWidth = 4.5;
 			ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0] - lx / ll * 10, p1[1] - ly / ll * 10); ctx.stroke();
 			pfeilspitze(p1[0] - lx / ll * 6, p1[1] - ly / ll * 6, lx / ll, ly / ll, 13, ROT_F);
-			beschrift("F", p1[0] + ey * 0 + lx / ll * 18, p1[1] - 18, ROT_F, Math.round(s * 0.45), true);
+			beschrift("F", p1[0] + ey * 0 + lx / ll * 18, p1[1] - 18, ROT_F, Math.round(Math.max(16, s * 0.45)), true);
 		}
 	}
 }
@@ -604,6 +697,10 @@ function aktualisiere() {
 	document.getElementById("schritt-nr").textContent = "Schritt " + zustand.schritt + " von 4:";
 	document.getElementById("schritt-text").textContent = SCHRITTE[zustand.schritt - 1];
 	document.getElementById("btn-weiter").disabled = zustand.schritt >= 4;
+	document.getElementById("btn-zurueck").disabled = zustand.schritt <= 1;
+	const kraftKnopf = document.getElementById("zeige-f");
+	kraftKnopf.classList.toggle("aktiv", zustand.zeigeF); kraftKnopf.setAttribute("aria-pressed", zustand.zeigeF);
+	kraftKnopf.disabled = zustand.anzeige !== "gesamt";
 	document.getElementById("wert-i").textContent = K.de(zustand.staerkeI, 1);
 	document.getElementById("wert-b").textContent = K.de(zustand.b, 1);
 	document.getElementById("anz-f").textContent = K.de(zustand.staerkeI * zustand.b, 2);
@@ -617,45 +714,28 @@ document.getElementById("modusleiste").addEventListener("click", ev => {
 	aktualisiere();
 });
 document.getElementById("btn-weiter").addEventListener("click", () => { if (zustand.schritt < 4) zustand.schritt++; aktualisiere(); });
-document.getElementById("btn-vorne").addEventListener("click", () => { zustand.schritt = 1; aktualisiere(); });
+document.getElementById("btn-zurueck").addEventListener("click", () => { if (zustand.schritt > 1) zustand.schritt--; aktualisiere(); });
 K.bindeKnopfgruppe("anzeige-knoepfe", w => zustand.anzeige = w, aktualisiere);
-document.getElementById("zeige-f").addEventListener("change", e => { zustand.zeigeF = e.target.checked; aktualisiere(); });
+document.getElementById("zeige-f").addEventListener("click", () => { zustand.zeigeF = !zustand.zeigeF; aktualisiere(); });
 document.getElementById("btn-strom").addEventListener("click", () => { zustand.stromAus = !zustand.stromAus; aktualisiere(); });
 document.getElementById("btn-magnet").addEventListener("click", () => { zustand.nordUnten = !zustand.nordUnten; aktualisiere(); });
 K.bindeSlider("regler-i", null, "", v => zustand.staerkeI = v, aktualisiere);
 K.bindeSlider("regler-b", null, "", v => zustand.b = v, aktualisiere);
-document.getElementById("btn-standard").addEventListener("click", () => {
-	Object.assign(zustand, { staerkeI: 1.5, b: 1, stromAus: true, nordUnten: true, anzeige: "gesamt", zeigeF: true });
-	document.getElementById("regler-i").value = 1.5; document.getElementById("regler-b").value = 1;
-	document.getElementById("zeige-f").checked = true;
+/* Bildleiste unter dem Bild (oben liegt der Polbalken); Zurücksetzen: Schritt 1 bzw. Standardwerte */
+const zurueckKnopf = symbolKnopf("zurueck", "Zurücksetzen", () => {
+	if (zustand.modus === "schritte") zustand.schritt = 1;
+	else {
+		Object.assign(zustand, { staerkeI: 1.5, b: 1, stromAus: true, nordUnten: true, anzeige: "gesamt", zeigeF: true });
+		document.getElementById("regler-i").value = 1.5; document.getElementById("regler-b").value = 1;
+	}
 	aktualisiere();
 });
-
-/* Bild mit Beschriftung der Einstellungen herunterladen (Tablet: Teilen-Menü) */
-document.getElementById("btn-bild").addEventListener("click", () => {
-	const dpr = canvas.width / W, rand = 46;
-	const bild = document.createElement("canvas");
-	bild.width = canvas.width; bild.height = canvas.height + Math.round(rand * dpr);
-	const c = bild.getContext("2d");
-	c.fillStyle = "#fff"; c.fillRect(0, 0, bild.width, bild.height);
-	c.drawImage(canvas, 0, 0);
+const leiste = bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas), () => {
 	const v = sicht();
-	const name = { magnet: "Feld des Magneten", leiter: "Feld des Leiters", gesamt: "Überlagerung beider Felder" }[v.art];
-	c.fillStyle = "#111"; c.font = Math.round(14 * dpr) + "px " + schrift(); c.textBaseline = "middle";
-	c.fillText(name + "; Strom " + (zustand.stromAus ? "aus der Zeichenebene heraus" : "in die Zeichenebene hinein") + ", Nordpol " + (zustand.nordUnten ? "unten" : "oben") + "; Stromstärke " + K.de(zustand.staerkeI, 1) + ", Magnet " + K.de(zustand.b, 1) + " (relativ)", 12 * dpr, canvas.height + rand * dpr / 2);
-	const datei = "Feldlinienbild_" + (v.art === "gesamt" ? "Ueberlagerung" : v.art === "magnet" ? "Magnet" : "Leiter") + "_Strom_" + (zustand.stromAus ? "aus" : "ein") + ".png";
-	bild.toBlob(blob => {
-		const f = new File([blob], datei, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [f] }) && /Android|iPad|iPhone|Tablet/i.test(navigator.userAgent)) {
-			navigator.share({ files: [f], title: "Feldlinienbild" }).catch(() => {});
-		} else {
-			const a = document.createElement("a");
-			a.href = URL.createObjectURL(blob); a.download = datei;
-			document.body.appendChild(a); a.click(); a.remove();
-			setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-		}
-	});
-});
+	return "Feldlinienbild_" + (v.art === "gesamt" ? "Ueberlagerung" : v.art === "magnet" ? "Magnet" : "Leiter")
+		+ "_Strom_" + (zustand.stromAus ? "aus_der_Ebene" : "in_die_Ebene") + "_Nordpol_" + (zustand.nordUnten ? "unten" : "oben");
+}, [zurueckKnopf]);
+leiste.classList.add("unten"); leiste.style.justifyContent = "flex-end";
 
 function layout() {
 	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 0.8 : 0.62));
@@ -664,6 +744,7 @@ function layout() {
 	zeichne();
 }
 window.addEventListener("resize", layout);
+zustand.modus = modusAusLink("schritte");
 layout();
 aktualisiere();
 K.nachFontLaden(zeichne);

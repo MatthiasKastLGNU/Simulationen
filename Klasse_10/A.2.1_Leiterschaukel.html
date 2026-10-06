@@ -174,6 +174,35 @@ table.mess tbody tr:last-child td { border-bottom: 1.5px solid #111; }
 .fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
 p { margin: 0 0 0.5rem; }
 [hidden] { display: none !important; }
+
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover:not(:disabled) { background: #eaeaea; }
+.kn button.aktiv, .kn button.aktiv:hover { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover:not(:disabled) { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt:hover:not(:disabled) { background: #00009A; }
+.kn button.haupt.an, .kn button.haupt.an:hover { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.leise { background: #fff; border-color: #ccc; color: #777; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn input[type="range"] { min-width: 120px; }
+.kn .wert { min-width: 3.4em; text-align: left; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } }
 </style>
 </head>
 <body>
@@ -195,67 +224,24 @@ p { margin: 0 0 0.5rem; }
 	<div class="tcb blau">
 		<div class="tcb-title" id="box-titel">Simulation: Leiterschaukel</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+
+			<div class="gruppen">
+				<div class="gr" data-st="vorhersage"><div class="gt">Deine Vorhersage</div><div class="kn" id="vorhersage-knoepfe"><button data-wert="vorne" title="nach vorne (aus dem Magneten heraus)" aria-label="nach vorne (aus dem Magneten heraus)"><svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true"><rect x="19" y="2" width="12" height="5.5" fill="#00913F"/><rect x="19" y="10.5" width="12" height="5.5" fill="#D72823"/><rect x="28" y="2" width="3" height="14" fill="#8a8f96"/><path d="M16 11 L6.6 19.1" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M2 23 L8.6 21.5 L4.5 16.7z" fill="currentColor"/></svg>vorne</button><button data-wert="hinten" title="nach hinten (in den Magneten hinein)" aria-label="nach hinten (in den Magneten hinein)"><svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true"><rect x="19" y="2" width="12" height="5.5" fill="#00913F"/><rect x="19" y="10.5" width="12" height="5.5" fill="#D72823"/><rect x="28" y="2" width="3" height="14" fill="#8a8f96"/><path d="M4 21 L15.2 12.6" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M20 9 L17.1 15.2 L13.3 10z" fill="currentColor"/></svg>hinten</button></div></div>
+				<div class="gr" data-st="vorhersage staerke frei"><div class="gt">Strom</div><div class="kn" ><button class="haupt" id="btn-strom" title="Strom ein- und ausschalten" aria-label="Strom ein- und ausschalten"><svg width="18" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2v11h3v9l7-12h-4l4-8z"/></svg><span id="strom-text" style="min-width:1.7em">aus</span></button></div></div>
+				<div class="gr" data-st="vorhersage"><div class="gt">Neue Situation</div><div class="kn" ><button id="btn-neu" class="dunkel" title="Neue Situation" aria-label="Neue Situation"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/></svg></button></div></div>
+				<div class="gr" data-st="staerke frei winkel"><div class="gt">Richtungen</div><div class="kn" ><button id="btn-umpolen" data-st="staerke frei" title="Umpolen" aria-label="Umpolen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 16h8M6 12v8" stroke="#BF0000" stroke-width="2.6"/><path d="M20 16h8" stroke="#0000BF" stroke-width="2.6"/><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button><button id="btn-umpolen-w" data-st="winkel" title="Umpolen" aria-label="Umpolen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 16h8M6 12v8" stroke="#BF0000" stroke-width="2.6"/><path d="M20 16h8" stroke="#0000BF" stroke-width="2.6"/><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button><button id="btn-umdrehen" data-st="staerke frei" title="Magnet umdrehen" aria-label="Magnet umdrehen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="3" y="12" width="12" height="9" fill="#D72823"/><rect x="15" y="12" width="12" height="9" fill="#00913F"/><text x="9" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">N</text><text x="21" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">S</text><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button></div></div>
+				<div class="gr" data-st="staerke frei"><div class="gt">Stromstärke <i class="gr">I</i></div><div class="kn" ><input type="range" id="regler-i" min="0" max="5" step="0.1" value="3" aria-label="Stromstärke"><span class="wert" id="wert-i"></span></div></div>
+				<div class="gr" data-st="staerke frei"><div class="gt">Stärke des Magneten</div><div class="kn" id="staerke-knoepfe"><button data-wert="schwach" title="schwacher Magnet" aria-label="schwacher Magnet"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 18.5h5" stroke="#0000BF" stroke-width="1.3"/></svg></button><button data-wert="mittel" class="aktiv" title="mittlerer Magnet" aria-label="mittlerer Magnet"><svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 17h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 20h5" stroke="#0000BF" stroke-width="1.3"/></svg></button><button data-wert="stark" title="starker Magnet" aria-label="starker Magnet"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 16h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 18.5h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 21h5" stroke="#0000BF" stroke-width="1.3"/></svg></button></div></div>
+				<div class="gr" data-st="staerke frei"><div class="gt">Anzahl der Magnete</div><div class="kn" id="anzahl-knoepfe"><button data-wert="1" class="aktiv" title="1 Magnet" aria-label="1 Magnet"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="11.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button><button data-wert="2" title="2 Magnete" aria-label="2 Magnete"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="7.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="7.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="15.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="15.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button><button data-wert="3" title="3 Magnete" aria-label="3 Magnete"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="3.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="3.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="19.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="19.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button></div></div>
+				<div class="gr" data-st="winkel"><div class="gt">Winkel <i class="gr">α</i> zwischen Leiter und Feld</div><div class="kn" ><input type="range" id="regler-alpha" min="0" max="180" step="1" value="90" aria-label="Winkel zwischen Leiter und Feld"><span class="wert" id="wert-alpha"></span></div></div>
+				<div class="gr" data-st="winkel"><div class="gt">Winkel wählen</div><div class="kn" ><button data-alpha="0" title="Winkel 0°" aria-label="Winkel 0°">0°</button><button data-alpha="30" title="Winkel 30°" aria-label="Winkel 30°">30°</button><button data-alpha="60" title="Winkel 60°" aria-label="Winkel 60°">60°</button><button data-alpha="90" title="Winkel 90°" aria-label="Winkel 90°">90°</button></div></div>
+				<div class="gr" data-st="vorhersage staerke frei"><div class="gt">Anzeigen</div><div class="kn" ><button id="zeige-i" title="Stromrichtung zeigen" aria-label="Stromrichtung zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 11h12" stroke="#111" stroke-width="2.6"/><path d="M20 11l-7-4.5v9z" fill="#111"/><text x="25" y="16.5" font-size="15" font-style="italic" font-weight="bold" fill="#111" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">I</text></svg></button><button id="zeige-b" title="Feldrichtung zeigen" aria-label="Feldrichtung zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 11h12" stroke="#0000BF" stroke-width="2.6"/><path d="M20 11l-7-4.5v9z" fill="#0000BF"/><text x="25" y="16.5" font-size="15" font-style="italic" font-weight="bold" fill="#0000BF" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">B</text></svg></button><button id="zeige-f" data-st="staerke frei" title="Kraftpfeil zeigen" aria-label="Kraftpfeil zeigen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 11h12" stroke="#BF0000" stroke-width="2.6"/><path d="M20 11l-7-4.5v9z" fill="#BF0000"/><text x="25" y="16.5" font-size="15" font-style="italic" font-weight="bold" fill="#BF0000" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">F</text></svg></button></div></div>
+			</div>
 
 			<div class="steuerung">
-				<div class="zeile" data-st="vorhersage">
-					<span class="gruppe">Deine Vorhersage</span>
-					<span class="knopfleiste" id="vorhersage-knoepfe">
-						<button data-wert="vorne">nach vorne (aus dem Magneten heraus)</button>
-						<button data-wert="hinten">nach hinten (in den Magneten hinein)</button>
-					</span>
-				</div>
-				<div class="zeile" data-st="vorhersage staerke frei">
-					<button class="haupt" id="btn-strom">Strom einschalten</button>
-					<span class="knopfleiste" data-st="staerke frei">
-						<button id="btn-umpolen">Umpolen</button>
-						<button id="btn-umdrehen">Magnet umdrehen</button>
-					</span>
-					<span class="knopfleiste klein" data-st="vorhersage" style="margin-left:auto">
-						<button id="btn-neu">Neue Situation</button>
-					</span>
-				</div>
 				<div class="rueckmeldung" id="rueckmeldung" data-st="vorhersage"></div>
 				<div class="werte" data-st="vorhersage"><span id="anz-zaehler"></span></div>
-
-				<div class="zeile" data-st="staerke frei">
-					<label for="regler-i">Stromstärke <i class="gr">I</i></label>
-					<input type="range" id="regler-i" min="0" max="5" step="0.1" value="3">
-					<span class="wert" id="wert-i"></span>
-				</div>
-				<div class="zeile" data-st="staerke frei">
-					<span class="gruppe">Stärke des Magneten</span>
-					<span class="knopfleiste" id="staerke-knoepfe">
-						<button data-wert="schwach">schwach</button>
-						<button data-wert="mittel" class="aktiv">mittel</button>
-						<button data-wert="stark">stark</button>
-					</span>
-				</div>
-				<div class="zeile" data-st="staerke frei">
-					<span class="gruppe">Anzahl der Magnete</span>
-					<span class="knopfleiste" id="anzahl-knoepfe">
-						<button data-wert="1" class="aktiv">1</button>
-						<button data-wert="2">2</button>
-						<button data-wert="3">3</button>
-					</span>
-				</div>
-
-				<div class="zeile" data-st="winkel">
-					<label for="regler-alpha">Winkel <i class="gr">α</i> zwischen Leiter und Feld</label>
-					<input type="range" id="regler-alpha" min="0" max="180" step="1" value="90">
-					<span class="wert" id="wert-alpha"></span>
-				</div>
-				<div class="zeile" data-st="winkel">
-					<span class="knopfleiste"><button id="btn-umpolen-w">Umpolen</button></span>
-					<span class="knopfleiste klein"><button data-alpha="0">0°</button><button data-alpha="30">30°</button><button data-alpha="60">60°</button><button data-alpha="90">90°</button></span>
-				</div>
-
-				<div class="zeile" data-st="vorhersage staerke frei">
-					<span class="gruppe">Anzeigen</span>
-					<label class="haken"><input type="checkbox" id="zeige-i"><span>Stromrichtung</span></label>
-					<label class="haken"><input type="checkbox" id="zeige-b"><span>Feldrichtung</span></label>
-					<label class="haken" data-st="staerke frei"><input type="checkbox" id="zeige-f" checked><span>Kraftpfeil</span></label>
-				</div>
 
 				<div class="werte" data-st="staerke frei winkel">
 					<span>Kraft auf den Leiter: <span class="anzeige" id="anz-f" style="color:#BF0000"></span></span>
@@ -263,18 +249,13 @@ p { margin: 0 0 0.5rem; }
 				</div>
 
 				<div data-st="staerke">
-					<div class="zeile">
-						<span class="knopfleiste"><button id="btn-notieren">Messwert notieren</button></span>
-						<span class="knopfleiste klein"><button id="btn-leeren">Tabelle leeren</button></span>
+					<div class="kn"><button id="btn-notieren" title="Messwert in die Tabelle schreiben"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 4h18v4H3zM3 10h8v4H3zM3 16h8v4H3zM17 10h2v4h4v2h-4v4h-2v-4h-4v-2h4z"/></svg>Messwert notieren</button></div>
+					<div id="tabelle-leinwand" hidden>
+						<div style="overflow-x:auto"><table class="mess" id="tabelle">
+							<thead><tr><th>Nr.</th><th><i class="gr">I</i> in A</th><th>Magnet</th><th>Anzahl</th><th><i class="gr">F</i> in mN</th></tr></thead>
+							<tbody id="tabelle-body"></tbody>
+						</table></div>
 					</div>
-					<table class="mess" id="tabelle" hidden>
-						<thead><tr><th>Nr.</th><th><i class="gr">I</i> in A</th><th>Magnet</th><th>Anzahl</th><th><i class="gr">F</i> in mN</th></tr></thead>
-						<tbody id="tabelle-body"></tbody>
-					</table>
-				</div>
-
-				<div class="zeile" data-st="staerke frei winkel">
-					<span class="knopfleiste klein" style="margin-left:auto"><button id="btn-standard">Standardwerte</button></span>
 				</div>
 			</div>
 			<p class="fussnote" id="fussnote"></p>
@@ -445,6 +426,89 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+/* Modus per Link: ?modus=a,b zeigt nur diese Modi, bei genau einem verschwindet die Modusleiste */
+function modusAusLink(standard) {
+	const leiste = document.getElementById("modusleiste");
+	const alle = [...leiste.querySelectorAll("[data-modus]")].map(b => b.dataset.modus);
+	const wunsch = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => alle.includes(m));
+	if (wunsch.length) {
+		leiste.querySelectorAll("[data-modus]").forEach(b => { b.hidden = !wunsch.includes(b.dataset.modus); });
+		if (wunsch.length === 1) leiste.hidden = true;
+	}
+	const m = wunsch[0] || standard;
+	leiste.querySelectorAll("[data-modus]").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
+	return m;
+}
 
 /* ==========================================================================
    Zustand
@@ -697,7 +761,7 @@ function zeichneSchaukel() {
 	ctx.font = Math.round(Math.max(12, s * 0.24)) + "px " + schrift; ctx.fillStyle = "#555";
 	ctx.textAlign = "left"; ctx.textBaseline = "top";
 	if (zustand.phi <= PHI_MIN + 1e-4 && kraft() < 0) {
-		ctx.textAlign = "right"; ctx.fillText("Die Schaukel schlägt hinten am Magneten an.", W - 8, 8);
+		ctx.fillText("Die Schaukel schlägt hinten am Magneten an.", 8, 8);
 	}
 }
 
@@ -705,7 +769,7 @@ function zeichneSchaukel() {
 function zeichneDraufsicht() {
 	ctx.clearRect(0, 0, W, H);
 	const schrift = getComputedStyle(document.body).fontFamily;
-	const e = Math.min(W / 12, H / 9), mx = W / 2, my = H * 0.4;
+	const e = Math.min(W / 12, H / 10.2), mx = W / 2, my = H - 5.4 * e;   /* oben bleibt Platz für die Bildleiste */
 	const polB = 2.2 * e, spalt = 7.4 * e, hoehe = 6.4 * e;
 	const xl = mx - spalt / 2, xr = mx + spalt / 2;
 	ctx.fillStyle = farbe(ROT, 0.9); ctx.fillRect(xl - polB, my - hoehe / 2, polB, hoehe);
@@ -734,7 +798,7 @@ function zeichneDraufsicht() {
 	ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx + e * 1.6, my); ctx.stroke(); ctx.setLineDash([]);
 	const wl = Math.atan2(uy, ux);   /* Richtung des Leiters, in der die Stromrichtung zeigt */
 	ctx.beginPath(); ctx.arc(mx, my, e * 1.25, Math.min(0, wl), Math.max(0, wl)); ctx.stroke();
-	ctx.fillStyle = "#555"; ctx.font = "italic " + Math.round(e * 0.42) + "px " + schrift;
+	ctx.fillStyle = "#555"; ctx.font = "italic " + Math.round(Math.max(14, e * 0.42)) + "px " + schrift;
 	ctx.fillText("α", mx + e * 1.55 * Math.cos(wl / 2), my + e * 1.55 * Math.sin(wl / 2));
 	/* Kraft senkrecht zur Zeichenebene: F_z = I_x B_y − I_y B_x mit B nach rechts */
 	const fz = -Math.sin(a) * r;
@@ -742,12 +806,14 @@ function zeichneDraufsicht() {
 	const rk = e * 0.38;
 	const ky = my + hoehe / 2 + e * 0.75;   /* Zeile unter dem Feldbereich: Symbol und Text für die Kraft */
 	if (F > 1e-4) {
-		const kx = mx - e * 3.6;
+		ctx.font = Math.round(Math.max(12, e * 0.36)) + "px " + schrift;
+		const textB = ctx.measureText("Kraft nach unten (in die Zeichenebene hinein)").width;
+		const kx = Math.max(rk + 4, Math.min(mx - e * 3.6, W - 6 - textB - rk * 1.6));   /* am Handy nach links, damit der Text ganz drauf ist */
 		ctx.lineWidth = 2.2; ctx.strokeStyle = KRAFTROT; ctx.fillStyle = "#fff";
 		ctx.beginPath(); ctx.arc(kx, ky, rk, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
 		if (fz > 0) { ctx.fillStyle = KRAFTROT; ctx.beginPath(); ctx.arc(kx, ky, rk * 0.25, 0, 2 * Math.PI); ctx.fill(); }
 		else { ctx.beginPath(); ctx.moveTo(kx - rk * 0.7, ky - rk * 0.7); ctx.lineTo(kx + rk * 0.7, ky + rk * 0.7); ctx.moveTo(kx - rk * 0.7, ky + rk * 0.7); ctx.lineTo(kx + rk * 0.7, ky - rk * 0.7); ctx.stroke(); }
-		ctx.fillStyle = KRAFTROT; ctx.font = Math.round(e * 0.36) + "px " + schrift; ctx.textAlign = "left";
+		ctx.fillStyle = KRAFTROT; ctx.font = Math.round(Math.max(12, e * 0.36)) + "px " + schrift; ctx.textAlign = "left";
 		ctx.fillText(fz > 0 ? "Kraft nach oben (aus der Zeichenebene heraus)" : "Kraft nach unten (in die Zeichenebene hinein)", kx + rk * 1.6, ky);
 		/* Balken für den Betrag */
 		const bx = mx - e * 3, by = ky + e * 0.75, bl = e * 6;
@@ -755,11 +821,11 @@ function zeichneDraufsicht() {
 		ctx.fillStyle = KRAFTROT; ctx.fillRect(bx, by, bl * F / (B_W * I_W * L_W), e * 0.3);
 		ctx.strokeStyle = "#999"; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bl, e * 0.3);
 	} else {
-		ctx.fillStyle = KRAFTROT; ctx.font = Math.round(e * 0.4) + "px " + schrift; ctx.textAlign = "center";
+		ctx.fillStyle = KRAFTROT; ctx.font = Math.round(Math.max(13, e * 0.4)) + "px " + schrift; ctx.textAlign = "center";
 		ctx.fillText("keine Kraft", mx, ky);
 	}
-	ctx.fillStyle = "#555"; ctx.font = Math.round(Math.max(12, e * 0.34)) + "px " + schrift; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-	ctx.fillText("Blick von oben", 8, H - 6);
+	ctx.fillStyle = "#555"; ctx.font = Math.round(Math.max(12, e * 0.34)) + "px " + schrift; ctx.textAlign = "left"; ctx.textBaseline = "top";
+	ctx.fillText("Blick von oben", 8, 8);
 }
 
 function zeichne() {
@@ -812,7 +878,7 @@ function anzeigen(voll) {
 	document.getElementById("wert-i").textContent = de(zustand.I, 1) + " A";
 	document.getElementById("wert-alpha").textContent = zustand.alpha + "°";
 	const btn = document.getElementById("btn-strom");
-	btn.textContent = zustand.strom ? "Strom ausschalten" : "Strom einschalten";
+	document.getElementById("strom-text").textContent = zustand.strom ? "an" : "aus";
 	btn.classList.toggle("an", zustand.strom);
 	btn.disabled = zustand.modus === "vorhersage" && !zustand.strom && zustand.vorhersage === null;
 	document.getElementById("anz-zaehler").textContent = zustand.gesamt ? "Richtige Vorhersagen: " + zustand.richtig + " von " + zustand.gesamt + (reihe >= 2 ? " (" + reihe + " hintereinander)" : "") : "";
@@ -824,14 +890,15 @@ function anzeigen(voll) {
 	});
 	document.querySelectorAll("#staerke-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === zustand.staerke));
 	document.querySelectorAll("#anzahl-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.n));
-	document.getElementById("zeige-i").checked = zustand.zeigeI;
-	document.getElementById("zeige-b").checked = zustand.zeigeB;
-	document.getElementById("zeige-f").checked = zustand.zeigeF;
+	[["zeige-i", zustand.zeigeI], ["zeige-b", zustand.zeigeB], ["zeige-f", zustand.zeigeF]].forEach(([id, an]) => {
+		const b = document.getElementById(id); b.classList.toggle("aktiv", an); b.setAttribute("aria-pressed", an);
+	});
+	document.querySelectorAll("[data-alpha]").forEach(b => b.classList.toggle("aktiv", +b.dataset.alpha === zustand.alpha));
 }
 /* Nur die Bedienelemente der gewählten Station zeigen */
 function stationZeigen() {
 	document.querySelectorAll("[data-st]").forEach(el => { el.hidden = !el.dataset.st.split(" ").includes(zustand.modus); });
-	document.getElementById("tabelle").hidden = zustand.modus !== "staerke" || zustand.tabelle.length === 0;
+	document.getElementById("tabelle-leinwand").hidden = zustand.modus !== "staerke" || zustand.tabelle.length === 0;
 }
 function neueSituation() {
 	const alt = zustand.polLinks + zustand.nordUnten;
@@ -911,17 +978,13 @@ document.querySelectorAll("[data-alpha]").forEach(b => b.addEventListener("click
 }));
 K.bindeKnopfgruppe("staerke-knoepfe", w => zustand.staerke = w, () => anzeigen(true));
 K.bindeKnopfgruppe("anzahl-knoepfe", w => zustand.n = +w, () => anzeigen(true));
-document.getElementById("zeige-i").addEventListener("change", e => { zustand.zeigeI = e.target.checked; });
-document.getElementById("zeige-b").addEventListener("change", e => { zustand.zeigeB = e.target.checked; });
-document.getElementById("zeige-f").addEventListener("change", e => { zustand.zeigeF = e.target.checked; });
-document.getElementById("btn-standard").addEventListener("click", () => {
-	const strom = zustand.strom; standard(); zustand.strom = strom || zustand.modus === "staerke"; anzeigen(true);
-});
+document.getElementById("zeige-i").addEventListener("click", () => { zustand.zeigeI = !zustand.zeigeI; anzeigen(true); });
+document.getElementById("zeige-b").addEventListener("click", () => { zustand.zeigeB = !zustand.zeigeB; anzeigen(true); });
+document.getElementById("zeige-f").addEventListener("click", () => { zustand.zeigeF = !zustand.zeigeF; anzeigen(true); });
 document.getElementById("btn-notieren").addEventListener("click", () => {
 	zustand.tabelle.push([zustand.I, zustand.staerke, zustand.n, Math.abs(kraft()) * 1000]);
 	tabelleZeigen();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => { zustand.tabelle = []; tabelleZeigen(); });
 function tabelleZeigen() {
 	const tb = document.getElementById("tabelle-body");
 	tb.innerHTML = "";
@@ -940,8 +1003,22 @@ function layout() {
 	ox = W * 0.5; oy = H / 2 + s * 2.25;
 	zeichne();
 }
+/* Bildleisten am Bild und an der Messtabelle */
+const zurueckKnopf = symbolKnopf("zurueck", "Standardwerte", () => {
+	const strom = zustand.strom; standard(); zustand.strom = strom || zustand.modus === "staerke"; anzeigen(true);
+});
+zurueckKnopf.dataset.st = "staerke frei winkel";
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
+	() => zustand.modus === "winkel" ? "Leiter_im_Magnetfeld_Winkel_" + zustand.alpha + "Grad"
+		: "Leiterschaukel_" + de(zustand.I, 1).replace(",", "-") + "A_Magnet_" + zustand.staerke + "_" + zustand.n + "x", [zurueckKnopf]);
+const TABELLENKOPF = ["Nr.", "I in A", "Magnet", "Anzahl", "F in mN"];
+bildLeiste(document.getElementById("tabelle-leinwand"),
+	() => tabellenBild(TABELLENKOPF, zustand.tabelle.map((z, i) => [i + 1, de(z[0], 1), z[1], z[2], de(z[3], 1)])),
+	() => "Leiterschaukel_Messtabelle",
+	[symbolKnopf("loeschen", "Tabelle leeren", () => { zustand.tabelle = []; tabelleZeigen(); })]).classList.add("unten");
+
 window.addEventListener("resize", layout);
-modusSetzen("vorhersage");
+modusSetzen(modusAusLink("vorhersage"));
 K.nachFontLaden(zeichne);
 requestAnimationFrame(schleife);
 </script>

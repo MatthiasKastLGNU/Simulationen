@@ -178,6 +178,44 @@ details > div { padding: 0.35rem 0 0.2rem 1rem; }
 .fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
 p { margin: 0 0 0.5rem; }
 [hidden] { display: none !important; }
+
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover:not(:disabled) { background: #eaeaea; }
+.kn button.aktiv, .kn button.aktiv:hover { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover:not(:disabled) { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt:hover:not(:disabled) { background: #00009A; }
+.kn button.haupt.an, .kn button.haupt.an:hover { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.leise { background: #fff; border-color: #ccc; color: #777; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn input[type="range"] { min-width: 120px; }
+.kn .wert { min-width: 3.4em; text-align: left; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } }
+.antwortreihe { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+.kompass button, #btn-keine { font: inherit; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer;
+	padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.kompass button:hover:not(:disabled), #btn-keine:hover:not(:disabled) { background: #eaeaea; }
+.kompass button.aktiv, #btn-keine.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kompass button:disabled, #btn-keine:disabled { opacity: 0.45; cursor: default; }
+.kompass { grid-template-columns: 3.1rem 4.9rem 3.1rem; }
+#btn-keine { height: 3.1rem; padding: 0 0.9rem; font-size: 1.1rem; }
+.hinweis { margin: 0.35rem 0 0; }
 </style>
 </head>
 <body>
@@ -200,33 +238,12 @@ p { margin: 0 0 0.5rem; }
 		<div class="tcb-title">Trainer: Drei-Finger-Regel</div>
 		<div class="tcb-body">
 			<p class="aufgabe-text" id="aufgabe-text"></p>
-			<canvas id="sim-canvas" class="sim"></canvas>
-
-			<div class="antwortbereich">
-				<div class="kompass" id="kompass">
-					<button data-antwort="135" title="nach links oben">↖</button>
-					<button data-antwort="90" title="nach oben">↑</button>
-					<button data-antwort="45" title="nach rechts oben">↗</button>
-					<button data-antwort="180" title="nach links">←</button>
-					<div class="mitte">
-						<button data-antwort="aus" title="aus der Zeichenebene heraus">⊙</button>
-						<button data-antwort="ein" title="in die Zeichenebene hinein">⊗</button>
-					</div>
-					<button data-antwort="0" title="nach rechts">→</button>
-					<button data-antwort="225" title="nach links unten">↙</button>
-					<button data-antwort="270" title="nach unten">↓</button>
-					<button data-antwort="315" title="nach rechts unten">↘</button>
-				</div>
-				<div class="ebene" id="ebene">
-					<span class="zaehler">Mitte: ⊙ aus der Zeichenebene heraus, ⊗ in sie hinein</span>
-					<button data-antwort="null" id="btn-keine">keine Kraft</button>
-				</div>
-				<div class="aktionen">
-					<button class="haupt" id="btn-pruefen" disabled>Prüfen</button>
-					<span class="knopfleiste"><button id="btn-neu">Neue Aufgabe</button></span>
-					<span class="knopfleiste klein"><button id="btn-loesung">Lösung zeigen</button></span>
-				</div>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Deine Antwort</div><div class="antwortreihe"><div class="kompass" id="kompass"><button data-antwort="135" title="nach links oben" aria-label="nach links oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-135deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="90" title="nach oben" aria-label="nach oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-90deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="45" title="nach rechts oben" aria-label="nach rechts oben"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-45deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="180" title="nach links" aria-label="nach links"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-180deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><div class="mitte"><button data-antwort="aus" title="aus der Zeichenebene heraus" aria-label="aus der Zeichenebene heraus"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg></button><button data-antwort="ein" title="in die Zeichenebene hinein" aria-label="in die Zeichenebene hinein"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.2 6.2l11.6 11.6M17.8 6.2L6.2 17.8" stroke="currentColor" stroke-width="2"/></svg></button></div><button data-antwort="0" title="nach rechts" aria-label="nach rechts"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(0deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="225" title="nach links unten" aria-label="nach links unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-225deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="270" title="nach unten" aria-label="nach unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-270deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button><button data-antwort="315" title="nach rechts unten" aria-label="nach rechts unten"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(-315deg)"><path fill="currentColor" d="M3 10h10V4.5L21.5 12 13 19.5V14H3z"/></svg></button></div><button data-antwort="null" id="btn-keine" title="keine Kraft" aria-label="keine Kraft"><i class="gr">F</i>&nbsp;=&nbsp;0</button></div></div>
+				<div class="gr" ><div class="gt">Auswerten</div><div class="kn" ><button class="haupt" id="btn-pruefen" disabled title="Prüfen" aria-label="Prüfen"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Prüfen</button><button id="btn-neu" class="dunkel" title="Neue Aufgabe" aria-label="Neue Aufgabe"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/></svg></button><button id="btn-loesung" class="leise" title="Lösung zeigen" aria-label="Lösung zeigen"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></button></div></div>
 			</div>
+			<p class="zaehler hinweis">Mitte: <svg width="15" height="15" style="vertical-align:-2px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg> aus der Zeichenebene heraus, <svg width="15" height="15" style="vertical-align:-2px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.2 6.2l11.6 11.6M17.8 6.2L6.2 17.8" stroke="currentColor" stroke-width="2"/></svg> in die Zeichenebene hinein</p>
 			<div class="rueckmeldung" id="rueckmeldung"></div>
 			<div class="zaehler" id="zaehler"></div>
 
@@ -400,6 +417,89 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+/* Modus per Link: ?modus=a,b zeigt nur diese Modi, bei genau einem verschwindet die Modusleiste */
+function modusAusLink(standard) {
+	const leiste = document.getElementById("modusleiste");
+	const alle = [...leiste.querySelectorAll("[data-modus]")].map(b => b.dataset.modus);
+	const wunsch = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => alle.includes(m));
+	if (wunsch.length) {
+		leiste.querySelectorAll("[data-modus]").forEach(b => { b.hidden = !wunsch.includes(b.dataset.modus); });
+		if (wunsch.length === 1) leiste.hidden = true;
+	}
+	const m = wunsch[0] || standard;
+	leiste.querySelectorAll("[data-modus]").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
+	return m;
+}
 
 /* ==========================================================================
    Richtungen: Winkel in Grad in der Zeichenebene (0 = nach rechts, 90 = nach oben)
@@ -725,6 +825,10 @@ function layout() {
 	zeichne();
 }
 window.addEventListener("resize", layout);
+/* Bildleiste am Bild */
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
+	() => "Drei_Finger_Regel_" + zustand.gesucht + "_gesucht" + (zustand.geloest || zustand.zeigeLoesung ? "_Loesung" : ""));
+zustand.modus = modusAusLink("F");
 layout();
 neueAufgabe();
 K.nachFontLaden(zeichne);
