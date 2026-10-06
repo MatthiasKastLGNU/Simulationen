@@ -190,6 +190,35 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 .rueckmeldung.gut { color: var(--green-frame); }
 .rueckmeldung.schlecht { color: var(--red-frame); }
 
+
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+.kn button.haupt.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button:disabled { opacity: 0.45; cursor: default; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn input[type="range"] { min-width: 120px; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } table.mess { font-size: 0.82rem; } table.mess th, table.mess td { padding: 0.15rem 0.35rem; } }
+table.mess td, table.mess th { white-space: nowrap; }
+
 </style>
 </head>
 <body>
@@ -204,56 +233,42 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Waltenhofensches Pendel</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
+			<div class="leinwand" id="sim-leinwand"><canvas id="sim-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Spulen</div><div class="kn"><button class="haupt" id="btn-spulen" title="Spulen ein- und ausschalten"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M4 2h8v18H4zM18 2h8v18h-8z" fill="#8a8f96"/><rect x="4" y="2" width="22" height="5" fill="#8a8f96"/><rect x="2" y="9" width="12" height="2.2" rx="1" fill="#C46A2B"/><rect x="16" y="9" width="12" height="2.2" rx="1" fill="#C46A2B"/><rect x="2" y="12.2" width="12" height="2.2" rx="1" fill="#C46A2B"/><rect x="16" y="12.2" width="12" height="2.2" rx="1" fill="#C46A2B"/><rect x="2" y="15.4" width="12" height="2.2" rx="1" fill="#C46A2B"/><rect x="16" y="15.4" width="12" height="2.2" rx="1" fill="#C46A2B"/></svg><span id="spulen-text" style="min-width:2em">aus</span></button></div></div>
+				<div class="gr"><div class="gt">Pendel</div><div class="kn"><button class="dunkel" id="btn-los" title="Auslenken und loslassen" aria-label="Auslenken und loslassen"><svg width="30" height="24" viewBox="0 0 30 24" aria-hidden="true"><rect x="9" y="0" width="12" height="2.5" fill="currentColor"/><line x1="15" y1="2" x2="24" y2="14" stroke="currentColor" stroke-width="2"/><rect x="20" y="13" width="8" height="8" fill="currentColor"/><path d="M19 22 Q12 24 6 18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 15l6 1-3 5z" fill="currentColor"/></svg></button></div></div>
+				<div class="gr"><div class="gt">Tempo</div><div class="kn" id="tempo-knoepfe"><button data-wert="0.25" title="Zeitlupe"><span class="tempo">›</span></button><button data-wert="1" class="aktiv" title="normal"><span class="tempo">›››</span></button></div></div>
+				<div class="gr"><div class="gt">Pendelkörper</div><div class="kn" id="koerper-knoepfe">
+					<button data-wert="platte" class="aktiv" title="Platte" aria-label="Platte"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="3" y="2" width="20" height="18" fill="#9EA7B0" stroke="#5E666E" stroke-width="1.5"/></svg></button>
+					<button data-wert="kamm" title="Kamm" aria-label="Kamm"><svg width="26" height="22" viewBox="0 0 26 22"><path d="M3 2h20v7h-2.5v11h-3V9h-2v11h-3V9h-2v11h-3V9h-2v11H3z" fill="#9EA7B0" stroke="#5E666E" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+					<button data-wert="ring" title="Ring" aria-label="Ring"><svg width="26" height="22" viewBox="0 0 26 22"><circle cx="13" cy="11" r="7.5" fill="none" stroke="#5E666E" stroke-width="5"/></svg></button>
+					<button data-wert="schlitzring" title="geschlitzter Ring" aria-label="geschlitzter Ring"><svg width="26" height="22" viewBox="0 0 26 22"><path d="M15 18.2A7.5 7.5 0 1 1 18.5 15.5" fill="none" stroke="#5E666E" stroke-width="5"/></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Polschuhe</div><div class="kn" id="polschuh-knoepfe">
+					<button data-wert="schmal" class="aktiv" title="schmale Polschuhe" aria-label="schmal"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="9.0" y="0" width="8" height="4" fill="#666"/><rect x="9.0" y="18" width="8" height="4" fill="#666"/><rect x="9.0" y="4" width="8" height="14" fill="#DDE6FF"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#4A63C8" stroke-width="1"/></svg></button>
+					<button data-wert="breit" title="breite Polschuhe" aria-label="breit"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="2.0" y="0" width="22" height="4" fill="#666"/><rect x="2.0" y="18" width="22" height="4" fill="#666"/><rect x="2.0" y="4" width="22" height="14" fill="#DDE6FF"/><path d="M6 7l4 4M10 7l-4 4M6 13l4 4M10 13l-4 4" stroke="#4A63C8" stroke-width="1"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#4A63C8" stroke-width="1"/><path d="M16 7l4 4M20 7l-4 4M16 13l4 4M20 13l-4 4" stroke="#4A63C8" stroke-width="1"/></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Stromstärke in den Spulen</div><div class="kn"><input type="range" id="regler-b" min="0.2" max="1" step="0.05" value="1" aria-label="Stromstärke in den Spulen"><span class="wert" id="wert-b"></span></div></div>
+			</div>
 			<div class="steuerung">
-				<div class="zeile">
-					<button class="haupt" id="btn-spulen">Spulen einschalten</button>
-					<span class="knopfleiste">
-						<button id="btn-los">Auslenken und loslassen</button>
-						<button id="btn-zeitlupe">Zeitlupe</button>
-					</span>
-				</div>
-				<div class="zeile">
-					<span class="gruppe">Pendelkörper</span>
-					<span class="knopfleiste" id="koerper-knoepfe">
-						<button data-wert="platte" class="aktiv">Platte</button>
-						<button data-wert="kamm">Kamm</button>
-						<button data-wert="ring">Ring</button>
-						<button data-wert="schlitzring">geschlitzter Ring</button>
-					</span>
-				</div>
-				<div class="zeile">
-					<label for="regler-b">Stromstärke in den Spulen</label>
-					<input type="range" id="regler-b" min="0.2" max="1" step="0.05" value="1">
-					<span class="wert" id="wert-b"></span>
-				</div>
-				<div class="zeile">
-					<span class="gruppe">Polschuhe</span>
-					<span class="knopfleiste" id="polschuh-knoepfe">
-						<button data-wert="schmal" class="aktiv">schmal</button>
-						<button data-wert="breit">breit</button>
-					</span>
-				</div>
 				<div class="werte">
 					<span>Schwingungen: <span class="anzeige" id="anz-schwingungen"></span></span>
 					<span id="anz-status"></span>
 				</div>
 				<div>
-					<div class="zeile">
-						<span class="knopfleiste"><button id="btn-notieren">Messwert notieren</button></span>
-						<span class="knopfleiste klein"><button id="btn-leeren">Tabelle leeren</button></span>
-					</div>
-					<table class="mess" id="tabelle" hidden>
-						<thead><tr><th>Nr.</th><th>Pendelkörper</th><th>Spulen</th><th>Polschuhe</th><th>Schwingungen bis zum Stillstand</th></tr></thead>
+					<div class="kn"><button id="btn-notieren" title="Messwert in die Tabelle schreiben"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 4h18v4H3zM3 10h8v4H3zM3 16h8v4H3zM17 10h2v4h4v2h-4v4h-2v-4h-4v-2h4z"/></svg>Messwert notieren</button></div>
+					<div id="tabelle-leinwand" hidden>
+					<div style="overflow-x:auto"><table class="mess" id="tabelle">
+						<thead><tr><th>Nr.</th><th>Pendelkörper</th><th>Spulen</th><th>Polschuhe</th><th>Schwingungen bis Stillstand</th></tr></thead>
 						<tbody id="tabelle-body"></tbody>
-					</table>
+					</table></div>
+					</div>
 				</div>
 			</div>
-			<div class="leinwand">
+			<div class="leinwand" id="diagramm-leinwand">
 				<canvas id="diagramm" class="sim"></canvas>
-				<button class="bildknopf" id="btn-bild">Diagramm herunterladen</button>
 			</div>
-			<p class="fussnote">Blau: Wirbelströme (nur zu sehen, solange sich das Feld im Pendelkörper ändert). Kreuze: Magnetfeld in die Zeichenebene hinein.</p>
+			<p class="fussnote">Orange: Wirbelströme (nur zu sehen, solange sich das Feld im Pendelkörper ändert). Kreuze: Magnetfeld in die Zeichenebene hinein.</p>
 		</div>
 	</div>
 
@@ -421,6 +436,77 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+
 /* ==========================================================================
    Physik (Längen in cm, Zeit in s)
    Pendel: Drehpunkt im Ursprung, Mitte des Pendelkörpers 18 cm darunter. theta = 0: Pendel hängt senkrecht.
@@ -459,7 +545,7 @@ const ZELLEN = {}; Object.keys(NAMEN).forEach(k => ZELLEN[k] = zellen(k));
 
 const zustand = {
 	koerper: "platte", polschuh: "schmal", spulen: false, B0: 1,
-	theta: 0, omega: 0, zeitlupe: false,
+	theta: 0, omega: 0, zeitlupe: false, pause: false,
 	nulldurchgaenge: 0, laeuft: false, steht: true, stehzeit: 0, zeit: 0,
 	verlauf: [], tabelle: [], wirbel: []
 };
@@ -504,7 +590,7 @@ function schritt(dt) {
 		zustand.omega += a * h; zustand.theta += zustand.omega * h; zustand.zeit += h;
 		if (vorher * zustand.theta < 0) zustand.nulldurchgaenge++;
 		if (!zustand.steht && energie() < E_STILL) { zustand.steht = true; zustand.stehzeit = zustand.zeit; }
-		if (zustand.zeit > 90) { zustand.laeuft = false; break; }
+		if (zustand.zeit > 90 || (zustand.steht && zustand.zeit > zustand.stehzeit + 1.5)) { zustand.laeuft = false; break; }
 	}
 	zustand.verlauf.push([zustand.zeit, zustand.theta * 180 / Math.PI]);
 	while (zustand.verlauf.length && zustand.verlauf[0][0] < zustand.zeit - 20) zustand.verlauf.shift();
@@ -699,7 +785,7 @@ function zeichne() {
 	zustand.wirbel.forEach(wirbelZeichnen);
 	/* Status */
 	const status = !zustand.laeuft && zustand.zeit === 0 ? "Pendel auslenken und loslassen" : zustand.steht ? "Stillstand nach " + schwingungen() + " Schwingungen" : "";
-	if (status) text(ctx, status, W - 10, 16, 14, BLAU, "right", "bold");
+	if (status) text(ctx, status, 10, 16, 14, BLAU, "left", "bold");
 	zeichneDiagramm();
 }
 function zeichneDiagramm(c = dctx, w = DW, h = DH) {
@@ -730,20 +816,20 @@ function layout() {
 	zeichne();
 }
 function anzeigen() {
-	const b = document.getElementById("btn-spulen");
-	b.textContent = zustand.spulen ? "Spulen ausschalten" : "Spulen einschalten";
-	b.classList.toggle("an", zustand.spulen);
-	document.getElementById("btn-zeitlupe").classList.toggle("aktiv", zustand.zeitlupe);
+	document.getElementById("btn-spulen").classList.toggle("an", zustand.spulen);
+	document.getElementById("spulen-text").textContent = zustand.spulen ? "an" : "aus";
 	document.getElementById("wert-b").textContent = Math.round(zustand.B0 * 100) + " %";
-	document.getElementById("tabelle").hidden = zustand.tabelle.length === 0;
+	document.getElementById("tabelle-leinwand").hidden = zustand.tabelle.length === 0;
+	pauseKnopf.innerHTML = symbolSvg(zustand.pause ? "play" : "pause");
+	pauseKnopf.title = zustand.pause ? "weiter" : "anhalten"; pauseKnopf.classList.toggle("aktiv", zustand.pause);
 }
 function werteAnzeigen() {
 	document.getElementById("anz-schwingungen").textContent = String(schwingungen());
 	document.getElementById("anz-status").textContent = zustand.steht && zustand.zeit > 0 ? "Stillstand nach " + K.de(zustand.stehzeit, 1) + " s" : (zustand.laeuft ? "schwingt" : "");
 }
 document.getElementById("btn-spulen").addEventListener("click", () => { zustand.spulen = !zustand.spulen; if (zustand.laeuft && !zustand.spulen) zustand.steht = false; anzeigen(); });
-document.getElementById("btn-los").addEventListener("click", () => { loslassen(); anzeigen(); });
-document.getElementById("btn-zeitlupe").addEventListener("click", () => { zustand.zeitlupe = !zustand.zeitlupe; anzeigen(); });
+document.getElementById("btn-los").addEventListener("click", () => { zustand.pause = false; loslassen(); anzeigen(); });
+K.bindeKnopfgruppe("tempo-knoepfe", w => { zustand.zeitlupe = w !== "1"; }, anzeigen);
 K.bindeKnopfgruppe("koerper-knoepfe", w => { zustand.koerper = w; zustand.laeuft = false; zustand.theta = 0; zustand.omega = 0; zustand.zeit = 0; zustand.verlauf = []; zustand.nulldurchgaenge = 0; zustand.wirbel = []; const gt = GITTER[w]; gt.psi.fill(0); gt.C = 0; }, anzeigen);
 K.bindeKnopfgruppe("polschuh-knoepfe", w => { zustand.polschuh = w; }, anzeigen);
 K.bindeSlider("regler-b", null, "", v => zustand.B0 = v, anzeigen);
@@ -753,23 +839,22 @@ document.getElementById("btn-notieren").addEventListener("click", () => {
 	zustand.tabelle.forEach((z, i) => { const tr = document.createElement("tr"); [i + 1, ...z].forEach(w => { const td = document.createElement("td"); td.textContent = w; tr.appendChild(td); }); tb.appendChild(tr); });
 	anzeigen();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => { zustand.tabelle = []; document.getElementById("tabelle-body").innerHTML = ""; anzeigen(); });
-document.getElementById("btn-bild").addEventListener("click", () => {
-	const dpr = 2, w = DW, h = DH + 34, c = document.createElement("canvas");
+const diagrammBild = () => {
+	const dpr = 2, w = DW, h = DH, c = document.createElement("canvas");
 	c.width = w * dpr; c.height = h * dpr;
-	const k = c.getContext("2d"); k.scale(dpr, dpr); k.fillStyle = "#fff"; k.fillRect(0, 0, w, h);
-	text(k, "Waltenhofensches Pendel: " + NAMEN[zustand.koerper] + ", Spulen " + (zustand.spulen ? "an (" + Math.round(zustand.B0 * 100) + " %)" : "aus") + ", Polschuhe " + zustand.polschuh, 8, 16, 14, "#111", "left", "bold");
-	k.translate(0, 34); zeichneDiagramm(k, w, DH);
-	const name = "Pendel_" + zustand.koerper + "_Spulen_" + (zustand.spulen ? "an" : "aus") + ".png";
-	c.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) navigator.share({ files: [datei] }).catch(() => {});
-		else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
-	});
-});
+	const k = c.getContext("2d"); k.scale(dpr, dpr); zeichneDiagramm(k, w, h);
+	return c;
+};
+const pauseKnopf = symbolKnopf("pause", "anhalten", () => { zustand.pause = !zustand.pause; anzeigen(); });
+bildLeiste(document.getElementById("diagramm-leinwand"), diagrammBild,
+	() => "Pendel_" + zustand.koerper + "_Spulen_" + (zustand.spulen ? "an_" + Math.round(zustand.B0 * 100) + "Prozent" : "aus") + "_Polschuhe_" + zustand.polschuh, [pauseKnopf]);
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas), () => "Pendel_Wirbelstroeme_" + zustand.koerper);
+const KOPF = ["Nr.", "Pendelkörper", "Spulen", "Polschuhe", "Schwingungen bis Stillstand"];
+bildLeiste(document.getElementById("tabelle-leinwand"), () => tabellenBild(KOPF, zustand.tabelle.map((z, i) => [i + 1, ...z])), () => "Pendel_Messtabelle",
+	[symbolKnopf("loeschen", "Tabelle leeren", () => { zustand.tabelle = []; document.getElementById("tabelle-body").innerHTML = ""; anzeigen(); })]).classList.add("unten");
 let letzteZeit = null, zaehler = 0;
 function schleife(t) {
-	if (letzteZeit !== null) schritt((t - letzteZeit) / 1000);
+	if (letzteZeit !== null && !zustand.pause) schritt((t - letzteZeit) / 1000);
 	letzteZeit = t;
 	zeichne();
 	if (++zaehler % 6 === 0) werteAnzeigen();
