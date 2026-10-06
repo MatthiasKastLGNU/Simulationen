@@ -387,12 +387,69 @@ button.dunkel:disabled { opacity: 0.4; }
 	.lueckentext, .markiertext { font-size: 1rem; }
 	.wischkarte { font-size: 1.05rem; }
 }
-.antwortknoepfe { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin: 0.6rem 0 0.3rem; }
-.antwortknoepfe button { font: inherit; font-size: 1rem; padding: 0.5rem 0.9rem; border: 2px solid #bbb; border-radius: 2mm; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; }
-.antwortknoepfe button:hover { border-color: var(--blue-frame); }
-.antwortknoepfe button.richtig { border-color: var(--gut); background: var(--gut-hg); }
-.antwortknoepfe button.falsch { border-color: var(--falsch); background: var(--falsch-hg); }
-.ring { display: inline-block; width: 1.5em; height: 0.55em; border-radius: 1px; }
+
+/* ---------- Filmleiste: Einzelbilder auf dunklem Streifen mit Lochung ---------- */
+.filmstreifen, .filmvorrat { display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); }
+.filmstreifen { margin: 0.5rem 0; border-radius: 2mm; overflow: hidden; }
+.filmfeld {
+	position: relative; background: #2B2B2B; padding: 17px 4px;
+	background-image:
+		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px),
+		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px);
+	background-size: 100% 7px, 100% 7px;
+	background-position: 0 5px, 0 calc(100% - 5px);
+	background-repeat: no-repeat;
+}
+.filmbild {
+	background: #fff; border-radius: 2px; min-height: 120px; height: 100%; box-sizing: border-box;
+	display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+	border: 3px solid #fff; transition: border-color 0.2s, background 0.2s;
+}
+.filmbild svg, .filmkarte svg, .kinobild svg { display: block; width: 100%; height: auto; }
+.filmbild .unter, .filmkarte .unter, .kinobild .unter { font-size: 0.82rem; line-height: 1.2; text-align: center; color: #333; padding: 0.1rem 0.15rem 0.15rem; }
+.filmbild.platz { background: #3A3A3A; border: 2px dashed #8A8A8A; align-items: center; }
+.filmbild.platz .nr { color: #BDBDBD; font-size: 1.4rem; font-weight: bold; }
+.filmbild.platz.voll { background: #fff; border-style: solid; border-color: #fff; align-items: stretch; }
+.filmbild.platz.voll .nr { display: none; }
+.filmbild.platz.ueber { background: #4A4A7A; border-color: #fff; }
+.filmbild.platz > .filmkarte { border: none; box-shadow: none; padding: 0; margin: 0; }
+.filmbild.frage { background: #FFF8E1; border-color: #FFC107; align-items: center; }
+.filmbild .frage { font-size: 2.6rem; font-weight: bold; color: #C8A000; }
+.filmbild.richtig { border-color: var(--gut); }
+.filmbild.falsch { border-color: var(--falsch); background: var(--falsch-hg); }
+.filmbild.tippbar { cursor: pointer; }
+.filmbild.tippbar:hover { border-color: #9FA8DA; }
+.filmbild.daneben { opacity: 0.55; }
+.filmbild.wackeln { animation: wackeln 0.4s; }
+.filmbild.laeuft { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold); }
+.filmvorrat { gap: 0.45rem; padding: 0.45rem; background: #F4F4F6; border-radius: 2mm; min-height: 130px; margin-top: 0.3rem; }
+.filmkarte {
+	font: inherit; background: #fff; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.15rem;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+	display: flex; flex-direction: column; justify-content: center;
+}
+.filmkarte.gewaehlt { border-color: var(--blue-frame); box-shadow: 0 0 0 3px rgba(0,0,191,0.25); }
+.filmkarte.zieht { opacity: 0.35; }
+.filmwahl .titel { font-size: 0.85rem; color: #666; margin: 0.3rem 0; }
+.filmwahlreihe { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 118px)); gap: 0.6rem; justify-content: center; }
+button.filmkarte { cursor: pointer; }
+button.filmkarte:hover:not(:disabled) { border-color: var(--blue-frame); }
+button.filmkarte:disabled { cursor: default; }
+.filmkarte.richtig { border-color: var(--gut); background: var(--gut-hg); }
+.filmkarte.falsch { border-color: var(--falsch); background: var(--falsch-hg); opacity: 0.6; }
+.filmkarte.wackeln { animation: wackeln 0.4s; }
+button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
+.kino { max-width: 340px; margin: 0.4rem auto 0.2rem; background: #2B2B2B; padding: 10px; border-radius: 2mm; text-align: center; }
+.kinobild { background: #fff; border-radius: 2px; padding: 4px 0 2px; }
+.kinobild svg { width: auto; max-width: 100%; max-height: 250px; margin: 0 auto; }
+.kinobild .unter { font-size: 1rem; }
+.kinonr { color: #ddd; font-size: 0.85rem; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+	.filmstreifen, .filmvorrat { grid-template-columns: repeat(var(--nhandy, 3), minmax(0, 1fr)); }
+	.filmbild .unter, .filmkarte .unter { font-size: 0.78rem; }
+	.kino { max-width: 260px; }
+	.kinobild svg { max-height: 200px; }
+}
 </style>
 </head>
 <body>
@@ -406,7 +463,6 @@ button.dunkel:disabled { opacity: 0.4; }
 	<section class="tcb blau" id="m-paare" hidden><div class="tcb-title">Spiel: Paare finden</div><div class="tcb-body"></div></section>
 	<section class="tcb blau" id="m-kette" hidden><div class="tcb-title">Kausalkette ordnen</div><div class="tcb-body"></div></section>
 	<section class="tcb blau" id="m-vorhersage" hidden><div class="tcb-title">Vorhersage: Spannung beim Drehen</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-polung" hidden><div class="tcb-title">Spiel: Welcher Ring ist Pluspol?</div><div class="tcb-body"></div></section>
 	<section class="tcb blau" id="m-sortieren" hidden><div class="tcb-title">Sortieren: Generator oder Elektromotor?</div><div class="tcb-body"></div></section>
 	<section class="tcb blau" id="m-wischen" hidden><div class="tcb-title">Stimmt's?</div><div class="tcb-body"></div></section>
 	<section class="tcb blau" id="m-fehler" hidden><div class="tcb-title">Fehler finden: Sixtus erklärt</div><div class="tcb-body"></div></section>
@@ -416,7 +472,8 @@ button.dunkel:disabled { opacity: 0.4; }
 /* ==========================================================================
    Kast-Interaktiv: Bausteine für interaktive Übungen (Bibliothek, nicht für GitHub)
    Vanilla JS, keine Abhängigkeiten. Alles unter window.KI.
-   Bausteine: paare, kette, luecken, sortieren, wischen, markieren
+   Bausteine: paare, kette, luecken, sortieren, wischen, markieren, filmleiste
+   Seite:     seite (Kopf, Modusleiste, Abschnitte, ?modus=…), MODUS_ICON
    Hilfen:    ziehen (Ziehen und Tippen), heftleiste (Kopieren, Teilen, Speichern),
               blattBild (Ergebnis als PNG), svg (Piktogramme), sterne, funken
    ========================================================================== */
@@ -457,9 +514,11 @@ window.KI = (function () {
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
 
+	/* Speicher je Seite: Alle Simulationen auf GitHub Pages teilen sich einen Speicher, sonst zeigt z. B. A.3.1 die Sterne von „Paare“ aus A.3.2 */
+	const SEITE = (location.pathname.split("/").pop() || "start").replace(/\.html?$/, "");
 	KI.speicher = {
-		lies(k, std) { try { const w = localStorage.getItem("KI_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
-		schreib(k, w) { try { localStorage.setItem("KI_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
+		lies(k, std) { try { const w = localStorage.getItem("KI_" + SEITE + "_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
+		schreib(k, w) { try { localStorage.setItem("KI_" + SEITE + "_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
 	};
 	/* Bestwert (Sterne) je Übung merken; meldet Änderung an die Seite */
 	KI.bestwert = function (id, sterne) {
@@ -711,6 +770,15 @@ window.KI = (function () {
 		const ctx = c.getContext("2d");
 		/* Bilder vorladen */
 		for (const b of bloecke) if (b.art === "reihe") for (const e of b.elemente) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
+		for (const b of bloecke) if (b.art === "film") for (const e of b.bilder) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
+		/* Filmleiste: Maße der Einzelbilder */
+		const FILMRAND = 24, FILMSPALT = 8;
+		function filmMasse(b) {
+			const n = b.bilder.length, fw = (B - 2 * R - (n + 1) * FILMSPALT) / n;
+			const fh = Math.min(380, Math.max(...b.bilder.map(e => e.img ? e.img.height * (fw - 10) / e.img.width : fw)));
+			const th = b.bilder.some(e => e.text) ? 30 : 0;
+			return { n, fw, fh, th, h: fh + th + 10 + 2 * FILMRAND };
+		}
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
@@ -739,6 +807,7 @@ window.KI = (function () {
 			if (b.art === "bild") return b.quelle.height * (B - 2 * R) / b.quelle.width + 10;
 			if (b.art === "spalten") return 50 + Math.max(...b.spalten.map(s => s.zeilen.reduce((a, z) => a + umbrechen([{ t: z }], (B - 2 * R) / b.spalten.length - 30, 22).length * 31 + 8, 0))) + 10;
 			if (b.art === "abstand") return b.h;
+			if (b.art === "film") return filmMasse(b).h + 12;
 			return 0;
 		}
 		let H = R;
@@ -794,6 +863,21 @@ window.KI = (function () {
 				});
 			} else if (b.art === "bild") {
 				ctx.drawImage(b.quelle, R, y, B - 2 * R, h - 10);
+			} else if (b.art === "film") {
+				/* dunkler Streifen mit Lochung oben und unten, weiße Einzelbilder */
+				const m = filmMasse(b), y0 = y + 4;
+				ctx.fillStyle = "#2B2B2B"; ctx.beginPath(); ctx.roundRect(R, y0, B - 2 * R, m.h, 6); ctx.fill();
+				ctx.fillStyle = "#E6E6E6";
+				for (let x = R + 10; x < B - R - 16; x += 22) { ctx.beginPath(); ctx.roundRect(x, y0 + 7, 11, 10, 2); ctx.fill(); ctx.beginPath(); ctx.roundRect(x, y0 + m.h - 17, 11, 10, 2); ctx.fill(); }
+				b.bilder.forEach((e, i) => {
+					const x = R + FILMSPALT + i * (m.fw + FILMSPALT), yb = y0 + FILMRAND + 5;
+					ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(x, yb, m.fw, m.fh + m.th, 3); ctx.fill();
+					if (e.img) {
+						const s = Math.min((m.fw - 10) / e.img.width, m.fh / e.img.height);
+						ctx.drawImage(e.img, x + m.fw / 2 - e.img.width * s / 2, yb + m.fh / 2 - e.img.height * s / 2, e.img.width * s, e.img.height * s);
+					}
+					if (e.text) { ctx.font = font(20); ctx.fillStyle = "#333"; ctx.textAlign = "center"; ctx.fillText(e.text, x + m.fw / 2, yb + m.fh + 22, m.fw - 6); ctx.textAlign = "left"; }
+				});
 			} else if (b.art === "spalten") {
 				const n = b.spalten.length, sb = (B - 2 * R) / n;
 				b.spalten.forEach((s, i) => {
@@ -1366,6 +1450,213 @@ window.KI = (function () {
 	};
 
 	/* ==========================================================================
+	   Baustein: Filmleiste. Ein Ablauf als Reihe von Einzelbildern.
+	   cfg: { id, stufen:[{ name, titel, auftrag, art, bilder:[{ svg, text }], schluss, takt }] }
+	   art "ordnen": Bilder liegen gemischt unten und kommen in die richtige Reihenfolge
+	   art "luecke": Bild Nummer luecke.stelle (0-basiert) fehlt; luecke.wahl:[{ svg, text, ok, warum }]
+	   art "fehler": ein Bild ist falsch; fehler:[{ stelle, svg, text, warum }] (eins davon wird zufällig gezeigt)
+	   Danach: Film abspielen (Daumenkino), Ergebnisbild fürs Heft. takt = ms pro Bild (Standard 900).
+	   ========================================================================== */
+	KI.filmleiste = function (behaelter, cfg) {
+		const kopf = kopfzeile(behaelter, cfg.stufen, cfg.id, starte);
+		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
+		const kino = el("div", "kino"); kino.hidden = true; behaelter.appendChild(kino);
+		const streifen = el("div", "filmstreifen"); behaelter.appendChild(streifen);
+		const unten = el("div", ""); behaelter.appendChild(unten);
+		const steuer = el("div", "leiste");
+		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
+		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
+		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
+		behaelter.appendChild(steuer);
+		const rueck = el("div", ""); behaelter.appendChild(rueck);
+		const grp = "film_" + cfg.id;
+		let nr = 0, st, fehler = 0, versuche = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null;
+		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel }, { art: "film", bilder: st.bilder }]
+			.concat(st.schluss ? [{ art: "kasten", teile: [{ t: st.schluss }], groesse: 22 }] : [])), cfg.id);
+		heft.hidden = true;
+		const spalten = n => n <= 3 ? n : n === 4 ? 2 : 3;
+		function bildHtml(b) { return (b.svg || "") + (b.text !== undefined ? '<div class="unter">' + b.text + "</div>" : ""); }
+		function feld(inhalt, klasse) {
+			const f = el("div", "filmfeld");
+			const b = el("div", "filmbild" + (klasse ? " " + klasse : ""), inhalt);
+			f.appendChild(b); streifen.appendChild(f);
+			return b;
+		}
+		function sterne(f) { return f === 0 ? 3 : f === 1 ? 2 : 1; }
+		function geschafft(text) {
+			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false;
+			const s = st.art === "ordnen" ? sterneNachVersuchen(versuche) : sterne(fehler);
+			rueck.innerHTML = "";
+			const p = el("p", "rueck gut", text + " " + KI.sterneHtml(s)); rueck.appendChild(p);
+			if (st.schluss) rueck.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + st.schluss));
+			KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
+			KI.bestwert(cfg.id, s); kopf.markiere(nr);
+			KI.funken(p, 16); heft.hidden = false;
+			const n = KI.naechsteStufe(nr, cfg.stufen.length);
+			if (n >= 0) { const w = el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
+		}
+		KI.ziehGruppe(grp, ".filmbild.platz, .filmvorrat", (q, z) => {
+			if (q.dataset.gesperrt) return;
+			const herkunft = q.parentElement;
+			felder.forEach(f => f.classList.remove("richtig", "falsch"));
+			if (z.classList.contains("platz")) {
+				const alt = z.querySelector(".filmkarte");
+				if (alt && alt !== q) (herkunft.classList.contains("platz") ? herkunft : unten.querySelector(".filmvorrat")).appendChild(alt);
+				z.appendChild(q);
+			} else z.appendChild(q);
+			felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
+			rueck.innerHTML = "";
+		});
+		function starte(i) {
+			nr = i; st = cfg.stufen[i]; fehler = 0; versuche = 0; fertigB = false; falschesBild = null;
+			stoppe(); kopf.markiere(i); kopf.status.innerHTML = "";
+			auftrag.innerHTML = st.auftrag;
+			streifen.innerHTML = ""; unten.innerHTML = ""; rueck.innerHTML = ""; heft.hidden = true;
+			const n = st.bilder.length;
+			streifen.style.setProperty("--n", n); streifen.style.setProperty("--nhandy", spalten(n));
+			pruefKnopf.hidden = st.art !== "ordnen"; pruefKnopf.disabled = false; spielKnopf.hidden = true;
+			if (st.art === "ordnen") {
+				felder = st.bilder.map((_, j) => feld('<span class="nr">' + (j + 1) + "</span>", "platz"));
+				const vorrat = el("div", "filmvorrat"); unten.appendChild(vorrat);
+				vorrat.style.setProperty("--n", n); vorrat.style.setProperty("--nhandy", spalten(n));
+				for (const j of mischen(st.bilder.map((_, j) => j))) {
+					const k = el("div", "filmkarte", bildHtml(st.bilder[j])); k.dataset.j = j;
+					KI.ziehbar(k, grp); vorrat.appendChild(k);
+				}
+			} else if (st.art === "luecke") {
+				const L = st.luecke;
+				felder = st.bilder.map((b, j) => feld(j === L.stelle ? '<span class="frage">?</span>' : bildHtml(b), j === L.stelle ? "frage" : ""));
+				const wahl = el("div", "filmwahl"); unten.appendChild(wahl);
+				wahl.appendChild(el("div", "titel", "Welches Bild gehört in die Lücke?"));
+				const reihe = el("div", "filmwahlreihe"); wahl.appendChild(reihe);
+				const erkl = el("div", ""); wahl.appendChild(erkl);
+				for (const w of mischen(L.wahl)) {
+					const k = el("button", "filmkarte", bildHtml(w));
+					k.addEventListener("click", () => {
+						if (fertigB || k.disabled) return;
+						if (w.ok) {
+							k.classList.add("richtig");
+							const f = felder[L.stelle]; f.classList.remove("frage"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[L.stelle]);
+							reihe.querySelectorAll("button").forEach(x => x.disabled = true);
+							geschafft(fehler ? "Richtig!" : "Richtig auf Anhieb!");
+						} else {
+							fehler++; k.disabled = true; k.classList.add("falsch", "wackeln");
+							if (w.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + w.warum));
+							kopf.status.innerHTML = "<span>Fehler: " + fehler + "</span>";
+						}
+					});
+					reihe.appendChild(k);
+				}
+			} else {
+				const F = st.fehler[Math.floor(Math.random() * st.fehler.length)];
+				falschesBild = F;
+				const erkl = el("div", ""); unten.appendChild(erkl);
+				felder = st.bilder.map((b, j) => {
+					const f = feld(bildHtml(j === F.stelle ? F : b), "tippbar");
+					f.addEventListener("click", () => {
+						if (fertigB || f.classList.contains("daneben")) return;
+						if (j === F.stelle) {
+							f.classList.add("falsch");
+							setTimeout(() => { f.classList.remove("falsch"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[j]); }, 700);
+							if (F.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + F.warum));
+							geschafft("Gefunden! So ist es richtig:");
+						} else {
+							fehler++; f.classList.add("daneben", "wackeln");
+							setTimeout(() => f.classList.remove("wackeln"), 450);
+							kopf.status.innerHTML = "<span>Daneben: " + fehler + "</span>";
+						}
+					});
+					return f;
+				});
+			}
+		}
+		pruefKnopf.addEventListener("click", () => {
+			const leer = felder.filter(f => !f.querySelector(".filmkarte")).length;
+			if (leer) { rueck.innerHTML = '<p class="rueck schlecht">Es sind noch ' + leer + " Bilder frei.</p>"; return; }
+			versuche++;
+			let falsch = 0;
+			felder.forEach((f, j) => { const ok = +f.querySelector(".filmkarte").dataset.j === j; f.classList.toggle("richtig", ok); f.classList.toggle("falsch", !ok); if (!ok) falsch++; });
+			if (!falsch) {
+				streifen.querySelectorAll(".filmkarte").forEach(k => k.dataset.gesperrt = "1");
+				geschafft("Die Reihenfolge stimmt!");
+			} else rueck.innerHTML = '<p class="rueck schlecht">' + (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " noch an der falschen Stelle.</p>";
+		});
+		/* Daumenkino: Bilder groß nacheinander, aktuelles Bild im Streifen markiert */
+		function zeigeBild() {
+			const b = st.bilder[bildNr];
+			kino.innerHTML = '<div class="kinobild">' + bildHtml(b) + '</div><div class="kinonr">' + (bildNr + 1) + " / " + st.bilder.length + "</div>";
+			felder.forEach((f, j) => f.classList.toggle("laeuft", j === bildNr));
+		}
+		function stoppe() {
+			clearInterval(uhr); uhr = 0; kino.hidden = true; felder.forEach(f => f.classList.remove("laeuft"));
+			spielKnopf.innerHTML = KI.icon("play", 20) + "<span>Film abspielen</span>";
+		}
+		spielKnopf.addEventListener("click", () => {
+			if (uhr) { stoppe(); return; }
+			bildNr = 0; kino.hidden = false; zeigeBild();
+			spielKnopf.innerHTML = KI.icon("pause", 20) + "<span>Anhalten</span>";
+			uhr = setInterval(() => { bildNr = (bildNr + 1) % st.bilder.length; zeigeBild(); }, st.takt || 900);
+		});
+		starte(KI.startStufe(cfg.stufen.length));
+	};
+
+	/* ==========================================================================
+	   Seite einer Übungssammlung: Kopf, Modusleiste mit Piktogrammen, ein Abschnitt je Übung.
+	   cfg: { klasse, kapitel, modi:[{ id, name, titel, bau(behaelter), icon? }] }
+	   Adresse: ?modus=paare (nur diese Übung), ?modus=paare,kette (mehrere), ?modus=tippen-3 (NUR Stufe 3),
+	   ?modus=vorhersage-1.2 (nur Stufen 1 und 2). So zeigt ein QR-Code genau das, was auf dem Blatt angesagt ist.
+	   ========================================================================== */
+	KI.MODUS_ICON = {
+		paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
+		kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
+		sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
+		luecken: '<path d="M2 8h5M2 16h8M17 16h5" stroke="currentColor" stroke-width="2"/><rect x="9" y="5" width="12" height="6" rx="1" fill="currentColor"/>',
+		wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
+		fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>',
+		film: '<rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9v6M14 9v6" stroke="currentColor" stroke-width="2.4"/>',
+		filmleiste: '<rect x="1" y="4" width="22" height="16" rx="1.5" fill="currentColor"/><g fill="#fff"><rect x="3" y="5.5" width="2" height="2"/><rect x="7" y="5.5" width="2" height="2"/><rect x="11" y="5.5" width="2" height="2"/><rect x="15" y="5.5" width="2" height="2"/><rect x="19" y="5.5" width="2" height="2"/><rect x="3" y="16.5" width="2" height="2"/><rect x="7" y="16.5" width="2" height="2"/><rect x="11" y="16.5" width="2" height="2"/><rect x="15" y="16.5" width="2" height="2"/><rect x="19" y="16.5" width="2" height="2"/><rect x="3" y="9" width="5" height="6" rx="0.5"/><rect x="9.5" y="9" width="5" height="6" rx="0.5"/><rect x="16" y="9" width="5" height="6" rx="0.5"/></g>',
+		vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 18 C9 17 11 8 20 5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
+		tippen: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
+		pole: '<rect x="4" y="2" width="8" height="10" fill="#D32F2F"/><rect x="4" y="12" width="8" height="10" fill="#2E7D32"/><ellipse cx="18" cy="12" rx="3" ry="8" fill="none" stroke="currentColor" stroke-width="2"/>',
+		bremse: '<rect x="2" y="6" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="19" r="2" fill="currentColor"/><circle cx="17" cy="19" r="2" fill="currentColor"/>',
+		spiel: '<rect x="2" y="7" width="20" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10v5M4.5 12.5h5" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="11" r="1.4" fill="currentColor"/><circle cx="18.5" cy="14" r="1.4" fill="currentColor"/>'
+	};
+	KI.seite = function (cfg) {
+		const blatt = document.querySelector(".blatt");
+		blatt.innerHTML = '<div class="kopf"><span class="nr">' + cfg.klasse + '</span><span class="kapitel">' + cfg.kapitel + '</span><span class="nr zwilling">' + cfg.klasse + "</span></div>";
+		const leiste = el("div", "modusleiste"); blatt.appendChild(leiste);
+		const params = new URLSearchParams(location.search);
+		const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
+			const [name, stufe] = m.split("-");
+			if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
+			return name;
+		}) : cfg.modi.map(m => m.id);
+		const knoepfe = {}, abschnitte = {}, gebaut = {}, modi = {};
+		for (const m of cfg.modi) {
+			if (!erlaubt.includes(m.id)) continue;
+			modi[m.id] = m;
+			const a = el("section", "tcb blau", '<div class="tcb-title">' + m.titel + '</div><div class="tcb-body"></div>');
+			a.id = "m-" + m.id; a.hidden = true; blatt.appendChild(a); abschnitte[m.id] = a;
+			const b = el("button", "", '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + (m.icon || KI.MODUS_ICON[m.id] || KI.MODUS_ICON.spiel) + "</svg><span>" + m.name + '</span><span class="mstern"></span>');
+			b.addEventListener("click", () => zeige(m.id));
+			leiste.appendChild(b); knoepfe[m.id] = b;
+		}
+		blatt.appendChild(el("div", "fuss-autor", "Kast"));
+		if (Object.keys(knoepfe).length <= 1) leiste.hidden = true;
+		function sterne() { for (const id in knoepfe) { const s = KI.speicher.lies("sterne_" + id, 0); knoepfe[id].querySelector(".mstern").textContent = s ? "★".repeat(s) : ""; } }
+		document.addEventListener("ki-sterne", sterne); sterne();
+		function zeige(id) {
+			for (const k in knoepfe) { knoepfe[k].classList.toggle("aktiv", k === id); abschnitte[k].hidden = k !== id; }
+			if (!gebaut[id]) { gebaut[id] = true; modi[id].bau(abschnitte[id].querySelector(".tcb-body")); }
+			KI.speicher.schreib("letzterModus", id);
+		}
+		const letzter = KI.speicher.lies("letzterModus", null);
+		const erster = Object.keys(knoepfe)[0];
+		if (erster) zeige(knoepfe[letzter] ? letzter : erster);
+	};
+
+	/* ==========================================================================
 	   Canvas-Hilfe: skaliert ein Canvas auf seine CSS-Breite (scharf auf Tablets)
 	   liefert {ctx, B, H} in CSS-Pixeln
 	   ========================================================================== */
@@ -1444,22 +1735,22 @@ const MI = {
 	paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
 	kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
 	vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 8 C8 2 10 2 12 12 S17 22 21 13" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
-	polung: '<circle cx="7" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.5 12h5M7 9.5v5" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14.5 12h5" stroke="currentColor" stroke-width="2"/>',
 	sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
 	wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
 	fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>'
 };
-const MODI = [["paare", "Paare"], ["kette", "Kette"], ["vorhersage", "Vorhersage"], ["polung", "Polungsspiel"], ["sortieren", "Sortieren"], ["wischen", "Stimmt's?"], ["fehler", "Fehler finden"]];
+const MODI = [["paare", "Paare"], ["kette", "Kette"], ["vorhersage", "Vorhersage"], ["sortieren", "Sortieren"], ["wischen", "Stimmt's?"], ["fehler", "Fehler finden"]];
 const gebaut = {};
 function modusleiste() {
 	const leiste = document.getElementById("modusleiste");
 	const params = new URLSearchParams(location.search);
-	/* ?modus=kette-3: Übung „kette“, NUR Stufe 3; ?modus=paare,kette: mehrere Übungen (für QR-Codes auf dem Arbeitsblatt) */
+	/* ?modus=kette-1: Übung „kette“, NUR Stufe 1; ?modus=paare,kette: mehrere Übungen (für QR-Codes auf dem Arbeitsblatt) */
 	const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
 		const [name, stufe] = m.split("-");
 		if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
 		return name;
 	}) : MODI.map(m => m[0]);
+	if (!MODI.some(m => erlaubt.includes(m[0]))) erlaubt.splice(0, erlaubt.length, ...MODI.map(m => m[0]));   /* unbekannter Modus (alter QR-Code): alle Übungen */
 	const knoepfe = {};
 	for (const [id, name] of MODI) {
 		if (!erlaubt.includes(id)) { document.getElementById("m-" + id).remove(); continue; }
@@ -1556,18 +1847,6 @@ BAU.kette = (b) => KI.kette(b, {
 				"Es entsteht eine Wechselspannung."
 			],
 			falsche: ["Je mehr Feldlinien durch die Schleife gehen, desto größer ist die Spannung.", "Die Spannung ist immer gleich groß, nur die Richtung wechselt."]
-		},
-		{
-			name: "Schwerer kurbeln", titel: "Warum lässt sich der Generator mit Lampe schwerer drehen?",
-			auftrag: "Bringe die Bausteine in die richtige Reihenfolge. Zwei Bausteine sind falsch.",
-			schritte: [
-				"Der Schalter wird geschlossen.",
-				"Die induzierte Spannung treibt einen Strom durch Schleife und Lampe.",
-				"Nach der Lenzschen Regel wirkt der Induktionsstrom seiner Ursache, der Drehung, entgegen.",
-				"Man muss stärker kurbeln.",
-				"Die zusätzliche Energie beim Kurbeln wird in der Lampe zu Licht und Wärme."
-			],
-			falsche: ["Die Lampe erzeugt Reibung an der Kurbel.", "Bei geschlossenem Schalter verschwindet das Magnetfeld."]
 		}
 	]
 });
@@ -1604,8 +1883,6 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Dreht man doppelt so schnell, wechselt das Vorzeichen der Spannung genauso oft wie vorher.", ja: false, erkl: "Doppelt so viele Umdrehungen in derselben Zeit: Das Vorzeichen wechselt doppelt so häufig." },
 		{ t: "Mit Schleifringen liefert der Generator eine Wechselspannung.", ja: true, erkl: "" },
 		{ t: "Mit einem Kommutator liefert der Generator ebenfalls eine Wechselspannung.", ja: false, erkl: "Der Kommutator polt nach jeder halben Umdrehung um: Es entsteht eine pulsierende Gleichspannung." },
-		{ t: "Ist eine Lampe angeschlossen, lässt sich der Generator schwerer drehen.", ja: true, erkl: "" },
-		{ t: "Auch ohne angeschlossenes Gerät bremst der Induktionsstrom die Drehung.", ja: false, erkl: "Bei offenem Stromkreis fließt kein Strom: Es gibt keine Bremswirkung." },
 		{ t: "Die kurzen Seiten der Schleife tragen zur Spannung bei.", ja: false, erkl: "Die Lorentzkraft wirkt dort quer zum Draht, nicht an ihm entlang." },
 		{ t: "Hält man die Schleife an, ist die Spannung null, auch wenn sie im Magnetfeld steht.", ja: true, erkl: "" },
 		{ t: "Beim Fahrraddynamo dreht sich der Magnet, die Spule steht still.", ja: true, erkl: "" }
@@ -1780,172 +2057,6 @@ BAU.vorhersage = function (b) {
 		}
 	}
 	runde(KI.startStufe(RUNDEN.length));
-	window.addEventListener("resize", () => { if (b.offsetParent) zeichne(); });
-};
-
-/* ==========================================================================
-   Polungsspiel: Rotierende Schleife von oben und von der Seite (wie auf dem Arbeitsblatt).
-   Welcher Schleifring ist Pluspol? Physik: Seite 1 bei Winkel th (von oben, gegen den Uhrzeigersinn ab rechts),
-   Drehsinn s (-1: Uhrzeigersinn), Feld in x-Richtung bx (+1: Nordpol links).
-   Geschwindigkeit v = s * (-sin th, cos th); Kraft auf positive Ladungsträger in Seite 1 nach oben ~ -v_y * bx.
-   Nach oben (weg von den Ringen unten): Ring 1 Minuspol, Ring 2 Pluspol.
-   ========================================================================== */
-BAU.polung = function (b) {
-	const STUFEN = [
-		{ name: "Stufe 1", text: "Drehung im Uhrzeigersinn, Nordpol links (wie auf dem Arbeitsblatt).", drehsinn: false, magnet: false },
-		{ name: "Stufe 2", text: "Jetzt dreht sich die Schleife mal im, mal gegen den Uhrzeigersinn.", drehsinn: true, magnet: false },
-		{ name: "Stufe 3", text: "Jetzt kann auch der Magnet umgedreht sein. Achte auf N und S!", drehsinn: true, magnet: true }
-	];
-	const ANZAHL = 8;
-	const kopf = KI.el("div", "leiste"); b.appendChild(kopf);
-	const chips = KI.el("div", "chips"); kopf.appendChild(chips);
-	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); kopf.appendChild(rechts);
-	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
-	const lw = KI.el("div", "leinwand"); const cv = KI.el("canvas", "zeichen"); lw.appendChild(cv); b.appendChild(lw);
-	const antw = KI.el("div", "antwortknoepfe"); b.appendChild(antw);
-	const ANTWORTEN = [
-		["r1", '<span class="ring" style="background:' + ORANGE + '"></span>Ring 1 ist Pluspol'],
-		["null", "keine Spannung"],
-		["r2", '<span class="ring" style="background:' + VIOLETT + '"></span>Ring 2 ist Pluspol']
-	];
-	const knopf = {};
-	for (const [id, html] of ANTWORTEN) { const k = KI.el("button", "", html); k.addEventListener("click", () => antworte(id, k)); antw.appendChild(k); knopf[id] = k; }
-	const rueck = KI.el("div", ""); b.appendChild(rueck);
-	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Polungsspiel: " + STUFEN[nr].name + ", " + richtig + " von " + ANZAHL + " richtig" }, { art: "bild", quelle: KI.canvasKopie(cv) }]), "Polungsspiel_Generator");
-	heft.hidden = true;
-	let nr = 0, aufgaben = [], i = 0, richtig = 0, fehler = 0, serie = 0, zeigeLoesung = false, wartet = false;
-	const knoepfe = STUFEN.map((s, j) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => starte(j)); chips.appendChild(k); return k; });
-	KI.chipsBeschraenken(chips, knoepfe);
-	function markiere() {
-		knoepfe.forEach((k, j) => {
-			k.classList.toggle("aktiv", j === nr);
-			const st = KI.speicher.lies("sterne_polung_" + j, 0);
-			k.innerHTML = STUFEN[j].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : "");
-		});
-	}
-	function zeigeStatus() { status.innerHTML = "<span>" + Math.min(i + 1, ANZAHL) + " / " + ANZAHL + "</span><span>Richtig: " + richtig + "</span>" + (serie >= 2 ? '<span class="serie">🔥 ' + serie + "</span>" : ""); }
-	function starte(j) {
-		nr = j; i = 0; richtig = 0; fehler = 0; serie = 0; zeigeLoesung = false; wartet = false;
-		const st = STUFEN[j], winkel = [90, 45, 0, -45, -90, -135, 180, 135];
-		aufgaben = [];
-		/* zwei Stellungen ohne Spannung, sonst gemischt */
-		const pool = KI.mischen(winkel);
-		for (let k = 0; k < ANZAHL; k++) aufgaben.push({ th: pool[k], s: st.drehsinn && Math.random() < 0.5 ? 1 : -1, bx: st.magnet && Math.random() < 0.5 ? -1 : 1 });
-		markiere(); auftrag.innerHTML = st.text + " Die Seitenansicht ist vom Auge aus gesehen. Welcher Schleifring ist gerade Pluspol?";
-		rueck.innerHTML = ""; heft.hidden = true; antw.hidden = false;
-		Object.values(knopf).forEach(k => { k.className = ""; k.disabled = false; });
-		zeigeStatus(); zeichne();
-	}
-	function loesung(a) {
-		const vy = a.s * Math.cos(a.th * Math.PI / 180);
-		const fz = -vy * a.bx;   /* Kraft auf positive Ladungsträger in Seite 1 nach oben */
-		if (Math.abs(Math.cos(a.th * Math.PI / 180)) < 0.01) return "null";
-		return fz > 0 ? "r2" : "r1";
-	}
-	function zeichne() {
-		const { ctx: c, B, H } = KI.leinwand(cv, B => Math.min(B / 6.4, 72) * 4.85);
-		c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
-		const a = aufgaben[Math.min(i, ANZAHL - 1)];
-		const schmal = B < 560, g = schmal ? 12 : 14;
-		const e = Math.min(B / 6.4, 72), cx = B / 2, cyO = e * 1.15;
-		const P = (x, y) => [cx + x * e, cyO - y * e];
-		const thr = a.th * Math.PI / 180, R = 0.95;
-		/* Blick von oben: Magnete, Feld, Drehsinn, Schleife */
-		const links = a.bx > 0 ? ["N", ROT] : ["S", GRUEN], rechtsM = a.bx > 0 ? ["S", GRUEN] : ["N", ROT];
-		let p = P(-2.65, 0.95); c.fillStyle = links[1]; c.fillRect(p[0], p[1], 0.75 * e, 1.9 * e);
-		p = P(1.9, 0.95); c.fillStyle = rechtsM[1]; c.fillRect(p[0], p[1], 0.75 * e, 1.9 * e);
-		KI.text(c, links[0], ...P(-2.275, 0), e * 0.42, "#fff", "center", "bold"); KI.text(c, rechtsM[0], ...P(2.275, 0), e * 0.42, "#fff", "center", "bold");
-		for (const y of [-0.6, 0.6]) { const q1 = P(a.bx > 0 ? -1.88 : 1.88, y), q2 = P(a.bx > 0 ? 1.86 : -1.86, y); KI.pfeil(c, q1[0], q1[1], q2[0], q2[1], "rgba(91,123,224,0.55)", 1.4); }
-		/* Drehsinn: Bogen über der Achse */
-		c.strokeStyle = "#111"; c.lineWidth = 2; c.beginPath();
-		const m = P(0, 0), rb = 0.5 * e;
-		c.arc(m[0], m[1], rb, -Math.PI * 0.92, -Math.PI * 0.08); c.stroke();
-		const spitzeW = a.s < 0 ? -Math.PI * 0.08 : -Math.PI * 0.92, sx = m[0] + rb * Math.cos(spitzeW), sy = m[1] + rb * Math.sin(spitzeW);
-		const tang = spitzeW + (a.s < 0 ? Math.PI / 2 : -Math.PI / 2);
-		KI.pfeil(c, sx - 6 * Math.cos(tang), sy - 6 * Math.sin(tang), sx + 2 * Math.cos(tang), sy + 2 * Math.sin(tang), "#111", 2);
-		const s1 = P(R * Math.cos(thr), R * Math.sin(thr)), s2 = P(-R * Math.cos(thr), -R * Math.sin(thr));
-		c.setLineDash([5, 3]); c.strokeStyle = "#666"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(s2[0], s2[1]); c.lineTo(s1[0], s1[1]); c.stroke(); c.setLineDash([]);
-		c.fillStyle = "#999"; c.beginPath(); c.arc(m[0], m[1], 3, 0, 2 * Math.PI); c.fill();
-		c.fillStyle = ORANGE; c.beginPath(); c.arc(s1[0], s1[1], e * 0.15, 0, 2 * Math.PI); c.fill();
-		c.fillStyle = VIOLETT; c.beginPath(); c.arc(s2[0], s2[1], e * 0.15, 0, 2 * Math.PI); c.fill();
-		/* Auge */
-		const au = P(-1.35, -1.3);
-		c.strokeStyle = "#555"; c.lineWidth = 1.5; c.beginPath(); c.ellipse(au[0], au[1], e * 0.28, e * 0.14, 0, 0, 2 * Math.PI); c.stroke();
-		c.fillStyle = "#333"; c.beginPath(); c.arc(au[0], au[1], e * 0.07, 0, 2 * Math.PI); c.fill();
-		KI.pfeil(c, au[0] + e * 0.35, au[1] - e * 0.05, au[0] + e * 0.85, au[1] - e * 0.38, "#777", 1.5);
-		/* Seitenansicht */
-		const Q = (x, y) => [cx + x * e, cyO + e * 1.15 + (-y) * e];   /* y nach unten: 0 oben an der Schleife */
-		const xs1 = R * Math.cos(thr), xs2 = -xs1, vorn1 = Math.sin(thr) < 0;
-		const seite = (x, farbe, steg, ringY) => {
-			c.strokeStyle = farbe; c.lineWidth = Math.max(3, e * 0.07); c.lineCap = "round";
-			let q = Q(x, 0), q2 = Q(x, -1.55); c.beginPath(); c.moveTo(q[0], q[1]); c.lineTo(q2[0], q2[1]);
-			const q3 = Q(steg, -1.55), q4 = Q(steg, ringY); c.lineTo(q3[0], q3[1]); c.lineTo(q4[0], q4[1]); c.stroke();
-		};
-		const oben = () => { c.strokeStyle = VIOLETT; c.lineWidth = Math.max(3, e * 0.07); let q = Q(xs2, 0), q2 = Q(0, 0); c.beginPath(); c.moveTo(q[0], q[1]); c.lineTo(q2[0], q2[1]); c.stroke(); c.strokeStyle = ORANGE; q = Q(xs1, 0); c.beginPath(); c.moveTo(q2[0], q2[1]); c.lineTo(q[0], q[1]); c.stroke(); };
-		if (vorn1) { seite(xs2, VIOLETT, -0.12, -2.15); oben(); seite(xs1, ORANGE, 0.12, -1.85); }
-		else { seite(xs1, ORANGE, 0.12, -1.85); oben(); seite(xs2, VIOLETT, -0.12, -2.15); }
-		let r1 = Q(-0.42, -1.85), r2 = Q(-0.42, -2.15);
-		c.fillStyle = ORANGE; c.fillRect(r1[0], r1[1] - e * 0.08, 0.84 * e, 0.16 * e);
-		c.fillStyle = VIOLETT; c.fillRect(r2[0], r2[1] - e * 0.08, 0.84 * e, 0.16 * e);
-		KI.text(c, "Ring 1", r1[0] + 0.95 * e, r1[1], g - 1, ORANGE, "left", "bold");
-		KI.text(c, "Ring 2", r2[0] + 0.95 * e, r2[1] + 4, g - 1, VIOLETT, "left", "bold");
-		if (!schmal) { KI.text(c, "von oben", 8, 14, g - 1, "#777", "left"); KI.text(c, "von der Seite", 8, Q(0, 0)[1], g - 1, "#777", "left"); }
-		/* Lösung nach einer Antwort: Bewegung oben, Kraft auf positive Ladungsträger in der Seitenansicht */
-		if (zeigeLoesung) {
-			const vx = a.s * -Math.sin(thr), vy = a.s * Math.cos(thr);
-			KI.pfeil(c, s1[0], s1[1], s1[0] + vx * e * 0.65, s1[1] - vy * e * 0.65, BLAU, 2.4);
-			KI.pfeil(c, s2[0], s2[1], s2[0] - vx * e * 0.65, s2[1] + vy * e * 0.65, BLAU, 2.4);
-			const l = loesung(a);
-			if (l !== "null") {
-				const auf1 = l === "r2";
-				const pf = (x, aufw) => { const ya = aufw ? -1.2 : -0.35, yb = aufw ? -0.35 : -1.2, q1 = Q(x + Math.sign(x || 1) * 0.25, ya), q2 = Q(x + Math.sign(x || 1) * 0.25, yb); KI.pfeil(c, q1[0], q1[1], q2[0], q2[1], BLAU, 2.6); };
-				pf(xs1, auf1); pf(xs2, !auf1);
-				KI.text(c, "Kraft auf +", ...Q(0, -0.75), g - 1, BLAU, "center");
-			} else KI.text(c, "Bewegung parallel zum Feld: keine Kraft", ...Q(0, -0.75), g - 1, BLAU, "center", "bold");
-		}
-	}
-	function antworte(id, k) {
-		if (wartet || i >= ANZAHL) return;
-		const a = aufgaben[i], ok = id === loesung(a);
-		if (ok) {
-			richtig++; serie++;
-			k.classList.add("richtig"); zeigeLoesung = true; zeichne();
-			if (serie % 4 === 0) KI.funken(lw, 12);
-			wartet = true;
-			setTimeout(() => { wartet = false; k.classList.remove("richtig"); weiter(); }, 900);
-		} else {
-			fehler++; serie = 0; wartet = true;
-			k.classList.add("falsch"); knopf[loesung(a)].classList.add("richtig"); zeigeLoesung = true; zeichne();
-			const vorne = a.s * Math.cos(a.th * Math.PI / 180) < 0;
-			let txt;
-			if (loesung(a) === "null") txt = "Die Seiten bewegen sich gerade parallel zum Feld: keine Lorentzkraft, keine Spannung.";
-			else txt = "Seite 1 (orange) bewegt sich " + (vorne ? "nach vorne, zum Auge hin" : "nach hinten, vom Auge weg") + ". Drei-Finger-Regel der rechten Hand: Daumen in Bewegungsrichtung, Zeigefinger in Feldrichtung (von N nach S). Der Mittelfinger zeigt die Kraft auf positive Ladungsträger in Seite 1: " + (loesung(a) === "r2" ? "nach oben, weg von Ring 1. Also ist Ring 2 Pluspol." : "nach unten, zu Ring 1 hin. Also ist Ring 1 Pluspol.");
-			rueck.innerHTML = '<div class="erkl">' + txt + "</div>";
-			const w = KI.el("button", "haupt", "Weiter"); w.addEventListener("click", () => { wartet = false; rueck.innerHTML = ""; Object.values(knopf).forEach(x => x.className = ""); weiter(); });
-			const l = KI.el("div", "leiste"); l.style.justifyContent = "center"; l.appendChild(w); rueck.appendChild(l);
-		}
-		zeigeStatus();
-	}
-	function weiter() {
-		i++; zeigeLoesung = false;
-		if (i >= ANZAHL) {
-			antw.hidden = true; zeigeLoesung = true; i = ANZAHL - 1; zeichne(); i = ANZAHL;
-			const st = fehler <= 1 ? 3 : fehler <= 3 ? 2 : 1;
-			KI.speicher.schreib("sterne_polung_" + nr, Math.max(st, KI.speicher.lies("sterne_polung_" + nr, 0)));
-			KI.bestwert("polung", st); markiere();
-			const p = KI.el("p", "rueck gut", richtig + " von " + ANZAHL + " richtig! " + KI.sterneHtml(st));
-			rueck.innerHTML = ""; rueck.appendChild(p); KI.funken(p, 6 * st);
-			const n = KI.naechsteStufe(nr, STUFEN.length);
-			const l = KI.el("div", "leiste");
-			if (n >= 0) { const w = KI.el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); l.appendChild(w); }
-			l.appendChild(KI.symbolKnopf("zurueck", "Stufe nochmal", () => starte(nr)));
-			rueck.appendChild(l); heft.hidden = false;
-			status.innerHTML = "<span>Richtig: " + richtig + " / " + ANZAHL + "</span>";
-			return;
-		}
-		zeigeStatus(); zeichne();
-	}
-	starte(KI.startStufe(STUFEN.length));
 	window.addEventListener("resize", () => { if (b.offsetParent) zeichne(); });
 };
 
