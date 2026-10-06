@@ -199,6 +199,7 @@
 		yNull = 12 + 9.2 * s;
 		const schmal = W < 560;
 		geo = {
+			schmal: schmal,
 			hx: schmal ? 10 : 40,                         /* Haus links            */
 			hb: schmal ? W * 0.50 : W * 0.44,             /* Hausbreite            */
 		};
@@ -212,16 +213,17 @@
 
 	/* Treppenlauf: von Stockwerk i nach i+1 abwechselnd von links nach rechts und zurueck */
 	function treppeX(seite) {
-		const l = geo.hx + geo.hb * 0.42, r = geo.hx + geo.hb * 0.86;
+		const l = geo.hx + geo.hb * (geo.schmal ? 0.5 : 0.42), r = geo.hx + geo.hb * 0.86;
 		return seite === 0 ? l : r;
 	}
 	function peterOrt(f) {                          /* f: Stockwerk, auch gebrochen */
 		const i = Math.max(0, Math.min(3, Math.floor(f)));
 		const t = f - i;
 		const h = STOCKWERKE[0].h + f * ETAGE;
-		if (i >= 3 || t === 0) return { x: treppeX(i % 2) + (i % 2 === 0 ? -18 : 18), h: h };
+		const d = geo.schmal ? 11 : 18;          /* Abstand vom Treppenanfang */
+		if (i >= 3 || t === 0) return { x: treppeX(i % 2) + (i % 2 === 0 ? -d : d), h: h };
 		const x0 = treppeX(i % 2), x1 = treppeX((i + 1) % 2);
-		const xa = x0 + (i % 2 === 0 ? -18 : 18), xb = x1 + ((i + 1) % 2 === 0 ? -18 : 18);
+		const xa = x0 + (i % 2 === 0 ? -d : d), xb = x1 + ((i + 1) % 2 === 0 ? -d : d);
 		return { x: xa + (xb - xa) * t, h: h };
 	}
 
@@ -359,7 +361,7 @@
 			const lang = k % 2 === 0;
 			ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
 			ctx.beginPath(); ctx.moveTo(ax - (lang ? 6 : 3), y); ctx.lineTo(ax, y); ctx.stroke();
-			if (lang && k !== 0) { ctx.fillStyle = "#777"; ctx.fillText(mitVorzeichen(k * 500), ax - 8, y + 4); }
+			if (lang && k !== 0 && !geo.schmal) { ctx.fillStyle = "#777"; ctx.fillText(mitVorzeichen(k * 500), ax - 8, y + 4); }
 		}
 		/* Wertschilder an den Stockwerken */
 		STOCKWERKE.forEach((st, i) => {
@@ -387,7 +389,7 @@
 		ctx.save();
 		ctx.translate(x - 9, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2);
 		ctx.font = "bold 14px " + SCHRIFT; ctx.textAlign = "center";
-		ctx.fillText("ΔE = " + mitVorzeichen(epot(STOCKWERKE[z.ziel].h) - epot(STOCKWERKE[z.start].h)) + " J", 0, 0);
+		ctx.fillText(geo.schmal ? "ΔE" : "ΔE = " + mitVorzeichen(epot(STOCKWERKE[z.ziel].h) - epot(STOCKWERKE[z.start].h)) + " J", 0, 0);
 		ctx.restore();
 	}
 
@@ -420,8 +422,9 @@
 		ctx.font = "bold 14px " + SCHRIFT;
 		const text = mitVorzeichen(e) + " J";
 		const b = ctx.measureText(text).width + 14;
-		const sx = Math.min(p.x - b / 2, geo.hx + geo.hb - b - 4);
-		schild(Math.max(geo.hx + 4, sx), p.y - 1.75 * s - 18, text, f, g);
+		/* rechts neben dem Kopf, damit Stockwerksnamen frei bleiben */
+		const sx = Math.min(p.x + 0.45 * s, geo.hx + geo.hb - b - 4);
+		schild(sx, p.y - 1.6 * s, text, f, g);
 		aktualisiereText();
 	}
 
