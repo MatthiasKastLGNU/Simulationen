@@ -511,34 +511,66 @@ function schritt(dt) {
 	wirbelBerechnen();
 }
 function schwingungen() { return Math.floor(zustand.nulldurchgaenge / 2); }
-/* Wirbelströme für die Darstellung: Schwerpunkte der Bereiche mit zunehmendem und abnehmendem Feld */
+/* Wirbelströme für die Darstellung: Stromfunktion psi im Körper (Strom fließt längs der Linien psi = const).
+   Ohmsches Gesetz und Induktionsgesetz ergeben  Laplace(psi) = -dB/dt  im Metall, psi = 0 am Rand (Strom verlässt das Metall nicht).
+   Das Loch des geschlossenen Rings ist ein einziger Knoten mit psi = C: Dort gilt das Induktionsgesetz für den ganzen Umlauf
+   (Feldänderung in der Ringfläche, auch im Loch). Beim geschlitzten Ring ist das Loch über den Schlitz mit dem Außenraum verbunden:
+   kein Ringstrom, nur kleine Wirbel im Metall. Gelöst mit SOR, je Bild einige Schritte, ausgehend von der letzten Lösung. */
+const GH = 0.15, GU0 = -3.375, GV0 = -2.925, NU = 46, NV = 40;
+function imMetall(form, u, v) {
+	const r = Math.hypot(u, v);
+	if (form === "platte") return Math.abs(u) < 3 && Math.abs(v) < 2.5;
+	if (form === "kamm") return Math.abs(u) < 3 && Math.abs(v) < 2.5 && (v > 1.0 || Math.floor((u + 3) / 0.6) % 2 === 0);
+	if (form === "ring") return r > 1.6 && r < 2.8;
+	return r > 1.6 && r < 2.8 && !(Math.abs(u) < 0.25 && v < 0);
+}
+function gitter(form) {   /* typ: 0 außen (psi = 0), 1 Metall, 2 Loch des geschlossenen Rings (psi = C) */
+	const typ = new Uint8Array(NU * NV);
+	for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) {
+		const u = GU0 + i * GH, v = GV0 + j * GH;
+		typ[j * NU + i] = imMetall(form, u, v) ? 1 : (form === "ring" && Math.hypot(u, v) <= 1.6 ? 2 : 0);
+	}
+	return { typ, psi: new Float64Array(NU * NV), q: new Float64Array(NU * NV), C: 0 };
+}
+const GITTER = {}; Object.keys(NAMEN).forEach(k => GITTER[k] = gitter(k));
+function stromLoesen(gt, theta, omega, schritte) {
+	const { typ, psi, q } = gt;
+	let lochQuelle = 0;
+	for (let k = 0; k < NU * NV; k++) {
+		if (!typ[k]) continue;
+		const u = GU0 + (k % NU) * GH, v = GV0 + Math.floor(k / NU) * GH;
+		const [x, y] = welt(theta, u, v), [gx, gy] = feldGrad(x, y);
+		q[k] = GH * GH * (-y * gx + x * gy) * omega * zustand.B0;   /* h^2 * dB/dt */
+		if (typ[k] === 2) lochQuelle += q[k];
+	}
+	const W = 1.85, wert = k => typ[k] === 2 ? gt.C : typ[k] === 1 ? psi[k] : 0;
+	for (let n = 0; n < schritte; n++) {
+		let summe = 0, kanten = 0;
+		for (let j = 1; j < NV - 1; j++) for (let i = 1; i < NU - 1; i++) {
+			const k = j * NU + i;
+			if (typ[k] !== 1) continue;
+			const neu = (wert(k - 1) + wert(k + 1) + wert(k - NU) + wert(k + NU) + q[k]) / 4;
+			psi[k] += W * (neu - psi[k]);
+			for (const d of [-1, 1, -NU, NU]) if (typ[k + d] === 2) { summe += psi[k]; kanten++; }
+		}
+		if (kanten) gt.C = (summe + lochQuelle) / kanten;
+	}
+}
+let PSI_REF = 1;
+(function eichenStrom() {   /* Bezug: größte Stromstärke der Platte bei schmalen Polschuhen, 40° losgelassen */
+	const alt = [zustand.koerper, zustand.spulen, zustand.polschuh];
+	zustand.spulen = true; zustand.polschuh = "schmal";
+	const gt = gitter("platte"), om = Math.sqrt(2 * G / LP * (1 - Math.cos(40 * Math.PI / 180)));
+	let m = 0;
+	for (let t = -0.4; t <= 0.4; t += 0.05) { gt.psi.fill(0); stromLoesen(gt, t, om, 160); m = Math.max(m, ...gt.psi.map(Math.abs)); }
+	PSI_REF = m || 1;
+	[zustand.koerper, zustand.spulen, zustand.polschuh] = alt;
+})();
 function wirbelBerechnen() {
-	zustand.wirbel = [];
-	if (!zustand.spulen || zustand.koerper === "schlitzring") return;
-	const zs = ZELLEN[zustand.koerper];
-	if (zustand.koerper === "ring") {
-		let summe = 0;
-		for (const z of zs) { const [x, y] = welt(zustand.theta, z.u, z.v), [gx, gy] = feldGrad(x, y); summe += (-y * gx + x * gy) * zustand.omega; }
-		/* Fluss durch die ganze Ringfläche: auch das Loch zählt */
-		let loch = 0;
-		for (let u = -1.5; u <= 1.5; u += 0.3) for (let v = -1.5; v <= 1.5; v += 0.3) if (Math.hypot(u, v) < 1.6) { const [x, y] = welt(zustand.theta, u, v), [gx, gy] = feldGrad(x, y); loch += (-y * gx + x * gy) * zustand.omega; }
-		const st = (summe * 0.75 + loch) * zustand.B0 * 0.02;
-		if (Math.abs(st) > 0.04) zustand.wirbel.push({ u: 0, v: 0, r: 2.2, staerke: st });
-		return;
-	}
-	const teile = { plus: { u: 0, v: 0, g: 0 }, minus: { u: 0, v: 0, g: 0 } };
-	for (const z of zs) {
-		const [x, y] = welt(zustand.theta, z.u, z.v), [gx, gy] = feldGrad(x, y);
-		const e = z.s * (-y * gx + x * gy) * zustand.omega * zustand.B0;   /* dB/dt, gewichtet */
-		const t = e > 0 ? teile.plus : teile.minus, w = Math.abs(e);
-		t.u += z.u * w; t.v += z.v * w; t.g += w;
-	}
-	const grob = zustand.koerper === "kamm";
-	[[teile.plus, 1], [teile.minus, -1]].forEach(([t, vz]) => {
-		if (t.g < 1e-6) return;
-		const st = vz * t.g * ZELLE * ZELLE * 0.07;
-		if (Math.abs(st) > 0.05) zustand.wirbel.push({ u: t.u / t.g, v: t.v / t.g, r: grob ? 0.55 : 1.2, staerke: st });
-	});
+	const gt = GITTER[zustand.koerper];
+	if (!zustand.spulen) { gt.psi.fill(0); gt.C = 0; zustand.wirbel = []; return; }
+	stromLoesen(gt, zustand.theta, zustand.omega, 40);
+	zustand.wirbel = [gt];
 }
 function loslassen() {
 	Object.assign(zustand, { theta: 40 * Math.PI / 180, omega: 0, nulldurchgaenge: 0, laeuft: true, steht: false, zeit: 0, verlauf: [] });
@@ -550,7 +582,7 @@ function loslassen() {
 const canvas = document.getElementById("sim-canvas"), ctx = canvas.getContext("2d");
 const dCanvas = document.getElementById("diagramm"), dctx = dCanvas.getContext("2d");
 let W = 740, H = 380, DW = 740, DH = 200, schrift = "sans-serif", sk = 8, ox = 0, oy = 0;
-const BLAU = "#0000BF", WIRBEL = "rgba(20,60,190,";
+const BLAU = "#0000BF", WIRBEL = "rgba(230,81,0,";
 function text(c, t, x, y, g, fa, ausr = "center", stil = "") { c.font = stil + " " + Math.round(g) + "px " + schrift; c.fillStyle = fa; c.textAlign = ausr; c.textBaseline = "middle"; c.fillText(t, x, y); }
 function P(x, y) { return [ox + x * sk, oy - y * sk]; }
 function koerperPfad(theta) {
@@ -563,24 +595,85 @@ function koerperPfad(theta) {
 		for (let k = 0; k < 10; k++) { const u0 = -3 + k * 0.6; if (k % 2 === 0) { punkt(u0, -2.5); punkt(u0 + 0.6, -2.5); } else { punkt(u0, 1.0); punkt(u0 + 0.6, 1.0); } }
 		punkt(3, 2.5); ctx.closePath();
 	}
-	if (form === "ring" || form === "schlitzring") {
+	if (form === "ring") {   /* außen und innen als getrennte Linien: keine Naht */
+		for (const r of [2.8, 1.6]) { for (let i = 0; i <= 60; i++) { const a = i / 60 * 2 * Math.PI; punkt(r * Math.cos(a), r * Math.sin(a), i === 0); } ctx.closePath(); }
+	}
+	if (form === "schlitzring") {
 		const lueck = form === "schlitzring" ? 0.09 : 0;
 		for (let i = 0; i <= 60; i++) { const a = -Math.PI / 2 + lueck + i / 60 * (2 * Math.PI - 2 * lueck); punkt(2.8 * Math.cos(a), 2.8 * Math.sin(a), i === 0); }
 		for (let i = 60; i >= 0; i--) { const a = -Math.PI / 2 + lueck + i / 60 * (2 * Math.PI - 2 * lueck); punkt(1.6 * Math.cos(a), 1.6 * Math.sin(a)); }
 		ctx.closePath();
 	}
 }
-function wirbelZeichnen(w) {
-	const [x, y] = welt(zustand.theta, w.u, w.v), m = P(x, y), r = w.r * sk, a = Math.min(1, Math.abs(w.staerke));
-	const gegen = w.staerke > 0;   /* zunehmendes Feld in die Ebene: Strom gegen den Uhrzeigersinn */
-	ctx.strokeStyle = WIRBEL + (0.35 + 0.65 * a) + ")"; ctx.lineWidth = 1.5 + 2.5 * a;
-	const a0 = 0.2, a1 = 2 * Math.PI - 0.5;
-	ctx.beginPath(); ctx.arc(m[0], m[1], r, a0, a1); ctx.stroke();
-	/* Pfeilspitze am Ende des Bogens; Canvas-Winkel wachsen im Uhrzeigersinn */
-	const ende = gegen ? a0 : a1, rx = Math.cos(ende), ry = Math.sin(ende);
-	const tx = gegen ? ry : -ry, ty = gegen ? -rx : rx, ex = m[0] + r * rx, ey = m[1] + r * ry, k = 5 + 3 * a;
-	ctx.fillStyle = ctx.strokeStyle;
-	ctx.beginPath(); ctx.moveTo(ex + tx * k, ey + ty * k); ctx.lineTo(ex - tx * k * 0.3 + rx * k * 0.6, ey - ty * k * 0.3 + ry * k * 0.6); ctx.lineTo(ex - tx * k * 0.3 - rx * k * 0.6, ey - ty * k * 0.3 - ry * k * 0.6); ctx.closePath(); ctx.fill();
+/* Höhenlinien psi = const (marching squares), zu geschlossenen Linien verbunden; Pfeil in Stromrichtung */
+function hoehenlinien(gt, L) {
+	const { typ, psi } = gt, wert = k => typ[k] === 2 ? gt.C : typ[k] === 1 ? psi[k] : 0;
+	const seg = new Map(), punkt = {};
+	/* Kanten-Id: waagrecht (i,j)-(i+1,j): 2k, senkrecht (i,j)-(i,j+1): 2k+1 */
+	const schnitt = (k1, k2, id) => {
+		if (!punkt[id]) {
+			const a = wert(k1), b = wert(k2), t = (L - a) / (b - a);
+			const u1 = GU0 + (k1 % NU) * GH, v1 = GV0 + Math.floor(k1 / NU) * GH, u2 = GU0 + (k2 % NU) * GH, v2 = GV0 + Math.floor(k2 / NU) * GH;
+			punkt[id] = [u1 + t * (u2 - u1), v1 + t * (v2 - v1)];
+		}
+		return id;
+	};
+	const verbinde = (a, b) => { (seg.get(a) || seg.set(a, []).get(a)).push(b); (seg.get(b) || seg.set(b, []).get(b)).push(a); };
+	for (let j = 0; j < NV - 1; j++) for (let i = 0; i < NU - 1; i++) {
+		const k = j * NU + i, ecken = [k, k + 1, k + 1 + NU, k + NU];
+		const w = ecken.map(wert), ueber = w.map(x => x > L);
+		const fall = ueber[0] | ueber[1] << 1 | ueber[2] << 2 | ueber[3] << 3;
+		if (fall === 0 || fall === 15) continue;
+		const kante = [schnitt(k, k + 1, 2 * k), schnitt(k + 1, k + 1 + NU, 2 * (k + 1) + 1), schnitt(k + NU, k + 1 + NU, 2 * (k + NU)), schnitt(k, k + NU, 2 * k + 1)];
+		const m = (w[0] + w[1] + w[2] + w[3]) / 4 > L;
+		const paare = { 1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]], 6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[0, 2]], 11: [[1, 2]], 12: [[1, 3]], 13: [[0, 1]], 14: [[0, 3]],
+			5: m ? [[3, 2], [0, 1]] : [[3, 0], [1, 2]], 10: m ? [[0, 3], [1, 2]] : [[0, 1], [2, 3]] }[fall];
+		for (const [a, b] of paare) verbinde(kante[a], kante[b]);
+	}
+	const linien = [], besucht = new Set();
+	for (const start of seg.keys()) {
+		if (besucht.has(start)) continue;
+		const zug = [start]; besucht.add(start);
+		let vor = null, jetzt = start;
+		for (;;) {
+			const nb = seg.get(jetzt).find(x => x !== vor && !besucht.has(x));
+			if (nb === undefined) break;
+			zug.push(nb); besucht.add(nb); vor = jetzt; jetzt = nb;
+		}
+		if (zug.length > 3) linien.push(zug.map(id => punkt[id]));
+	}
+	return linien;
+}
+function wirbelZeichnen(gt) {
+	let m = Math.abs(gt.C);
+	for (let k = 0; k < gt.psi.length; k++) if (gt.typ[k] === 1) m = Math.max(m, Math.abs(gt.psi[k]));
+	const anteil = m / PSI_REF;
+	if (anteil < 0.004) return;
+	const a = Math.min(1, 0.35 + 1.1 * Math.sqrt(anteil));
+	ctx.save();
+	koerperPfad(zustand.theta); ctx.clip("evenodd");
+	ctx.strokeStyle = WIRBEL + a + ")"; ctx.fillStyle = WIRBEL + a + ")"; ctx.lineWidth = (1.1 + 1.4 * a) * Math.min(1, sk / 11); ctx.lineJoin = "round";
+	for (const vz of [1, -1]) for (const f of [0.3, 0.7]) {
+		const L = vz * f * m;
+		for (const lin of hoehenlinien(gt, L)) {
+			/* Umlaufsinn im Körper: Linie um ein Maximum (L > 0) gegen den Uhrzeigersinn ordnen */
+			let fl = 0;
+			for (let i = 0; i < lin.length; i++) { const [u1, v1] = lin[i], [u2, v2] = lin[(i + 1) % lin.length]; fl += u1 * v2 - u2 * v1; }
+			if ((fl > 0) !== (L > 0)) lin.reverse();
+			const pts = lin.map(([u, v]) => P(...welt(zustand.theta, u, v)));
+			let laenge = 0; for (let i = 1; i < pts.length; i++) laenge += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+			if (laenge < 16) continue;   /* winzige Schleifen nur Unruhe */
+			ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.stroke();
+			/* Pfeilspitze auf der mittleren Linie */
+			if (f !== 0.7 || laenge < 18) continue;
+			const n = pts.length, i = Math.floor(n / 4), q1 = pts[i], q2 = pts[(i + 2) % n];
+			const dx = q2[0] - q1[0], dy = q2[1] - q1[1], l = Math.hypot(dx, dy) || 1, ex = dx / l, ey = dy / l, sp = 4 + 3 * a;
+			ctx.beginPath(); ctx.moveTo(q1[0] + ex * sp, q1[1] + ey * sp);
+			ctx.lineTo(q1[0] - ex * sp * 0.6 - ey * sp * 0.7, q1[1] - ey * sp * 0.6 + ex * sp * 0.7);
+			ctx.lineTo(q1[0] - ex * sp * 0.6 + ey * sp * 0.7, q1[1] - ey * sp * 0.6 - ex * sp * 0.7); ctx.closePath(); ctx.fill();
+		}
+	}
+	ctx.restore();
 }
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
@@ -651,7 +744,7 @@ function werteAnzeigen() {
 document.getElementById("btn-spulen").addEventListener("click", () => { zustand.spulen = !zustand.spulen; if (zustand.laeuft && !zustand.spulen) zustand.steht = false; anzeigen(); });
 document.getElementById("btn-los").addEventListener("click", () => { loslassen(); anzeigen(); });
 document.getElementById("btn-zeitlupe").addEventListener("click", () => { zustand.zeitlupe = !zustand.zeitlupe; anzeigen(); });
-K.bindeKnopfgruppe("koerper-knoepfe", w => { zustand.koerper = w; zustand.laeuft = false; zustand.theta = 0; zustand.omega = 0; zustand.zeit = 0; zustand.verlauf = []; zustand.nulldurchgaenge = 0; zustand.wirbel = []; }, anzeigen);
+K.bindeKnopfgruppe("koerper-knoepfe", w => { zustand.koerper = w; zustand.laeuft = false; zustand.theta = 0; zustand.omega = 0; zustand.zeit = 0; zustand.verlauf = []; zustand.nulldurchgaenge = 0; zustand.wirbel = []; const gt = GITTER[w]; gt.psi.fill(0); gt.C = 0; }, anzeigen);
 K.bindeKnopfgruppe("polschuh-knoepfe", w => { zustand.polschuh = w; }, anzeigen);
 K.bindeSlider("regler-b", null, "", v => zustand.B0 = v, anzeigen);
 document.getElementById("btn-notieren").addEventListener("click", () => {
