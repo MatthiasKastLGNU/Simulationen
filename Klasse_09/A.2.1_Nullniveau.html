@@ -155,7 +155,7 @@
 	const mitVorzeichen = (x) => {
 		const r = Math.round(x);
 		if (r === 0) return "0";
-		return (r > 0 ? "+" : "−") + Math.abs(r).toLocaleString("de-DE");
+		return (r > 0 ? "+" : "−") + Math.abs(r);
 	};
 
 	/* ---------------- Physik (SI: m, kg, J) ---------------- */
@@ -203,7 +203,7 @@
 			hb: schmal ? W * 0.50 : W * 0.44,             /* Hausbreite            */
 		};
 		geo.ax = geo.hx + geo.hb + (schmal ? 34 : 64);    /* Energieskala          */
-		geo.tx = geo.ax + (schmal ? 12 : 18);             /* Wertschilder          */
+		geo.tx = geo.ax + (schmal ? 16 : 26);             /* Wertschilder          */
 		geo.dx = W - (schmal ? 22 : 36);                  /* Delta-Pfeil           */
 		zeichne();
 	}
@@ -268,9 +268,6 @@
 				ctx.lineTo(xa, ya); ctx.lineTo(xa, yb);
 			}
 			ctx.stroke();
-			ctx.strokeStyle = "rgba(140,122,98,0.45)"; ctx.lineWidth = 1;
-			ctx.beginPath(); ctx.moveTo(x0, y0 - 0.9 * s); ctx.lineTo(x1, y1 - 0.9 * s); ctx.stroke();
-			ctx.strokeStyle = "#8C7A62"; ctx.lineWidth = 1.6;
 		}
 		/* Waende und Dach */
 		ctx.strokeStyle = "#555"; ctx.lineWidth = 3;
@@ -281,7 +278,7 @@
 
 		/* Stockwerksnamen */
 		ctx.font = "13px " + SCHRIFT; ctx.fillStyle = "#666"; ctx.textAlign = "left";
-		for (const st of STOCKWERKE) ctx.fillText(st.name, hx + 6, yPix(st.h + 2.5) + decke + 15);
+		for (const st of STOCKWERKE) ctx.fillText(st.name, hx + 6, yPix(st.h) - 6);
 	}
 
 	function zeichnePeter(f, geist) {
