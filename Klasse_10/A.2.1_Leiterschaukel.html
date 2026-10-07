@@ -150,6 +150,7 @@ canvas.sim { cursor: default; }
 	background: #fff; color: var(--blue-frame); cursor: pointer;
 }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
+.modusleiste button { display: inline-flex; align-items: center; gap: 0.4rem; }
 .zeile > label { min-width: 9.5em; }
 .gruppe { min-width: 9.5em; }
 .haken { min-width: 0 !important; display: inline-flex; align-items: center; gap: 0.3rem; }
@@ -216,10 +217,10 @@ button.symbol:hover { background: #f2f2f2; color: #222; }
 	</div>
 
 	<div class="modusleiste" id="modusleiste">
-		<button data-modus="vorhersage" class="aktiv">Richtung vorhersagen</button>
-		<button data-modus="staerke">Stärke der Kraft</button>
-		<button data-modus="winkel">Leiter schräg im Feld</button>
-		<button data-modus="frei">Frei ausprobieren</button>
+		<button data-modus="vorhersage" class="aktiv"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M3 13.6V10.4h9V6.5l6.5 5.5-6.5 5.5v-3.9z" fill="#BF0000" stroke="#5C0000" stroke-width="0.6"/><text x="17" y="10" font-size="11" font-weight="bold" fill="#0000BF">?</text></svg><span>Richtung vorhersagen</span></button>
+		<button data-modus="staerke"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M3 7.1h8V4.5l4.5 3.5L11 11.5V8.9H3z" fill="#BF0000"/><path d="M3 17.1h14v-2.6l4.5 3.5-4.5 3.5v-2.6H3z" fill="#BF0000"/></svg><span>Stärke der Kraft</span></button>
+		<button data-modus="winkel"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><rect x="2" y="2" width="20" height="20" rx="1.5" fill="#F0F2FF"/><path d="M4.5 4.5l2 2M6.5 4.5l-2 2M17.5 17.5l2 2M19.5 17.5l-2 2M17.5 4.5l2 2M19.5 4.5l-2 2" stroke="#0000BF" stroke-width="1.1"/><path d="M4 19L20 7" stroke="#b0682c" stroke-width="3.2" stroke-linecap="round"/></svg><span>Leiter schräg im Feld</span></button>
+		<button data-modus="frei"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path fill="#333" d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg><span>Frei ausprobieren</span></button>
 	</div>
 
 	<div class="tcb blau">
