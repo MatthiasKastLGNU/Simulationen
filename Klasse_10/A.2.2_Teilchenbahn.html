@@ -148,6 +148,7 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 	background: #fff; color: var(--blue-frame); cursor: pointer;
 }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
+.modusleiste button { display: inline-flex; align-items: center; gap: 0.4rem; }
 .aufgabe-text { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .antwortbereich { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; margin-top: 0.7rem; }
 .kompass { display: grid; grid-template-columns: repeat(3, 3.1rem); grid-template-rows: repeat(3, 3.1rem); gap: 0.25rem; }
@@ -231,11 +232,11 @@ button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame);
 	</div>
 
 	<div class="modusleiste" id="modusleiste">
-		<button data-modus="F" class="aktiv">Kraft gesucht</button>
-		<button data-modus="q">Ladung gesucht</button>
-		<button data-modus="B">Feldrichtung gesucht</button>
-		<button data-modus="v">Bewegungsrichtung gesucht</button>
-		<button data-modus="gemischt">Gemischt</button>
+		<button data-modus="F" class="aktiv"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M12 3l6.5 7.5H14V21h-4V10.5H5.5z" fill="#BF0000" stroke="#5C0000" stroke-width="0.6"/></svg><span>Kraft gesucht</span></button>
+		<button data-modus="q"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><circle cx="8" cy="12" r="6" fill="#fde3e3" stroke="#BF0000" stroke-width="1.3"/><path d="M5 12h6M8 9v6" stroke="#BF0000" stroke-width="1.8"/><circle cx="17.5" cy="12" r="5" fill="#e9e9e9" stroke="#111" stroke-width="1.3"/><path d="M15 12h5" stroke="#111" stroke-width="1.8"/></svg><span>Ladung gesucht</span></button>
+		<button data-modus="B"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M4 4l4 4M8 4l-4 4M16 4l4 4M20 4l-4 4M4 16l4 4M8 16l-4 4M16 16l4 4M20 16l-4 4M10 10l4 4M14 10l-4 4" stroke="#0000BF" stroke-width="1.7" stroke-linecap="round"/></svg><span>Feldrichtung gesucht</span></button>
+		<button data-modus="v"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><circle cx="6" cy="12" r="3.5" fill="#e9e9e9" stroke="#111" stroke-width="1.2"/><path d="M10.5 10.6h6.5V7.5l4.5 4.5-4.5 4.5v-3.1h-6.5z" fill="#111"/></svg><span>Bewegungsrichtung gesucht</span></button>
+		<button data-modus="gemischt"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path fill="#333" d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg><span>Gemischt</span></button>
 	</div>
 
 	<div class="tcb blau">
