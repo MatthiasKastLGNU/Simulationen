@@ -215,8 +215,21 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 .rueckmeldung { font-weight: bold; margin-top: 0.4rem; }
 .rueckmeldung.gut { color: var(--green-frame); }
 .rueckmeldung.schlecht { color: var(--red-frame); }
-.tabellenbox { display: inline-block; padding-right: 2.6rem; }
-.tabellenbox > .bildknopf { position: absolute; right: 0; top: 0.35rem; }
+.tabellenbox { display: block; overflow-x: auto; }
+/* Bildleiste (wie in allen Simulationen) */
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+.bildleiste.unten { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) { .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; } table.mess { font-size: 0.82rem; } table.mess th, table.mess td { padding: 0.15rem 0.35rem; } }
+table.mess td, table.mess th { white-space: nowrap; }
+@media (max-width: 560px) { table.mess { font-size: 0.78rem; } table.mess th, table.mess td { padding: 0.12rem 0.22rem; } table.mess th { white-space: normal; vertical-align: bottom; } }
 @media (max-width: 560px) { button.ik.pfeil { min-width: 2.75rem; padding: 0 0.3rem; } }
 
 </style>
@@ -240,11 +253,8 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 	<div class="tcb blau">
 		<div class="tcb-title" id="box-titel">Simulation</div>
 		<div class="tcb-body">
-			<div class="leinwand">
+			<div class="leinwand" id="sim-leinwand">
 				<canvas id="sim-canvas" class="sim"></canvas>
-				<span class="bildknoepfe" data-st="polplatten">
-					<button class="bildknopf" id="btn-pp-zurueck" title="Spule zurück in die Mitte" aria-label="Spule zurück in die Mitte"><svg viewBox="0 0 16 16" width="13" height="13"><path d="M3 8a5 5 0 1 0 1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 1.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-				</span>
 			</div>
 
 			<div class="steuerung">
@@ -334,41 +344,28 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 				<div data-st="polplatten">
 					<div class="zeile">
 						<button class="haupt klein" id="btn-pp-notieren"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.6"/></svg> Messwert notieren</button>
-						<span class="ik-leiste neben">
-							<button class="ik grau" id="btn-pp-leeren" title="Tabelle leeren" aria-label="Tabelle leeren"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M2 4h12M6 4V2h4v2M4 4l1 10h6l1-10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-						</span>
 					</div>
 					<div class="leinwand tabellenbox" id="pp-tabelle" hidden>
 						<table class="mess">
 							<thead><tr><th>Nr.</th><th>Bewegung</th><th>Dauer in s</th><th>größter Ausschlag in mV</th></tr></thead>
 							<tbody id="pp-tabelle-body"></tbody>
 						</table>
-						<button class="bildknopf" id="btn-pp-tabelle-bild" title="Tabelle als Bild speichern" aria-label="Tabelle als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
 					</div>
 				</div>
 				<div data-st="messreihe">
 					<div class="zeile">
 						<button class="haupt klein" id="btn-notieren"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.6"/></svg> Messwert notieren</button>
-						<span class="ik-leiste neben">
-							<button class="ik grau" id="btn-leeren" title="Tabelle leeren" aria-label="Tabelle leeren"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M2 4h12M6 4V2h4v2M4 4l1 10h6l1-10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-							<button class="ik grau" id="btn-standard" title="Standardwerte" aria-label="Standardwerte"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M3 8a5 5 0 1 0 1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 1.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-						</span>
 					</div>
 					<div class="leinwand tabellenbox" id="tabelle" hidden>
 						<table class="mess">
 							<thead><tr><th>Nr.</th><th>Windungszahl</th><th>Magnet</th><th>Bewegung</th><th>größter Ausschlag in mV</th></tr></thead>
 							<tbody id="tabelle-body"></tbody>
 						</table>
-						<button class="bildknopf" id="btn-tabelle-bild" title="Tabelle als Bild speichern" aria-label="Tabelle als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
 					</div>
 				</div>
 			</div>
-			<div class="leinwand">
+			<div class="leinwand" id="diagramm-leinwand">
 				<canvas id="diagramm" class="sim"></canvas>
-				<span class="bildknoepfe">
-					<button class="bildknopf" id="btn-pause" title="Diagramm anhalten" aria-label="Diagramm anhalten"><svg viewBox="0 0 12 12" width="11" height="11" id="pause-ikon"><path d="M2 1h3v10H2zM7 1h3v10H7z" fill="currentColor"/></svg></button>
-					<button class="bildknopf" id="btn-bild" title="Diagramm als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> Diagramm speichern</button>
-				</span>
 			</div>
 			<p class="fussnote" id="fussnote"></p>
 		</div>
@@ -538,6 +535,77 @@ window.SimKit = (function () {
 <script>
 "use strict";
 const K = window.SimKit;
+
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, dateiname, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik) */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily;
+	const breiten = kopf.map((k, i) => Math.max(x.measureText(k).width, ...zeilen.map(z => x.measureText(String(z[i])).width)) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.fillStyle = "#111"; x.textAlign = "center"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { x.fillText(String(w), xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+
 /* ==========================================================================
    Physik: Stabmagnet als gleichmäßig magnetisierter Zylinder (dicht gewickelte Stromschicht).
    Psi(z, r) = r * A_phi ist der magnetische Fluss durch eine koaxiale Kreisfläche (bis auf den Faktor 2 pi).
@@ -1017,15 +1085,15 @@ function zeichneMessgeraet() {
 	for (let i = -10; i <= 10; i++) {
 		const w = -Math.PI / 2 + i / 10 * Math.PI * 0.28, l = i % 5 === 0 ? 0.13 : 0.07;
 		ctx.beginPath(); ctx.moveTo(m[0] + Math.cos(w) * r * 0.82, m[1] + Math.sin(w) * r * 0.82); ctx.lineTo(m[0] + Math.cos(w) * r * (0.82 - l), m[1] + Math.sin(w) * r * (0.82 - l)); ctx.stroke();
-		if (i % 5 === 0) text(ctx, String(Math.abs(i / 10 * B)), m[0] + Math.cos(w) * r * 0.62, m[1] + Math.sin(w) * r * 0.62, r * 0.15, "#111");
+		if (i % 5 === 0) text(ctx, String(Math.abs(i / 10 * B)), m[0] + Math.cos(w) * r * 0.62, m[1] + Math.sin(w) * r * 0.62, Math.max(10, r * 0.15), "#111");
 	}
-	text(ctx, "mV", m[0], m[1] - r * 0.28, r * 0.17, "#111", "center", "bold");
+	text(ctx, "mV", m[0], m[1] - r * 0.28, Math.max(11, r * 0.17), "#111", "center", "bold");
 	const a = Math.max(-1.08, Math.min(1.08, zustand.zeiger / B));
 	const w = -Math.PI / 2 + a * Math.PI * 0.28;
 	ctx.strokeStyle = "#B00"; ctx.lineWidth = Math.max(1.5, r * 0.035);
 	ctx.beginPath(); ctx.moveTo(m[0], m[1]); ctx.lineTo(m[0] + Math.cos(w) * r * 0.86, m[1] + Math.sin(w) * r * 0.86); ctx.stroke();
 	ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(m[0], m[1], r * 0.05, 0, 2 * Math.PI); ctx.fill();
-	text(ctx, "Messbereich " + B + " mV", x, y + r * 0.42, r * 0.15, "#fff");
+	text(ctx, "Messbereich " + B + " mV", x, y + r * 0.42, Math.max(10, r * 0.15), "#fff");
 	if (Math.abs(zustand.U) > B * 1.02) text(ctx, "Messbereich überschritten", x, y - r * 1.2, r * 0.17, "#BF0000", "center", "bold");
 }
 /* Polplatten: Spule als Ellipsen im gedrehten Koordinatensystem der Spule */
@@ -1160,7 +1228,7 @@ function layout() {
 			sz = Math.min(szeneRechts / 27, H / 21);
 			ox = szeneRechts / 2; oy = 7.8 * sz + (H - 20.6 * sz) / 2;
 		} else {
-			mess.r = W * 0.14;
+			mess.r = W * 0.19;
 			mess.x = W * 0.72; mess.y = H * 0.86;
 			szeneRechts = W;
 			sz = Math.min(W / 27, H * 0.72 / 20.6);
@@ -1173,8 +1241,8 @@ function layout() {
 		sz = (szeneRechts - 4) / 31;   /* sichtbar etwa von -19 cm bis +12 cm: links vom Südpol so viel Platz wie rechts vom Nordpol */
 		ox = sz * 19; oy = H * 0.45;
 	} else {   /* schmal (Handy): Messgerät unter der Szene */
-		mess.r = W * 0.15;
-		mess.x = W * 0.7; mess.y = H * 0.83;
+		mess.r = W * 0.2;
+		mess.x = W * 0.7; mess.y = H * 0.82;
 		szeneRechts = W;
 		sz = W / 31; ox = sz * 19; oy = H * 0.36;
 	}
@@ -1208,11 +1276,14 @@ function anzeigen() {
 		'<rect x="1" y="6" width="18" height="12" fill="' + links[0] + '"/><rect x="19" y="6" width="18" height="12" fill="' + rechts[0] + '"/>' +
 		'<text x="10" y="15.5" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">' + links[1] + '</text>' +
 		'<text x="28" y="15.5" font-size="9" font-weight="bold" fill="#fff" text-anchor="middle">' + rechts[1] + '</text>';
-	const pause = document.getElementById("btn-pause");
-	pause.classList.toggle("aktiv", zustand.angehalten);
-	pause.hidden = zustand.modus === "spiel";
-	pause.title = zustand.angehalten ? "Diagramm weiterlaufen lassen" : "Diagramm anhalten";
-	document.getElementById("pause-ikon").innerHTML = zustand.angehalten ? '<path d="M2 1l9 5-9 5z" fill="currentColor"/>' : '<path d="M2 1h3v10H2zM7 1h3v10H7z" fill="currentColor"/>';
+	pauseKnopf.classList.toggle("aktiv", zustand.angehalten);
+	pauseKnopf.hidden = zustand.modus === "spiel";
+	pauseKnopf.title = zustand.angehalten ? "Diagramm weiterlaufen lassen" : "Diagramm anhalten";
+	pauseKnopf.setAttribute("aria-label", pauseKnopf.title);
+	pauseKnopf.innerHTML = symbolSvg(zustand.angehalten ? "play" : "pause");
+	zurueckKnopf.hidden = zustand.modus === "spiel";
+	zurueckKnopf.title = { versuch: "Magnet und Spule zurück an den Anfang", messreihe: "Standardwerte, Magnet zurück an den Anfang", polplatten: "Spule zurück in die Mitte" }[zustand.modus] || "zurücksetzen";
+	zurueckKnopf.setAttribute("aria-label", zurueckKnopf.title);
 	const s = zustand.spiel;
 	document.getElementById("start-text").textContent = s.phase === "fertig" ? "Noch einmal" : "Start";
 	document.getElementById("anz-sterne").textContent = "Stufe " + STUFEN_SPIEL[s.stufe].name + ": " + STUFEN_SPIEL[s.stufe].titel;
@@ -1226,6 +1297,7 @@ function stufenKnoepfe() {
 	const c = document.getElementById("stufen-knoepfe");
 	c.innerHTML = "";
 	STUFEN_SPIEL.forEach((st, i) => {
+		if (FESTE_STUFEN && FESTE_STUFEN.length && !FESTE_STUFEN.includes(i)) return;
 		const b = document.createElement("button");
 		b.className = "ik";
 		b.title = st.titel;
@@ -1236,6 +1308,7 @@ function stufenKnoepfe() {
 		b.addEventListener("click", () => { zustand.spiel.stufe = i; zustand.spiel.phase = "bereit"; zustand.spiel.aufnahme = []; zustand.spiel.ergebnis = null; stufenKnoepfe(); anzeigen(); });
 		c.appendChild(b);
 	});
+	c.closest(".gk").style.display = c.children.length <= 1 ? "none" : "";
 }
 function werteAnzeigen() {
 	document.getElementById("anz-max").textContent = K.de(zustand.Umax, 1) + " mV";
@@ -1253,7 +1326,14 @@ function modusSetzen(m, ohneHash) {
 	stufenKnoepfe(); anzeigen(); layout();
 }
 /* Modi per Link auswählen: ?modus=polplatten oder ?modus=versuch,messreihe zeigt nur diese; bei genau einem entfällt die Modusleiste */
-const WUNSCH = (new URLSearchParams(location.search).get("modus") || "").split(",").map(s => s.trim()).filter(m => AUFTRAG[m]);
+/* ?modus=spiel-2 bzw. spiel-1.3: Spiel nur mit diesen Stufen (der QR-Code zeigt genau das, was auf dem Blatt angesagt ist) */
+let FESTE_STUFEN = null;
+const WUNSCH = (new URLSearchParams(location.search).get("modus") || "").split(",").map(t => {
+	const [name, stufen] = t.trim().split("-");
+	if (stufen && name === "spiel") FESTE_STUFEN = stufen.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0 && z < STUFEN_SPIEL.length);
+	return name;
+}).filter(m => AUFTRAG[m]);
+if (FESTE_STUFEN && FESTE_STUFEN.length) zustand.spiel.stufe = FESTE_STUFEN[0];
 const ERLAUBT = WUNSCH.length ? WUNSCH : Object.keys(AUFTRAG);
 document.querySelectorAll("#modusleiste button").forEach(b => { b.hidden = !ERLAUBT.includes(b.dataset.modus); });
 document.getElementById("modusleiste").hidden = ERLAUBT.length === 1;
@@ -1269,14 +1349,12 @@ document.getElementById("btn-pp-rechts").addEventListener("click", () => ppSchri
 document.getElementById("btn-pp-hoch").addEventListener("click", () => ppSchritt("y", 1, [PP_UNTEN, 0], "hineingeschoben"));
 document.getElementById("btn-pp-runter").addEventListener("click", () => ppSchritt("y", -1, [PP_UNTEN, 0], "herausgezogen"));
 document.getElementById("btn-pp-drehen").addEventListener("click", () => ppBewege("w", Math.round(zustand.pp.w / 90) * 90 + 90, "um 90° gedreht"));
-document.getElementById("btn-pp-zurueck").addEventListener("click", () => { ppZuruecksetzen(); zustand.Umax = 0; });
 K.bindeKnopfgruppe("dauer-knoepfe", w => zustand.pp.dauer = +w, anzeigen);
 document.getElementById("btn-pp-notieren").addEventListener("click", () => {
 	const p = zustand.pp;
 	p.tabelle.push([p.letzteBewegung, p.letzteDauer === null ? "" : String(p.letzteDauer), K.de(zustand.Umax, 1)]);
 	ppTabelleZeigen();
 });
-document.getElementById("btn-pp-leeren").addEventListener("click", () => { zustand.pp.tabelle = []; ppTabelleZeigen(); });
 function ppTabelleZeigen() {
 	const tb = document.getElementById("pp-tabelle-body");
 	tb.innerHTML = "";
@@ -1300,13 +1378,10 @@ K.bindeKnopfgruppe("tempo-knoepfe", w => zustand.tempo = +w, anzeigen);
 K.bindeKnopfgruppe("windungen-knoepfe", w => zustand.N = +w, anzeigen);
 K.bindeKnopfgruppe("magnet-knoepfe", w => zustand.staerke = +w, anzeigen);
 document.getElementById("btn-feld").addEventListener("click", () => { zustand.zeigeFeld = !zustand.zeigeFeld; anzeigen(); });
-document.getElementById("btn-pause").addEventListener("click", () => { zustand.angehalten = !zustand.angehalten; anzeigen(); });
-document.getElementById("btn-standard").addEventListener("click", () => { zustand.N = 600; zustand.staerke = 1; zustand.tempo = 16; anzeigen(); });
 document.getElementById("btn-notieren").addEventListener("click", () => {
 	zustand.tabelle.push([zustand.N, zustand.staerke === 1 ? "1 Magnet" : "2 Magnete", zustand.letzteBewegung, zustand.Umax]);
 	tabelleZeigen();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => { zustand.tabelle = []; tabelleZeigen(); });
 function tabelleZeigen() {
 	const tb = document.getElementById("tabelle-body");
 	tb.innerHTML = "";
@@ -1373,47 +1448,38 @@ canvas.addEventListener("pointermove", ev => {
 });
 ["pointerup", "pointercancel"].forEach(t => canvas.addEventListener(t, () => { zustand.ziehen = false; zustand.letzteZiehX = null; zustand.pp.ziehen = null; }));
 
-/* Bild speichern: auf Tablets über das Teilen-Menü, sonst als Download. Ohne Text am Bild; die Versuchsbedingungen stehen im Dateinamen. */
-function bildSpeichern(c, name) {
-	c.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) navigator.share({ files: [datei] }).catch(() => {});
-		else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
-	});
-}
+/* Bildleisten an Szene, Diagramm und Messtabellen: Kopieren (OneNote: Strg+V), Teilen, Speichern; dazu Zurücksetzen, Pause, Löschen */
 function dateiTeil(t) { return String(t).replace(/°/g, "Grad").replace(/\s+/g, "_").replace(/[^\wäöüÄÖÜß.,-]/g, ""); }
-document.getElementById("btn-bild").addEventListener("click", () => {
+function bildName() {
+	const p = zustand.pp;
+	return zustand.modus === "spiel" ? "Spiel_Stufe" + STUFEN_SPIEL[zustand.spiel.stufe].name
+		: zustand.modus === "polplatten" ? "Polplatten_" + dateiTeil(p.letzteBewegung) + (p.letzteDauer === null ? "" : "_in_" + p.letzteDauer + "s")
+		: zustand.modus === "messreihe" ? "N" + zustand.N + "_" + zustand.staerke + "_Magnet" + (zustand.staerke > 1 ? "e" : "") + "_" + dateiTeil(zustand.letzteBewegung)
+		: (zustand.spuleBewegen ? "Spule_bewegt" : "Magnet_bewegt") + (zustand.nordRechts ? "_Nordpol_vorn" : "_Suedpol_vorn");
+}
+function diagrammBild() {
 	const dpr = 2, c = document.createElement("canvas");
 	c.width = DW * dpr; c.height = DH * dpr;
 	const k = c.getContext("2d"); k.scale(dpr, dpr);
 	zeichneDiagramm(k, DW, DH);
-	const p = zustand.pp;
-	const teil = zustand.modus === "spiel" ? "Spiel_Stufe" + STUFEN_SPIEL[zustand.spiel.stufe].name
-		: zustand.modus === "polplatten" ? "Polplatten_" + dateiTeil(p.letzteBewegung) + (p.letzteDauer === null ? "" : "_in_" + p.letzteDauer + "s")
-		: "N" + zustand.N + "_" + zustand.staerke + "Magnet";
-	bildSpeichern(c, "Induktion_Spannungsverlauf_" + teil + ".png");
-});
-/* Messtabelle als Bild (booktabs-Optik wie auf dem Arbeitsblatt) */
-function tabelleSpeichern(box, name) {
-	const zeilen = [...box.querySelectorAll("tr")].map(tr => [...tr.children].map(z => z.textContent));
-	const m = document.createElement("canvas").getContext("2d");
-	m.font = "15px " + schrift;
-	const breiten = zeilen[0].map((_, j) => Math.max(...zeilen.map(z => m.measureText(z[j]).width)) + 28);
-	const zh = 28, rand = 12, w = breiten.reduce((a, b) => a + b, 0) + 2 * rand, h = zeilen.length * zh + 2 * rand + 6;
-	const dpr = 2, c = document.createElement("canvas");
-	c.width = w * dpr; c.height = h * dpr;
-	const k = c.getContext("2d"); k.scale(dpr, dpr);
-	k.fillStyle = "#fff"; k.fillRect(0, 0, w, h);
-	const strich = (y, d) => { k.fillStyle = "#111"; k.fillRect(rand, y, w - 2 * rand, d); };
-	strich(rand, 1.5); strich(rand + zh + 2, 1); strich(rand + zeilen.length * zh + 4.5, 1.5);
-	zeilen.forEach((z, i) => {
-		let x = rand;
-		z.forEach((t, j) => { text(k, t, x + breiten[j] / 2, rand + 2 + (i + 0.5) * zh + (i ? 2 : 0), 15, "#111"); x += breiten[j]; });
-	});
-	bildSpeichern(c, name);
+	return c;
 }
-document.getElementById("btn-tabelle-bild").addEventListener("click", () => tabelleSpeichern(document.getElementById("tabelle"), "Induktion_Messtabelle_Wovon_haengt_U_ab.png"));
-document.getElementById("btn-pp-tabelle-bild").addEventListener("click", () => tabelleSpeichern(document.getElementById("pp-tabelle"), "Induktion_Messtabelle_Polplatten.png"));
+const pauseKnopf = symbolKnopf("pause", "Diagramm anhalten", () => { zustand.angehalten = !zustand.angehalten; anzeigen(); });
+const zurueckKnopf = symbolKnopf("zurueck", "zurücksetzen", () => {
+	if (zustand.modus === "polplatten") { ppZuruecksetzen(); zustand.Umax = 0; return; }
+	if (zustand.modus === "messreihe") { zustand.N = 600; zustand.staerke = 1; zustand.tempo = 16; }
+	zustand.auto = null; zustand.ziehen = false; zustand.flussAlt = null; zustand.Umax = 0;
+	zustand.xm = START; zustand.xs = zustand.spuleBewegen ? 4 : 0;
+	anzeigen();
+});
+bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas), () => "Induktion_" + bildName(), [zurueckKnopf]);
+bildLeiste(document.getElementById("diagramm-leinwand"), diagrammBild, () => "Induktion_Spannungsverlauf_" + bildName(), [pauseKnopf]);
+const KOPF_MESS = ["Nr.", "Windungszahl", "Magnet", "Bewegung", "größter Ausschlag in mV"];
+bildLeiste(document.getElementById("tabelle"), () => tabellenBild(KOPF_MESS, zustand.tabelle.map((z, i) => [i + 1, z[0], z[1], z[2], K.de(z[3], 1)])), () => "Induktion_Messtabelle_Wovon_haengt_U_ab",
+	[symbolKnopf("loeschen", "Tabelle leeren", () => { zustand.tabelle = []; tabelleZeigen(); })]).classList.add("unten");
+const KOPF_PP = ["Nr.", "Bewegung", "Dauer in s", "größter Ausschlag in mV"];
+bildLeiste(document.getElementById("pp-tabelle"), () => tabellenBild(KOPF_PP, zustand.pp.tabelle.map((z, i) => [i + 1, ...z])), () => "Induktion_Messtabelle_Polplatten",
+	[symbolKnopf("loeschen", "Tabelle leeren", () => { zustand.pp.tabelle = []; ppTabelleZeigen(); })]).classList.add("unten");
 
 let letzteZeit = null, zaehler = 0;
 function schleife(t) {
