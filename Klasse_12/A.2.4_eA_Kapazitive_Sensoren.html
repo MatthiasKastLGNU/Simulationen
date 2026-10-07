@@ -967,7 +967,16 @@ window.SimUI = (function () {
 		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
 		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
 		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
-		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
+		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>',
+		tropfen: '<path d="M12 2.5C9 8 6 11 6 15a6 6 0 0 0 12 0c0-4-3-7-6-12.5z" fill="#6FA8E8" stroke="#2F6FB8" stroke-width="1.2"/><ellipse cx="9.6" cy="14" rx="1.2" ry="2" fill="#fff" opacity="0.8"/>',
+		schauer: '<path d="M6 11a4 4 0 0 1 1-7.8A5.5 5.5 0 0 1 17.5 5 3.5 3.5 0 0 1 18 11z" fill="#9AA6B2"/><path d="M7 14l-1.5 4M12 14l-1.5 4M17 14l-1.5 4M9.5 18l-1.5 4M14.5 18l-1.5 4" stroke="#2F6FB8" stroke-width="1.8" stroke-linecap="round"/>',
+		staub: '<g fill="#8A7A66"><circle cx="5" cy="17" r="1.4"/><circle cx="9" cy="19" r="1"/><circle cx="12" cy="16.5" r="1.5"/><circle cx="16" cy="19" r="1.1"/><circle cx="19.5" cy="17" r="1.4"/><circle cx="7.5" cy="13" r="1"/><circle cx="15" cy="12.5" r="1"/><circle cx="11" cy="9.5" r="0.8"/><circle cx="18" cy="9" r="0.7"/></g><path d="M2 21h20" stroke="#7FB3C0" stroke-width="1.6"/>',
+		wischer: '<path d="M2.5 20a12 12 0 0 1 19 0" fill="#D6EDF2" stroke="#7FB3C0" stroke-width="1.2"/><path d="M12 20L6 7" stroke="#222" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="20" r="1.8" fill="#222"/>',
+		m_metall: '<rect x="5" y="3" width="14" height="18" rx="2" fill="#C4CAD2" stroke="#5C6670" stroke-width="1.3"/><path d="M5 6h14M5 18h14" stroke="#5C6670" stroke-width="1.1"/><path d="M8 8v8" stroke="#fff" stroke-width="1.6" opacity="0.8"/>',
+		m_wasser: '<rect x="5" y="3" width="14" height="18" rx="2" fill="#fff" stroke="#2F6FB8" stroke-width="1.3"/><path d="M5.7 9c2-1 4 1 6.3 0s4.3-1 6.3 0V19a1.4 1.4 0 0 1-1.4 1.4H7.1A1.4 1.4 0 0 1 5.7 19z" fill="#8FC0F0"/>',
+		m_glas: '<rect x="5" y="3" width="14" height="18" rx="2" fill="#D8F0F2" stroke="#6AA8B0" stroke-width="1.3"/><path d="M8 6l3 3M13 6l4 4" stroke="#fff" stroke-width="1.6"/>',
+		m_holz: '<rect x="3" y="5" width="18" height="14" rx="1" fill="#D9A86C" stroke="#8A5A2B" stroke-width="1.3"/><path d="M3 9c5-2 10 2 18 0M3 13c6 2 11-2 18 0M3 16.5c5-1.5 11 1.5 18 0" fill="none" stroke="#8A5A2B" stroke-width="0.9" opacity="0.7"/>',
+		m_karton: '<path d="M3 8l9-4 9 4v11l-9 3-9-3z" fill="#E6D2A8" stroke="#9A8050" stroke-width="1.2" stroke-linejoin="round"/><path d="M3 8l9 3 9-3M12 11v11" fill="none" stroke="#9A8050" stroke-width="1.1"/><path d="M7.5 6l9 3.2" stroke="#C8B080" stroke-width="2"/>'
 	};
 	function svg(name) {
 		return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + (P[name] || "") + "</svg>";
@@ -1203,6 +1212,8 @@ window.SimUI = (function () {
 
 	<div class="modusleiste" id="sensor-knoepfe">
 		<button data-modus="mems" class="aktiv">Beschleunigungssensor</button>
+		<button data-modus="regen">Regensensor</button>
+		<button data-modus="naeherung">Näherungsschalter</button>
 		<button data-modus="touch">Touchscreen</button>
 	</div>
 
@@ -1249,6 +1260,59 @@ window.SimUI = (function () {
 			</div>
 			<div class="auswertung" id="aw-touch"></div>
 			<p class="fussnote">Berühren Sie das Raster mit dem Finger oder fahren Sie mit der Maus darüber. Die Punkte zeigen, wie stark sich die Kapazität an jedem Kreuzungspunkt ändert.</p>
+		</div>
+	</div>
+
+	<div class="tcb blau verborgen" id="box-regen">
+		<div class="tcb-title">Simulation: Regensensor an der Windschutzscheibe</div>
+		<div class="tcb-body">
+			<canvas id="regen-canvas" class="sim" style="touch-action:pan-y"></canvas>
+			<div class="bildleiste knopfleiste"><button id="btn-regen-null" data-icon="reset" title="Scheibe trocken und sauber"></button><button id="btn-regen-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
+			<div class="bedienleiste">
+				<div class="bgruppe">
+					<span class="btitel">Auf die Scheibe</span>
+					<span class="knopfleiste"><button id="btn-tropfen" class="gross" data-icon="tropfen" title="Ein Regentropfen"></button><button id="btn-schauer" class="gross" data-icon="schauer" title="Regenschauer ein/aus"></button><button id="btn-staub" class="gross" data-icon="staub" title="Staub"></button></span>
+				</div>
+				<div class="bgruppe">
+					<span class="btitel">Wischer</span>
+					<span class="knopfleiste"><button id="btn-automatik" class="gross aktiv" data-icon="wischer" title="Wischerautomatik ein/aus"></button></span>
+				</div>
+				<div class="bgruppe" style="flex:1 1 12rem">
+					<span class="btitel">Schaltschwelle</span>
+					<div class="zeile"><input type="range" id="regler-regen-schwelle" min="1" max="20" step="0.5" value="5" aria-label="Schaltschwelle"><span class="wert" id="wert-regen-schwelle" style="min-width:3.5em"></span></div>
+				</div>
+			</div>
+			<div class="auswertung" id="aw-regen"></div>
+			<canvas id="regen-signal" class="sim" style="margin-top:0.5rem"></canvas>
+			<div class="bildleiste knopfleiste">
+				<button id="btn-regen-pause" data-icon="pause" title="Diagramm anhalten"></button>
+				<button id="btn-regensignal-bild" class="neben" data-icon="download" title="Diagramm herunterladen"></button>
+			</div>
+			<p class="fussnote">Ziehen Sie einen Tropfen über die Scheibe. Die Elektroden kleben innen auf dem Glas, das Streufeld reicht durch das Glas nach außen. Schematisch: Feldlinien als Halbkreise, Glas 5&nbsp;mm (<i class="gr">&epsilon;</i><sub>r</sub>&nbsp;=&nbsp;7), Wasser <i class="gr">&epsilon;</i><sub>r</sub>&nbsp;=&nbsp;80.</p>
+		</div>
+	</div>
+
+	<div class="tcb blau verborgen" id="box-naeherung">
+		<div class="tcb-title">Simulation: Kapazitiver Näherungsschalter</div>
+		<div class="tcb-body">
+			<canvas id="naeh-canvas" class="sim" style="touch-action:none"></canvas>
+			<div class="bildleiste knopfleiste"><button id="btn-naeh-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
+			<div class="bedienleiste">
+				<div class="bgruppe">
+					<span class="btitel">Gegenstand</span>
+					<span class="knopfleiste" id="material-knoepfe"><button data-wert="metall" class="aktiv gross" data-icon="m_metall" title="Metall"></button><button data-wert="wasser" class="gross" data-icon="m_wasser" title="Wasser (gefüllter Behälter)"></button><button data-wert="glas" class="gross" data-icon="m_glas" title="Glas"></button><button data-wert="holz" class="gross" data-icon="m_holz" title="Holz (trocken)"></button><button data-wert="karton" class="gross" data-icon="m_karton" title="Karton"></button></span>
+				</div>
+				<div class="bgruppe" style="flex:1 1 12rem">
+					<span class="btitel">Abstand <i class="gr">s</i></span>
+					<div class="zeile"><input type="range" id="regler-abstand" min="0.5" max="12" step="0.1" value="10" aria-label="Abstand"><span class="wert" id="wert-abstand" style="min-width:4em"></span></div>
+				</div>
+				<div class="bgruppe" style="flex:1 1 12rem">
+					<span class="btitel">Empfindlichkeit (Schaltschwelle)</span>
+					<div class="zeile"><input type="range" id="regler-naeh-schwelle" min="2" max="40" step="1" value="10" aria-label="Schaltschwelle"><span class="wert" id="wert-naeh-schwelle" style="min-width:3.5em"></span></div>
+				</div>
+			</div>
+			<div class="auswertung" id="aw-naeh"></div>
+			<p class="fussnote">Ziehen Sie den Gegenstand auf den Sensor zu. Bei welchem Abstand schaltet der Sensor (Leuchtdiode an)? Schematisch: Feldlinien als Halbkreise, Werte von <i class="gr">&epsilon;</i><sub>r</sub>: Wasser 80, Glas 6, Holz 3, Karton 2.</p>
 		</div>
 	</div>
 
@@ -1459,11 +1523,339 @@ cT.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") zust
 P.regler("regler-schwelle", "wert-schwelle", v => v + "&nbsp;%", v => zustand.schwelle = v);
 K.bindeKnopfgruppe("objekt-knoepfe", w => zustand.objekt = w);
 
+/* ---------- Streufeld: Regensensor und Näherungsschalter ---------- */
+/* Zwei Elektroden liegen nebeneinander (Modell: Spalt s, Breite b). Feldlinien sind Halbkreise um die Spaltmitte.
+   Eine Feldröhre zwischen r und r + dr ist eine Reihenschaltung ihrer Abschnitte:
+   dC = eps0 * L * dr / Summe(l_i / epsr_i). Begrenzte Körper (Tropfen, Gegenstand) verdrängen das Feld teilweise:
+   wirksam (epsr + 2)/3 wie bei einer Kugel, Metall sehr groß. Längen in mm, C in F. */
+const STREU = { r0: 3, r1: 12, L: 20, pxmm: 12 };   /* halber Spalt, äußerer Rand der Elektroden, Länge (mm), Maßstab px/mm */
+const wirksam = er => er > 1e5 ? 1e6 : (er + 2) / 3;
+function streuC(medium) {
+	const N = 70, M = 80, dr = (STREU.r1 - STREU.r0) / N;
+	let C = 0;
+	for (let i = 0; i < N; i++) {
+		const r = STREU.r0 + (i + 0.5) * dr;
+		let summe = 0;
+		for (let j = 0; j < M; j++) {
+			const th = (j + 0.5) * Math.PI / M;
+			summe += (Math.PI * r / M) / medium(r * Math.cos(th), r * Math.sin(th));
+		}
+		C += dr / summe;
+	}
+	C += Math.log(STREU.r1 / STREU.r0) / Math.PI;   /* untere Hälfte: Luft (Innenraum bzw. Gehäuse) */
+	return EPS0 * STREU.L * 1e-3 * C;
+}
+/* Feldlinien gleicher Ladung: r_k geometrisch verteilt (innen dichter) */
+function feldRadien(k) {
+	const a = [];
+	for (let i = 0; i < k; i++) a.push(STREU.r0 * Math.pow(STREU.r1 / STREU.r0, (i + 0.5) / k));
+	return a;
+}
+/* Halbkreis zeichnen, Abschnitte je nach Medium gefärbt; xm, ye: Spaltmitte im Bild */
+function zeichneFeldlinie(g, r, xm, ye, farbeVon) {
+	const M = 90;
+	let alt = null;
+	for (let j = 0; j <= M; j++) {
+		const th = Math.PI - j * Math.PI / M;
+		const xmm = r * Math.cos(th), ymm = r * Math.sin(th);
+		const p = { x: xm + xmm * STREU.pxmm, y: ye - ymm * STREU.pxmm, f: farbeVon(xmm, ymm) };
+		if (alt) {
+			g.strokeStyle = p.f.farbe; g.lineWidth = p.f.breite;
+			g.beginPath(); g.moveTo(alt.x, alt.y); g.lineTo(p.x, p.y); g.stroke();
+		}
+		alt = p;
+	}
+	/* Pfeil in der Mitte: von links (+) nach rechts (-) */
+	const xs = xm, ys = ye - r * STREU.pxmm;
+	g.fillStyle = farbeVon(0, r).farbe;
+	g.beginPath(); g.moveTo(xs + 5, ys); g.lineTo(xs - 3, ys - 4); g.lineTo(xs - 3, ys + 4); g.closePath(); g.fill();
+}
+function zeichneElektroden(g, xm, ye) {
+	const p = STREU.pxmm;
+	g.fillStyle = "#C46A2B";
+	g.fillRect(xm - STREU.r1 * p, ye, (STREU.r1 - STREU.r0) * p, 5);
+	g.fillRect(xm + STREU.r0 * p, ye, (STREU.r1 - STREU.r0) * p, 5);
+}
+
+/* ---------- Regensensor ---------- */
+const REGEN = { glas: 5, tropfen: [], staub: [], fallend: [], schauer: false, automatik: true, schwelle: 5,
+	wischer: null, wischZahl: 0, C0: 0, C: 0, dirty: true, verlauf: [], t: 0, ruhe: 0, pausiert: false, zieh: null };
+const cR = document.getElementById("regen-canvas"), gR = cR.getContext("2d");
+const cRS = document.getElementById("regen-signal"), gRS = cRS.getContext("2d");
+let WR = 640, HR = 280, WRS = 640, HRS = 180;
+function regenMedium(x, y) {
+	if (y < REGEN.glas) return 7;
+	for (const d of REGEN.tropfen) {
+		const u = (x - d.x) / d.w, v = (y - REGEN.glas) / d.h;
+		if (u * u + v * v <= 1) return wirksam(80);
+	}
+	if (y < REGEN.glas + 0.2) for (const s of REGEN.staub) if (Math.abs(x - s.x) < s.w) return wirksam(2.5);
+	return 1;
+}
+REGEN.C0 = streuC((x, y) => y < REGEN.glas ? 7 : 1);
+REGEN.C = REGEN.C0;
+const regenRelativ = () => (REGEN.C - REGEN.C0) / REGEN.C0 * 100;
+function regenLogisch() { return WR < 560 ? 420 : 640; }
+function neuerTropfen(x) {
+	const LW = regenLogisch(), xmax = (LW / 2 - 12) / STREU.pxmm;
+	if (x === undefined) x = (Math.random() * 2 - 1) * Math.min(xmax, 16);
+	REGEN.fallend.push({ x, y: -REGEN.glas - 12, w: 1.4 + Math.random() * 0.9, h: 1.0 + Math.random() * 0.6 });
+}
+function zeichneRegen() {
+	const LW = regenLogisch(), f = WR / LW, LH = HR / f, dpr = window.devicePixelRatio || 1;
+	gR.setTransform(dpr * f, 0, 0, dpr * f, 0, 0);
+	gR.clearRect(0, 0, LW, LH);
+	const fs = LW < 560 ? 17 : 13;
+	const p = STREU.pxmm, xm = LW / 2, ye = LH - 42, yo = ye - REGEN.glas * p;
+	/* außen: Himmel, innen: Fahrzeug */
+	gR.fillStyle = "#F2F7FC"; gR.fillRect(0, 0, LW, yo);
+	gR.fillStyle = "#F4F1EA"; gR.fillRect(0, ye, LW, LH - ye);
+	/* Glas */
+	gR.fillStyle = "#D6EDF2"; gR.fillRect(0, yo, LW, ye - yo);
+	gR.strokeStyle = "#7FB3C0"; gR.lineWidth = 1.2;
+	gR.beginPath(); gR.moveTo(0, yo); gR.lineTo(LW, yo); gR.moveTo(0, ye); gR.lineTo(LW, ye); gR.stroke();
+	/* Feldlinien: im Glas grau, außerhalb blau, im Wasser kräftig */
+	for (const r of feldRadien(9)) zeichneFeldlinie(gR, r, xm, ye, (x, y) => {
+		const m = regenMedium(x, y);
+		if (y < REGEN.glas) return { farbe: "#7D8A90", breite: 1.4 };
+		if (m > 5) return { farbe: "#0000BF", breite: 3 };
+		return { farbe: "#3A62D8", breite: 1.4 };
+	});
+	zeichneElektroden(gR, xm, ye);
+	/* Staub */
+	gR.fillStyle = "#8A7A66";
+	for (const s of REGEN.staub) for (let k = 0; k < s.n; k++) {
+		const xx = xm + (s.x + (((k * 37) % 19) / 9.5 - 1) * s.w) * p;
+		gR.beginPath(); gR.arc(xx, yo - 1.2 - (k % 3) * 0.8, 1.1, 0, 2 * Math.PI); gR.fill();
+	}
+	/* Tropfen auf der Scheibe und fallende Tropfen */
+	const tropfenBild = (x, y, w, h) => {
+		gR.fillStyle = "rgba(80,150,230,0.75)"; gR.strokeStyle = "#2F6FB8"; gR.lineWidth = 1;
+		gR.beginPath(); gR.ellipse(x, y, w, h, 0, Math.PI, 2 * Math.PI); gR.closePath(); gR.fill(); gR.stroke();
+		gR.fillStyle = "rgba(255,255,255,0.8)";
+		gR.beginPath(); gR.ellipse(x - w * 0.35, y - h * 0.55, w * 0.18, h * 0.16, 0, 0, 2 * Math.PI); gR.fill();
+	};
+	for (const d of REGEN.tropfen) tropfenBild(xm + d.x * p, yo, d.w * p, d.h * p);
+	gR.fillStyle = "rgba(80,150,230,0.75)";
+	for (const d of REGEN.fallend) {
+		const yy = yo + d.y * p;
+		gR.beginPath(); gR.moveTo(xm + d.x * p, yy - 9); gR.quadraticCurveTo(xm + d.x * p + 4, yy, xm + d.x * p, yy + 2); gR.quadraticCurveTo(xm + d.x * p - 4, yy, xm + d.x * p, yy - 9); gR.fill();
+	}
+	/* Wischerblatt */
+	if (REGEN.wischer) {
+		const xw = xm + REGEN.wischer.x * p;
+		gR.fillStyle = "#222"; gR.fillRect(xw - 4, yo - 34, 8, 30);
+		gR.fillStyle = "#555"; gR.fillRect(xw - 2, yo - 5, 4, 5);
+	}
+	/* Beschriftung */
+	P.text(gR, "außen", 8, 16, { groesse: fs, farbe: "#555" });
+	P.text(gR, "Glas", 8, yo + 16, { groesse: fs, farbe: "#3F7A88" });
+	P.text(gR, "innen: Elektroden", 8, LH - 10, { groesse: fs, farbe: "#8A4A1B" });
+	/* Leuchte Wischer */
+	const an = !!REGEN.wischer;
+	gR.fillStyle = an ? "#F2B400" : "#DDD"; gR.strokeStyle = "#777"; gR.lineWidth = 1;
+	gR.beginPath(); gR.arc(LW - 16, LH - 16, 7, 0, 2 * Math.PI); gR.fill(); gR.stroke();
+	P.text(gR, "Wischer", LW - 28, LH - 11, { groesse: fs, farbe: "#555", ausrichtung: "right" });
+	P.text(gR, "schematisch", LW - 6, 16, { groesse: fs - 2, farbe: "#888", ausrichtung: "right" });
+
+	document.getElementById("aw-regen").innerHTML =
+		"<i class='gr'>C</i> = " + P.de(REGEN.C * 1e12, 3) + "&nbsp;pF<span class='trenner'>|</span>trocken: <i class='gr'>C</i><sub>0</sub> = " + P.de(REGEN.C0 * 1e12, 3) + "&nbsp;pF" +
+		"<br>Änderung: <b>" + P.de(regenRelativ(), 1) + "&nbsp;%</b><span class='trenner'>|</span>Wischvorgänge: " + REGEN.wischZahl;
+	document.getElementById("wert-regen-schwelle").innerHTML = P.de(REGEN.schwelle, 1) + "&nbsp;%";
+}
+const DAUER_R = 10;
+function zeichneRegenSignal() {
+	gRS.clearRect(0, 0, WRS, HRS);
+	const ymax = Math.max(20, Math.ceil(Math.max(REGEN.schwelle, ...REGEN.verlauf.map(q => q.w), 0) / 10) * 10);
+	const u = P.achsen(gRS, { dx: 52, dy: 22, dw: WRS - 70, dh: HRS - 60, xMin: -DAUER_R, xMax: 0, yMin: 0, yMax: ymax, xSchritt: 2, ySchritt: ymax > 40 ? 20 : 5,
+		xLabel: "t", xEinheit: "s", yLabel: "ΔC/C₀", yEinheit: "%", xStellen: 0, yStellen: 0 });
+	gRS.save(); gRS.beginPath(); gRS.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); gRS.clip();
+	gRS.strokeStyle = P.FARBEN.rot; gRS.lineWidth = 1.2; gRS.setLineDash([5, 4]);
+	gRS.beginPath(); gRS.moveTo(u.o.dx, u.yPix(REGEN.schwelle)); gRS.lineTo(u.o.dx + u.o.dw, u.yPix(REGEN.schwelle)); gRS.stroke();
+	gRS.setLineDash([]);
+	const v = REGEN.verlauf;
+	if (v.length > 1) {
+		gRS.strokeStyle = P.FARBEN.blau; gRS.lineWidth = 2; gRS.beginPath();
+		v.forEach((q, i) => { const px = u.xPix(q.t - REGEN.t), py = u.yPix(q.w); if (i === 0) gRS.moveTo(px, py); else gRS.lineTo(px, py); });
+		gRS.stroke();
+	}
+	gRS.restore();
+}
+function regenSchritt(dt) {
+	let bewegt = false;
+	if (REGEN.schauer) { if (Math.random() < dt * 4) neuerTropfen(); bewegt = true; }
+	for (const d of REGEN.fallend) d.y += dt * 60;
+	const gelandet = REGEN.fallend.filter(d => d.y >= 0);
+	if (gelandet.length) { REGEN.fallend = REGEN.fallend.filter(d => d.y < 0); gelandet.forEach(d => REGEN.tropfen.push({ x: d.x, w: d.w, h: d.h })); REGEN.dirty = true; }
+	if (REGEN.fallend.length) bewegt = true;
+	if (REGEN.tropfen.length > 40) { REGEN.tropfen.shift(); REGEN.dirty = true; }
+	/* Wischer: fährt einmal über die Scheibe und nimmt Tropfen und Staub mit */
+	const LW = regenLogisch(), rand = (LW / 2) / STREU.pxmm;
+	if (REGEN.wischer) {
+		REGEN.wischer.x += dt * 2 * rand / 0.9;
+		const xw = REGEN.wischer.x;
+		const vorher = REGEN.tropfen.length + REGEN.staub.length;
+		REGEN.tropfen = REGEN.tropfen.filter(d => d.x > xw);
+		REGEN.staub = REGEN.staub.filter(s => s.x > xw);
+		if (REGEN.tropfen.length + REGEN.staub.length !== vorher) REGEN.dirty = true;
+		if (xw > rand + 1) REGEN.wischer = null;
+		bewegt = true;
+	} else if (REGEN.automatik && regenRelativ() >= REGEN.schwelle) {
+		REGEN.wischer = { x: -rand - 1 }; REGEN.wischZahl++;
+	}
+	if (REGEN.zieh) bewegt = true;
+	if (REGEN.dirty) { REGEN.C = streuC(regenMedium); REGEN.dirty = false; bewegt = true; }
+	REGEN.ruhe = bewegt ? 0 : REGEN.ruhe + dt;
+	if (!REGEN.pausiert && REGEN.ruhe < 1.5) {
+		REGEN.t += dt;
+		REGEN.verlauf.push({ t: REGEN.t, w: regenRelativ() });
+		while (REGEN.verlauf.length && REGEN.verlauf[0].t < REGEN.t - DAUER_R - 0.2) REGEN.verlauf.shift();
+	}
+	zeichneRegen(); zeichneRegenSignal();
+}
+/* Tropfen mit Maus oder Finger verschieben */
+function regenPunkt(ev) {
+	const r = cR.getBoundingClientRect(), LW = regenLogisch(), f = WR / LW;
+	return { x: ((ev.clientX - r.left) / f - LW / 2) / STREU.pxmm, y: (ev.clientY - r.top) / f };
+}
+cR.addEventListener("pointerdown", ev => {
+	const q = regenPunkt(ev);
+	let best = null, bd = 1e9;
+	REGEN.tropfen.forEach(d => { const a = Math.abs(d.x - q.x); if (a < bd) { bd = a; best = d; } });
+	if (best && bd < 3) { REGEN.zieh = best; try { cR.setPointerCapture(ev.pointerId); } catch (e) { /* ohne Capture weiter */ } ev.preventDefault(); }
+});
+cR.addEventListener("pointermove", ev => {
+	if (!REGEN.zieh) return;
+	const LW = regenLogisch(), rand = (LW / 2 - 12) / STREU.pxmm;
+	REGEN.zieh.x = Math.max(-rand, Math.min(rand, regenPunkt(ev).x)); REGEN.dirty = true;
+});
+const regenLoslassen = () => { REGEN.zieh = null; };
+cR.addEventListener("pointerup", regenLoslassen);
+cR.addEventListener("pointercancel", regenLoslassen);
+document.getElementById("btn-tropfen").addEventListener("click", () => neuerTropfen((Math.random() * 2 - 1) * 1.5));
+const btnSchauer = document.getElementById("btn-schauer");
+btnSchauer.addEventListener("click", () => { REGEN.schauer = !REGEN.schauer; btnSchauer.classList.toggle("aktiv", REGEN.schauer); });
+document.getElementById("btn-staub").addEventListener("click", () => {
+	for (let k = 0; k < 4; k++) REGEN.staub.push({ x: (Math.random() * 2 - 1) * 14, w: 2 + Math.random() * 2, n: 10 });
+	REGEN.dirty = true;
+});
+const btnAutomatik = document.getElementById("btn-automatik");
+btnAutomatik.addEventListener("click", () => { REGEN.automatik = !REGEN.automatik; btnAutomatik.classList.toggle("aktiv", REGEN.automatik); });
+document.getElementById("btn-regen-null").addEventListener("click", () => {
+	REGEN.tropfen = []; REGEN.staub = []; REGEN.fallend = []; REGEN.wischer = null; REGEN.wischZahl = 0;
+	REGEN.schauer = false; btnSchauer.classList.remove("aktiv"); REGEN.verlauf = []; REGEN.dirty = true;
+});
+P.regler("regler-regen-schwelle", "wert-regen-schwelle", v => P.de(v, 1) + "&nbsp;%", v => REGEN.schwelle = v)();
+const btnRegenPause = document.getElementById("btn-regen-pause");
+btnRegenPause.addEventListener("click", () => {
+	REGEN.pausiert = !REGEN.pausiert;
+	SimUI.setzeIcon(btnRegenPause, REGEN.pausiert ? "play" : "pause", REGEN.pausiert ? "Diagramm weiterlaufen lassen" : "Diagramm anhalten");
+});
+
+/* ---------- Näherungsschalter ---------- */
+const MATERIAL = { metall: { name: "Metall", er: 1e9, farbe: "#B8BEC6", rand: "#5C6670" }, wasser: { name: "Wasser", er: 80, farbe: "#8FC0F0", rand: "#2F6FB8" },
+	glas: { name: "Glas", er: 6, farbe: "#D8F0F2", rand: "#6AA8B0" }, holz: { name: "Holz", er: 3, farbe: "#D9A86C", rand: "#8A5A2B" }, karton: { name: "Karton", er: 2, farbe: "#E6D2A8", rand: "#9A8050" } };
+const NAEH = { kappe: 1, hoehe: 8, halb: 12, s: 10, material: "metall", schwelle: 10, C0: 0, C: 0, dirty: true, zieh: null };
+const cN = document.getElementById("naeh-canvas"), gN = cN.getContext("2d");
+let WN = 640, HN = 330;
+function naehMedium(er) {
+	return (x, y) => {
+		if (y < NAEH.kappe) return 3;
+		if (y >= NAEH.kappe + NAEH.s && y <= NAEH.kappe + NAEH.s + NAEH.hoehe && Math.abs(x) <= NAEH.halb) return wirksam(er);
+		return 1;
+	};
+}
+NAEH.C0 = streuC((x, y) => y < NAEH.kappe ? 3 : 1);
+const naehRelativ = () => (NAEH.C - NAEH.C0) / NAEH.C0 * 100;
+function naehLogisch() { return WN < 560 ? 420 : 640; }
+function zeichneNaeh() {
+	if (NAEH.dirty) { NAEH.C = streuC(naehMedium(MATERIAL[NAEH.material].er)); NAEH.dirty = false; }
+	const LW = naehLogisch(), f = WN / LW, LH = HN / f, dpr = window.devicePixelRatio || 1;
+	gN.setTransform(dpr * f, 0, 0, dpr * f, 0, 0);
+	gN.clearRect(0, 0, LW, LH);
+	const fs = LW < 560 ? 17 : 13;
+	const p = STREU.pxmm, xm = LW < 560 ? 168 : 250, ye = LH - 46, yk = ye - NAEH.kappe * p;
+	const m = MATERIAL[NAEH.material];
+	/* Gehäuse und Kappe */
+	const hw = 13.5 * p;
+	gN.fillStyle = "#5A6068"; gN.fillRect(xm - hw, ye, 2 * hw, LH - ye);
+	gN.fillStyle = "#E8E2C8"; gN.fillRect(xm - hw, yk, 2 * hw, ye - yk);
+	gN.strokeStyle = "#9A9070"; gN.lineWidth = 1; gN.strokeRect(xm - hw, yk, 2 * hw, ye - yk);
+	/* Gegenstand */
+	const yg = ye - (NAEH.kappe + NAEH.s) * p, hg = NAEH.hoehe * p;
+	gN.fillStyle = m.farbe; gN.strokeStyle = m.rand; gN.lineWidth = 1.5;
+	gN.fillRect(xm - NAEH.halb * p, yg - hg, 2 * NAEH.halb * p, hg); gN.strokeRect(xm - NAEH.halb * p, yg - hg, 2 * NAEH.halb * p, hg);
+	if (NAEH.material === "holz") { gN.strokeStyle = "rgba(120,70,30,0.5)"; for (let k = 1; k < 4; k++) { gN.beginPath(); gN.moveTo(xm - NAEH.halb * p, yg - hg * k / 4); gN.bezierCurveTo(xm - 40, yg - hg * k / 4 - 5, xm + 40, yg - hg * k / 4 + 5, xm + NAEH.halb * p, yg - hg * k / 4); gN.stroke(); } }
+	/* Feldlinien */
+	for (const r of feldRadien(9)) zeichneFeldlinie(gN, r, xm, ye, (x, y) => {
+		const innen = y >= NAEH.kappe + NAEH.s && y <= NAEH.kappe + NAEH.s + NAEH.hoehe && Math.abs(x) <= NAEH.halb;
+		if (innen && m.er > 1e5) return { farbe: "rgba(0,0,0,0)", breite: 1 };   /* im Metall kein Feld */
+		if (innen) return { farbe: "#0000BF", breite: 3 };
+		return { farbe: "#3A62D8", breite: 1.4 };
+	});
+	zeichneElektroden(gN, xm, ye);
+	P.text(gN, m.name, xm - NAEH.halb * p + 6, yg - hg + 17, { groesse: fs + 1, fett: true, farbe: "#222" });
+	/* Abstandspfeil s */
+	const xa = xm + NAEH.halb * p + 14;
+	if (NAEH.s * p > 14) {
+		gN.strokeStyle = "#333"; gN.lineWidth = 1.2;
+		gN.beginPath(); gN.moveTo(xa, yk); gN.lineTo(xa, yg); gN.stroke();
+		gN.fillStyle = "#333";
+		gN.beginPath(); gN.moveTo(xa, yk); gN.lineTo(xa - 4, yk - 7); gN.lineTo(xa + 4, yk - 7); gN.closePath(); gN.fill();
+		gN.beginPath(); gN.moveTo(xa, yg); gN.lineTo(xa - 4, yg + 7); gN.lineTo(xa + 4, yg + 7); gN.closePath(); gN.fill();
+	}
+	P.text(gN, "s", xa + 6, (yk + yg) / 2 + 5, { groesse: fs + 2, kursiv: true, farbe: "#333" });
+	P.text(gN, "Sensor", xm - hw + 6, LH - 12, { groesse: fs, farbe: "#fff" });
+	/* Anzeige: Balken der Kapazitätsänderung und Leuchtdiode */
+	const bx = LW - 62, bo = 34, bu = ye - 4, bmax = 100;
+	const w = naehRelativ(), schaltet = w >= NAEH.schwelle;
+	gN.fillStyle = "#EEE"; gN.fillRect(bx, bo, 26, bu - bo);
+	gN.fillStyle = P.FARBEN.blau; const hb = Math.min(1, w / bmax) * (bu - bo); gN.fillRect(bx, bu - hb, 26, hb);
+	gN.strokeStyle = "#888"; gN.lineWidth = 1; gN.strokeRect(bx, bo, 26, bu - bo);
+	const ys = bu - NAEH.schwelle / bmax * (bu - bo);
+	gN.strokeStyle = P.FARBEN.rot; gN.lineWidth = 2; gN.beginPath(); gN.moveTo(bx - 6, ys); gN.lineTo(bx + 32, ys); gN.stroke();
+	P.text(gN, "ΔC/C₀", bx + 13, bo - 8, { ausrichtung: "center", groesse: fs, farbe: "#333" });
+	if (w > bmax) P.text(gN, "> 100 %", bx + 13, bo + 16, { ausrichtung: "center", groesse: fs - 2, farbe: "#fff", fett: true });
+	gN.fillStyle = schaltet ? "#F2B400" : "#DDD"; gN.strokeStyle = "#777";
+	gN.beginPath(); gN.arc(bx + 13, LH - 20, 9, 0, 2 * Math.PI); gN.fill(); gN.stroke();
+	P.text(gN, "schematisch", 6, 16, { groesse: fs - 2, farbe: "#888" });
+
+	document.getElementById("aw-naeh").innerHTML =
+		"<i class='gr'>C</i> = " + P.de(NAEH.C * 1e12, 3) + "&nbsp;pF<span class='trenner'>|</span>ohne Gegenstand: <i class='gr'>C</i><sub>0</sub> = " + P.de(NAEH.C0 * 1e12, 3) + "&nbsp;pF" +
+		"<br>Änderung: <b>" + P.de(w, 1) + "&nbsp;%</b><span class='trenner'>|</span>" + (schaltet ? "<b>Sensor schaltet</b>" : "Sensor schaltet nicht");
+	document.getElementById("wert-abstand").innerHTML = P.de(NAEH.s, 1) + "&nbsp;mm";
+	document.getElementById("wert-naeh-schwelle").innerHTML = NAEH.schwelle + "&nbsp;%";
+}
+const reglerAbstand = document.getElementById("regler-abstand");
+P.regler("regler-abstand", "wert-abstand", v => P.de(v, 1) + "&nbsp;mm", v => { NAEH.s = v; NAEH.dirty = true; });
+P.regler("regler-naeh-schwelle", "wert-naeh-schwelle", v => v + "&nbsp;%", v => NAEH.schwelle = v);
+K.bindeKnopfgruppe("material-knoepfe", w => { NAEH.material = w; NAEH.dirty = true; });
+/* Gegenstand im Bild ziehen */
+function naehPunktS(ev) {
+	const r = cN.getBoundingClientRect(), LW = naehLogisch(), f = WN / LW, LH = HN / f;
+	const y = (ev.clientY - r.top) / f, ye = LH - 46;
+	return (ye - y) / STREU.pxmm - NAEH.kappe;
+}
+cN.addEventListener("pointerdown", ev => {
+	const s = naehPunktS(ev);
+	if (s >= NAEH.s - 1 && s <= NAEH.s + NAEH.hoehe + 1) { NAEH.zieh = s - NAEH.s; try { cN.setPointerCapture(ev.pointerId); } catch (e) { /* ohne Capture weiter */ } ev.preventDefault(); }
+});
+cN.addEventListener("pointermove", ev => {
+	if (NAEH.zieh === null) return;
+	NAEH.s = Math.round(Math.max(0.5, Math.min(12, naehPunktS(ev) - NAEH.zieh)) * 10) / 10;
+	reglerAbstand.value = NAEH.s; NAEH.dirty = true;
+});
+const naehLoslassen = () => { NAEH.zieh = null; };
+cN.addEventListener("pointerup", naehLoslassen);
+cN.addEventListener("pointercancel", naehLoslassen);
+
 /* ---------- Umschalten und Schleife ---------- */
 P.bindeModus("sensor-knoepfe", modus => {
 	zustand.sensorbox = modus;
 	document.getElementById("box-mems").classList.toggle("verborgen", modus !== "mems");
 	document.getElementById("box-touch").classList.toggle("verborgen", modus !== "touch");
+	document.getElementById("box-regen").classList.toggle("verborgen", modus !== "regen");
+	document.getElementById("box-naeherung").classList.toggle("verborgen", modus !== "naeherung");
 	if (modus !== "mems") sensorAus();
 	history.replaceState(null, "", "#" + modus);
 	layout();
@@ -1493,7 +1885,9 @@ function schritt(dt) {
 			while (zustand.verlauf.length && zustand.verlauf[0].t < zustand.t - DAUER - 0.2) zustand.verlauf.shift();
 		}
 		zeichneMems(); zeichneSignal();
-	} else zeichneTouch();
+	} else if (zustand.sensorbox === "regen") regenSchritt(dt);
+	else if (zustand.sensorbox === "naeherung") zeichneNaeh();
+	else zeichneTouch();
 	return true;
 }
 
@@ -1501,14 +1895,23 @@ function layout() {
 	({ W: WM, H: HM } = K.skaliereCanvas(cM, gM, b => b < 560 ? 300 / 420 : 300 / 640));
 	({ W: WS, H: HS } = K.skaliereCanvas(cS, gS, b => b < 560 ? 0.5 : 0.28));
 	({ W: WT, H: HT } = K.skaliereCanvas(cT, gT, b => b < 560 ? 1.1 : 0.6));
-	if (zustand.sensorbox === "mems") { zeichneMems(); zeichneSignal(); } else zeichneTouch();
+	({ W: WR, H: HR } = K.skaliereCanvas(cR, gR, b => b < 560 ? 280 / 420 : 280 / 640));
+	({ W: WRS, H: HRS } = K.skaliereCanvas(cRS, gRS, b => b < 560 ? 0.5 : 0.28));
+	({ W: WN, H: HN } = K.skaliereCanvas(cN, gN, b => b < 560 ? 330 / 420 : 330 / 640));
+	if (zustand.sensorbox === "mems") { zeichneMems(); zeichneSignal(); }
+	else if (zustand.sensorbox === "regen") { zeichneRegen(); zeichneRegenSignal(); }
+	else if (zustand.sensorbox === "naeherung") zeichneNaeh();
+	else zeichneTouch();
 }
 window.addEventListener("resize", layout);
-if (location.hash === "#touch") document.querySelector("#sensor-knoepfe button[data-modus='touch']").click();
+["touch", "regen", "naeherung"].forEach(m => { if (location.hash === "#" + m) document.querySelector("#sensor-knoepfe button[data-modus='" + m + "']").click(); });
 SimUI.modusPerLink("sensor-knoepfe");
 SimUI.bildKnopf("btn-mems-bild", cM, () => "Beschleunigungssensor_a" + P.de(zustand.a, 1));
 SimUI.bildKnopf("btn-signal-bild", cS, "Beschleunigungssensor_Signal");
 SimUI.bildKnopf("btn-touch-bild", cT, () => "Touchscreen_" + zustand.objekt);
+SimUI.bildKnopf("btn-regen-bild", cR, () => "Regensensor_" + REGEN.tropfen.length + "_Tropfen");
+SimUI.bildKnopf("btn-regensignal-bild", cRS, "Regensensor_Signal");
+SimUI.bildKnopf("btn-naeh-bild", cN, () => "Naeherungsschalter_" + NAEH.material + "_s" + P.de(NAEH.s, 1) + "mm");
 const btnSignalPause = document.getElementById("btn-signal-pause");
 btnSignalPause.addEventListener("click", () => {
 	zustand.pausiert = !zustand.pausiert;
