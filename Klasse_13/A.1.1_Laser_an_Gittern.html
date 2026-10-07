@@ -744,6 +744,132 @@ window.SimPlus = (function () {
 	</script>
 
 
+
+<style>
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste (Kast 2026-10-06) ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover { background: #ebebeb; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.an, .kn button.laeuft { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.symbol { min-width: 0; min-height: 0; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn .zahl { font-variant-numeric: tabular-nums; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; z-index: 2; }
+.bildleiste.unten { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+.bildleiste.links { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) {
+	.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; }
+	.steuerung .zeile > label { flex: 1 1 100%; margin-bottom: -0.35rem; }
+}
+</style>
+<script>
+"use strict";
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	wuerfel: '<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/>',
+	drehen: '<path fill="currentColor" d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/>',
+	vorspulen: '<path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>',
+	uhr: '<path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>',
+	kamera: '<path fill="currentColor" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>',
+	ein: '<path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* sprechender Dateiname ohne Umlaute und Sonderzeichen */
+function dateiname(t) {
+	return t.replace(/,\s+/g, "_").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss")
+		.replace(/[^A-Za-z0-9,]+/g, "_").replace(/^_+|_+$/g, "");
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); name(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, name, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname(name()) + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname(name()) + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik); "U_B" wird als U mit Index B gesetzt */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	const schrift = getComputedStyle(document.body).fontFamily;
+	const teile = s => { const m = String(s).match(/^(.*?)_(\S+)(.*)$/); return m ? [m[1], m[2], m[3]] : [String(s), "", ""]; };
+	const breite = s => { const [a, i, b] = teile(s); x.font = g + "px " + schrift; let w = x.measureText(a).width + x.measureText(b).width; x.font = Math.round(g * 0.72) + "px " + schrift; return w + (i ? x.measureText(i).width + 1 : 0); };
+	const schreibe = (s, xm, y) => {
+		const [a, i, b] = teile(s); let xx = xm - breite(s) / 2;
+		x.textAlign = "left"; x.font = g + "px " + schrift; x.fillText(a, xx, y); xx += x.measureText(a).width;
+		if (i) { x.font = Math.round(g * 0.72) + "px " + schrift; x.fillText(i, xx + 0.5, y + g * 0.28); xx += x.measureText(i).width + 1; }
+		x.font = g + "px " + schrift; x.fillText(b, xx, y);
+	};
+	const breiten = kopf.map((k, i) => Math.max(breite(k), ...zeilen.map(z => breite(z[i]))) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.fillStyle = "#111"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { schreibe(w, xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+</script>
+
 </head>
 
 <body>
@@ -758,21 +884,27 @@ window.SimPlus = (function () {
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Laserlicht an gedrehten Gittern</div>
 		<div class="tcb-body">
-			<canvas id="gitter-canvas" class="sim"></canvas>
+			<div class="leinwand" id="gitter-leinwand"><canvas id="gitter-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Anordnung</div><div class="kn" id="anordnung-knoepfe">
+					<button data-wert="eins" class="aktiv" title="ein Gitter" aria-label="ein Gitter"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><defs><clipPath id="K1"><circle cx="13" cy="13" r="10"/></clipPath></defs><circle cx="13" cy="13" r="10" fill="#F4F4F8" stroke="#777" stroke-width="1.2"/><g clip-path="url(#K1)"><g transform="rotate(0 13 13)" stroke="#333" stroke-width="1.3"><path d="M5 0V26"/><path d="M9 0V26"/><path d="M13 0V26"/><path d="M17 0V26"/><path d="M21 0V26"/></g></g></svg></button>
+					<button data-wert="zwei" title="zwei Gitter hintereinander" aria-label="zwei Gitter hintereinander"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><defs><clipPath id="K2"><circle cx="13" cy="13" r="10"/></clipPath></defs><circle cx="13" cy="13" r="10" fill="#F4F4F8" stroke="#777" stroke-width="1.2"/><g clip-path="url(#K2)"><g transform="rotate(0 13 13)" stroke="#333" stroke-width="1.3"><path d="M5 0V26"/><path d="M9 0V26"/><path d="M13 0V26"/><path d="M17 0V26"/><path d="M21 0V26"/></g><g transform="rotate(40 13 13)" stroke="rgba(0,0,191,0.8)" stroke-width="1.3"><path d="M5 0V26"/><path d="M9 0V26"/><path d="M13 0V26"/><path d="M17 0V26"/><path d="M21 0V26"/></g></g></svg></button>
+					<button data-wert="viele" title="viele kleine Gitter" aria-label="viele kleine Gitter"><svg width="28" height="26" viewBox="0 0 28 26" aria-hidden="true"><g transform="rotate(0 6.5 6.5)" stroke="#333" stroke-width="1"><rect x="2.0" y="2.0" width="9.0" height="9.0" fill="#F4F4F8"/><path d="M4.2 2.0V11.0"/><path d="M6.5 2.0V11.0"/><path d="M8.8 2.0V11.0"/></g><g transform="rotate(35 20.5 7.5)" stroke="#333" stroke-width="1"><rect x="16.0" y="3.0" width="9.0" height="9.0" fill="#F4F4F8"/><path d="M18.2 3.0V12.0"/><path d="M20.5 3.0V12.0"/><path d="M22.8 3.0V12.0"/></g><g transform="rotate(70 7.5 19.5)" stroke="#333" stroke-width="1"><rect x="3.0" y="15.0" width="9.0" height="9.0" fill="#F4F4F8"/><path d="M5.2 15.0V24.0"/><path d="M7.5 15.0V24.0"/><path d="M9.8 15.0V24.0"/></g><g transform="rotate(110 20.5 19.5)" stroke="#333" stroke-width="1"><rect x="16.0" y="15.0" width="9.0" height="9.0" fill="#F4F4F8"/><path d="M18.2 15.0V24.0"/><path d="M20.5 15.0V24.0"/><path d="M22.8 15.0V24.0"/></g></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Gittertyp</div><div class="kn" id="typ-knoepfe">
+					<button data-wert="strich" class="aktiv" title="Strichgitter" aria-label="Strichgitter"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="4" y="4" width="18" height="18" fill="#F4F4F8" stroke="#333" stroke-width="1.2"/><g stroke="#333" stroke-width="1.3"><path d="M8.5 4V22M13 4V22M17.5 4V22"/></g></svg></button>
+					<button data-wert="kreuz" title="Kreuzgitter" aria-label="Kreuzgitter"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="4" y="4" width="18" height="18" fill="#F4F4F8" stroke="#333" stroke-width="1.2"/><g stroke="#333" stroke-width="1.3"><path d="M8.5 4V22M13 4V22M17.5 4V22M4 8.5H22M4 13H22M4 17.5H22"/></g></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Laser</div><div class="kn" id="laser-knoepfe">
+					<button data-wert="650" class="aktiv" title="roter Laser" aria-label="roter Laser"><span style="display:inline-block;width:0.8em;height:0.8em;border-radius:50%;background:#E8281E;box-shadow:0 0 4px #E8281E"></span><span class="zahl">650&nbsp;nm</span></button>
+					<button data-wert="532" title="grüner Laser" aria-label="grüner Laser"><span style="display:inline-block;width:0.8em;height:0.8em;border-radius:50%;background:#2DB82D;box-shadow:0 0 4px #2DB82D"></span><span class="zahl">532&nbsp;nm</span></button>
+					<button data-wert="405" title="violetter Laser" aria-label="violetter Laser"><span style="display:inline-block;width:0.8em;height:0.8em;border-radius:50%;background:#7A2BE2;box-shadow:0 0 4px #7A2BE2"></span><span class="zahl">405&nbsp;nm</span></button>
+				</div></div>
+			</div>
 			<div class="steuerung">
-				<div class="zeile"><label>Anordnung</label>
-					<span class="knopfleiste" id="anordnung-knoepfe"><button data-wert="eins" class="aktiv">ein Gitter</button><button data-wert="zwei">zwei Gitter hintereinander</button><button data-wert="viele">viele kleine Gitter</button></span>
-				</div>
-				<div class="zeile"><label>Gittertyp</label>
-					<span class="knopfleiste" id="typ-knoepfe"><button data-wert="strich" class="aktiv">Strichgitter</button><button data-wert="kreuz">Kreuzgitter</button></span>
-				</div>
 				<div class="zeile" id="zeile-phi"><label id="label-phi">Drehwinkel <i class="gr">φ</i></label><input type="range" id="regler-phi" min="0" max="180" step="0.5" value="0"><span class="wert" id="wert-phi"></span></div>
-				<div class="zeile verborgen" id="zeile-n"><label>Anzahl der Gitter <i class="gr">N</i></label><input type="range" id="regler-n" min="0" max="16" step="1" value="4"><span class="wert" id="wert-n"></span></div>
-				<div class="zeile"><label>Laser</label>
-					<span class="knopfleiste" id="laser-knoepfe"><button data-wert="650" class="aktiv">rot (650&nbsp;nm)</button><button data-wert="532">grün (532&nbsp;nm)</button><button data-wert="405">violett (405&nbsp;nm)</button></span>
-				</div>
+				<div class="zeile verborgen" id="zeile-n"><label>Anzahl der Gitter <i class="gr">N</i></label><input type="range" id="regler-n" min="0" max="16" step="1" value="4"><span class="wert" id="wert-n"></span><button class="symbol verborgen" id="btn-neu" title="Gitter neu verteilen" aria-label="Gitter neu verteilen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/></svg></button></div>
 				<div class="zeile"><label>Gitterkonstante <i class="gr">g</i></label><input type="range" id="regler-g" min="5" max="20" step="0.1" value="10"><span class="wert" id="wert-g"></span></div>
-				<div class="zeile"><span class="knopfleiste"><button id="btn-neu" class="verborgen">Gitter neu verteilen</button><button id="btn-standard">Standardwerte</button></span></div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
 			<p class="fussnote">Schirmabstand <i class="gr">a</i> = 1,00&nbsp;m. Die Helligkeit wird automatisch angepasst, damit auch schwache Maxima sichtbar bleiben. Die Gitter sind schematisch gezeichnet.</p>
@@ -1021,7 +1153,7 @@ K.bindeKnopfgruppe("anordnung-knoepfe", w => { zustand.anordnung = w; passeZeile
 K.bindeKnopfgruppe("typ-knoepfe", w => zustand.typ = w, zeichne);
 K.bindeKnopfgruppe("laser-knoepfe", w => zustand.lambda = +w, zeichne);
 document.getElementById("btn-neu").addEventListener("click", () => { zustand.saat++; zeichne(); });
-document.getElementById("btn-standard").addEventListener("click", () => {
+function standardwerte() {
 	Object.assign(zustand, STANDARD);
 	document.getElementById("regler-phi").value = zustand.phi;
 	document.getElementById("regler-n").value = zustand.nIndex;
@@ -1030,7 +1162,12 @@ document.getElementById("btn-standard").addEventListener("click", () => {
 		document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === wert));
 	passeZeilenAn();
 	updPhi(); updN(); updG();
-});
+}
+const ANORDNUNG_NAME = { eins: "ein_Gitter", zwei: "zwei_Gitter", viele: "viele_Gitter" };
+bildLeiste(document.getElementById("gitter-leinwand"), () => cG,
+	() => "Laser_" + zustand.lambda + "nm_" + ANORDNUNG_NAME[zustand.anordnung] + "_" + (zustand.typ === "kreuz" ? "Kreuzgitter" : "Strichgitter") +
+		(zustand.anordnung === "viele" ? "_N_" + N_LISTE[zustand.nIndex] : "_phi_" + P.de(zustand.phi, 1) + "_Grad") + "_g_" + P.de(zustand.g, 1) + "mum",
+	[symbolKnopf("zurueck", "Standardwerte", standardwerte)]).classList.add("unten");
 
 updPhi(); updN(); updG();
 window.addEventListener("resize", groesse);
