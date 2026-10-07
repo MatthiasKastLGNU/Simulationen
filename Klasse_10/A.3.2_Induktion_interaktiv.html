@@ -387,80 +387,36 @@ button.dunkel:disabled { opacity: 0.4; }
 	.lueckentext, .markiertext { font-size: 1rem; }
 	.wischkarte { font-size: 1.05rem; }
 }
-
-/* ---------- Filmleiste: Einzelbilder auf dunklem Streifen mit Lochung ---------- */
-.filmstreifen, .filmvorrat { display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); }
-.filmstreifen { margin: 0.5rem 0; border-radius: 2mm; overflow: hidden; }
-.filmfeld {
-	position: relative; background: #2B2B2B; padding: 17px 4px;
-	background-image:
-		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px),
-		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px);
-	background-size: 100% 7px, 100% 7px;
-	background-position: 0 5px, 0 calc(100% - 5px);
-	background-repeat: no-repeat;
-}
-.filmbild {
-	background: #fff; border-radius: 2px; min-height: 120px; height: 100%; box-sizing: border-box;
-	display: flex; flex-direction: column; align-items: stretch; justify-content: center;
-	border: 3px solid #fff; transition: border-color 0.2s, background 0.2s;
-}
-.filmbild svg, .filmkarte svg, .kinobild svg { display: block; width: 100%; height: auto; }
-.filmbild .unter, .filmkarte .unter, .kinobild .unter { font-size: 0.82rem; line-height: 1.2; text-align: center; color: #333; padding: 0.1rem 0.15rem 0.15rem; }
-.filmbild.platz { background: #3A3A3A; border: 2px dashed #8A8A8A; align-items: center; }
-.filmbild.platz .nr { color: #BDBDBD; font-size: 1.4rem; font-weight: bold; }
-.filmbild.platz.voll { background: #fff; border-style: solid; border-color: #fff; align-items: stretch; }
-.filmbild.platz.voll .nr { display: none; }
-.filmbild.platz.ueber { background: #4A4A7A; border-color: #fff; }
-.filmbild.platz > .filmkarte { border: none; box-shadow: none; padding: 0; margin: 0; }
-.filmbild.frage { background: #FFF8E1; border-color: #FFC107; align-items: center; }
-.filmbild .frage { font-size: 2.6rem; font-weight: bold; color: #C8A000; }
-.filmbild.richtig { border-color: var(--gut); }
-.filmbild.falsch { border-color: var(--falsch); background: var(--falsch-hg); }
-.filmbild.tippbar { cursor: pointer; }
-.filmbild.tippbar:hover { border-color: #9FA8DA; }
-.filmbild.daneben { opacity: 0.55; }
-.filmbild.wackeln { animation: wackeln 0.4s; }
-.filmbild.laeuft { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold); }
-.filmvorrat { gap: 0.45rem; padding: 0.45rem; background: #F4F4F6; border-radius: 2mm; min-height: 130px; margin-top: 0.3rem; }
-.filmkarte {
-	font: inherit; background: #fff; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.15rem;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
-	display: flex; flex-direction: column; justify-content: center;
-}
-.filmkarte.gewaehlt { border-color: var(--blue-frame); box-shadow: 0 0 0 3px rgba(0,0,191,0.25); }
-.filmkarte.zieht { opacity: 0.35; }
-.filmwahl .titel { font-size: 0.85rem; color: #666; margin: 0.3rem 0; }
-.filmwahlreihe { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 118px)); gap: 0.6rem; justify-content: center; }
-button.filmkarte { cursor: pointer; }
-button.filmkarte:hover:not(:disabled) { border-color: var(--blue-frame); }
-button.filmkarte:disabled { cursor: default; }
-.filmkarte.richtig { border-color: var(--gut); background: var(--gut-hg); }
-.filmkarte.falsch { border-color: var(--falsch); background: var(--falsch-hg); opacity: 0.6; }
-.filmkarte.wackeln { animation: wackeln 0.4s; }
-button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
-.kino { max-width: 340px; margin: 0.4rem auto 0.2rem; background: #2B2B2B; padding: 10px; border-radius: 2mm; text-align: center; }
-.kinobild { background: #fff; border-radius: 2px; padding: 4px 0 2px; }
-.kinobild svg { width: auto; max-width: 100%; max-height: 250px; margin: 0 auto; }
-.kinobild .unter { font-size: 1rem; }
-.kinonr { color: #ddd; font-size: 0.85rem; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
-@media (max-width: 560px) {
-	.filmstreifen, .filmvorrat { grid-template-columns: repeat(var(--nhandy, 3), minmax(0, 1fr)); }
-	.filmbild .unter, .filmkarte .unter { font-size: 0.78rem; }
-	.kino { max-width: 260px; }
-	.kinobild svg { max-height: 200px; }
-}
-
 </style>
 </head>
 <body>
-<div class="blatt"></div>
+<div class="blatt">
+	<div class="kopf">
+		<span class="nr">10</span>
+		<span class="kapitel">A.3.2 Grundlegende Induktionsphänomene</span>
+		<span class="nr zwilling">10</span>
+	</div>
+	<div class="modusleiste" id="modusleiste"></div>
+
+	<section class="tcb blau" id="m-paare" hidden><div class="tcb-title">Spiel: Paare finden</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-kette" hidden><div class="tcb-title">Kausalkette ordnen</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-sortieren" hidden><div class="tcb-title">Sortieren: Wie stark wird gebremst?</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-luecken" hidden><div class="tcb-title">Erklärung: Waltenhofensches Pendel</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-wischen" hidden><div class="tcb-title">Stimmt's?</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-fehler" hidden><div class="tcb-title">Fehler finden: Cletus erklärt</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-film" hidden><div class="tcb-title">Film mit Stopps: Ring und Magnet</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-vorhersage" hidden><div class="tcb-title">Vorhersage: Fallender Magnet</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-tippen" hidden><div class="tcb-title">Wo genau? Wo fließt Strom?</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-pole" hidden><div class="tcb-title">Pole der Ringströme</div><div class="tcb-body"></div></section>
+	<section class="tcb blau" id="m-bremse" hidden><div class="tcb-title">Spiel: Wirbelstrombremse</div><div class="tcb-body"></div></section>
+
+	<div class="fuss-autor">Kast</div>
+</div>
 <script>
 /* ==========================================================================
    Kast-Interaktiv: Bausteine für interaktive Übungen (Bibliothek, nicht für GitHub)
    Vanilla JS, keine Abhängigkeiten. Alles unter window.KI.
-   Bausteine: paare, kette, luecken, sortieren, wischen, markieren, filmleiste
-   Seite:     seite (Kopf, Modusleiste, Abschnitte, ?modus=…), MODUS_ICON
+   Bausteine: paare, kette, luecken, sortieren, wischen, markieren
    Hilfen:    ziehen (Ziehen und Tippen), heftleiste (Kopieren, Teilen, Speichern),
               blattBild (Ergebnis als PNG), svg (Piktogramme), sterne, funken
    ========================================================================== */
@@ -501,11 +457,9 @@ window.KI = (function () {
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
 
-	/* Speicher je Seite: Alle Simulationen auf GitHub Pages teilen sich einen Speicher, sonst zeigt z. B. A.3.1 die Sterne von „Paare“ aus A.3.2 */
-	const SEITE = (location.pathname.split("/").pop() || "start").replace(/\.html?$/, "");
 	KI.speicher = {
-		lies(k, std) { try { const w = localStorage.getItem("KI_" + SEITE + "_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
-		schreib(k, w) { try { localStorage.setItem("KI_" + SEITE + "_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
+		lies(k, std) { try { const w = localStorage.getItem("KI_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
+		schreib(k, w) { try { localStorage.setItem("KI_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
 	};
 	/* Bestwert (Sterne) je Übung merken; meldet Änderung an die Seite */
 	KI.bestwert = function (id, sterne) {
@@ -757,15 +711,6 @@ window.KI = (function () {
 		const ctx = c.getContext("2d");
 		/* Bilder vorladen */
 		for (const b of bloecke) if (b.art === "reihe") for (const e of b.elemente) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
-		for (const b of bloecke) if (b.art === "film") for (const e of b.bilder) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
-		/* Filmleiste: Maße der Einzelbilder */
-		const FILMRAND = 24, FILMSPALT = 8;
-		function filmMasse(b) {
-			const n = b.bilder.length, fw = (B - 2 * R - (n + 1) * FILMSPALT) / n;
-			const fh = Math.min(380, Math.max(...b.bilder.map(e => e.img ? e.img.height * (fw - 10) / e.img.width : fw)));
-			const th = b.bilder.some(e => e.text) ? 30 : 0;
-			return { n, fw, fh, th, h: fh + th + 10 + 2 * FILMRAND };
-		}
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
@@ -794,7 +739,6 @@ window.KI = (function () {
 			if (b.art === "bild") return b.quelle.height * (B - 2 * R) / b.quelle.width + 10;
 			if (b.art === "spalten") return 50 + Math.max(...b.spalten.map(s => s.zeilen.reduce((a, z) => a + umbrechen([{ t: z }], (B - 2 * R) / b.spalten.length - 30, 22).length * 31 + 8, 0))) + 10;
 			if (b.art === "abstand") return b.h;
-			if (b.art === "film") return filmMasse(b).h + 12;
 			return 0;
 		}
 		let H = R;
@@ -850,21 +794,6 @@ window.KI = (function () {
 				});
 			} else if (b.art === "bild") {
 				ctx.drawImage(b.quelle, R, y, B - 2 * R, h - 10);
-			} else if (b.art === "film") {
-				/* dunkler Streifen mit Lochung oben und unten, weiße Einzelbilder */
-				const m = filmMasse(b), y0 = y + 4;
-				ctx.fillStyle = "#2B2B2B"; ctx.beginPath(); ctx.roundRect(R, y0, B - 2 * R, m.h, 6); ctx.fill();
-				ctx.fillStyle = "#E6E6E6";
-				for (let x = R + 10; x < B - R - 16; x += 22) { ctx.beginPath(); ctx.roundRect(x, y0 + 7, 11, 10, 2); ctx.fill(); ctx.beginPath(); ctx.roundRect(x, y0 + m.h - 17, 11, 10, 2); ctx.fill(); }
-				b.bilder.forEach((e, i) => {
-					const x = R + FILMSPALT + i * (m.fw + FILMSPALT), yb = y0 + FILMRAND + 5;
-					ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(x, yb, m.fw, m.fh + m.th, 3); ctx.fill();
-					if (e.img) {
-						const s = Math.min((m.fw - 10) / e.img.width, m.fh / e.img.height);
-						ctx.drawImage(e.img, x + m.fw / 2 - e.img.width * s / 2, yb + m.fh / 2 - e.img.height * s / 2, e.img.width * s, e.img.height * s);
-					}
-					if (e.text) { ctx.font = font(20); ctx.fillStyle = "#333"; ctx.textAlign = "center"; ctx.fillText(e.text, x + m.fw / 2, yb + m.fh + 22, m.fw - 6); ctx.textAlign = "left"; }
-				});
 			} else if (b.art === "spalten") {
 				const n = b.spalten.length, sb = (B - 2 * R) / n;
 				b.spalten.forEach((s, i) => {
@@ -1437,213 +1366,6 @@ window.KI = (function () {
 	};
 
 	/* ==========================================================================
-	   Baustein: Filmleiste. Ein Ablauf als Reihe von Einzelbildern.
-	   cfg: { id, stufen:[{ name, titel, auftrag, art, bilder:[{ svg, text }], schluss, takt }] }
-	   art "ordnen": Bilder liegen gemischt unten und kommen in die richtige Reihenfolge
-	   art "luecke": Bild Nummer luecke.stelle (0-basiert) fehlt; luecke.wahl:[{ svg, text, ok, warum }]
-	   art "fehler": ein Bild ist falsch; fehler:[{ stelle, svg, text, warum }] (eins davon wird zufällig gezeigt)
-	   Danach: Film abspielen (Daumenkino), Ergebnisbild fürs Heft. takt = ms pro Bild (Standard 900).
-	   ========================================================================== */
-	KI.filmleiste = function (behaelter, cfg) {
-		const kopf = kopfzeile(behaelter, cfg.stufen, cfg.id, starte);
-		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
-		const kino = el("div", "kino"); kino.hidden = true; behaelter.appendChild(kino);
-		const streifen = el("div", "filmstreifen"); behaelter.appendChild(streifen);
-		const unten = el("div", ""); behaelter.appendChild(unten);
-		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
-		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
-		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
-		behaelter.appendChild(steuer);
-		const rueck = el("div", ""); behaelter.appendChild(rueck);
-		const grp = "film_" + cfg.id;
-		let nr = 0, st, fehler = 0, versuche = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null;
-		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel }, { art: "film", bilder: st.bilder }]
-			.concat(st.schluss ? [{ art: "kasten", teile: [{ t: st.schluss }], groesse: 22 }] : [])), cfg.id);
-		heft.hidden = true;
-		const spalten = n => n <= 3 ? n : n === 4 ? 2 : 3;
-		function bildHtml(b) { return (b.svg || "") + (b.text !== undefined ? '<div class="unter">' + b.text + "</div>" : ""); }
-		function feld(inhalt, klasse) {
-			const f = el("div", "filmfeld");
-			const b = el("div", "filmbild" + (klasse ? " " + klasse : ""), inhalt);
-			f.appendChild(b); streifen.appendChild(f);
-			return b;
-		}
-		function sterne(f) { return f === 0 ? 3 : f === 1 ? 2 : 1; }
-		function geschafft(text) {
-			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false;
-			const s = st.art === "ordnen" ? sterneNachVersuchen(versuche) : sterne(fehler);
-			rueck.innerHTML = "";
-			const p = el("p", "rueck gut", text + " " + KI.sterneHtml(s)); rueck.appendChild(p);
-			if (st.schluss) rueck.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + st.schluss));
-			KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
-			KI.bestwert(cfg.id, s); kopf.markiere(nr);
-			KI.funken(p, 16); heft.hidden = false;
-			const n = KI.naechsteStufe(nr, cfg.stufen.length);
-			if (n >= 0) { const w = el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
-		}
-		KI.ziehGruppe(grp, ".filmbild.platz, .filmvorrat", (q, z) => {
-			if (q.dataset.gesperrt) return;
-			const herkunft = q.parentElement;
-			felder.forEach(f => f.classList.remove("richtig", "falsch"));
-			if (z.classList.contains("platz")) {
-				const alt = z.querySelector(".filmkarte");
-				if (alt && alt !== q) (herkunft.classList.contains("platz") ? herkunft : unten.querySelector(".filmvorrat")).appendChild(alt);
-				z.appendChild(q);
-			} else z.appendChild(q);
-			felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
-			rueck.innerHTML = "";
-		});
-		function starte(i) {
-			nr = i; st = cfg.stufen[i]; fehler = 0; versuche = 0; fertigB = false; falschesBild = null;
-			stoppe(); kopf.markiere(i); kopf.status.innerHTML = "";
-			auftrag.innerHTML = st.auftrag;
-			streifen.innerHTML = ""; unten.innerHTML = ""; rueck.innerHTML = ""; heft.hidden = true;
-			const n = st.bilder.length;
-			streifen.style.setProperty("--n", n); streifen.style.setProperty("--nhandy", spalten(n));
-			pruefKnopf.hidden = st.art !== "ordnen"; pruefKnopf.disabled = false; spielKnopf.hidden = true;
-			if (st.art === "ordnen") {
-				felder = st.bilder.map((_, j) => feld('<span class="nr">' + (j + 1) + "</span>", "platz"));
-				const vorrat = el("div", "filmvorrat"); unten.appendChild(vorrat);
-				vorrat.style.setProperty("--n", n); vorrat.style.setProperty("--nhandy", spalten(n));
-				for (const j of mischen(st.bilder.map((_, j) => j))) {
-					const k = el("div", "filmkarte", bildHtml(st.bilder[j])); k.dataset.j = j;
-					KI.ziehbar(k, grp); vorrat.appendChild(k);
-				}
-			} else if (st.art === "luecke") {
-				const L = st.luecke;
-				felder = st.bilder.map((b, j) => feld(j === L.stelle ? '<span class="frage">?</span>' : bildHtml(b), j === L.stelle ? "frage" : ""));
-				const wahl = el("div", "filmwahl"); unten.appendChild(wahl);
-				wahl.appendChild(el("div", "titel", "Welches Bild gehört in die Lücke?"));
-				const reihe = el("div", "filmwahlreihe"); wahl.appendChild(reihe);
-				const erkl = el("div", ""); wahl.appendChild(erkl);
-				for (const w of mischen(L.wahl)) {
-					const k = el("button", "filmkarte", bildHtml(w));
-					k.addEventListener("click", () => {
-						if (fertigB || k.disabled) return;
-						if (w.ok) {
-							k.classList.add("richtig");
-							const f = felder[L.stelle]; f.classList.remove("frage"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[L.stelle]);
-							reihe.querySelectorAll("button").forEach(x => x.disabled = true);
-							geschafft(fehler ? "Richtig!" : "Richtig auf Anhieb!");
-						} else {
-							fehler++; k.disabled = true; k.classList.add("falsch", "wackeln");
-							if (w.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + w.warum));
-							kopf.status.innerHTML = "<span>Fehler: " + fehler + "</span>";
-						}
-					});
-					reihe.appendChild(k);
-				}
-			} else {
-				const F = st.fehler[Math.floor(Math.random() * st.fehler.length)];
-				falschesBild = F;
-				const erkl = el("div", ""); unten.appendChild(erkl);
-				felder = st.bilder.map((b, j) => {
-					const f = feld(bildHtml(j === F.stelle ? F : b), "tippbar");
-					f.addEventListener("click", () => {
-						if (fertigB || f.classList.contains("daneben")) return;
-						if (j === F.stelle) {
-							f.classList.add("falsch");
-							setTimeout(() => { f.classList.remove("falsch"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[j]); }, 700);
-							if (F.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + F.warum));
-							geschafft("Gefunden! So ist es richtig:");
-						} else {
-							fehler++; f.classList.add("daneben", "wackeln");
-							setTimeout(() => f.classList.remove("wackeln"), 450);
-							kopf.status.innerHTML = "<span>Daneben: " + fehler + "</span>";
-						}
-					});
-					return f;
-				});
-			}
-		}
-		pruefKnopf.addEventListener("click", () => {
-			const leer = felder.filter(f => !f.querySelector(".filmkarte")).length;
-			if (leer) { rueck.innerHTML = '<p class="rueck schlecht">Es sind noch ' + leer + " Bilder frei.</p>"; return; }
-			versuche++;
-			let falsch = 0;
-			felder.forEach((f, j) => { const ok = +f.querySelector(".filmkarte").dataset.j === j; f.classList.toggle("richtig", ok); f.classList.toggle("falsch", !ok); if (!ok) falsch++; });
-			if (!falsch) {
-				streifen.querySelectorAll(".filmkarte").forEach(k => k.dataset.gesperrt = "1");
-				geschafft("Die Reihenfolge stimmt!");
-			} else rueck.innerHTML = '<p class="rueck schlecht">' + (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " noch an der falschen Stelle.</p>";
-		});
-		/* Daumenkino: Bilder groß nacheinander, aktuelles Bild im Streifen markiert */
-		function zeigeBild() {
-			const b = st.bilder[bildNr];
-			kino.innerHTML = '<div class="kinobild">' + bildHtml(b) + '</div><div class="kinonr">' + (bildNr + 1) + " / " + st.bilder.length + "</div>";
-			felder.forEach((f, j) => f.classList.toggle("laeuft", j === bildNr));
-		}
-		function stoppe() {
-			clearInterval(uhr); uhr = 0; kino.hidden = true; felder.forEach(f => f.classList.remove("laeuft"));
-			spielKnopf.innerHTML = KI.icon("play", 20) + "<span>Film abspielen</span>";
-		}
-		spielKnopf.addEventListener("click", () => {
-			if (uhr) { stoppe(); return; }
-			bildNr = 0; kino.hidden = false; zeigeBild();
-			spielKnopf.innerHTML = KI.icon("pause", 20) + "<span>Anhalten</span>";
-			uhr = setInterval(() => { bildNr = (bildNr + 1) % st.bilder.length; zeigeBild(); }, st.takt || 900);
-		});
-		starte(KI.startStufe(cfg.stufen.length));
-	};
-
-	/* ==========================================================================
-	   Seite einer Übungssammlung: Kopf, Modusleiste mit Piktogrammen, ein Abschnitt je Übung.
-	   cfg: { klasse, kapitel, modi:[{ id, name, titel, bau(behaelter), icon? }] }
-	   Adresse: ?modus=paare (nur diese Übung), ?modus=paare,kette (mehrere), ?modus=tippen-3 (NUR Stufe 3),
-	   ?modus=vorhersage-1.2 (nur Stufen 1 und 2). So zeigt ein QR-Code genau das, was auf dem Blatt angesagt ist.
-	   ========================================================================== */
-	KI.MODUS_ICON = {
-		paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
-		kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
-		sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
-		luecken: '<path d="M2 8h5M2 16h8M17 16h5" stroke="currentColor" stroke-width="2"/><rect x="9" y="5" width="12" height="6" rx="1" fill="currentColor"/>',
-		wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
-		fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>',
-		film: '<rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9v6M14 9v6" stroke="currentColor" stroke-width="2.4"/>',
-		filmleiste: '<rect x="1" y="4" width="22" height="16" rx="1.5" fill="currentColor"/><g fill="#fff"><rect x="3" y="5.5" width="2" height="2"/><rect x="7" y="5.5" width="2" height="2"/><rect x="11" y="5.5" width="2" height="2"/><rect x="15" y="5.5" width="2" height="2"/><rect x="19" y="5.5" width="2" height="2"/><rect x="3" y="16.5" width="2" height="2"/><rect x="7" y="16.5" width="2" height="2"/><rect x="11" y="16.5" width="2" height="2"/><rect x="15" y="16.5" width="2" height="2"/><rect x="19" y="16.5" width="2" height="2"/><rect x="3" y="9" width="5" height="6" rx="0.5"/><rect x="9.5" y="9" width="5" height="6" rx="0.5"/><rect x="16" y="9" width="5" height="6" rx="0.5"/></g>',
-		vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 18 C9 17 11 8 20 5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
-		tippen: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
-		pole: '<rect x="4" y="2" width="8" height="10" fill="#D32F2F"/><rect x="4" y="12" width="8" height="10" fill="#2E7D32"/><ellipse cx="18" cy="12" rx="3" ry="8" fill="none" stroke="currentColor" stroke-width="2"/>',
-		bremse: '<rect x="2" y="6" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="19" r="2" fill="currentColor"/><circle cx="17" cy="19" r="2" fill="currentColor"/>',
-		spiel: '<rect x="2" y="7" width="20" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10v5M4.5 12.5h5" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="11" r="1.4" fill="currentColor"/><circle cx="18.5" cy="14" r="1.4" fill="currentColor"/>'
-	};
-	KI.seite = function (cfg) {
-		const blatt = document.querySelector(".blatt");
-		blatt.innerHTML = '<div class="kopf"><span class="nr">' + cfg.klasse + '</span><span class="kapitel">' + cfg.kapitel + '</span><span class="nr zwilling">' + cfg.klasse + "</span></div>";
-		const leiste = el("div", "modusleiste"); blatt.appendChild(leiste);
-		const params = new URLSearchParams(location.search);
-		const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
-			const [name, stufe] = m.split("-");
-			if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
-			return name;
-		}) : cfg.modi.map(m => m.id);
-		const knoepfe = {}, abschnitte = {}, gebaut = {}, modi = {};
-		for (const m of cfg.modi) {
-			if (!erlaubt.includes(m.id)) continue;
-			modi[m.id] = m;
-			const a = el("section", "tcb blau", '<div class="tcb-title">' + m.titel + '</div><div class="tcb-body"></div>');
-			a.id = "m-" + m.id; a.hidden = true; blatt.appendChild(a); abschnitte[m.id] = a;
-			const b = el("button", "", '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + (m.icon || KI.MODUS_ICON[m.id] || KI.MODUS_ICON.spiel) + "</svg><span>" + m.name + '</span><span class="mstern"></span>');
-			b.addEventListener("click", () => zeige(m.id));
-			leiste.appendChild(b); knoepfe[m.id] = b;
-		}
-		blatt.appendChild(el("div", "fuss-autor", "Kast"));
-		if (Object.keys(knoepfe).length <= 1) leiste.hidden = true;
-		function sterne() { for (const id in knoepfe) { const s = KI.speicher.lies("sterne_" + id, 0); knoepfe[id].querySelector(".mstern").textContent = s ? "★".repeat(s) : ""; } }
-		document.addEventListener("ki-sterne", sterne); sterne();
-		function zeige(id) {
-			for (const k in knoepfe) { knoepfe[k].classList.toggle("aktiv", k === id); abschnitte[k].hidden = k !== id; }
-			if (!gebaut[id]) { gebaut[id] = true; modi[id].bau(abschnitte[id].querySelector(".tcb-body")); }
-			KI.speicher.schreib("letzterModus", id);
-		}
-		const letzter = KI.speicher.lies("letzterModus", null);
-		const erster = Object.keys(knoepfe)[0];
-		if (erster) zeige(knoepfe[letzter] ? letzter : erster);
-	};
-
-	/* ==========================================================================
 	   Canvas-Hilfe: skaliert ein Canvas auf seine CSS-Breite (scharf auf Tablets)
 	   liefert {ctx, B, H} in CSS-Pixeln
 	   ========================================================================== */
@@ -1722,7 +1444,7 @@ function bildZug(faehrt = true, breite = 150) {
 	s += '<rect x="56" y="78" width="44" height="8" fill="#3949AB"/>';
 	s += '<rect x="56" y="86" width="44" height="2.5" fill="#FF8A00" opacity="' + (faehrt ? 0.9 : 0) + '"/>';
 	if (faehrt) s += S.pfeil(40, 18, 110, 18, "#111", 3);
-	else s += '<text x="80" y="24" font-size="17" text-anchor="middle" fill="#333" font-weight="bold">steht</text>';
+	else s += '<text x="80" y="22" font-size="13" text-anchor="middle" fill="#333">steht</text>';
 	return S.rahmen(160, 100, s, breite);
 }
 const diag = {
@@ -1753,6 +1475,53 @@ async function svgCanvas(svg, breite) {
 	c.width = breite; c.height = Math.round(breite * img.height / img.width);
 	const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
 	return c;
+}
+
+/* ---------- Modusleiste ---------- */
+const MI = {
+	paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
+	kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
+	sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
+	luecken: '<path d="M2 8h5M2 16h8M17 16h5" stroke="currentColor" stroke-width="2"/><rect x="9" y="5" width="12" height="6" rx="1" fill="currentColor"/>',
+	wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
+	fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>',
+	film: '<rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9v6M14 9v6" stroke="currentColor" stroke-width="2.4"/>',
+	vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 18 C9 17 11 8 20 5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
+	tippen: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
+	pole: '<rect x="4" y="2" width="8" height="10" fill="#D32F2F"/><rect x="4" y="12" width="8" height="10" fill="#2E7D32"/><ellipse cx="18" cy="12" rx="3" ry="8" fill="none" stroke="currentColor" stroke-width="2"/>',
+	bremse: '<rect x="2" y="6" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="19" r="2" fill="currentColor"/><circle cx="17" cy="19" r="2" fill="currentColor"/>'
+};
+const MODI = [
+	["paare", "Paare"], ["kette", "Kette"], ["sortieren", "Sortieren"], ["luecken", "Erklären"], ["wischen", "Stimmt's?"],
+	["fehler", "Fehler finden"], ["film", "Film mit Stopps"], ["vorhersage", "Vorhersage"], ["tippen", "Wo genau?"], ["pole", "Pole"], ["bremse", "Bremsspiel"]
+];
+const gebaut = {};
+function modusleiste() {
+	const leiste = document.getElementById("modusleiste");
+	const params = new URLSearchParams(location.search);
+	/* ?modus=tippen-3: Übung „tippen“, NUR Stufe 3; ?modus=vorhersage-1.2: nur Stufen 1 und 2 (für QR-Codes auf dem Arbeitsblatt) */
+	const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
+		const [name, stufe] = m.split("-");
+		if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
+		return name;
+	}) : MODI.map(m => m[0]);
+	const knoepfe = {};
+	for (const [id, name] of MODI) {
+		if (!erlaubt.includes(id)) { document.getElementById("m-" + id).remove(); continue; }
+		const b = KI.el("button", "", '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + MI[id] + "</svg><span>" + name + '</span><span class="mstern"></span>');
+		b.addEventListener("click", () => zeige(id));
+		leiste.appendChild(b); knoepfe[id] = b;
+	}
+	if (Object.keys(knoepfe).length <= 1) leiste.hidden = true;
+	function sterne() { for (const id in knoepfe) { const s = KI.speicher.lies("sterne_" + id, 0); knoepfe[id].querySelector(".mstern").textContent = s ? "★".repeat(s) : ""; } }
+	document.addEventListener("ki-sterne", sterne); sterne();
+	function zeige(id) {
+		for (const k in knoepfe) { knoepfe[k].classList.toggle("aktiv", k === id); document.getElementById("m-" + k).hidden = k !== id; }
+		if (!gebaut[id]) { gebaut[id] = true; BAU[id](document.querySelector("#m-" + id + " .tcb-body")); }
+		KI.speicher.schreib("letzterModus", id);
+	}
+	const letzter = KI.speicher.lies("letzterModus", null);
+	zeige(knoepfe[letzter] ? letzter : Object.keys(knoepfe)[0]);
 }
 
 /* ==========================================================================
@@ -2819,118 +2588,7 @@ BAU.bremse = function (b) {
 	window.addEventListener("resize", () => { if (b.offsetParent) zeichne(); });
 };
 
-/* ==========================================================================
-   Filmleiste: Abläufe als Einzelbilder (Baustein KI.filmleiste)
-   ========================================================================== */
-/* Magnet im Rohr, s = zurückgelegter Weg in cm (Rohr 80 cm lang), Skala links */
-function filmRohr(s, material = "alu") {
-	const y = cm => 22 + cm * 2.2;
-	let g = S.rohr(58, 8, 34, 198, material);
-	for (let c = 0; c <= 80; c += 10) {
-		g += '<line x1="' + (c % 20 ? 24 : 20) + '" y1="' + y(c) + '" x2="30" y2="' + y(c) + '" stroke="#555" stroke-width="1"/>';
-		if (c % 20 === 0) g += '<text x="17" y="' + (y(c) + 3.5) + '" font-size="10" text-anchor="end" fill="#444">' + c + "</text>";
-	}
-	g += '<line x1="30" y1="' + y(0) + '" x2="30" y2="' + y(80) + '" stroke="#555" stroke-width="1"/><text x="17" y="10" font-size="9" text-anchor="end" fill="#444">cm</text>';
-	const m = y(s);
-	g += '<rect x="45" y="' + (m - 7) + '" width="26" height="7" fill="' + "#2E7D32" + '"/><rect x="45" y="' + m + '" width="26" height="7" fill="#D32F2F"/>' +
-		'<rect x="45" y="' + (m - 7) + '" width="26" height="14" fill="none" stroke="#222" stroke-width="1"/>' +
-		'<line x1="42" y1="' + m + '" x2="74" y2="' + m + '" stroke="#0000BF" stroke-width="1" stroke-dasharray="2 2"/>';
-	return S.rahmen(100, 212, g, 100);
-}
-/* Ring an zwei Fäden (seitlich), Magnet rechts mit Nordpol zum Ring; dx: Auslenkung des Rings,
-   mx: Mitte des Magneten, mp/rp: Bewegung von Magnet bzw. Ring (-1 links, 1 rechts, 0 keine) */
-function filmRing(dx, mx, mp, rp) {
-	const rx = 52 + dx;
-	let g = '<line x1="22" y1="7" x2="82" y2="7" stroke="#555" stroke-width="3"/>' +
-		'<line x1="38" y1="7" x2="' + (rx - 2) + '" y2="35" stroke="#777" stroke-width="1"/><line x1="66" y1="7" x2="' + (rx + 2) + '" y2="35" stroke="#777" stroke-width="1"/>' +
-		'<ellipse cx="' + rx + '" cy="62" rx="9" ry="27" fill="none" stroke="' + S.ALU_D + '" stroke-width="6"/>';
-	if (dx) g = '<ellipse cx="52" cy="62" rx="9" ry="27" fill="none" stroke="#bbb" stroke-width="1.5" stroke-dasharray="3 3"/>' + g;
-	g += S.magnet(mx, 62, 54, 18, true);
-	if (mp) g += mp < 0 ? S.pfeil(mx + 16, 38, mx - 16, 38, "#111", 2.6) : S.pfeil(mx - 16, 38, mx + 16, 38, "#111", 2.6);
-	if (rp) g += rp < 0 ? S.pfeil(rx + 9, 100, rx - 11, 100, "#0000BF", 2.6) : S.pfeil(rx - 11, 100, rx + 9, 100, "#0000BF", 2.6);
-	return S.rahmen(160, 106, g, 160);
-}
-/* ICE mit Wirbelstrombremse: v (0 bis 1) Geschwindigkeit, unten: Magnete abgesenkt, an: eingeschaltet, w (0 bis 1) Stärke der Wirbelströme */
-function filmZug(v, unten, an, w) {
-	let g = '<rect x="4" y="88" width="152" height="11" fill="#B4B4B4"/>' +
-		'<path d="M14 34 h104 q26 0 32 26 v16 h-136 z" fill="#fff" stroke="#555" stroke-width="1.5"/><rect x="14" y="58" width="135" height="5" fill="#D32F2F"/>';
-	for (let i = 0; i < 4; i++) g += '<rect x="' + (22 + i * 24) + '" y="40" width="16" height="11" rx="2" fill="#4A6278"/>';
-	g += '<circle cx="34" cy="82" r="6" fill="#333"/><circle cx="126" cy="82" r="6" fill="#333"/>';
-	const my = unten ? 80 : 76;
-	g += '<line x1="62" y1="76" x2="62" y2="' + my + '" stroke="#555" stroke-width="2"/><line x1="94" y1="76" x2="94" y2="' + my + '" stroke="#555" stroke-width="2"/>';
-	g += '<rect x="56" y="' + my + '" width="44" height="6" fill="' + (an ? "#D32F2F" : "#9E9E9E") + '" stroke="#555" stroke-width="0.8"/>';
-	if (w > 0) for (const x of [64, 78, 92]) g += '<ellipse cx="' + x + '" cy="93" rx="' + (2 + 5 * w).toFixed(1) + '" ry="' + (1.5 + 2.5 * w).toFixed(1) + '" fill="none" stroke="#E65100" stroke-width="' + (1.3 + 0.9 * w).toFixed(1) + '"/>';
-	g += v > 0 ? S.pfeil(18, 18, 18 + 12 + 110 * v, 18, "#111", 3) : '<text x="80" y="24" font-size="17" text-anchor="middle" fill="#333" font-weight="bold">steht</text>';
-	return S.rahmen(160, 102, g, 160);
-}
-const ALU_WEG = [0, 20, 40, 60, 80];
-BAU.filmleiste = (b) => KI.filmleiste(b, {
-	id: "filmleiste",
-	stufen: [
-		{
-			name: "1 Fallender Magnet", titel: "Filmleiste: Magnet im Aluminiumrohr", art: "luecke", takt: 800,
-			auftrag: "Die Filmleiste zeigt einen Magneten, der durch ein Aluminiumrohr fällt, jede Sekunde ein Bild. Ein Bild fehlt. Welches gehört in die Lücke?",
-			bilder: ALU_WEG.map((s, i) => ({ svg: filmRohr(s), text: "t = " + i + " s" })),
-			luecke: {
-				stelle: 3, wahl: [
-					{ svg: filmRohr(60), text: "A", ok: true },
-					{ svg: filmRohr(70), text: "B", warum: "Dann wäre der Abstand größer geworden und der Magnet immer schneller. So fällt er im Kunststoffrohr. Im Aluminiumrohr bremsen ihn die Induktionsströme." },
-					{ svg: filmRohr(51), text: "C", warum: "Dann wäre der Magnet langsamer geworden. Die Bremskraft wächst aber nur, bis sie so groß ist wie die Gewichtskraft. Danach fällt der Magnet gleichmäßig schnell." }
-				]
-			},
-			schluss: "In gleichen Zeiten legt der Magnet gleiche Wege zurück (je 20 cm in 1 s): Er fällt gleichmäßig langsam. Im Kunststoffrohr würden die Abstände immer größer."
-		},
-		{
-			name: "2 Ring und Magnet", titel: "Filmleiste: Ring und Magnet", art: "fehler",
-			auftrag: "Ein Nordpol wird schnell an einen Aluminiumring herangeführt, kurz gehalten und schnell wieder weggezogen. Ein Bild der Filmleiste ist falsch. Tippe es an.",
-			bilder: [
-				{ svg: filmRing(0, 128, 0, 0), text: "Magnet ruht" },
-				{ svg: filmRing(-16, 108, -1, -1), text: "Magnet kommt" },
-				{ svg: filmRing(0, 96, 0, 0), text: "Magnet ruht" },
-				{ svg: filmRing(15, 124, 1, 1), text: "Magnet geht" }
-			],
-			fehler: [
-				{ stelle: 1, svg: filmRing(16, 108, -1, 1), text: "Magnet kommt", warum: "Nähert sich der Nordpol, so bildet der Ringstrom einen Nordpol zum Magneten hin. Der Ring wird abgestoßen und weicht aus." },
-				{ stelle: 3, svg: filmRing(-15, 124, 1, -1), text: "Magnet geht", warum: "Entfernt sich der Nordpol, so bildet der Ringstrom einen Südpol zum Magneten hin. Der Ring wird angezogen und folgt dem Magneten." },
-				{ stelle: 0, svg: filmRing(15, 128, 0, 1), text: "Magnet ruht", warum: "Aluminium ist nicht ferromagnetisch. Ein ruhender Magnet zieht den Ring nicht an, und ohne Änderung des Magnetfelds fließt kein Strom." }
-			],
-			schluss: "Der Ring wirkt der Änderung entgegen: Kommt der Magnet, weicht der Ring aus. Geht der Magnet, folgt ihm der Ring (Lenzsche Regel)."
-		},
-		{
-			name: "3 Wirbelstrombremse", titel: "Filmleiste: Wirbelstrombremse am ICE", art: "ordnen",
-			auftrag: "Ein ICE bremst mit der Wirbelstrombremse. Bringe die Bilder in die richtige Reihenfolge (ziehen oder antippen).",
-			bilder: [
-				{ svg: filmZug(0.95, false, false, 0), text: "Magnete aus" },
-				{ svg: filmZug(0.95, true, true, 1), text: "Magnete an" },
-				{ svg: filmZug(0.55, true, true, 0.55), text: "Magnete an" },
-				{ svg: filmZug(0.18, true, true, 0.15), text: "Magnete an" },
-				{ svg: filmZug(0, false, false, 0), text: "Scheibenbremse" }
-			],
-			schluss: "Je langsamer der Zug, desto schwächer die Wirbelströme und die Bremswirkung. Zum Anhalten braucht der Zug eine zweite Bremse."
-		}
-	]
-});
-
-/* ==========================================================================
-   Seite: Reihenfolge der Modusleiste, Titel der Abschnitte
-   ========================================================================== */
-KI.seite({
-	klasse: "10", kapitel: "A.3.2 Grundlegende Induktionsphänomene",
-	modi: [
-		{ id: "paare", name: "Paare", titel: "Spiel: Paare finden", bau: BAU.paare },
-		{ id: "kette", name: "Kette", titel: "Kausalkette ordnen", bau: BAU.kette },
-		{ id: "sortieren", name: "Sortieren", titel: "Sortieren: Wie stark wird gebremst?", bau: BAU.sortieren },
-		{ id: "luecken", name: "Erklären", titel: "Erklärung: Waltenhofensches Pendel", bau: BAU.luecken },
-		{ id: "wischen", name: "Stimmt's?", titel: "Stimmt's?", bau: BAU.wischen },
-		{ id: "fehler", name: "Fehler finden", titel: "Fehler finden: Cletus erklärt", bau: BAU.fehler },
-		{ id: "filmleiste", name: "Filmleiste", titel: "Filmleiste", bau: BAU.filmleiste },
-		{ id: "film", name: "Film mit Stopps", titel: "Film mit Stopps: Ring und Magnet", bau: BAU.film },
-		{ id: "vorhersage", name: "Vorhersage", titel: "Vorhersage: Fallender Magnet", bau: BAU.vorhersage },
-		{ id: "tippen", name: "Wo genau?", titel: "Wo genau? Wo fließt Strom?", bau: BAU.tippen },
-		{ id: "pole", name: "Pole", titel: "Pole der Ringströme", bau: BAU.pole },
-		{ id: "bremse", name: "Bremsspiel", titel: "Spiel: Wirbelstrombremse", bau: BAU.bremse }
-	]
-});
+modusleiste();
 </script>
 </body>
 </html>
