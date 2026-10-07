@@ -225,6 +225,7 @@ button.symbol {
 	border: 1.5px solid #aaa; background: #fff; color: #555; cursor: pointer;
 }
 button.symbol:hover { background: #f2f2f2; color: #222; }
+button.haupt { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; }
 button.haupt:disabled { opacity: 0.45; cursor: default; }
 
 /* Status: Zeit, Fehler, Sterne */
@@ -387,16 +388,74 @@ button.dunkel:disabled { opacity: 0.4; }
 	.lueckentext, .markiertext { font-size: 1rem; }
 	.wischkarte { font-size: 1.05rem; }
 }
+
+/* ---------- Filmleiste: Einzelbilder auf dunklem Streifen mit Lochung ---------- */
+.filmstreifen, .filmvorrat { display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); }
+.filmstreifen { margin: 0.5rem 0; border-radius: 2mm; overflow: hidden; }
+.filmfeld {
+	position: relative; background: #2B2B2B; padding: 17px 4px;
+	background-image:
+		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px),
+		repeating-linear-gradient(90deg, transparent 0 5px, #E6E6E6 5px 11px, transparent 11px 16px);
+	background-size: 100% 7px, 100% 7px;
+	background-position: 0 5px, 0 calc(100% - 5px);
+	background-repeat: no-repeat;
+}
+.filmbild {
+	background: #fff; border-radius: 2px; min-height: 120px; height: 100%; box-sizing: border-box;
+	display: flex; flex-direction: column; align-items: stretch; justify-content: center;
+	border: 3px solid #fff; transition: border-color 0.2s, background 0.2s;
+}
+.filmbild svg, .filmkarte svg, .kinobild svg { display: block; width: 100%; height: auto; }
+.filmbild .unter, .filmkarte .unter, .kinobild .unter { font-size: 0.82rem; line-height: 1.2; text-align: center; color: #333; padding: 0.1rem 0.15rem 0.15rem; }
+.filmbild.platz { background: #3A3A3A; border: 2px dashed #8A8A8A; align-items: center; }
+.filmbild.platz .nr { color: #BDBDBD; font-size: 1.4rem; font-weight: bold; }
+.filmbild.platz.voll { background: #fff; border-style: solid; border-color: #fff; align-items: stretch; }
+.filmbild.platz.voll .nr { display: none; }
+.filmbild.platz.ueber { background: #4A4A7A; border-color: #fff; }
+.filmbild.platz > .filmkarte { border: none; box-shadow: none; padding: 0; margin: 0; }
+.filmbild.frage { background: #FFF8E1; border-color: #FFC107; align-items: center; }
+.filmbild .frage { font-size: 2.6rem; font-weight: bold; color: #C8A000; }
+.filmbild.richtig { border-color: var(--gut); }
+.filmbild.falsch { border-color: var(--falsch); background: var(--falsch-hg); }
+.filmbild.tippbar { cursor: pointer; }
+.filmbild.tippbar:hover { border-color: #9FA8DA; }
+.filmbild.daneben { opacity: 0.55; }
+.filmbild.wackeln { animation: wackeln 0.4s; }
+.filmbild.laeuft { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold); }
+.filmvorrat { gap: 0.45rem; padding: 0.45rem; background: #F4F4F6; border-radius: 2mm; min-height: 130px; margin-top: 0.3rem; }
+.filmkarte {
+	font: inherit; background: #fff; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.15rem;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+	display: flex; flex-direction: column; justify-content: center;
+}
+.filmkarte.gewaehlt { border-color: var(--blue-frame); box-shadow: 0 0 0 3px rgba(0,0,191,0.25); }
+.filmkarte.zieht { opacity: 0.35; }
+.filmwahl .titel { font-size: 0.85rem; color: #666; margin: 0.3rem 0; }
+.filmwahlreihe { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 118px)); gap: 0.6rem; justify-content: center; }
+button.filmkarte { cursor: pointer; }
+button.filmkarte:hover:not(:disabled) { border-color: var(--blue-frame); }
+button.filmkarte:disabled { cursor: default; }
+.filmkarte.richtig { border-color: var(--gut); background: var(--gut-hg); }
+.filmkarte.falsch { border-color: var(--falsch); background: var(--falsch-hg); opacity: 0.6; }
+.filmkarte.wackeln { animation: wackeln 0.4s; }
+button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
+.kino { max-width: 340px; margin: 0.4rem auto 0.2rem; background: #2B2B2B; padding: 10px; border-radius: 2mm; text-align: center; }
+.kinobild { background: #fff; border-radius: 2px; padding: 4px 0 2px; }
+.kinobild svg { width: auto; max-width: 100%; max-height: 250px; margin: 0 auto; }
+.kinobild .unter { font-size: 1rem; }
+.kinonr { color: #ddd; font-size: 0.85rem; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) {
+	.filmstreifen, .filmvorrat { grid-template-columns: repeat(var(--nhandy, 3), minmax(0, 1fr)); }
+	.filmbild .unter, .filmkarte .unter { font-size: 0.78rem; }
+	.kino { max-width: 260px; }
+	.kinobild svg { max-height: 200px; }
+}
 /* Bild mit kleiner Symbolleiste */
 		.bildrahmen { position: relative; }
 		canvas.sim { display: block; width: 100%; height: auto; touch-action: none; }
-		.bildknoepfe { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; }
-		.symbolknopf {
-			width: 30px; height: 30px; padding: 0; border: 1px solid #C8C8C8; border-radius: 1mm;
-			background: rgba(255,255,255,0.9); color: #777; cursor: pointer;
-			display: inline-flex; align-items: center; justify-content: center;
-		}
-		.symbolknopf:hover { background: #F2F2F2; color: #333; }
+		.bildrahmen .bildleiste { position: absolute; top: 6px; right: 6px; display: flex; gap: 0.25rem; }
+		.bildrahmen .bildleiste button.symbol { background: rgba(255,255,255,0.92); }
 
 		/* Bedienleiste in Gruppen mit kleinem grauem Titel */
 		.bedienleiste { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin-top: 0.7rem; align-items: flex-end; }
@@ -404,8 +463,8 @@ button.dunkel:disabled { opacity: 0.4; }
 		.bgruppe > .gtitel { font-size: 0.78rem; color: #808080; }
 		.knopfreihe { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 		.stockwahl {
-			font: inherit; font-size: 0.92rem; padding: 0.25rem 0.6rem; min-width: 4.6em;
-			border: 1.5px solid #BDBDBD; border-radius: 1mm; background: #F4F4F4; color: #333; cursor: pointer;
+			padding: 0.15rem 0.3rem; line-height: 0; display: inline-flex; align-items: center; justify-content: center;
+			border: 1.5px solid #BDBDBD; border-radius: 1mm; background: #F4F4F4; cursor: pointer;
 		}
 		.stockwahl.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
 		.stockwahl:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -415,6 +474,8 @@ button.dunkel:disabled { opacity: 0.4; }
 			display: inline-flex; align-items: center; gap: 0.4rem;
 		}
 		.bedienleiste .haupt:hover { background: #1515D0; }
+		.bedienleiste .haupt.gehen { padding: 0.25rem 1.1rem; min-height: 2.6rem; justify-content: center; }
+		.bedienleiste .haupt:disabled { opacity: 0.4; cursor: default; background: var(--blue-frame); }
 
 		/* Bilanz */
 		.bilanz {
@@ -430,7 +491,8 @@ button.dunkel:disabled { opacity: 0.4; }
 
 		@media (max-width: 560px) {
 			.blatt { padding: 1rem 0.8rem 1.4rem; }
-			.stockwahl { min-width: 0; }
+			.stockwahl { padding: 0.15rem 0.2rem; }
+			.bildrahmen .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; }
 		}
 /* ---------- Rechentrainer ---------- */
 .rechenkarte { border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.7rem 0.8rem; background: #FBFBFF; }
@@ -474,7 +536,8 @@ button.dunkel:disabled { opacity: 0.4; }
 /* ==========================================================================
    Kast-Interaktiv: Bausteine für interaktive Übungen (Bibliothek, nicht für GitHub)
    Vanilla JS, keine Abhängigkeiten. Alles unter window.KI.
-   Bausteine: paare, kette, luecken, sortieren, wischen, markieren
+   Bausteine: paare, kette, luecken, sortieren, wischen, markieren, filmleiste
+   Seite:     seite (Kopf, Modusleiste, Abschnitte, ?modus=…), MODUS_ICON
    Hilfen:    ziehen (Ziehen und Tippen), heftleiste (Kopieren, Teilen, Speichern),
               blattBild (Ergebnis als PNG), svg (Piktogramme), sterne, funken
    ========================================================================== */
@@ -515,9 +578,11 @@ window.KI = (function () {
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
 
+	/* Speicher je Seite: Alle Simulationen auf GitHub Pages teilen sich einen Speicher, sonst zeigt z. B. A.3.1 die Sterne von „Paare“ aus A.3.2 */
+	const SEITE = (location.pathname.split("/").pop() || "start").replace(/\.html?$/, "");
 	KI.speicher = {
-		lies(k, std) { try { const w = localStorage.getItem("KI_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
-		schreib(k, w) { try { localStorage.setItem("KI_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
+		lies(k, std) { try { const w = localStorage.getItem("KI_" + SEITE + "_" + k); return w === null ? std : JSON.parse(w); } catch (e) { return std; } },
+		schreib(k, w) { try { localStorage.setItem("KI_" + SEITE + "_" + k, JSON.stringify(w)); } catch (e) { /* egal */ } }
 	};
 	/* Bestwert (Sterne) je Übung merken; meldet Änderung an die Seite */
 	KI.bestwert = function (id, sterne) {
@@ -565,8 +630,11 @@ window.KI = (function () {
 		tipp: '<path fill="currentColor" d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>',
 		auge: '<path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>',
 		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
-		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+		weiter: '<path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>'
 	};
+	/* Hauptknopf mit Piktogramm und kurzem Wort (Prüfen, Weiter, Nächste Stufe) */
+	KI.hauptKnopf = function (name, wort, klasse) { return el("button", "haupt" + (klasse ? " " + klasse : ""), KI.icon(name, 18) + "<span>" + wort + "</span>"); };
 	KI.icon = function (name, g = 18) {
 		return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>";
 	};
@@ -769,6 +837,15 @@ window.KI = (function () {
 		const ctx = c.getContext("2d");
 		/* Bilder vorladen */
 		for (const b of bloecke) if (b.art === "reihe") for (const e of b.elemente) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
+		for (const b of bloecke) if (b.art === "film") for (const e of b.bilder) if (e.svg && !e.img) e.img = await KI.ladeSvg(e.svg);
+		/* Filmleiste: Maße der Einzelbilder */
+		const FILMRAND = 24, FILMSPALT = 8;
+		function filmMasse(b) {
+			const n = b.bilder.length, fw = (B - 2 * R - (n + 1) * FILMSPALT) / n;
+			const fh = Math.min(380, Math.max(...b.bilder.map(e => e.img ? e.img.height * (fw - 10) / e.img.width : fw)));
+			const th = b.bilder.some(e => e.text) ? 30 : 0;
+			return { n, fw, fh, th, h: fh + th + 10 + 2 * FILMRAND };
+		}
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
@@ -797,6 +874,7 @@ window.KI = (function () {
 			if (b.art === "bild") return b.quelle.height * (B - 2 * R) / b.quelle.width + 10;
 			if (b.art === "spalten") return 50 + Math.max(...b.spalten.map(s => s.zeilen.reduce((a, z) => a + umbrechen([{ t: z }], (B - 2 * R) / b.spalten.length - 30, 22).length * 31 + 8, 0))) + 10;
 			if (b.art === "abstand") return b.h;
+			if (b.art === "film") return filmMasse(b).h + 12;
 			return 0;
 		}
 		let H = R;
@@ -852,6 +930,21 @@ window.KI = (function () {
 				});
 			} else if (b.art === "bild") {
 				ctx.drawImage(b.quelle, R, y, B - 2 * R, h - 10);
+			} else if (b.art === "film") {
+				/* dunkler Streifen mit Lochung oben und unten, weiße Einzelbilder */
+				const m = filmMasse(b), y0 = y + 4;
+				ctx.fillStyle = "#2B2B2B"; ctx.beginPath(); ctx.roundRect(R, y0, B - 2 * R, m.h, 6); ctx.fill();
+				ctx.fillStyle = "#E6E6E6";
+				for (let x = R + 10; x < B - R - 16; x += 22) { ctx.beginPath(); ctx.roundRect(x, y0 + 7, 11, 10, 2); ctx.fill(); ctx.beginPath(); ctx.roundRect(x, y0 + m.h - 17, 11, 10, 2); ctx.fill(); }
+				b.bilder.forEach((e, i) => {
+					const x = R + FILMSPALT + i * (m.fw + FILMSPALT), yb = y0 + FILMRAND + 5;
+					ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.roundRect(x, yb, m.fw, m.fh + m.th, 3); ctx.fill();
+					if (e.img) {
+						const s = Math.min((m.fw - 10) / e.img.width, m.fh / e.img.height);
+						ctx.drawImage(e.img, x + m.fw / 2 - e.img.width * s / 2, yb + m.fh / 2 - e.img.height * s / 2, e.img.width * s, e.img.height * s);
+					}
+					if (e.text) { ctx.font = font(20); ctx.fillStyle = "#333"; ctx.textAlign = "center"; ctx.fillText(e.text, x + m.fw / 2, yb + m.fh + 22, m.fw - 6); ctx.textAlign = "left"; }
+				});
 			} else if (b.art === "spalten") {
 				const n = b.spalten.length, sb = (B - 2 * R) / n;
 				b.spalten.forEach((s, i) => {
@@ -1033,7 +1126,7 @@ window.KI = (function () {
 		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
 		const feld = el("div", "kettenfeld"); behaelter.appendChild(feld);
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
 		behaelter.appendChild(steuer);
@@ -1133,7 +1226,7 @@ window.KI = (function () {
 		const text = el("div", "lueckentext"); behaelter.appendChild(text);
 		const bank = el("div", "wortbank"); behaelter.appendChild(bank);
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
 		behaelter.appendChild(steuer);
@@ -1210,7 +1303,7 @@ window.KI = (function () {
 		const farbe = (k, i) => k.farbe || STANDARDFARBEN[cfg.koerbe.length === 2 ? i * 2 : i] || "#555";
 		const koerbe = cfg.koerbe.map((k, i) => { const d = el("div", "korb", '<div class="kopf2">' + (k.icon || "") + k.name + "</div>"); d.style.setProperty("--korbfarbe", farbe(k, i)); d.dataset.k = i; kf.appendChild(d); return d; });
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
 		behaelter.appendChild(steuer);
@@ -1333,7 +1426,7 @@ window.KI = (function () {
 				d.querySelector("div").innerHTML = "<b>" + (k.ja ? "Stimmt doch!" : "Stimmt nicht!") + "</b><br>" + k.t + '<div class="erkl" style="margin-top:0.6rem;text-align:left">' + k.erkl + "</div>";
 				d.style.fontSize = "0.98rem"; d.style.cursor = "default";
 				rueck.innerHTML = "";
-				const w = el("button", "haupt", "Weiter"); w.style.marginTop = "0.4rem";
+				const w = KI.hauptKnopf("weiter", "Weiter"); w.style.marginTop = "0.4rem";
 				w.addEventListener("click", () => { wartet = false; weiter(); });
 				const p = el("div", "leiste"); p.style.justifyContent = "center"; p.appendChild(w); rueck.appendChild(p);
 			}
@@ -1424,6 +1517,213 @@ window.KI = (function () {
 	};
 
 	/* ==========================================================================
+	   Baustein: Filmleiste. Ein Ablauf als Reihe von Einzelbildern.
+	   cfg: { id, stufen:[{ name, titel, auftrag, art, bilder:[{ svg, text }], schluss, takt }] }
+	   art "ordnen": Bilder liegen gemischt unten und kommen in die richtige Reihenfolge
+	   art "luecke": Bild Nummer luecke.stelle (0-basiert) fehlt; luecke.wahl:[{ svg, text, ok, warum }]
+	   art "fehler": ein Bild ist falsch; fehler:[{ stelle, svg, text, warum }] (eins davon wird zufällig gezeigt)
+	   Danach: Film abspielen (Daumenkino), Ergebnisbild fürs Heft. takt = ms pro Bild (Standard 900).
+	   ========================================================================== */
+	KI.filmleiste = function (behaelter, cfg) {
+		const kopf = kopfzeile(behaelter, cfg.stufen, cfg.id, starte);
+		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
+		const kino = el("div", "kino"); kino.hidden = true; behaelter.appendChild(kino);
+		const streifen = el("div", "filmstreifen"); behaelter.appendChild(streifen);
+		const unten = el("div", ""); behaelter.appendChild(unten);
+		const steuer = el("div", "leiste");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
+		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
+		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
+		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
+		behaelter.appendChild(steuer);
+		const rueck = el("div", ""); behaelter.appendChild(rueck);
+		const grp = "film_" + cfg.id;
+		let nr = 0, st, fehler = 0, versuche = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null;
+		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel }, { art: "film", bilder: st.bilder }]
+			.concat(st.schluss ? [{ art: "kasten", teile: [{ t: st.schluss }], groesse: 22 }] : [])), cfg.id);
+		heft.hidden = true;
+		const spalten = n => n <= 3 ? n : n === 4 ? 2 : 3;
+		function bildHtml(b) { return (b.svg || "") + (b.text !== undefined ? '<div class="unter">' + b.text + "</div>" : ""); }
+		function feld(inhalt, klasse) {
+			const f = el("div", "filmfeld");
+			const b = el("div", "filmbild" + (klasse ? " " + klasse : ""), inhalt);
+			f.appendChild(b); streifen.appendChild(f);
+			return b;
+		}
+		function sterne(f) { return f === 0 ? 3 : f === 1 ? 2 : 1; }
+		function geschafft(text) {
+			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false;
+			const s = st.art === "ordnen" ? sterneNachVersuchen(versuche) : sterne(fehler);
+			rueck.innerHTML = "";
+			const p = el("p", "rueck gut", text + " " + KI.sterneHtml(s)); rueck.appendChild(p);
+			if (st.schluss) rueck.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + st.schluss));
+			KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
+			KI.bestwert(cfg.id, s); kopf.markiere(nr);
+			KI.funken(p, 16); heft.hidden = false;
+			const n = KI.naechsteStufe(nr, cfg.stufen.length);
+			if (n >= 0) { const w = KI.hauptKnopf("weiter", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
+		}
+		KI.ziehGruppe(grp, ".filmbild.platz, .filmvorrat", (q, z) => {
+			if (q.dataset.gesperrt) return;
+			const herkunft = q.parentElement;
+			felder.forEach(f => f.classList.remove("richtig", "falsch"));
+			if (z.classList.contains("platz")) {
+				const alt = z.querySelector(".filmkarte");
+				if (alt && alt !== q) (herkunft.classList.contains("platz") ? herkunft : unten.querySelector(".filmvorrat")).appendChild(alt);
+				z.appendChild(q);
+			} else z.appendChild(q);
+			felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
+			rueck.innerHTML = "";
+		});
+		function starte(i) {
+			nr = i; st = cfg.stufen[i]; fehler = 0; versuche = 0; fertigB = false; falschesBild = null;
+			stoppe(); kopf.markiere(i); kopf.status.innerHTML = "";
+			auftrag.innerHTML = st.auftrag;
+			streifen.innerHTML = ""; unten.innerHTML = ""; rueck.innerHTML = ""; heft.hidden = true;
+			const n = st.bilder.length;
+			streifen.style.setProperty("--n", n); streifen.style.setProperty("--nhandy", spalten(n));
+			pruefKnopf.hidden = st.art !== "ordnen"; pruefKnopf.disabled = false; spielKnopf.hidden = true;
+			if (st.art === "ordnen") {
+				felder = st.bilder.map((_, j) => feld('<span class="nr">' + (j + 1) + "</span>", "platz"));
+				const vorrat = el("div", "filmvorrat"); unten.appendChild(vorrat);
+				vorrat.style.setProperty("--n", n); vorrat.style.setProperty("--nhandy", spalten(n));
+				for (const j of mischen(st.bilder.map((_, j) => j))) {
+					const k = el("div", "filmkarte", bildHtml(st.bilder[j])); k.dataset.j = j;
+					KI.ziehbar(k, grp); vorrat.appendChild(k);
+				}
+			} else if (st.art === "luecke") {
+				const L = st.luecke;
+				felder = st.bilder.map((b, j) => feld(j === L.stelle ? '<span class="frage">?</span>' : bildHtml(b), j === L.stelle ? "frage" : ""));
+				const wahl = el("div", "filmwahl"); unten.appendChild(wahl);
+				wahl.appendChild(el("div", "titel", "Welches Bild gehört in die Lücke?"));
+				const reihe = el("div", "filmwahlreihe"); wahl.appendChild(reihe);
+				const erkl = el("div", ""); wahl.appendChild(erkl);
+				for (const w of mischen(L.wahl)) {
+					const k = el("button", "filmkarte", bildHtml(w));
+					k.addEventListener("click", () => {
+						if (fertigB || k.disabled) return;
+						if (w.ok) {
+							k.classList.add("richtig");
+							const f = felder[L.stelle]; f.classList.remove("frage"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[L.stelle]);
+							reihe.querySelectorAll("button").forEach(x => x.disabled = true);
+							geschafft(fehler ? "Richtig!" : "Richtig auf Anhieb!");
+						} else {
+							fehler++; k.disabled = true; k.classList.add("falsch", "wackeln");
+							if (w.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + w.warum));
+							kopf.status.innerHTML = "<span>Fehler: " + fehler + "</span>";
+						}
+					});
+					reihe.appendChild(k);
+				}
+			} else {
+				const F = st.fehler[Math.floor(Math.random() * st.fehler.length)];
+				falschesBild = F;
+				const erkl = el("div", ""); unten.appendChild(erkl);
+				felder = st.bilder.map((b, j) => {
+					const f = feld(bildHtml(j === F.stelle ? F : b), "tippbar");
+					f.addEventListener("click", () => {
+						if (fertigB || f.classList.contains("daneben")) return;
+						if (j === F.stelle) {
+							f.classList.add("falsch");
+							setTimeout(() => { f.classList.remove("falsch"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[j]); }, 700);
+							if (F.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + F.warum));
+							geschafft("Gefunden! So ist es richtig:");
+						} else {
+							fehler++; f.classList.add("daneben", "wackeln");
+							setTimeout(() => f.classList.remove("wackeln"), 450);
+							kopf.status.innerHTML = "<span>Daneben: " + fehler + "</span>";
+						}
+					});
+					return f;
+				});
+			}
+		}
+		pruefKnopf.addEventListener("click", () => {
+			const leer = felder.filter(f => !f.querySelector(".filmkarte")).length;
+			if (leer) { rueck.innerHTML = '<p class="rueck schlecht">Es sind noch ' + leer + " Bilder frei.</p>"; return; }
+			versuche++;
+			let falsch = 0;
+			felder.forEach((f, j) => { const ok = +f.querySelector(".filmkarte").dataset.j === j; f.classList.toggle("richtig", ok); f.classList.toggle("falsch", !ok); if (!ok) falsch++; });
+			if (!falsch) {
+				streifen.querySelectorAll(".filmkarte").forEach(k => k.dataset.gesperrt = "1");
+				geschafft("Die Reihenfolge stimmt!");
+			} else rueck.innerHTML = '<p class="rueck schlecht">' + (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " noch an der falschen Stelle.</p>";
+		});
+		/* Daumenkino: Bilder groß nacheinander, aktuelles Bild im Streifen markiert */
+		function zeigeBild() {
+			const b = st.bilder[bildNr];
+			kino.innerHTML = '<div class="kinobild">' + bildHtml(b) + '</div><div class="kinonr">' + (bildNr + 1) + " / " + st.bilder.length + "</div>";
+			felder.forEach((f, j) => f.classList.toggle("laeuft", j === bildNr));
+		}
+		function stoppe() {
+			clearInterval(uhr); uhr = 0; kino.hidden = true; felder.forEach(f => f.classList.remove("laeuft"));
+			spielKnopf.innerHTML = KI.icon("play", 20) + "<span>Film abspielen</span>";
+		}
+		spielKnopf.addEventListener("click", () => {
+			if (uhr) { stoppe(); return; }
+			bildNr = 0; kino.hidden = false; zeigeBild();
+			spielKnopf.innerHTML = KI.icon("pause", 20) + "<span>Anhalten</span>";
+			uhr = setInterval(() => { bildNr = (bildNr + 1) % st.bilder.length; zeigeBild(); }, st.takt || 900);
+		});
+		starte(KI.startStufe(cfg.stufen.length));
+	};
+
+	/* ==========================================================================
+	   Seite einer Übungssammlung: Kopf, Modusleiste mit Piktogrammen, ein Abschnitt je Übung.
+	   cfg: { klasse, kapitel, modi:[{ id, name, titel, bau(behaelter), icon? }] }
+	   Adresse: ?modus=paare (nur diese Übung), ?modus=paare,kette (mehrere), ?modus=tippen-3 (NUR Stufe 3),
+	   ?modus=vorhersage-1.2 (nur Stufen 1 und 2). So zeigt ein QR-Code genau das, was auf dem Blatt angesagt ist.
+	   ========================================================================== */
+	KI.MODUS_ICON = {
+		paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
+		kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
+		sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
+		luecken: '<path d="M2 8h5M2 16h8M17 16h5" stroke="currentColor" stroke-width="2"/><rect x="9" y="5" width="12" height="6" rx="1" fill="currentColor"/>',
+		wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
+		fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>',
+		film: '<rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 9v6M14 9v6" stroke="currentColor" stroke-width="2.4"/>',
+		filmleiste: '<rect x="1" y="4" width="22" height="16" rx="1.5" fill="currentColor"/><g fill="#fff"><rect x="3" y="5.5" width="2" height="2"/><rect x="7" y="5.5" width="2" height="2"/><rect x="11" y="5.5" width="2" height="2"/><rect x="15" y="5.5" width="2" height="2"/><rect x="19" y="5.5" width="2" height="2"/><rect x="3" y="16.5" width="2" height="2"/><rect x="7" y="16.5" width="2" height="2"/><rect x="11" y="16.5" width="2" height="2"/><rect x="15" y="16.5" width="2" height="2"/><rect x="19" y="16.5" width="2" height="2"/><rect x="3" y="9" width="5" height="6" rx="0.5"/><rect x="9.5" y="9" width="5" height="6" rx="0.5"/><rect x="16" y="9" width="5" height="6" rx="0.5"/></g>',
+		vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 18 C9 17 11 8 20 5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
+		tippen: '<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/>',
+		pole: '<rect x="4" y="2" width="8" height="10" fill="#D32F2F"/><rect x="4" y="12" width="8" height="10" fill="#2E7D32"/><ellipse cx="18" cy="12" rx="3" ry="8" fill="none" stroke="currentColor" stroke-width="2"/>',
+		bremse: '<rect x="2" y="6" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="19" r="2" fill="currentColor"/><circle cx="17" cy="19" r="2" fill="currentColor"/>',
+		spiel: '<rect x="2" y="7" width="20" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10v5M4.5 12.5h5" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="11" r="1.4" fill="currentColor"/><circle cx="18.5" cy="14" r="1.4" fill="currentColor"/>'
+	};
+	KI.seite = function (cfg) {
+		const blatt = document.querySelector(".blatt");
+		blatt.innerHTML = '<div class="kopf"><span class="nr">' + cfg.klasse + '</span><span class="kapitel">' + cfg.kapitel + '</span><span class="nr zwilling">' + cfg.klasse + "</span></div>";
+		const leiste = el("div", "modusleiste"); blatt.appendChild(leiste);
+		const params = new URLSearchParams(location.search);
+		const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
+			const [name, stufe] = m.split("-");
+			if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
+			return name;
+		}) : cfg.modi.map(m => m.id);
+		const knoepfe = {}, abschnitte = {}, gebaut = {}, modi = {};
+		for (const m of cfg.modi) {
+			if (!erlaubt.includes(m.id)) continue;
+			modi[m.id] = m;
+			const a = el("section", "tcb blau", '<div class="tcb-title">' + m.titel + '</div><div class="tcb-body"></div>');
+			a.id = "m-" + m.id; a.hidden = true; blatt.appendChild(a); abschnitte[m.id] = a;
+			const b = el("button", "", '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + (m.icon || KI.MODUS_ICON[m.id] || KI.MODUS_ICON.spiel) + "</svg><span>" + m.name + '</span><span class="mstern"></span>');
+			b.addEventListener("click", () => zeige(m.id));
+			leiste.appendChild(b); knoepfe[m.id] = b;
+		}
+		blatt.appendChild(el("div", "fuss-autor", "Kast"));
+		if (Object.keys(knoepfe).length <= 1) leiste.hidden = true;
+		function sterne() { for (const id in knoepfe) { const s = KI.speicher.lies("sterne_" + id, 0); knoepfe[id].querySelector(".mstern").textContent = s ? "★".repeat(s) : ""; } }
+		document.addEventListener("ki-sterne", sterne); sterne();
+		function zeige(id) {
+			for (const k in knoepfe) { knoepfe[k].classList.toggle("aktiv", k === id); abschnitte[k].hidden = k !== id; }
+			if (!gebaut[id]) { gebaut[id] = true; modi[id].bau(abschnitte[id].querySelector(".tcb-body")); }
+			KI.speicher.schreib("letzterModus", id);
+		}
+		const letzter = KI.speicher.lies("letzterModus", null);
+		const erster = Object.keys(knoepfe)[0];
+		if (erster) zeige(knoepfe[letzter] ? letzter : erster);
+	};
+
+	/* ==========================================================================
 	   Canvas-Hilfe: skaliert ein Canvas auf seine CSS-Breite (scharf auf Tablets)
 	   liefert {ctx, B, H} in CSS-Pixeln
 	   ========================================================================== */
@@ -1463,7 +1763,7 @@ window.KI = (function () {
    Reiter "Nullniveau": Hausquerschnitt, Nullniveau verschieben (A.2.1)
    ========================================================================== */
 function bauHaus(behaelter) {
-	behaelter.innerHTML = '<p class="hinweis">Chrysogonus tr&auml;gt seine Wasserkiste durchs Haus. Ziehe die rote Linie (Nullniveau) nach oben oder unten und beobachte die H&ouml;henenergien und ihre &Auml;nderung.</p>\n\n<div class="bildrahmen">\n<canvas id="sim-canvas" class="sim" aria-label="Hausquerschnitt mit verschiebbarem Nullniveau"></canvas>\n<div class="bildknoepfe">\n<button class="symbolknopf" id="btn-reset" title="Nullniveau zur&uuml;ck auf das Erdgeschoss" aria-label="Zur&uuml;cksetzen">\n<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>\n</button>\n</div>\n</div>\n\n<div class="bedienleiste">\n<div class="bgruppe">\n<span class="gtitel">Start</span>\n<span class="knopfreihe" id="start-knoepfe"></span>\n</div>\n<div class="bgruppe">\n<span class="gtitel">Ziel</span>\n<span class="knopfreihe" id="ziel-knoepfe"></span>\n</div>\n<div class="bgruppe">\n<span class="gtitel">&nbsp;</span>\n<button class="haupt" id="btn-gehen" title="Chrysogonus geht vom Start zum Ziel" aria-label="Chrysogonus geht vom Start zum Ziel">\n<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>\nlosgehen\n</button>\n</div>\n</div>\n\n<div class="bilanz">\n<div class="feld"><i class="gr">E</i><sub>pot</sub> am Start<br><b class="zahl" id="a-start">0&nbsp;J</b></div>\n<div class="pfeil">&rarr;</div>\n<div class="feld"><i class="gr">E</i><sub>pot</sub> am Ziel<br><b class="zahl" id="a-ziel">0&nbsp;J</b></div>\n<div class="pfeil">&rArr;</div>\n<div class="feld delta">&Auml;nderung &Delta;<i class="gr">E</i><br><span class="zahl" id="a-delta">0&nbsp;J</span></div>\n</div>\n<p class="fussnote">Chrysogonus mit Kiste: <i class="gr">m</i> = 61,9&nbsp;kg, &nbsp;<i class="gr">g</i> = 9,81&nbsp;m/s<sup>2</sup>, &nbsp;Etagenh&ouml;he 2,50&nbsp;m. &nbsp;<i class="gr">E</i><sub>pot</sub> = <i class="gr">m</i> &middot; <i class="gr">g</i> &middot; &Delta;<i class="gr">h</i> mit &Delta;<i class="gr">h</i> = H&ouml;he &uuml;ber dem Nullniveau.</p>';
+	behaelter.innerHTML = '<p class="hinweis">Chrysogonus tr&auml;gt seine Wasserkiste durchs Haus. Ziehe die rote Linie (Nullniveau) nach oben oder unten und beobachte die H&ouml;henenergien und ihre &Auml;nderung.</p>\n\n<div class="bildrahmen">\n<canvas id="sim-canvas" class="sim" aria-label="Hausquerschnitt mit verschiebbarem Nullniveau"></canvas>\n</div>\n\n<div class="bedienleiste">\n<div class="bgruppe">\n<span class="gtitel">Start</span>\n<span class="knopfreihe" id="start-knoepfe"></span>\n</div>\n<div class="bgruppe">\n<span class="gtitel">Ziel</span>\n<span class="knopfreihe" id="ziel-knoepfe"></span>\n</div>\n<div class="bgruppe">\n<span class="gtitel">Los</span>\n<button class="haupt gehen" id="btn-gehen" title="Chrysogonus geht vom Start zum Ziel" aria-label="Chrysogonus geht vom Start zum Ziel">\n<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9 7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>\n</button>\n</div>\n</div>\n\n<div class="bilanz">\n<div class="feld"><i class="gr">E</i><sub>pot</sub> am Start<br><b class="zahl" id="a-start">0&nbsp;J</b></div>\n<div class="pfeil">&rarr;</div>\n<div class="feld"><i class="gr">E</i><sub>pot</sub> am Ziel<br><b class="zahl" id="a-ziel">0&nbsp;J</b></div>\n<div class="pfeil">&rArr;</div>\n<div class="feld delta">&Auml;nderung &Delta;<i class="gr">E</i><br><span class="zahl" id="a-delta">0&nbsp;J</span></div>\n</div>\n<p class="fussnote">Chrysogonus mit Kiste: <i class="gr">m</i> = 61,9&nbsp;kg, &nbsp;<i class="gr">g</i> = 9,81&nbsp;m/s<sup>2</sup>, &nbsp;Etagenh&ouml;he 2,50&nbsp;m. &nbsp;<i class="gr">E</i><sub>pot</sub> = <i class="gr">m</i> &middot; <i class="gr">g</i> &middot; &Delta;<i class="gr">h</i> mit &Delta;<i class="gr">h</i> = H&ouml;he &uuml;ber dem Nullniveau.</p>';
 	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
 	const de = (x, n = 0) => x.toFixed(n).replace(".", ",").replace("-", "−");
 	const mitVorzeichen = (x) => {
@@ -1496,18 +1796,22 @@ function bauHaus(behaelter) {
 
 	/* ---------------- Canvas und Masse ---------------- */
 	const canvas = document.getElementById("sim-canvas");
-	const ctx = canvas.getContext("2d");
+	let ctx = canvas.getContext("2d");
 	let W = 740, H = 520, s = 40, yNull = 300;   /* s: Pixel pro Meter, yNull: Pixel fuer h = 0 */
 	let geo = {};
 
 	function skaliere() {
 		const dpr = window.devicePixelRatio || 1;
-		W = canvas.clientWidth || 740;
-		H = Math.round(W < 560 ? W * 1.05 : W * 0.66);
+		masse(canvas.clientWidth || 740);
 		canvas.style.height = H + "px";
 		canvas.width = Math.round(W * dpr);
 		canvas.height = Math.round(H * dpr);
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		zeichne();
+	}
+	function masse(breite) {
+		W = breite;
+		H = Math.round(W < 560 ? W * 1.05 : W * 0.66);
 		/* Hoehen von -3,6 m (unter dem Keller) bis 9,2 m (Dachspitze) */
 		s = (H - 24) / 12.8;
 		yNull = 12 + 9.2 * s;
@@ -1520,7 +1824,6 @@ function bauHaus(behaelter) {
 		geo.ax = geo.hx + geo.hb + (schmal ? 34 : 64);    /* Energieskala          */
 		geo.tx = geo.ax + (schmal ? 16 : 26);             /* Wertschilder          */
 		geo.dx = W - (schmal ? 22 : 36);                  /* Delta-Pfeil           */
-		zeichne();
 	}
 	const yPix = (h) => yNull - h * s;
 	const hAusPix = (y) => (yNull - y) / s;
@@ -1707,10 +2010,14 @@ function bauHaus(behaelter) {
 		ctx.restore();
 	}
 
-	function zeichneNullniveau() {
+	/* Linie unter den Wertschildern, Griff und Name obenauf */
+	function zeichneNullLinie() {
 		const y = yPix(z.h0);
 		ctx.strokeStyle = "#C81E1E"; ctx.lineWidth = 2.4; ctx.setLineDash([9, 6]);
 		ctx.beginPath(); ctx.moveTo(4, y); ctx.lineTo(geo.dx - 22, y); ctx.stroke(); ctx.setLineDash([]);
+	}
+	function zeichneNullniveau() {
+		const y = yPix(z.h0);
 		/* Griff */
 		const gx = geo.ax;
 		ctx.fillStyle = "#C81E1E";
@@ -1718,13 +2025,19 @@ function bauHaus(behaelter) {
 		ctx.fillStyle = "#fff";
 		ctx.beginPath(); ctx.moveTo(gx, y - 8); ctx.lineTo(gx - 4.5, y - 2.5); ctx.lineTo(gx + 4.5, y - 2.5); ctx.closePath(); ctx.fill();
 		ctx.beginPath(); ctx.moveTo(gx, y + 8); ctx.lineTo(gx - 4.5, y + 2.5); ctx.lineTo(gx + 4.5, y + 2.5); ctx.closePath(); ctx.fill();
-		ctx.font = "bold 13px " + SCHRIFT; ctx.fillStyle = "#C81E1E"; ctx.textAlign = "left";
-		ctx.fillText("Nullniveau", geo.tx, y - 17);
+		ctx.font = "bold 13px " + SCHRIFT; ctx.fillStyle = "#C81E1E";
+		if (!geo.schmal) { ctx.textAlign = "left"; ctx.fillText("Nullniveau", geo.tx, y - 17); return; }
+		/* schmal: links vom Griff, damit der Name nicht in den ΔE-Pfeil ragt */
+		const b = ctx.measureText("Nullniveau").width;
+		ctx.fillStyle = "rgba(255,255,255,0.85)"; rundRect(gx - 16 - b - 4, y - 27, b + 8, 17, 3); ctx.fill();
+		ctx.fillStyle = "#C81E1E"; ctx.textAlign = "right"; ctx.fillText("Nullniveau", gx - 16, y - 14);
 	}
 
-	function zeichne() {
+	function zeichne() { zeichneBild(); aktualisiereText(); }
+	function zeichneBild() {
 		ctx.clearRect(0, 0, W, H);
 		zeichneHaus();
+		zeichneNullLinie();
 		zeichneSkala();
 		zeichneDelta();
 		if (!z.laeuft) zeichnePeter(z.ziel, true);
@@ -1738,8 +2051,22 @@ function bauHaus(behaelter) {
 		const b = ctx.measureText(text).width + 14;
 		/* rechts neben dem Kopf, damit Stockwerksnamen frei bleiben */
 		const sx = Math.min(p.x + 0.45 * s, geo.hx + geo.hb - b - 4);
-		schild(sx, p.y - 1.6 * s, text, f, g);
-		aktualisiereText();
+		schild(sx, p.y - 1.82 * s - 15, text, f, g);   /* über dem Kopf */
+	}
+
+	/* Heftbild immer in Desktopbreite (mit Energieskala und Wert von ΔE), auch am Handy */
+	function heftBild() {
+		const altCtx = ctx, altB = W;
+		const c = document.createElement("canvas");
+		masse(740); c.width = W * 2; c.height = H * 2;
+		ctx = c.getContext("2d"); ctx.setTransform(2, 0, 0, 2, 0, 0);
+		zeichneBild();
+		ctx = altCtx; masse(altB);
+		return c;
+	}
+	const kurzname = (h) => { const st = STOCKWERKE.find(x => Math.abs(x.h - h) < 1e-6); return st ? st.kurz.replace(". ", "") : (h === 7.5 ? "Dach" : de(h, 2) + "m"); };
+	function dateiname() {
+		return "Hoehenenergie_Nullniveau_" + kurzname(z.h0) + "_von_" + kurzname(STOCKWERKE[z.start].h) + "_nach_" + kurzname(STOCKWERKE[z.ziel].h);
 	}
 
 	function aktualisiereText() {
@@ -1776,14 +2103,45 @@ function bauHaus(behaelter) {
 		if (ev.key === "ArrowUp") { setzeH0(z.h0 + 0.25); ev.preventDefault(); }
 		if (ev.key === "ArrowDown") { setzeH0(z.h0 - 0.25); ev.preventDefault(); }
 	});
-	document.getElementById("btn-reset").addEventListener("click", () => setzeH0(0));
+	/* Bildleiste: Zurücksetzen, Kopieren (OneNote: Strg+V), Teilen, Speichern */
+	(function bildleiste() {
+		const l = KI.el("div", "bildleiste");
+		l.appendChild(KI.symbolKnopf("zurueck", "Nullniveau zurück auf das Erdgeschoss", () => setzeH0(0)));
+		const blob = () => new Promise(ok => heftBild().toBlob(ok, "image/png"));
+		if (navigator.clipboard && window.ClipboardItem) l.appendChild(KI.symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+			try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blob() })]); KI.meldung("Bild kopiert: In OneNote mit Strg+V einfügen"); }
+			catch (e) { KI.meldung("Kopieren geht hier nicht, bitte speichern"); }
+		}));
+		let teilenGeht = false;
+		try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+		if (teilenGeht) l.appendChild(KI.symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+			try { const b = await blob(); await navigator.share({ files: [new File([b], dateiname() + ".png", { type: "image/png" })] }); }
+			catch (e) { if (e && e.name !== "AbortError") KI.meldung("Teilen geht hier nicht, bitte speichern"); }
+		}));
+		l.appendChild(KI.symbolKnopf("speichern", "Bild speichern", async () => {
+			const b = await blob(), a = document.createElement("a");
+			a.href = URL.createObjectURL(b); a.download = dateiname() + ".png";
+			document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+		}));
+		canvas.parentElement.appendChild(l);
+	})();
 
 	/* ---------------- Start, Ziel und Gehen ---------------- */
+	/* Piktogramm: kleines Haus (Keller im Erdreich, EG, 1. und 2. Stock), gewähltes Stockwerk blau */
+	function hausIcon(i) {
+		const y = [21, 16.6, 12.3, 8];   /* Oberkante je Stockwerk: Keller, EG, 1., 2. */
+		let r = '<svg width="30" height="32" viewBox="0 0 28 30" aria-hidden="true">';
+		r += '<rect x="0" y="21" width="28" height="9" fill="#E7DCCB"/><path d="M0 21h28" stroke="#7A6A55" stroke-width="1.2"/>';
+		r += '<path d="M3 8 14 1.5 25 8z" fill="#B5503C"/>';
+		for (let j = 0; j < 4; j++) r += '<rect x="6" y="' + y[j] + '" width="16" height="4.3" fill="' + (j === i ? "#2F6FC4" : (j === 0 ? "#EFEDEA" : "#FFFDF8")) + '" stroke="#555" stroke-width="0.9"/>';
+		return r + "</svg>";
+	}
 	function baueKnoepfe(id, schluessel) {
 		const c = document.getElementById(id);
 		STOCKWERKE.forEach((st, i) => {
 			const b = document.createElement("button");
-			b.className = "stockwahl"; b.textContent = st.kurz; b.dataset.i = i; b.title = st.name;
+			b.className = "stockwahl"; b.innerHTML = hausIcon(i); b.dataset.i = i;
+			b.title = (schluessel === "start" ? "Start: " : "Ziel: ") + st.name; b.setAttribute("aria-label", b.title);
 			b.addEventListener("click", () => {
 				if (z.laeuft) return;
 				z[schluessel] = i;
@@ -1797,6 +2155,7 @@ function bauHaus(behaelter) {
 	function markiere() {
 		document.querySelectorAll("#start-knoepfe .stockwahl").forEach(b => b.classList.toggle("aktiv", +b.dataset.i === z.start));
 		document.querySelectorAll("#ziel-knoepfe .stockwahl").forEach(b => b.classList.toggle("aktiv", +b.dataset.i === z.ziel));
+		document.getElementById("btn-gehen").disabled = z.start === z.ziel;
 	}
 	baueKnoepfe("start-knoepfe", "start");
 	baueKnoepfe("ziel-knoepfe", "ziel");
@@ -1964,12 +2323,12 @@ const STUFEN = [
 		erzeuge() {
 			const art = wahl(["klettern", "aufzug", "kran", "apfel", "rucksack"]);
 			let m, h, text, mAnz;
-			if (art === "klettern") { m = zufall(45, 75); h = zufall(8, 20); text = wahl(NAMEN)[0] + " (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) klettert an einer Kletterwand " + h + "&nbsp;m nach oben."; }
-			if (art === "aufzug") { m = zufall(600, 1200, 50); h = zufall(10, 40, 5); text = "Eine Aufzugskabine (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) fährt " + h + "&nbsp;m nach oben."; }
-			if (art === "kran") { m = zufall(300, 900, 50); h = zufall(5, 25); text = "Ein Kran hebt einen Betonkübel (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) um " + h + "&nbsp;m an."; }
-			if (art === "rucksack") { m = zufall(6, 15); h = zufall(200, 900, 50); text = wahl(NAMEN)[0] + " trägt einen Rucksack (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) bei einer Bergwanderung " + h + "&nbsp;m höher. Berechne die Zunahme der Höhenenergie des Rucksacks."; }
+			if (art === "klettern") { m = zufall(45, 75); h = zufall(8, 20); text = wahl(NAMEN)[0] + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) klettert an einer Kletterwand " + h + "&nbsp;m nach oben."; }
+			if (art === "aufzug") { m = zufall(600, 1200, 50); h = zufall(10, 40, 5); text = "Eine Aufzugskabine (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) fährt " + h + "&nbsp;m nach oben."; }
+			if (art === "kran") { m = zufall(300, 900, 50); h = zufall(5, 25); text = "Ein Kran hebt einen Betonkübel (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) um " + h + "&nbsp;m an."; }
+			if (art === "rucksack") { m = zufall(6, 15); h = zufall(200, 900, 50); text = wahl(NAMEN)[0] + " trägt einen Rucksack (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) bei einer Bergwanderung " + h + "&nbsp;m höher. Berechne die Zunahme der Höhenenergie des Rucksacks."; }
 			let mKg = m;
-			if (art === "apfel") { const g = zufall(120, 250, 10); mKg = g / 1000; h = zufall(4, 10) / 2; text = "Ein Apfel (<i class=\"gr\">m</i> = " + g + "&nbsp;g) hängt " + zahl(h, 1) + "&nbsp;m über dem Boden. Nullniveau: Boden."; mAnz = zahl(mKg, 3) + "&nbsp;kg"; text += " Berechne seine Höhenenergie."; }
+			if (art === "apfel") { const g = zufall(120, 250, 10); mKg = g / 1000; h = zufall(4, 10) / 2; text = "Ein Apfel (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + g + "&nbsp;g) hängt " + zahl(h, 1) + "&nbsp;m über dem Boden. Nullniveau: Boden."; mAnz = zahl(mKg, 3) + "&nbsp;kg"; text += " Berechne seine Höhenenergie."; }
 			mAnz = mAnz || m + "&nbsp;kg";
 			const E = mKg * G * h;
 			return {
@@ -1991,7 +2350,7 @@ const STUFEN = [
 				const m = zufall(art[1], art[2], art[1] >= 1000 ? 100 : 1), h = zufall(art[1] >= 1000 ? 200 : 20, art[1] >= 1000 ? 900 : 400, 10);
 				const E = runde3(m * G * h), loes = E / (m * G);
 				return {
-					text: art[0] + " (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) hat gegenüber dem Tal eine Höhenenergie von " + zahl(E, 0) + "&nbsp;J. Wie hoch über dem Tal ist " + (art[0].startsWith("Eine") ? "sie" : "er") + "?",
+					text: art[0] + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) hat gegenüber dem Tal eine Höhenenergie von " + zahl(E, 0) + "&nbsp;J. Wie hoch über dem Tal ist " + (art[0].startsWith("Eine") ? "sie" : "er") + "?",
 					gesucht: "Δ<i class=\"gr\">h</i>", einheit: "m", wert: loes,
 					weg: ["<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> &nbsp;⇒&nbsp; Δ<i class=\"gr\">h</i> = <span class=\"bruch\"><span><i class=\"gr\">E</i><sub>pot</sub></span><span><i class=\"gr\">m</i> · <i class=\"gr\">g</i></span></span>",
 						"Δ<i class=\"gr\">h</i> = <span class=\"bruch\"><span>" + zahl(E, 0) + "&nbsp;J</span><span>" + m + "&nbsp;kg · " + GE + "</span></span> = " + zahl(loes) + "&nbsp;m"],
@@ -2020,7 +2379,7 @@ const STUFEN = [
 				const m = zufall(55, 85), h = zufall(5, 12) / 2;
 				const E = -m * G * h;
 				return {
-					text: "Das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) steht im Keller, " + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m tiefer. Berechne die Höhenenergie.",
+					text: "Das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) steht im Keller, " + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m tiefer. Berechne die Höhenenergie.",
 					gesucht: "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
 					weg: ["Δ<i class=\"gr\">h</i> = −" + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m (unter dem Nullniveau)",
 						"<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · (−" + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m) = " + zahl(E) + "&nbsp;J"],
@@ -2032,7 +2391,7 @@ const STUFEN = [
 				const m = zufall(55, 85), d = zufall(50, 400, 10);
 				const E = -m * G * d;
 				return {
-					text: n + " (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) wählt den Gipfel als Nullniveau. Gerade ist " + er + " noch " + d + "&nbsp;m unter dem Gipfel. Berechne die Höhenenergie.",
+					text: n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) wählt den Gipfel als Nullniveau. Gerade ist " + er + " noch " + d + "&nbsp;m unter dem Gipfel. Berechne die Höhenenergie.",
 					gesucht: "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
 					weg: ["Δ<i class=\"gr\">h</i> = −" + d + "&nbsp;m", "<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · (−" + d + "&nbsp;m) = " + zahl(E) + "&nbsp;J"],
 					tipp: "Unterhalb des Nullniveaus ist Δ<i class=\"gr\">h</i> negativ.",
@@ -2042,7 +2401,7 @@ const STUFEN = [
 			const m = zufall(50, 90), u = zufall(1, 2), o = zufall(2, 6);
 			const dh = 3 * (u + o), E = m * G * dh;
 			return {
-				text: "Ein Haus hat Stockwerke von je 3&nbsp;m Höhe, das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i> = " + m + "&nbsp;kg) fährt mit dem Aufzug vom " + u + ". Untergeschoss in den " + o + ". Stock. Berechne die Änderung der Höhenenergie.",
+				text: "Ein Haus hat Stockwerke von je 3&nbsp;m Höhe, das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) fährt mit dem Aufzug vom " + u + ". Untergeschoss in den " + o + ". Stock. Berechne die Änderung der Höhenenergie.",
 				gesucht: "Δ<i class=\"gr\">E</i>", einheit: "J", wert: E,
 				weg: ["Start: Δ<i class=\"gr\">h</i> = −" + 3 * u + "&nbsp;m, &nbsp;Ziel: Δ<i class=\"gr\">h</i> = +" + 3 * o + "&nbsp;m",
 					"Δ<i class=\"gr\">E</i> = " + m + "&nbsp;kg · " + GE + " · " + 3 * o + "&nbsp;m − " + m + "&nbsp;kg · " + GE + " · (−" + 3 * u + "&nbsp;m)",
@@ -2061,6 +2420,7 @@ BAU.rechnen = function (behaelter) {
 	const chips = KI.el("div", "chips");
 	const chipKnoepfe = STUFEN.map((st, i) => { const k = KI.el("button", "", st.name); k.addEventListener("click", () => starte(i)); chips.appendChild(k); return k; });
 	leiste.appendChild(chips);
+	KI.chipsBeschraenken(chips, chipKnoepfe);
 	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); leiste.appendChild(rechts);
 	behaelter.appendChild(leiste);
 	const formel = KI.el("p", "auftrag", "Rechne mit <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> und <i class=\"gr\">g</i> = " + GE + ". Runde sinnvoll, kleine Rundungsabweichungen sind in Ordnung.");
@@ -2072,13 +2432,13 @@ BAU.rechnen = function (behaelter) {
 	const eingabe = KI.el("input"); eingabe.type = "text"; eingabe.inputMode = "decimal"; eingabe.autocomplete = "off"; eingabe.setAttribute("aria-label", "Ergebnis");
 	eingabeZeile.appendChild(eingabe);
 	const einheitEl = KI.el("span", "einheit"); eingabeZeile.appendChild(einheitEl);
-	const pruefKnopf = KI.el("button", "haupt", "Prüfen"); eingabeZeile.appendChild(pruefKnopf);
+	const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen"); eingabeZeile.appendChild(pruefKnopf);
 	const tippKnopf = KI.symbolKnopf("tipp", "Tipp", () => { tippEl.hidden = false; tipps++; });
 	eingabeZeile.appendChild(tippKnopf);
 	const tippEl = KI.el("div", "erkl"); tippEl.hidden = true; karte.appendChild(tippEl);
 	const rueck = KI.el("p", "rueck"); karte.appendChild(rueck);
 	const wegEl = KI.el("div", "rechenweg"); wegEl.hidden = true; karte.appendChild(wegEl);
-	const weiterLeiste = KI.el("div", "leiste"); const weiterKnopf = KI.el("button", "haupt", "Weiter"); weiterLeiste.appendChild(weiterKnopf); weiterLeiste.hidden = true; karte.appendChild(weiterLeiste);
+	const weiterLeiste = KI.el("div", "leiste"); const weiterKnopf = KI.hauptKnopf("weiter", "Weiter"); weiterLeiste.appendChild(weiterKnopf); weiterLeiste.hidden = true; karte.appendChild(weiterLeiste);
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
 	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
 
@@ -2164,9 +2524,10 @@ BAU.rechnen = function (behaelter) {
 		KI.bestwert(id, s); markiere();
 		const p = KI.el("p", "rueck gut", "Stufe geschafft: " + STUFEN[stufeNr].anzahl + " Aufgaben mit " + fehler + " Fehlversuch" + (fehler === 1 ? "" : "en") + (tipps ? " und " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
 		ende.innerHTML = ""; ende.appendChild(p);
-		if (stufeNr + 1 < STUFEN.length) {
-			const l = KI.el("div", "leiste"); const n = KI.el("button", "haupt", "Nächste Stufe: " + STUFEN[stufeNr + 1].name);
-			n.addEventListener("click", () => starte(stufeNr + 1)); l.appendChild(n); ende.appendChild(l);
+		const folge = KI.naechsteStufe(stufeNr, STUFEN.length);
+		if (folge >= 0) {
+			const l = KI.el("div", "leiste"); const n = KI.hauptKnopf("weiter", "Nächste Stufe: " + STUFEN[folge].name);
+			n.addEventListener("click", () => starte(folge)); l.appendChild(n); ende.appendChild(l);
 		}
 		KI.funken(p, 20); heft.hidden = false;
 	}
