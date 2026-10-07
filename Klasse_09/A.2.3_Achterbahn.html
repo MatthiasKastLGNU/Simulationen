@@ -488,6 +488,17 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 .eingabezeile input[type=text] { font: inherit; font-size: 1.1rem; width: 6.5em; padding: 0.3rem 0.5rem; border: 1.5px solid var(--blue-frame); border-radius: 1mm; text-align: right; }
 .eingabezeile input[type=range] { flex: 1 1 12rem; min-width: 10rem; accent-color: var(--blue-frame); }
 .eingabezeile .einheit { font-size: 1.1rem; min-width: 2.2em; }
+.eingabezeile input[type=text]:disabled { background: #F4F4F4; color: #111; }
+.eingabezeile button:disabled { opacity: 0.4; cursor: not-allowed; }
+.serie { display: flex; align-items: center; gap: 0.35rem; font-size: 0.95rem; color: #444; margin: 0.2rem 0 0.3rem; }
+.serie .punkt { width: 0.95rem; height: 0.95rem; border-radius: 50%; border: 1.5px solid #9AA3AD; background: #fff; }
+.serie .punkt.jetzt { border-color: var(--blue-frame); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 6px var(--blue-title); }
+.serie .punkt.ja { background: #2E7D32; border-color: #1B5E20; }
+.serie .punkt.nein { background: #C62828; border-color: #7F1515; }
+.diagnose .dtitel { font-size: 0.95rem; color: #333; margin: 0.6rem 0 0.2rem; }
+.saeulenreihe { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; }
+.saeulenreihe figure { margin: 0; text-align: center; }
+.saeulenreihe figcaption { font-size: 0.88rem; color: #333; }
 
 /* Rechentrainer */
 .rechenkarte { border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.7rem 0.8rem; background: #FBFBFF; }
@@ -506,7 +517,8 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 	.blatt { padding: 1rem 0.8rem 1.4rem; }
 	.bildrahmen .bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; }
 	.bedienleiste { gap: 0.5rem 0.9rem; }
-	.eingabezeile input[type=range] { flex-basis: 100%; }
+	.saeulenreihe svg { width: 92px; height: auto; }
+	.saeulenreihe { gap: 0.3rem 0.4rem; flex-wrap: nowrap; }
 	.rechenkarte .eingabezeile input { width: 6.5em; }
 }
 </style>
@@ -1857,7 +1869,7 @@ function zeichneLandschaft(c, r, d, A, bahn, opt = {}) {
 	/* Stützen */
 	c.strokeStyle = FARBE.stuetze; c.lineWidth = 1.4;
 	for (let x = Math.ceil(bahn.x0 / 9) * 9; x <= bahn.x1; x += 9) {
-		const h = bahn.h(x); if (h < 1) continue;
+		const h = bahn.h(x); if (h < 1 || (opt.offenBis !== undefined && x < opt.offenBis)) continue;
 		c.beginPath(); c.moveTo(A.px(x), A.py(h)); c.lineTo(A.px(x), A.py(0)); c.stroke();
 	}
 	/* Bremsstrecke */
@@ -1867,9 +1879,15 @@ function zeichneLandschaft(c, r, d, A, bahn, opt = {}) {
 	}
 	/* Gleis */
 	c.strokeStyle = FARBE.gleis; c.lineWidth = schmal ? 3 : 3.5; c.lineJoin = "round";
+	const xa = opt.offenBis !== undefined ? opt.offenBis : bahn.x0;
 	c.beginPath();
-	for (let x = bahn.x0; x <= bahn.x1; x += 0.5) { const X = A.px(x), Y = A.py(bahn.h(x)); x === bahn.x0 ? c.moveTo(X, Y) : c.lineTo(X, Y); }
+	for (let x = xa; x <= bahn.x1; x += 0.5) { const X = A.px(x), Y = A.py(bahn.h(x)); x === xa ? c.moveTo(X, Y) : c.lineTo(X, Y); }
 	c.stroke();
+	/* noch nicht festgelegter Teil (Starthügel im Planer): grau gestrichelt */
+	if (opt.offenBis !== undefined) {
+		c.strokeStyle = "#9AA3AD"; c.lineWidth = 2.5; c.setLineDash([6, 5]);
+		c.beginPath(); for (let x = bahn.x0; x <= xa; x += 0.5) { const X = A.px(x), Y = A.py(bahn.h(x)); x === bahn.x0 ? c.moveTo(X, Y) : c.lineTo(X, Y); } c.stroke(); c.setLineDash([]);
+	}
 }
 function zeichneWagen(c, A, bahn, x, schmal) {
 	const X = A.px(x), Y = A.py(bahn.h(x));
@@ -2063,6 +2081,9 @@ const PLAN_STUFEN = [
 	{ name: "Katapultstart", titel: "Katapultstart" },
 	{ name: "Schweben", titel: "Schweben auf dem Hügel" }
 ];
+const PLAN_SERIE = 3;   /* Strecken pro Serie; jede Strecke hat genau einen Versuch (kein Herantasten) */
+const i_ = (x) => '<i class="gr">' + x + "</i>";
+const bruch_ = (z, n) => '<span class="bruch"><span>' + z + "</span><span>" + n + "</span></span>";
 function planAufgabe(nr) {
 	if (nr === 0) {
 		for (;;) {
@@ -2070,9 +2091,17 @@ function planAufgabe(nr) {
 			const vmax = Math.floor(Math.sqrt(2 * G * (hH + d - hK)) * 3.6 / 5) * 5;
 			const Hmax = hK + Math.pow(vmax / 3.6, 2) / (2 * G);
 			if (Hmax - hH < 3.5) continue;
-			return { nr, hH, hK, vmax, Hmax, wert: Math.round(hH + 2), min: 5, max: 100, schritt: 0.5, groesse: "Starthöhe <i class=\"gr\">H</i>", einheit: "m",
-				text: "Der Zug startet oben auf dem Starthügel (Höhe <i class=\"gr\">H</i>) aus dem Stand. Er muss über den <b>Hügel</b> (" + hH + "&nbsp;m hoch) kommen. In der <b>Kurve</b> (" + hK + "&nbsp;m hoch) darf er höchstens <b>" + vmax + "&nbsp;km/h</b> schnell sein. Je näher du an " + vmax + "&nbsp;km/h kommst, desto mehr Sterne. Rechne zuerst!",
-				tipp: "Ohne Reibung gilt die Energiebilanz Start = Kurve: <i class=\"gr\">m</i>·<i class=\"gr\">g</i>·<i class=\"gr\">H</i> = <i class=\"gr\">m</i>·<i class=\"gr\">g</i>·<i class=\"gr\">h</i><sub>Kurve</sub> + ½·<i class=\"gr\">m</i>·<i class=\"gr\">v</i><sup>2</sup>. Die Masse kürzt sich heraus. Rechne " + vmax + "&nbsp;km/h in m/s um (: 3,6) und stelle nach <i class=\"gr\">H</i> um. <i class=\"gr\">H</i> muss außerdem größer als " + hH + "&nbsp;m sein." };
+			return { nr, hH, hK, vmax, Hmax, min: 1, max: 150, nk: 1, groesse: "Starthöhe " + i_("H"), einheit: "m",
+				text: "Der Zug startet oben auf dem Starthügel (Höhe " + i_("H") + ") aus dem Stand. Er muss über den <b>Hügel</b> (" + hH + "&nbsp;m hoch) kommen. In der <b>Kurve</b> (" + hK + "&nbsp;m hoch) darf er höchstens <b>" + vmax + "&nbsp;km/h</b> schnell sein, aber möglichst nah dran. Wie hoch muss der Starthügel sein?",
+				tipp: "Ohne Reibung gilt die Energiebilanz Start = Kurve: " + i_("m") + "·" + i_("g") + "·" + i_("H") + " = " + i_("m") + "·" + i_("g") + "·" + i_("h") + "<sub>Kurve</sub> + ½·" + i_("m") + "·" + i_("v") + "<sup>2</sup>. Die Masse kürzt sich heraus. Rechne " + vmax + "&nbsp;km/h in m/s um (: 3,6) und stelle nach " + i_("H") + " um. " + i_("H") + " muss außerdem größer als " + hH + "&nbsp;m sein.",
+				treffer: (r) => r.vk <= vmax + 1 && r.vk >= vmax - 8,
+				loesung() {
+					const v = vmax / 3.6;
+					return "Kurve: " + i_("v") + " = " + vmax + "&nbsp;km/h = " + zahl(v, 2) + "&nbsp;m/s<br>" +
+						i_("m") + "·" + i_("g") + "·" + i_("H") + " = " + i_("m") + "·" + i_("g") + "·" + i_("h") + "<sub>Kurve</sub> + ½·" + i_("m") + "·" + i_("v") + "<sup>2</sup> &nbsp;⇒&nbsp; " +
+						i_("H") + " = " + i_("h") + "<sub>Kurve</sub> + " + bruch_(i_("v") + "<sup>2</sup>", "2·" + i_("g")) + " = " + hK + "&nbsp;m + " + bruch_("(" + zahl(v, 2) + "&nbsp;m/s)<sup>2</sup>", "2·9,81&nbsp;m/s<sup>2</sup>") + " ≈ " + zahl(Hmax, 1) + "&nbsp;m<br>" +
+						"Also: " + hH + "&nbsp;m &lt; " + i_("H") + " ≤ " + zahl(Hmax, 1) + "&nbsp;m, am besten knapp unter " + zahl(Hmax, 1) + "&nbsp;m.";
+				} };
 		}
 	}
 	if (nr === 1) {
@@ -2082,16 +2111,31 @@ function planAufgabe(nr) {
 			const vmax = Math.floor(Math.sqrt(Math.pow((vmin + zufall(14, 24)) / 3.6, 2) - 2 * G * hK) * 3.6 / 5) * 5;
 			const v0max = Math.sqrt(Math.pow(vmax / 3.6, 2) + 2 * G * hK) * 3.6;
 			if (v0max - vmin < 7) continue;
-			return { nr, hH, hK, vmax, vmin, v0max, wert: 60, min: 20, max: 180, schritt: 1, groesse: "Startgeschwindigkeit <i class=\"gr\">v</i><sub>0</sub>", einheit: "km/h",
-				text: "Katapultstart: Der Zug wird auf der Startgeraden (auf dem Nullniveau) blitzschnell auf <i class=\"gr\">v</i><sub>0</sub> beschleunigt. Er muss über den <b>Hügel</b> (" + hH + "&nbsp;m hoch) kommen. In der <b>Kurve</b> (" + hK + "&nbsp;m hoch) darf er höchstens <b>" + vmax + "&nbsp;km/h</b> schnell sein. Je näher du an " + vmax + "&nbsp;km/h kommst, desto mehr Sterne.",
-				tipp: "Start: nur kinetische Energie ½·<i class=\"gr\">m</i>·<i class=\"gr\">v</i><sub>0</sub><sup>2</sup>. Hügel: Der Zug braucht oben noch Bewegungsenergie, also ½·<i class=\"gr\">v</i><sub>0</sub><sup>2</sup> &gt; <i class=\"gr\">g</i>·" + hH + "&nbsp;m. Kurve: ½·<i class=\"gr\">v</i><sub>0</sub><sup>2</sup> = <i class=\"gr\">g</i>·" + hK + "&nbsp;m + ½·<i class=\"gr\">v</i><sub>Kurve</sub><sup>2</sup>. Geschwindigkeiten in m/s!" };
+			return { nr, hH, hK, vmax, vmin, v0max, min: 1, max: 300, nk: 0, groesse: "Startgeschwindigkeit " + i_("v") + "<sub>0</sub>", einheit: "km/h",
+				text: "Katapultstart: Der Zug wird auf der Startgeraden (auf dem Nullniveau) blitzschnell auf " + i_("v") + "<sub>0</sub> beschleunigt. Er muss über den <b>Hügel</b> (" + hH + "&nbsp;m hoch) kommen. In der <b>Kurve</b> (" + hK + "&nbsp;m hoch) darf er höchstens <b>" + vmax + "&nbsp;km/h</b> schnell sein, aber möglichst nah dran. Wie schnell muss das Katapult sein?",
+				tipp: "Start: nur kinetische Energie ½·" + i_("m") + "·" + i_("v") + "<sub>0</sub><sup>2</sup>. Hügel: Der Zug braucht oben noch Bewegungsenergie, also ½·" + i_("v") + "<sub>0</sub><sup>2</sup> &gt; " + i_("g") + "·" + hH + "&nbsp;m. Kurve: ½·" + i_("v") + "<sub>0</sub><sup>2</sup> = " + i_("g") + "·" + hK + "&nbsp;m + ½·" + i_("v") + "<sub>Kurve</sub><sup>2</sup>. Geschwindigkeiten in m/s!",
+				treffer: (r) => r.vk <= vmax + 1 && r.vk >= vmax - 8,
+				loesung() {
+					const v = vmax / 3.6;
+					return "Hügel: ½·" + i_("m") + "·" + i_("v") + "<sub>0</sub><sup>2</sup> &gt; " + i_("m") + "·" + i_("g") + "·" + i_("h") + "<sub>Hügel</sub> &nbsp;⇒&nbsp; " + i_("v") + "<sub>0</sub> &gt; √(2·9,81&nbsp;m/s<sup>2</sup>·" + hH + "&nbsp;m) ≈ " + zahl(vmin / 3.6, 1) + "&nbsp;m/s ≈ " + zahl(vmin, 0) + "&nbsp;km/h<br>" +
+						"Kurve: " + i_("v") + " = " + vmax + "&nbsp;km/h = " + zahl(v, 2) + "&nbsp;m/s; &nbsp;½·" + i_("m") + "·" + i_("v") + "<sub>0</sub><sup>2</sup> = " + i_("m") + "·" + i_("g") + "·" + i_("h") + "<sub>Kurve</sub> + ½·" + i_("m") + "·" + i_("v") + "<sup>2</sup><br>" +
+						"⇒ " + i_("v") + "<sub>0</sub> = √(" + i_("v") + "<sup>2</sup> + 2·" + i_("g") + "·" + i_("h") + "<sub>Kurve</sub>) = √((" + zahl(v, 2) + "&nbsp;m/s)<sup>2</sup> + 2·9,81&nbsp;m/s<sup>2</sup>·" + hK + "&nbsp;m) ≈ " + zahl(v0max / 3.6, 1) + "&nbsp;m/s ≈ " + zahl(v0max, 0) + "&nbsp;km/h<br>" +
+						"Also: " + zahl(vmin, 0) + "&nbsp;km/h &lt; " + i_("v") + "<sub>0</sub> ≤ " + zahl(v0max, 0) + "&nbsp;km/h, am besten knapp unter " + zahl(v0max, 0) + "&nbsp;km/h.";
+				} };
 		}
 	}
 	const hH = zufall(20, 45), vZ = wahl([10, 15, 20, 25, 30]);
 	const Hziel = hH + Math.pow(vZ / 3.6, 2) / (2 * G);
-	return { nr, hH, vZ, Hziel, wert: Math.round(hH + 5), min: 5, max: 100, schritt: 0.1, groesse: "Starthöhe <i class=\"gr\">H</i>", einheit: "m",
-		text: "Auf dem <b>Hügel</b> (" + hH + "&nbsp;m hoch) sollen die Fahrgäste kurz schweben: Der Zug soll oben möglichst genau mit <b>" + vZ + "&nbsp;km/h</b> ankommen. Er startet aus dem Stand. Berechne die Starthöhe <i class=\"gr\">H</i> auf 0,1&nbsp;m genau.",
-		tipp: "Energiebilanz Start = Hügel: <i class=\"gr\">m</i>·<i class=\"gr\">g</i>·<i class=\"gr\">H</i> = <i class=\"gr\">m</i>·<i class=\"gr\">g</i>·" + hH + "&nbsp;m + ½·<i class=\"gr\">m</i>·<i class=\"gr\">v</i><sup>2</sup>. Masse kürzen, durch <i class=\"gr\">g</i> teilen: <i class=\"gr\">H</i> = " + hH + "&nbsp;m + <span class=\"bruch\"><span><i class=\"gr\">v</i><sup>2</sup></span><span>2·<i class=\"gr\">g</i></span></span>. " + vZ + "&nbsp;km/h in m/s umrechnen!" };
+	return { nr, hH, vZ, Hziel, min: 1, max: 150, nk: 1, groesse: "Starthöhe " + i_("H"), einheit: "m",
+		text: "Auf dem <b>Hügel</b> (" + hH + "&nbsp;m hoch) sollen die Fahrgäste kurz schweben: Der Zug soll oben möglichst genau mit <b>" + vZ + "&nbsp;km/h</b> ankommen. Er startet aus dem Stand. Berechne die Starthöhe " + i_("H") + " auf 0,1&nbsp;m genau.",
+		tipp: "Energiebilanz Start = Hügel: " + i_("m") + "·" + i_("g") + "·" + i_("H") + " = " + i_("m") + "·" + i_("g") + "·" + hH + "&nbsp;m + ½·" + i_("m") + "·" + i_("v") + "<sup>2</sup>. Masse kürzen, durch " + i_("g") + " teilen: " + i_("H") + " = " + hH + "&nbsp;m + " + bruch_(i_("v") + "<sup>2</sup>", "2·" + i_("g")) + ". " + vZ + "&nbsp;km/h in m/s umrechnen!",
+		treffer: (r) => Math.abs(r.vh - vZ) <= 3,
+		loesung() {
+			const v = vZ / 3.6;
+			return "Hügel: " + i_("v") + " = " + vZ + "&nbsp;km/h = " + zahl(v, 2) + "&nbsp;m/s<br>" +
+				i_("m") + "·" + i_("g") + "·" + i_("H") + " = " + i_("m") + "·" + i_("g") + "·" + i_("h") + "<sub>Hügel</sub> + ½·" + i_("m") + "·" + i_("v") + "<sup>2</sup> &nbsp;⇒&nbsp; " +
+				i_("H") + " = " + hH + "&nbsp;m + " + bruch_("(" + zahl(v, 2) + "&nbsp;m/s)<sup>2</sup>", "2·9,81&nbsp;m/s<sup>2</sup>") + " ≈ " + zahl(Hziel, 1) + "&nbsp;m";
+		} };
 }
 function planBahn(a, eingabe) {
 	if (a.nr === 0) return { bahn: erzeugeBahn([[-45, 3], [0, eingabe, "kuppe"], [70, 0], [125, a.hH], [175, a.hK], [230, a.hK], [350, a.hK]]), start: [0.02, 0], huegel: 125, kurve: [175, 230], bremseAb: 245 };
@@ -2103,22 +2147,26 @@ BAU.planer = function (b) {
 	const leiste = KI.el("div", "leiste"); const chips = KI.el("div", "chips");
 	const chipKn = PLAN_STUFEN.map((st, i) => { const k = KI.el("button", "", st.name); k.addEventListener("click", () => starteStufe(i)); chips.appendChild(k); return k; });
 	leiste.appendChild(chips); KI.chipsBeschraenken(chips, chipKn); b.appendChild(leiste);
+	b.appendChild(KI.el("p", "hinweis", "Pro Strecke hast du <b>genau einen Versuch</b>: erst rechnen, dann bauen. Eine Serie hat " + PLAN_SERIE + "&nbsp;Strecken, jeder Treffer gibt einen Stern."));
+	const serieEl = KI.el("div", "serie"); b.appendChild(serieEl);
 	const karte = KI.el("div", "auftragkarte"); b.appendChild(karte);
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const canvas = KI.el("canvas", "sim"); canvas.setAttribute("aria-label", "Achterbahn-Planer"); rahmen.appendChild(canvas);
 	const zeile = KI.el("div", "eingabezeile"); b.appendChild(zeile);
 	const groesseEl = KI.el("span", "gesucht"); zeile.appendChild(groesseEl);
-	const feld = KI.el("input"); feld.type = "text"; feld.inputMode = "decimal"; feld.autocomplete = "off"; zeile.appendChild(feld);
+	const feld = KI.el("input"); feld.type = "text"; feld.inputMode = "decimal"; feld.autocomplete = "off"; feld.placeholder = "?"; zeile.appendChild(feld);
 	const einheitEl = KI.el("span", "einheit"); zeile.appendChild(einheitEl);
-	const regler = KI.el("input"); regler.type = "range"; zeile.appendChild(regler);
-	const losKn = KI.hauptKnopf("play", "Los"); zeile.appendChild(losKn);
-	zeile.appendChild(KI.symbolKnopf("tipp", "Tipp", () => { tippEl.hidden = false; tipps++; }));
+	const losKn = KI.hauptKnopf("play", "Bauen und fahren"); zeile.appendChild(losKn);
+	const tippKn = KI.symbolKnopf("tipp", "Tipp", () => { tippEl.hidden = false; tipps++; }); zeile.appendChild(tippKn);
 	const tippEl = KI.el("div", "erkl"); tippEl.hidden = true; b.appendChild(tippEl);
 	const rueck = KI.el("p", "rueck"); b.appendChild(rueck);
+	const diagnose = KI.el("div", "diagnose"); b.appendChild(diagnose);
 	const weiterEl = KI.el("div", "leiste"); b.appendChild(weiterEl);
 
-	let stufe = 0, a = null, P = null, L = null, laeuft = false, wert = 0, tipps = 0, ergebnis = null;
-	bildleiste(rahmen, canvas, () => "Achterbahn_Planer_" + PLAN_STUFEN[stufe].name.replace(/\s/g, "_"), () => neueAufgabe(), "Neue Strecke");
+	/* wert = null: Strecke noch nicht gebaut (Starthügel offen); versucht: der eine Versuch ist verbraucht */
+	let stufe = 0, a = null, P = null, L = null, laeuft = false, wert = null, tipps = 0, versucht = false;
+	let nummer = 0, treffer = [];
+	bildleiste(rahmen, canvas, () => "Achterbahn_Planer_" + PLAN_STUFEN[stufe].name.replace(/\s/g, "_"), () => neueSerie(), "Neue Serie");
 
 	function markiere() {
 		chipKn.forEach((k, j) => {
@@ -2127,36 +2175,44 @@ BAU.planer = function (b) {
 			k.innerHTML = PLAN_STUFEN[j].name + (s ? ' <span class="geschafft">' + "★".repeat(s) + "</span>" : "");
 		});
 	}
-	function starteStufe(i) { stufe = i; markiere(); neueAufgabe(); }
+	function zeigeSerie() {
+		let s = "Strecke " + Math.min(nummer + 1, PLAN_SERIE) + " von " + PLAN_SERIE + ": ";
+		for (let i = 0; i < PLAN_SERIE; i++) s += '<span class="punkt ' + (i < treffer.length ? (treffer[i] ? "ja" : "nein") : i === nummer ? "jetzt" : "") + '"></span>';
+		serieEl.innerHTML = s;
+	}
+	function starteStufe(i) { stufe = i; markiere(); neueSerie(); }
+	function neueSerie() { nummer = 0; treffer = []; tipps = 0; tippEl.hidden = true; neueAufgabe(); }
 	function neueAufgabe() {
-		stoppe(); a = planAufgabe(stufe); tipps = 0; ergebnis = null;
+		stoppe(); a = planAufgabe(stufe); versucht = false; wert = null;
 		karte.innerHTML = a.text;
 		tippEl.innerHTML = KI.icon("tipp", 15) + " " + a.tipp; tippEl.hidden = true;
 		groesseEl.innerHTML = a.groesse + " =";
 		einheitEl.textContent = a.einheit;
-		regler.min = a.min; regler.max = a.max; regler.step = a.schritt;
-		setze(a.wert); rueck.textContent = ""; rueck.className = "rueck"; weiterEl.innerHTML = "";
+		feld.value = ""; feld.disabled = false; losKn.disabled = false; tippKn.disabled = false;
+		rueck.textContent = ""; rueck.className = "rueck"; diagnose.innerHTML = ""; weiterEl.innerHTML = "";
+		/* Vorschau ohne festgelegten Starthügel bzw. ohne Katapulttempo: verrät nichts */
+		P = planBahn(a, a.nr === 1 ? 0 : a.hH + 8); L = neuerLauf(P.bahn, a.nr === 1 ? -66 : 0.02, 0, 0, P.bremseAb);
+		zeigeSerie(); zeichne();
+		if (window.matchMedia && matchMedia("(pointer: fine)").matches && nummer > 0) feld.focus({ preventScroll: true });
 	}
-	function setze(w) {
-		wert = Math.max(a.min, Math.min(a.max, w));
-		feld.value = zahl(wert, a.schritt < 1 ? 1 : 0); regler.value = wert;
-		P = planBahn(a, wert); L = neuerLauf(P.bahn, P.start[0], P.start[1], 0, P.bremseAb);
-		ergebnis = null; zeichne();
-	}
-	regler.addEventListener("input", () => { if (!laeuft) setze(parseFloat(regler.value)); });
-	feld.addEventListener("change", () => { const x = liesZahl(feld.value); if (!isNaN(x) && !laeuft) setze(x); else feld.value = zahl(wert, a.schritt < 1 ? 1 : 0); });
-	feld.addEventListener("keydown", (e) => { if (e.key === "Enter") { feld.dispatchEvent(new Event("change")); fahre(); } });
-	losKn.addEventListener("click", () => { if (!laeuft) { const x = liesZahl(feld.value); if (!isNaN(x)) setze(x); fahre(); } });
+	feld.addEventListener("keydown", (e) => { if (e.key === "Enter") fahre(); });
+	losKn.addEventListener("click", fahre);
 
 	let anim = 0, tAlt = 0, vHuegel = null, vKurve = null, umgedreht = false;
 	function fahre() {
+		if (laeuft || versucht) return;
+		const x = liesZahl(feld.value);
+		if (isNaN(x)) { KI.meldung("Trage zuerst deinen berechneten Wert ein."); feld.focus(); return; }
+		if (x < a.min || x > a.max) { KI.meldung("Bitte einen Wert zwischen " + a.min + " und " + a.max + " " + a.einheit + " eintragen."); feld.focus(); return; }
+		wert = x; versucht = true;
+		feld.value = zahl(wert, a.nk); feld.disabled = true; losKn.disabled = true; tippKn.disabled = true;
 		P = planBahn(a, wert); L = neuerLauf(P.bahn, P.start[0], P.start[1], 0, P.bremseAb);
-		vHuegel = null; vKurve = null; umgedreht = false; ergebnis = null;
-		rueck.textContent = ""; rueck.className = "rueck"; weiterEl.innerHTML = "";
-		laeuft = true; losKn.disabled = true; regler.disabled = true; feld.disabled = true; tAlt = 0;
+		vHuegel = null; vKurve = null; umgedreht = false;
+		rueck.textContent = ""; rueck.className = "rueck"; diagnose.innerHTML = ""; weiterEl.innerHTML = "";
+		laeuft = true; tAlt = 0;
 		anim = requestAnimationFrame(takt);
 	}
-	function stoppe() { laeuft = false; cancelAnimationFrame(anim); losKn.disabled = false; regler.disabled = false; feld.disabled = false; }
+	function stoppe() { laeuft = false; cancelAnimationFrame(anim); }
 	function takt(t) {
 		if (!laeuft) return;
 		const dt = tAlt ? Math.min(0.1, (t - tAlt) / 1000) : 0; tAlt = t;
@@ -2172,49 +2228,68 @@ BAU.planer = function (b) {
 		if (umgedreht || L.fertig) { stoppe(); auswerten(); return; }
 		anim = requestAnimationFrame(takt);
 	}
+	/* Energiesäulen (Anteile der Gesamtenergie) an Start, Hügel und Kurve mit dem eingegebenen Wert */
+	function saeulenDiagnose() {
+		const E0 = L.E0, stellen = [["Start", a.nr === 1 ? 0 : 1]];
+		if (!umgedreht) stellen.push(["Hügel (" + a.hH + " m)", G * a.hH / E0]);
+		else stellen.push(["Umkehrpunkt (" + zahl(L.hMax, 1) + " m)", 1]);
+		if (P.kurve && !umgedreht) stellen.push(["Kurve (" + a.hK + " m)", G * a.hK / E0]);
+		let s = "";
+		stellen.forEach(([name, pot]) => { s += '<figure>' + svgSaeulen(pot, Math.max(0, 1 - pot)) + "<figcaption>" + name + "</figcaption></figure>"; });
+		return '<div class="saeulenreihe">' + s + "</div>";
+	}
 	function auswerten() {
-		let s = 0, text;
-		if (umgedreht) {
-			text = "Zu wenig Energie: Der Zug kommt nur " + zahl(L.hMax, 1) + "&nbsp;m hoch, schafft den Hügel (" + a.hH + "&nbsp;m) nicht und rollt zurück.";
-		} else if (a.nr < 2) {
-			const vk = vKurve * 3.6;
-			if (vk > a.vmax + 0.5) text = "Zu schnell! In der Kurve fährt der Zug " + zahl(vk, 0) + "&nbsp;km/h, erlaubt sind höchstens " + a.vmax + "&nbsp;km/h.";
-			else {
-				s = vk >= a.vmax - 5 ? 3 : vk >= a.vmax - 12 ? 2 : 1;
-				text = "Geschafft! Über den Hügel und in der Kurve " + zahl(vk, 0) + "&nbsp;km/h (erlaubt: " + a.vmax + "&nbsp;km/h). " + KI.sterneHtml(s) + (s < 3 ? " Für mehr Sterne darf er in der Kurve noch schneller sein." : "");
-			}
-		} else {
-			const vh = vHuegel * 3.6, d = Math.abs(vh - a.vZ);
-			s = d <= 2 ? 3 : d <= 4 ? 2 : d <= 7 ? 1 : 0;
-			text = (s ? "Geschafft! " : "Noch nicht genau genug: ") + "Oben auf dem Hügel fährt der Zug " + zahl(vh, 0) + "&nbsp;km/h, Ziel: " + a.vZ + "&nbsp;km/h. " + (s ? KI.sterneHtml(s) : "");
-		}
+		const r = { vk: vKurve === null ? null : vKurve * 3.6, vh: vHuegel === null ? null : vHuegel * 3.6 };
+		const ok = !umgedreht && a.treffer(r);
+		let text;
+		if (umgedreht) text = "Zu wenig Energie: Der Zug kommt nur " + zahl(L.hMax, 1) + "&nbsp;m hoch, schafft den Hügel (" + a.hH + "&nbsp;m) nicht und rollt zurück.";
+		else if (a.nr < 2) {
+			if (r.vk > a.vmax + 1) text = "Zu schnell! In der Kurve fährt der Zug " + zahl(r.vk, 0) + "&nbsp;km/h, erlaubt sind höchstens " + a.vmax + "&nbsp;km/h.";
+			else if (!ok) text = "Zu vorsichtig: In der Kurve fährt der Zug nur " + zahl(r.vk, 0) + "&nbsp;km/h, erlaubt sind " + a.vmax + "&nbsp;km/h. Das verschenkt Fahrspaß.";
+			else text = "Treffer! Über den Hügel und in der Kurve " + zahl(r.vk, 0) + "&nbsp;km/h (erlaubt: " + a.vmax + "&nbsp;km/h).";
+		} else text = (ok ? "Treffer! " : "Daneben: ") + "Oben auf dem Hügel fährt der Zug " + zahl(r.vh, 0) + "&nbsp;km/h, Ziel: " + a.vZ + "&nbsp;km/h.";
+		treffer.push(ok); nummer++;
+		rueck.className = "rueck " + (ok ? "gut" : "schlecht"); rueck.innerHTML = text;
+		diagnose.innerHTML = '<p class="dtitel">Energie des Zugs mit deinem Wert (' + zahl(wert, a.nk) + "&nbsp;" + a.einheit + "):</p>" + saeulenDiagnose() +
+			(ok ? "" : '<p class="dtitel">So wird gerechnet:</p><div class="rechenweg">' + a.loesung() + "</div>");
+		if (ok) KI.funken(rueck, 10);
+		zeigeSerie();
+		if (nummer < PLAN_SERIE) {
+			const n = KI.hauptKnopf("weiter", "Nächste Strecke"); n.addEventListener("click", neueAufgabe); weiterEl.appendChild(n);
+		} else serieFertig();
+		zeichne();
+	}
+	function serieFertig() {
+		const t = treffer.filter(Boolean).length;
+		let s = t;
 		if (s && tipps) s = Math.max(1, s - 1);
-		ergebnis = { s, ok: s > 0 };
-		rueck.className = "rueck " + (s ? "gut" : "schlecht"); rueck.innerHTML = text + (s && tipps ? " (mit Tipp)" : "");
+		const p = KI.el("p", "rueck " + (s ? "gut" : "schlecht"), "Serie beendet: " + t + " von " + PLAN_SERIE + " Treffern" + (tipps ? " (mit Tipp)" : "") + ". " + (s ? KI.sterneHtml(s) : "Rechne in der nächsten Serie zuerst mit dem Tipp."));
+		weiterEl.appendChild(p);
 		if (s) {
 			KI.speicher.schreib("sterne_planer_" + stufe, Math.max(s, KI.speicher.lies("sterne_planer_" + stufe, 0)));
-			KI.bestwert("planer", s); markiere(); KI.funken(rueck, 16);
-			const n = KI.hauptKnopf("zurueck", "Neue Strecke"); n.addEventListener("click", neueAufgabe); weiterEl.appendChild(n);
-			const f = KI.naechsteStufe(stufe, PLAN_STUFEN.length);
-			if (f >= 0) { const k = KI.hauptKnopf("weiter", "Nächste Stufe: " + PLAN_STUFEN[f].name); k.addEventListener("click", () => starteStufe(f)); weiterEl.appendChild(k); }
+			KI.bestwert("planer", s); markiere(); KI.funken(p, 16);
 		}
-		zeichne();
+		const n = KI.hauptKnopf("zurueck", "Neue Serie"); n.addEventListener("click", neueSerie); weiterEl.appendChild(n);
+		const f = s ? KI.naechsteStufe(stufe, PLAN_STUFEN.length) : -1;
+		if (f >= 0) { const k = KI.hauptKnopf("weiter", "Nächste Stufe: " + PLAN_STUFEN[f].name); k.addEventListener("click", () => starteStufe(f)); weiterEl.appendChild(k); }
 	}
 
 	let c, B, H, schmal;
 	function masse() { const lw = KI.leinwand(canvas, (w) => w < 560 ? w * 0.78 : w * 0.46); c = lw.ctx; B = lw.B; H = lw.H; schmal = B < 560; }
 	function zeichne() {
 		if (!c || !P) return;
+		const offen = wert === null;
 		c.clearRect(0, 0, B, H); c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
-		const hoch = Math.max(a.hH, a.nr === 1 ? 0 : wert, 30) + 14;
+		const hStart = a.nr === 1 ? 0 : offen ? a.hH + 8 : wert;
+		const hoch = Math.max(a.hH, hStart, 30) + 14;
 		const r = { x: 0, y: 0, w: B, h: H };
 		const D = { x0: P.bahn.x0 - 6, x1: P.bahn.x1 + 4, h0: 0, h1: hoch };
 		const A = abbildung({ x: 0, y: 30, w: B, h: H - 46 }, D);
-		zeichneLandschaft(c, r, D, A, P.bahn, { schmal, bremseAb: P.bremseAb });
+		zeichneLandschaft(c, r, D, A, P.bahn, { schmal, bremseAb: P.bremseAb, offenBis: offen && a.nr !== 1 ? 70 : undefined });
 		const fs = schmal ? 12 : 14;
 		/* Hügel: Höhe */
 		const xh = A.px(P.huegel), yh = A.py(a.hH);
-		KI.text(c, a.hH + " m", xh, yh - (schmal ? 30 : 36), fs, "#123C8C", "center", "bold");
+		KI.text(c, a.hH + " m", xh - (a.nr === 2 ? 18 : 0), yh - (schmal ? 30 : 36), fs, "#123C8C", a.nr === 2 ? "right" : "center", "bold");
 		/* Kurve mit Tempo-Schild */
 		if (P.kurve) {
 			const x0 = A.px(P.kurve[0]), x1 = A.px(P.kurve[1]), y = A.py(a.hK);
@@ -2228,23 +2303,24 @@ BAU.planer = function (b) {
 		/* Start: Höhe bzw. Katapult */
 		if (a.nr === 1) {
 			c.fillStyle = "rgba(30,90,200,0.18)"; c.fillRect(A.px(-70), A.py(0) - 12, A.px(-40) - A.px(-70), 12);
-			KI.text(c, "Katapult", A.px(-55), A.py(0) + 14, fs - 1, "#123C8C");
+			KI.text(c, "Katapult" + (offen ? ": v₀ = ?" : ""), A.px(-55), A.py(0) + 14, fs - 1, "#123C8C", schmal ? "left" : "center");
 		} else {
-			KI.text(c, zahl(wert, a.schritt < 1 ? 1 : 0) + " m", A.px(0) + (schmal ? 10 : 14), A.py(wert) - (schmal ? 8 : 10), fs, "#111", "left", "bold");
+			KI.text(c, offen ? "H = ?" : zahl(wert, a.nk) + " m", A.px(0) + (schmal ? 10 : 14), A.py(hStart) - (schmal ? 8 : 10), fs, offen ? "#6A7A90" : "#111", "left", "bold");
 		}
 		if (a.nr === 2) {
 			c.fillStyle = "#2E7D32"; c.beginPath(); c.moveTo(xh + 14, yh - 52); c.lineTo(xh + 14, yh - 18); c.stroke();
 			c.beginPath(); c.moveTo(xh + 14, yh - 52); c.lineTo(xh + 36, yh - 45); c.lineTo(xh + 14, yh - 38); c.fill();
 			KI.text(c, "Ziel: " + a.vZ + " km/h", xh + 40, yh - 58, fs - 1, "#2E7D32", "left");
 		}
+		if (offen) return;   /* vor dem Bau kein Zug und keine Messwerte */
 		zeichneWagen(c, A, P.bahn, L.x, schmal);
 		/* Messwert */
 		const v = Math.sqrt(2 * ekin(L, P.bahn)) * 3.6;
 		c.fillStyle = "rgba(255,255,255,0.85)"; c.fillRect(4, 4, schmal ? 150 : 180, 22);
 		c.font = (schmal ? 13 : 15) + "px " + SCHRIFT; c.fillStyle = "#111"; c.textAlign = "left"; c.textBaseline = "middle";
 		c.fillText("v = " + zahl(v, 0) + " km/h", 10, 15);
-		if (vKurve !== null && P.kurve) KI.text(c, zahl(vKurve * 3.6, 0) + " km/h", A.px((P.kurve[0] + P.kurve[1]) / 2), A.py(a.hK) + (schmal ? 30 : 34), fs, vKurve * 3.6 > a.vmax + 0.5 ? "#C62828" : "#2E7D32", "center", "bold");
-		if (vHuegel !== null && a.nr === 2) KI.text(c, zahl(vHuegel * 3.6, 0) + " km/h", xh, yh + 22, fs, "#2E7D32", "center", "bold");
+		if (vKurve !== null && P.kurve) KI.text(c, zahl(vKurve * 3.6, 0) + " km/h", A.px((P.kurve[0] + P.kurve[1]) / 2), A.py(a.hK) + (schmal ? 30 : 34), fs, vKurve * 3.6 > a.vmax + 1 ? "#C62828" : "#2E7D32", "center", "bold");
+		if (vHuegel !== null && a.nr === 2) KI.text(c, "oben: " + zahl(vHuegel * 3.6, 0) + " km/h", xh + 40, yh - 58 + fs + 6, fs, Math.abs(vHuegel * 3.6 - a.vZ) <= 3 ? "#2E7D32" : "#C62828", "left", "bold");
 	}
 	masse();
 	starteStufe(KI.startStufe(PLAN_STUFEN.length));
