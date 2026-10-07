@@ -525,7 +525,7 @@
 	const btnStart = document.getElementById("btn-start");
 	function startKnopf(laeuft) {
 		btnStart.innerHTML = symbolSvg(laeuft ? "pause" : "play", 24);
-		btnStart.title = laeuft ? "Anhalten" : "Start"; btnStart.setAttribute("aria-label", btnStart.title);
+		btnStart.title = laeuft ? "Pause" : "Start"; btnStart.setAttribute("aria-label", btnStart.title);
 	}
 	startKnopf(false);
 	btnStart.addEventListener("click", () => {
