@@ -167,6 +167,7 @@ button.haupt[disabled] { opacity: 0.4; cursor: default; }
 .rueckmeldung { min-height: 1.5em; }
 .rueckmeldung.richtig { color: var(--green-frame); font-weight: bold; }
 .rueckmeldung.falsch { color: var(--red-frame); }
+table.mess th, table.mess td { white-space: nowrap; }
 table.mess { border-collapse: collapse; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
 table.mess th, table.mess td { padding: 0.15rem 0.9rem; text-align: center; }
 table.mess thead th { border-top: 1.5px solid #111; border-bottom: 1px solid #111; font-weight: normal; }
@@ -232,7 +233,6 @@ button.symbol:hover { background: #f2f2f2; color: #222; }
 				<div class="gr" data-st="vorhersage"><div class="gt">Neue Situation</div><div class="kn" ><button id="btn-neu" class="dunkel" title="Neue Situation" aria-label="Neue Situation"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/></svg></button></div></div>
 				<div class="gr" data-st="staerke frei winkel"><div class="gt">Richtungen</div><div class="kn" ><button id="btn-umpolen" data-st="staerke frei" title="Umpolen" aria-label="Umpolen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 16h8M6 12v8" stroke="#BF0000" stroke-width="2.6"/><path d="M20 16h8" stroke="#0000BF" stroke-width="2.6"/><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button><button id="btn-umpolen-w" data-st="winkel" title="Umpolen" aria-label="Umpolen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M2 16h8M6 12v8" stroke="#BF0000" stroke-width="2.6"/><path d="M20 16h8" stroke="#0000BF" stroke-width="2.6"/><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button><button id="btn-umdrehen" data-st="staerke frei" title="Magnet umdrehen" aria-label="Magnet umdrehen"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="3" y="12" width="12" height="9" fill="#D72823"/><rect x="15" y="12" width="12" height="9" fill="#00913F"/><text x="9" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">N</text><text x="21" y="19.3" font-size="7.5" font-weight="bold" fill="#fff" text-anchor="middle" font-family="Libertinus Sans, Segoe UI, sans-serif">S</text><path d="M8.5 7.5Q15 0 21.5 7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23.6 10 L22.4 4.2 L18.4 7.8z" fill="currentColor"/><path d="M6.4 10 L7.6 4.2 L11.6 7.8z" fill="currentColor"/></svg></button></div></div>
 				<div class="gr" data-st="staerke frei"><div class="gt">Stromstärke <i class="gr">I</i></div><div class="kn" ><input type="range" id="regler-i" min="0" max="5" step="0.1" value="3" aria-label="Stromstärke"><span class="wert" id="wert-i"></span></div></div>
-				<div class="gr" data-st="staerke frei"><div class="gt">Stärke des Magneten</div><div class="kn" id="staerke-knoepfe"><button data-wert="schwach" title="schwacher Magnet" aria-label="schwacher Magnet"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 18.5h5" stroke="#0000BF" stroke-width="1.3"/></svg></button><button data-wert="mittel" class="aktiv" title="mittlerer Magnet" aria-label="mittlerer Magnet"><svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 17h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 20h5" stroke="#0000BF" stroke-width="1.3"/></svg></button><button data-wert="stark" title="starker Magnet" aria-label="starker Magnet"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 22V11a9 9 0 0 1 18 0v11h-6V11a3 3 0 0 0-6 0v11z" fill="#8a8f96"/><rect x="3" y="15" width="6" height="7" fill="#D72823"/><rect x="15" y="15" width="6" height="7" fill="#00913F"/><path d="M9.5 16h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 18.5h5" stroke="#0000BF" stroke-width="1.3"/><path d="M9.5 21h5" stroke="#0000BF" stroke-width="1.3"/></svg></button></div></div>
 				<div class="gr" data-st="staerke frei"><div class="gt">Anzahl der Magnete</div><div class="kn" id="anzahl-knoepfe"><button data-wert="1" class="aktiv" title="1 Magnet" aria-label="1 Magnet"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="11.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button><button data-wert="2" title="2 Magnete" aria-label="2 Magnete"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="7.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="7.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="15.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="15.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button><button data-wert="3" title="3 Magnete" aria-label="3 Magnete"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><rect x="3.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="3.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="11.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/><rect x="19.5" y="3" width="7" height="8" fill="#00913F" stroke="#333" stroke-width="0.8"/><rect x="19.5" y="11" width="7" height="8" fill="#D72823" stroke="#333" stroke-width="0.8"/></svg></button></div></div>
 				<div class="gr" data-st="winkel"><div class="gt">Winkel <i class="gr">α</i> zwischen Leiter und Feld</div><div class="kn" ><input type="range" id="regler-alpha" min="0" max="180" step="1" value="90" aria-label="Winkel zwischen Leiter und Feld"><span class="wert" id="wert-alpha"></span></div></div>
 				<div class="gr" data-st="winkel"><div class="gt">Winkel wählen</div><div class="kn" ><button data-alpha="0" title="Winkel 0°" aria-label="Winkel 0°">0°</button><button data-alpha="30" title="Winkel 30°" aria-label="Winkel 30°">30°</button><button data-alpha="60" title="Winkel 60°" aria-label="Winkel 60°">60°</button><button data-alpha="90" title="Winkel 90°" aria-label="Winkel 90°">90°</button></div></div>
@@ -252,7 +252,7 @@ button.symbol:hover { background: #f2f2f2; color: #222; }
 					<div class="kn"><button id="btn-notieren" title="Messwert in die Tabelle schreiben"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 4h18v4H3zM3 10h8v4H3zM3 16h8v4H3zM17 10h2v4h4v2h-4v4h-2v-4h-4v-2h4z"/></svg>Messwert notieren</button></div>
 					<div id="tabelle-leinwand" hidden>
 						<div style="overflow-x:auto"><table class="mess" id="tabelle">
-							<thead><tr><th>Nr.</th><th><i class="gr">I</i> in A</th><th>Magnet</th><th>Anzahl</th><th><i class="gr">F</i> in mN</th></tr></thead>
+							<thead><tr><th>Nr.</th><th><i class="gr">I</i> in A</th><th>Anzahl</th><th><i class="gr">F</i> in mN</th></tr></thead>
 							<tbody id="tabelle-body"></tbody>
 						</table></div>
 					</div>
@@ -704,11 +704,32 @@ function pfeil(x1, y1, x2, y2, farbeStrich, dicke) {
 	ctx.lineTo(x2 - ux * k - uy * k * 0.42, y2 - uy * k + ux * k * 0.42);
 	ctx.closePath(); ctx.fill();
 }
+function kraftpfeil(x1, y1, x2, y2, dicke) {
+	const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy);
+	if (l < 2) return;
+	const ux = dx / l, uy = dy / l, nx = -uy, ny = ux;
+	const k = Math.min(dicke * 3.6, l * 0.5), w = dicke / 2, hw = dicke * 1.55;
+	const hx = x2 - ux * k, hy = y2 - uy * k;
+	ctx.beginPath();
+	ctx.moveTo(x1 + nx * w, y1 + ny * w); ctx.lineTo(hx + nx * w, hy + ny * w); ctx.lineTo(hx + nx * hw, hy + ny * hw);
+	ctx.lineTo(x2, y2);
+	ctx.lineTo(hx - nx * hw, hy - ny * hw); ctx.lineTo(hx - nx * w, hy - ny * w); ctx.lineTo(x1 - nx * w, y1 - ny * w);
+	ctx.closePath();
+	ctx.fillStyle = KRAFTROT; ctx.fill();
+	ctx.strokeStyle = "#5C0000"; ctx.lineWidth = 1.2; ctx.lineJoin = "miter"; ctx.stroke();
+}
 function beschriftung(text, x, y, f) {
 	const schrift = getComputedStyle(document.body).fontFamily;
 	ctx.font = "italic bold " + Math.round(s * 0.42) + "px " + schrift;
 	ctx.textAlign = "center"; ctx.textBaseline = "middle";
-	ctx.lineWidth = 4; ctx.strokeStyle = "#fff"; ctx.lineJoin = "round";
+	ctx.lineJoin = "round";
+	if (f === KRAFTROT) {
+		/* wie der Kraftpfeil: dünne dunkelrote Kontur statt weißem Rand */
+		ctx.fillStyle = f; ctx.fillText(text, x, y);
+		ctx.lineWidth = 1; ctx.strokeStyle = "#5C0000"; ctx.strokeText(text, x, y);
+		return;
+	}
+	ctx.lineWidth = 4; ctx.strokeStyle = "#fff";
 	ctx.strokeText(text, x, y); ctx.fillStyle = f; ctx.fillText(text, x, y);
 }
 function hinweise() {
@@ -738,10 +759,8 @@ function hinweise() {
 		   Länge wächst mit dem Betrag, bleibt aber immer gut sichtbar */
 		const m = dreh(zustand.n % 2 ? 0.45 : 0, 1.0), l = Math.sign(F) * (0.9 + Math.abs(F) / 0.0675 * 3.4);
 		const a = P(m[0], m[1], m[2]), b = P(m[0], m[1], m[2] + l);
-		/* weißer Rand, damit der rote Pfeil auch vor dem roten Nordpol gut zu sehen ist */
-		const d = Math.max(3.5, s * 0.075);
-		pfeil(a[0], a[1], b[0], b[1], "#fff", d * 2.1);
-		pfeil(a[0], a[1], b[0], b[1], KRAFTROT, d);
+		/* gefüllter Pfeil mit dünner dunkelroter Kontur, damit er sich auch vor dem roten Nordpol abhebt */
+		kraftpfeil(a[0], a[1], b[0], b[1], Math.max(4, s * 0.085));
 		/* Beschriftung in Pfeilrichtung hinter der Spitze */
 		const ll = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
 		beschriftung("F", b[0] + (b[0] - a[0]) / ll * s * 0.38, b[1] + (b[1] - a[1]) / ll * s * 0.38, KRAFTROT);
@@ -859,7 +878,7 @@ function schleife(t) {
    ========================================================================== */
 const AUFTRAG = {
 	vorhersage: "Sieh dir die Polung und den Magneten an. Entscheide mit der Drei-Finger-Regel, wohin die Schaukel ausschlägt, und schalte dann den Strom ein. Schaffst du fünf richtige Vorhersagen hintereinander?",
-	staerke: "Verändere immer nur eine Größe: Stromstärke, Stärke des Magneten oder Anzahl der Magnete. Notiere jeweils die Kraft. Wovon hängt die Kraft ab und wie?",
+	staerke: "Verändere immer nur eine Größe: die Stromstärke oder die Anzahl der Magnete. Notiere jeweils die Kraft. Wovon hängt die Kraft ab und wie?",
 	winkel: "Drehe den Leiter im Feld. Bei welchem Winkel ist die Kraft am größten? Wann wirkt gar keine Kraft?",
 	frei: "Probiere alles aus. Was passiert, wenn du umpolst und zugleich den Magneten umdrehst?"
 };
@@ -888,7 +907,6 @@ function anzeigen(voll) {
 		b.classList.toggle("aktiv", b.dataset.wert === zustand.vorhersage);
 		b.disabled = zustand.strom;
 	});
-	document.querySelectorAll("#staerke-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === zustand.staerke));
 	document.querySelectorAll("#anzahl-knoepfe button").forEach(b => b.classList.toggle("aktiv", +b.dataset.wert === zustand.n));
 	[["zeige-i", zustand.zeigeI], ["zeige-b", zustand.zeigeB], ["zeige-f", zustand.zeigeF]].forEach(([id, an]) => {
 		const b = document.getElementById(id); b.classList.toggle("aktiv", an); b.setAttribute("aria-pressed", an);
@@ -939,7 +957,7 @@ function modusSetzen(m) {
 	document.getElementById("box-titel").textContent = m === "winkel" ? "Simulation: Leiter schräg im Magnetfeld" : "Simulation: Leiterschaukel";
 	zustand.strom = false; zustand.phi = 0; zustand.omega = 0;
 	if (m === "vorhersage") {
-		Object.assign(zustand, { I: 4, staerke: "stark", n: 1, zeigeI: false, zeigeB: false });
+		Object.assign(zustand, { I: 5, staerke: "mittel", n: 1, zeigeI: false, zeigeB: false });
 		neueSituation();
 	} else if (m === "staerke") {
 		standard(); zustand.strom = true;
@@ -976,13 +994,12 @@ K.bindeSlider("regler-alpha", null, "", v => zustand.alpha = v, () => anzeigen(t
 document.querySelectorAll("[data-alpha]").forEach(b => b.addEventListener("click", () => {
 	zustand.alpha = +b.dataset.alpha; document.getElementById("regler-alpha").value = zustand.alpha; anzeigen(true);
 }));
-K.bindeKnopfgruppe("staerke-knoepfe", w => zustand.staerke = w, () => anzeigen(true));
 K.bindeKnopfgruppe("anzahl-knoepfe", w => zustand.n = +w, () => anzeigen(true));
 document.getElementById("zeige-i").addEventListener("click", () => { zustand.zeigeI = !zustand.zeigeI; anzeigen(true); });
 document.getElementById("zeige-b").addEventListener("click", () => { zustand.zeigeB = !zustand.zeigeB; anzeigen(true); });
 document.getElementById("zeige-f").addEventListener("click", () => { zustand.zeigeF = !zustand.zeigeF; anzeigen(true); });
 document.getElementById("btn-notieren").addEventListener("click", () => {
-	zustand.tabelle.push([zustand.I, zustand.staerke, zustand.n, Math.abs(kraft()) * 1000]);
+	zustand.tabelle.push([zustand.I, zustand.n, Math.abs(kraft()) * 1000]);
 	tabelleZeigen();
 });
 function tabelleZeigen() {
@@ -990,7 +1007,7 @@ function tabelleZeigen() {
 	tb.innerHTML = "";
 	zustand.tabelle.forEach((z, i) => {
 		const tr = document.createElement("tr");
-		[i + 1, de(z[0], 1), z[1], z[2], de(z[3], 1)].forEach(w => { const td = document.createElement("td"); td.textContent = w; tr.appendChild(td); });
+		[i + 1, de(z[0], 1), z[1], de(z[2], 1)].forEach(w => { const td = document.createElement("td"); td.textContent = w; tr.appendChild(td); });
 		tb.appendChild(tr);
 	});
 	stationZeigen();
@@ -1010,10 +1027,10 @@ const zurueckKnopf = symbolKnopf("zurueck", "Standardwerte", () => {
 zurueckKnopf.dataset.st = "staerke frei winkel";
 bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
 	() => zustand.modus === "winkel" ? "Leiter_im_Magnetfeld_Winkel_" + zustand.alpha + "Grad"
-		: "Leiterschaukel_" + de(zustand.I, 1).replace(",", "-") + "A_Magnet_" + zustand.staerke + "_" + zustand.n + "x", [zurueckKnopf]);
-const TABELLENKOPF = ["Nr.", "I in A", "Magnet", "Anzahl", "F in mN"];
+		: "Leiterschaukel_" + de(zustand.I, 1).replace(",", "-") + "A_" + zustand.n + "_Magnet" + (zustand.n > 1 ? "e" : ""), [zurueckKnopf]);
+const TABELLENKOPF = ["Nr.", "I in A", "Anzahl", "F in mN"];
 bildLeiste(document.getElementById("tabelle-leinwand"),
-	() => tabellenBild(TABELLENKOPF, zustand.tabelle.map((z, i) => [i + 1, de(z[0], 1), z[1], z[2], de(z[3], 1)])),
+	() => tabellenBild(TABELLENKOPF, zustand.tabelle.map((z, i) => [i + 1, de(z[0], 1), z[1], de(z[2], 1)])),
 	() => "Leiterschaukel_Messtabelle",
 	[symbolKnopf("loeschen", "Tabelle leeren", () => { zustand.tabelle = []; tabelleZeigen(); })]).classList.add("unten");
 
