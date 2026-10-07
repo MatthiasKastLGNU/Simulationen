@@ -148,6 +148,7 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 	background: #fff; color: var(--blue-frame); cursor: pointer;
 }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
+.modusleiste button { display: inline-flex; align-items: center; gap: 0.4rem; }
 .aufgabe-text { font-size: 1.05rem; margin: 0 0 0.5rem; }
 .antwortbereich { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; margin-top: 0.7rem; }
 .kompass { display: grid; grid-template-columns: repeat(3, 3.1rem); grid-template-rows: repeat(3, 3.1rem); gap: 0.25rem; }
@@ -198,7 +199,8 @@ canvas.sim { user-select: none; }
 .panele { display: flex; gap: 0.6rem; margin-top: 0.7rem; }
 .panel.schmal { flex: 0 0 37%; }
 .panel.breit { flex: 1 1 0; min-width: 0; }
-.paneltitel { font-size: 0.9rem; font-weight: bold; color: #333; margin-bottom: 0.2rem; }
+.paneltitel { font-size: 0.9rem; font-weight: bold; color: #333; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; min-height: 2.2rem; }
+.paneltitel .bildleiste { position: static; margin: 0; font-weight: normal; }
 .farbe-par { color: #E07000; } .farbe-senk { color: #00897B; } .farbe-F { color: #D00000; }
 .zeilenlabel { color: #333; }
 .kn button.aus-an sub { font-size: 0.7em; }
@@ -246,9 +248,9 @@ button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame);
 	</div>
 
 	<div class="modusleiste" id="station">
-		<button data-wert="1" class="aktiv">1 Kreisbahn</button>
-		<button data-wert="2">2 Schraubenbahn</button>
-		<button data-wert="f">Frei ausprobieren</button>
+		<button data-wert="1" class="aktiv"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="#7B1FA2" stroke-width="2.2"/><circle cx="12" cy="4.5" r="2.2" fill="#e9e9e9" stroke="#111" stroke-width="1"/></svg><span>1 Kreisbahn</span></button>
+		<button data-wert="2"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M3 12c0-5 4-5 4 0s4 5 4 0 4-5 4 0 4 5 4 0" fill="none" stroke="#7B1FA2" stroke-width="2.2" stroke-linecap="round"/><path d="M2 20h18l-2.5-1.6M20 20l-2.5 1.6" stroke="#0000BF" stroke-width="1.2" fill="none"/></svg><span>2 Schraubenbahn</span></button>
+		<button data-wert="f"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path fill="#333" d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg><span>Frei ausprobieren</span></button>
 	</div>
 
 	<div class="tcb blau">
@@ -258,11 +260,11 @@ button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame);
 			<div class="ziehhinweis" data-st="2 f">Im Bild ziehen: Ansicht drehen</div>
 			<div class="panele" data-st="2 f">
 				<div class="panel schmal">
-					<div class="paneltitel">Blick in Feldrichtung</div>
+					<div class="paneltitel" id="titel-kreis"><span>Blick in Feldrichtung</span></div>
 					<canvas id="c-kreis" class="sim"></canvas>
 				</div>
 				<div class="panel breit">
-					<div class="paneltitel">Bewegung entlang der Feldlinien</div>
+					<div class="paneltitel" id="titel-linie"><span>Bewegung entlang der Feldlinien</span></div>
 					<canvas id="c-linie" class="sim"></canvas>
 				</div>
 			</div>
@@ -1086,6 +1088,9 @@ function bildName() {
 	return art + "_" + (z.q < 0 ? "Elektron" : "Positron") + "_Magnetfeld_" + staerke(z.b) + "_Winkel_" + z.alpha;
 }
 bildLeiste($("sim-leinwand"), gesamtBild, bildName, [symbolKnopf("zurueck", "Standardwerte", () => station(zustand.st))]);
+/* Teilbilder einzeln fürs Heft */
+bildLeiste($("titel-kreis"), () => weissKopie(cKreis), () => bildName() + "_Blick_in_Feldrichtung");
+bildLeiste($("titel-linie"), () => weissKopie(cLinie), () => bildName() + "_entlang_der_Feldlinien");
 
 /* Ablauf (Zeit stark verlangsamt) */
 K.starteSchleife(dt => {
