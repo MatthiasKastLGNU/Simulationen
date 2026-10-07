@@ -452,7 +452,7 @@ const HINWEISE = {
 	2: ["Station 2: Einzelne Elektronen",
 		"Senden Sie mit <b>&#9679;&nbsp;1</b> einzelne Elektronen und beobachten Sie jeden Treffer. Schalten Sie dann auf schnell (<b>&rsaquo;&rsaquo;&rsaquo;</b>) und verfolgen Sie, wie das Schirmbild entsteht."],
 	3: ["Station 3: Ein Spalt oder zwei",
-		"Nur Spalt 1 ist offen: +5&#8239;000, Foto 1. Setzen Sie &bdquo;Treffer behalten&ldquo;, &ouml;ffnen Sie nur Spalt 2, +5&#8239;000, Foto 2. Schirm l&ouml;schen (M&uuml;lleimer am Schirm), beide Spalte &ouml;ffnen, zweimal +5&#8239;000, Foto 3."],
+		"Nur Spalt 1 ist offen: +5&#8239;000, Foto 1. Setzen Sie &bdquo;Treffer behalten&ldquo;, &ouml;ffnen Sie nur Spalt 2, +5&#8239;000, Foto 2. Schirm l&ouml;schen (M&uuml;lleimer am Schirm), beide Spalte &ouml;ffnen, +5&#8239;000, Foto 3. So kommen jedes Mal gleich viele Elektronen durch die Spalte."],
 	4: ["Station 4: Welcher Weg?",
 		"Die Lampe beleuchtet jedes Elektron hinter dem Doppelspalt. Senden Sie +5&#8239;000 und machen Sie Foto 1, danach ohne Lampe Foto 2. Stellen Sie danach den Anteil auf 50&nbsp;% und blenden Sie die Farbgruppen einzeln aus."],
 	5: ["Station 5: Wellenfunktion",
@@ -636,7 +636,7 @@ const treffer = {
 	x: new Float32Array(MAX_TREFFER), y: new Float32Array(MAX_TREFFER), g: new Uint8Array(MAX_TREFFER),
 	hist: [0, 1, 2, 3].map(() => new Float64Array(NBINS))
 };
-let gesendet = 0;
+let gesendet = 0, abgefangen = 0, ausserhalb = 0;   /* an der Blende abgefangen bzw. auf dem Schirm, aber ausserhalb des gezeigten Ausschnitts */
 let versuche = [];   /* Beschreibungen der Versuchsbedingungen seit dem letzten Loeschen */
 
 function beschreibung() {
@@ -647,7 +647,8 @@ function beschreibung() {
 	return t;
 }
 function trageTrefferEin(res) {
-	if (res.x === null || Math.abs(res.x) > Xmax()) return;
+	if (res.x === null) { abgefangen++; schirmGeaendert = true; return; }
+	if (Math.abs(res.x) > Xmax()) { ausserhalb++; schirmGeaendert = true; return; }
 	if (treffer.n >= MAX_TREFFER) return;
 	const i = treffer.n++;
 	treffer.x[i] = res.x; treffer.y[i] = Math.random(); treffer.g[i] = res.g;
@@ -664,7 +665,7 @@ function zaehleGesendet() {
 function loescheSchirm() {
 	treffer.n = 0;
 	treffer.hist.forEach(h => h.fill(0));
-	gesendet = 0;
+	gesendet = 0; abgefangen = 0; ausserhalb = 0;
 	versuche = [];
 	animationen.length = 0;
 	fuellePuffer();
@@ -1084,7 +1085,9 @@ function zeichneFotos(ctx) {
 /* ---------------- Anzeigen ---------------- */
 function aktualisiereZaehler() {
 	document.getElementById("zaehler").innerHTML =
-		"Gesendet: <b>" + tausender(gesendet) + "</b> &nbsp;&middot;&nbsp; Treffer auf dem Schirm: <b>" + tausender(treffer.n) + "</b>" +
+		"Gesendet: <b>" + tausender(gesendet) + "</b> &nbsp;&middot;&nbsp; im gezeigten Ausschnitt: <b>" + tausender(treffer.n) + "</b>" +
+		(ausserhalb ? " &nbsp;&middot;&nbsp; au&szlig;erhalb des Ausschnitts: <b>" + tausender(ausserhalb) + "</b>" : "") +
+		(abgefangen ? " &nbsp;&middot;&nbsp; an der Blende abgefangen: <b>" + tausender(abgefangen) + "</b>" : "") +
 		(treffer.n >= MAX_TREFFER ? " &nbsp;(Speicher voll, bitte Schirm l&ouml;schen)" : "");
 	const za = document.getElementById("zaehlbereich-anzeige");
 	za.classList.toggle("verborgen", !zustand.zaehl);
