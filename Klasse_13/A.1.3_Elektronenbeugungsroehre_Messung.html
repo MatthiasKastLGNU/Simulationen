@@ -785,8 +785,7 @@ button.haupt:hover { background: #2020d0; }
 .reglerzeile { display: flex; align-items: center; gap: 0.6rem; }
 .reglerzeile input[type="range"] { flex: 1; min-width: 120px; }
 .reglerzeile .wert { min-width: 5.2em; font-weight: bold; }
-.tabellenbox { display: inline-block; padding-right: 2.6rem; max-width: 100%; }
-.tabellenbox > .bildknopf { position: absolute; right: 0; top: 0.35rem; }
+.tabellenbox { display: inline-block; max-width: 100%; }
 .erklaerung { font-size: 0.92rem; margin: 0.2rem 0 0.4rem; color: #333; }
 .ergebnis-h { font-size: 1.05rem; margin-top: 0.4rem; }
 #diagramm-canvas { touch-action: none; }
@@ -803,6 +802,132 @@ table.eingabe input.fehlt { background: #fff6e0; }
 table.eingabe button.ik.grau { min-width: 1.8rem; height: 1.7rem; }
 .speicherhinweis { font-size: 0.8rem; color: #777; margin: 0.3rem 0 0; }
 </style>
+
+
+<style>
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste (Kast 2026-10-06) ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover { background: #ebebeb; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.an, .kn button.laeuft { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.symbol { min-width: 0; min-height: 0; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn .zahl { font-variant-numeric: tabular-nums; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; z-index: 2; }
+.bildleiste.unten { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+.bildleiste.links { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) {
+	.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; }
+	.steuerung .zeile > label { flex: 1 1 100%; margin-bottom: -0.35rem; }
+}
+</style>
+<script>
+"use strict";
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	wuerfel: '<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/>',
+	drehen: '<path fill="currentColor" d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/>',
+	vorspulen: '<path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>',
+	uhr: '<path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>',
+	kamera: '<path fill="currentColor" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>',
+	ein: '<path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* sprechender Dateiname ohne Umlaute und Sonderzeichen */
+function dateiname(t) {
+	return t.replace(/,\s+/g, "_").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss")
+		.replace(/[^A-Za-z0-9,]+/g, "_").replace(/^_+|_+$/g, "");
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); name(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, name, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname(name()) + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname(name()) + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik); "U_B" wird als U mit Index B gesetzt */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	const schrift = getComputedStyle(document.body).fontFamily;
+	const teile = s => { const m = String(s).match(/^(.*?)_(\S+)(.*)$/); return m ? [m[1], m[2], m[3]] : [String(s), "", ""]; };
+	const breite = s => { const [a, i, b] = teile(s); x.font = g + "px " + schrift; let w = x.measureText(a).width + x.measureText(b).width; x.font = Math.round(g * 0.72) + "px " + schrift; return w + (i ? x.measureText(i).width + 1 : 0); };
+	const schreibe = (s, xm, y) => {
+		const [a, i, b] = teile(s); let xx = xm - breite(s) / 2;
+		x.textAlign = "left"; x.font = g + "px " + schrift; x.fillText(a, xx, y); xx += x.measureText(a).width;
+		if (i) { x.font = Math.round(g * 0.72) + "px " + schrift; x.fillText(i, xx + 0.5, y + g * 0.28); xx += x.measureText(i).width + 1; }
+		x.font = g + "px " + schrift; x.fillText(b, xx, y);
+	};
+	const breiten = kopf.map((k, i) => Math.max(breite(k), ...zeilen.map(z => breite(z[i]))) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.fillStyle = "#111"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { schreibe(w, xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+</script>
 
 </head>
 
@@ -840,15 +965,11 @@ table.eingabe button.ik.grau { min-width: 1.8rem; height: 1.7rem; }
 		<div class="tcb-title">Simulation: Elektronenbeugungsröhre</div>
 		<div class="tcb-body">
 			<p class="erklaerung" data-st="messen">Stellen Sie die Beschleunigungsspannung ein und ziehen Sie die beiden roten Marken im Schirmbild auf die <b>Mitte</b> der Ringlinie. Am Lineal lesen Sie den Durchmesser 2<i class="gr">r</i> ab.</p>
-			<div class="leinwand">
+			<div class="leinwand" id="seite-leinwand">
 				<canvas id="seite-canvas" class="sim"></canvas>
 			</div>
-			<div class="leinwand" style="margin-top:0.5rem">
+			<div class="leinwand" id="schirm-leinwand" style="margin-top:0.5rem">
 				<canvas id="schirm-canvas" class="sim"></canvas>
-				<span class="bildknoepfe">
-					<button class="bildknopf" id="btn-standard" title="Standardwerte" aria-label="Standardwerte"><svg viewBox="0 0 16 16" width="13" height="13"><path d="M3 8a5 5 0 1 0 1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M2 1.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
-					<button class="bildknopf" id="btn-schirmbild" title="Schirmbild als Bild speichern" aria-label="Schirmbild als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> Schirmbild speichern</button>
-				</span>
 			</div>
 			<div class="gruppen">
 				<div class="gk breit">
@@ -874,15 +995,11 @@ table.eingabe button.ik.grau { min-width: 1.8rem; height: 1.7rem; }
 			<div data-st="messen">
 				<div class="zeile" style="margin-top:0.5rem">
 					<button class="haupt" id="btn-messwert"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.6"/></svg> Messwert notieren</button>
-					<span class="ik-leiste neben">
-						<button class="ik grau" id="btn-leeren" title="Tabelle leeren" aria-label="Tabelle leeren"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M2 4h12M6 4V2h4v2M4 4l1 10h6l1-10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
-					</span>
 				</div>
 				<div class="leinwand tabellenbox" id="tabelle" hidden>
 					<div class="tabelle-wrap">
 						<table class="messtabelle"><thead><tr><th>Nr.</th><th><i class="gr">U</i><sub>B</sub> in kV</th><th>Ring</th><th>2<i class="gr">r</i> in mm</th><th><i class="gr">r</i> in mm</th></tr></thead><tbody id="messtabelle-koerper"></tbody></table>
 					</div>
-					<button class="bildknopf" id="btn-tabelle-bild" title="Tabelle als Bild speichern" aria-label="Tabelle als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
 				</div>
 			</div>
 		</div>
@@ -892,11 +1009,8 @@ table.eingabe button.ik.grau { min-width: 1.8rem; height: 1.7rem; }
 		<div class="tcb-title">Auswertung: Wellenlänge über 1/Impuls</div>
 		<div class="tcb-body">
 			<p class="erklaerung">Gezeigt werden Ihre Messwerte des <b>äußeren</b> Rings (<i class="gr">d</i> = 0,123 nm, <i class="gr">l</i> = 125 mm) mit Fehlerbalken (<i class="gr">λ</i>: ±5 %, 1/<i class="gr">p</i>: ±3 %). <b>Ziehen</b> Sie die Ursprungsgerade so, dass sie möglichst alle Fehlerbalken trifft.</p>
-			<div class="leinwand">
+			<div class="leinwand" id="diagramm-leinwand">
 				<canvas id="diagramm-canvas" class="sim"></canvas>
-				<span class="bildknoepfe">
-					<button class="bildknopf" id="btn-diagramm-bild" title="Diagramm als Bild speichern" aria-label="Diagramm als Bild speichern"><svg viewBox="0 0 14 14" width="12" height="12"><path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M1.5 12.5h11" fill="none" stroke="currentColor" stroke-width="1.8"/></svg> Diagramm speichern</button>
-				</span>
 			</div>
 			<div class="gruppen">
 				<div class="gk">
@@ -1065,7 +1179,7 @@ function zeichneSeite() {
 	t("Anode", X(-70.5), Y(16) - 4, { ausrichtung: "center" });
 	t("Graphitplättchen", X(0), Y(-8) + fs + 2, { ausrichtung: "center" });
 	t("Leuchtschirm", X(L_MM * Math.cos(wMax)) - 6, Y(38), { ausrichtung: "right", farbe: "#1E8A1E" });
-	t("Glasröhre (Vakuum)", X(-60), Y(24) - 5, { ausrichtung: "center", farbe: glas });
+	t("Glasröhre (Vakuum)", X(-60), Y(W < 520 ? 34 : 24) - 5, { ausrichtung: "center", farbe: glas });
 	/* Spannungsanzeige wie an einem Netzgeraet */
 	const bx = 8, by = H - 34, bw = 118, bh = 26;
 	g.fillStyle = "#2b3346"; g.fillRect(bx, by, bw, bh);
@@ -1199,50 +1313,17 @@ function zeichne() {
 }
 
 function groesse() {
-	({ W: WSe, H: HSe } = K.skaliereCanvas(cSe, gSe, 0.42));
+	({ W: WSe, H: HSe } = K.skaliereCanvas(cSe, gSe, w => w < 520 ? 0.6 : 0.42));
 	({ W: WS, H: HS } = K.skaliereCanvas(cS, gS, w => w < 520 ? 0.95 : 0.66));
 	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, w => w < 520 ? 0.85 : 0.62));
 	zeichne();
 }
 
-/* ---------- Bild speichern (Tablet: Teilen-Menue) ---------- */
-function speichereCanvas(canvas, name) {
-	canvas.toBlob(blob => {
-		const datei = new File([blob], name, { type: "image/png" });
-		if (navigator.canShare && navigator.canShare({ files: [datei] }) && /Android|iPad|iPhone|Mobile/i.test(navigator.userAgent)) {
-			navigator.share({ files: [datei] }).catch(() => {});
-			return;
-		}
-		const a = document.createElement("a");
-		a.href = URL.createObjectURL(blob); a.download = name;
-		document.body.appendChild(a); a.click(); a.remove();
-		setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-	}, "image/png");
-}
-document.getElementById("btn-schirmbild").addEventListener("click", () => {
-	const k = P.neuerCanvas(760, 500, 2);
-	zeichneSchirm(k.ctx, 760, 500, true);
-	speichereCanvas(k.canvas, "Elektronenbeugung_Schirmbild_U" + P.de(zustand.U, 2) + "kV_2r" + P.de(Math.abs(zustand.marken[1] - zustand.marken[0]), 1) + "mm.png");
-});
-document.getElementById("btn-diagramm-bild").addEventListener("click", () => {
-	const k = P.neuerCanvas(760, 480, 2);
-	zeichneDiagramm(k.ctx, 760, 480);
-	speichereCanvas(k.canvas, "Elektronenbeugung_lambda_ueber_1p_h" + P.de(zustand.steigung * 10, 2) + "e-34Js.png");
-});
-document.getElementById("btn-tabelle-bild").addEventListener("click", () => {
-	const kopf = ["Nr.", "U_B in kV", "Ring", "2r in mm", "r in mm"];
-	const zeilen = vollstaendig().map((m, i) => [String(i + 1), P.de(m.U, 2), m.ring === "innen" ? "innen" : "außen", P.de(m.d2, 1), P.de(m.d2 / 2, 2)]);
-	const bz = [60, 110, 80, 100, 100], zh = 26, W = bz.reduce((a, b) => a + b, 0) + 20, H = (zeilen.length + 1) * zh + 24;
-	const k = P.neuerCanvas(W, H, 2), g = k.ctx;
-	let y = 12;
-	g.strokeStyle = "#111"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(10, y); g.lineTo(W - 10, y); g.stroke();
-	const zeile = (werte, yy, fett) => { let x = 10; werte.forEach((w, i) => { P.text(g, w, x + bz[i] / 2, yy, { groesse: 14, ausrichtung: "center", fett }); x += bz[i]; }); };
-	zeile(kopf, y + 18, true); y += zh;
-	g.lineWidth = 1; g.beginPath(); g.moveTo(10, y); g.lineTo(W - 10, y); g.stroke();
-	zeilen.forEach(z => { zeile(z, y + 18, false); y += zh; });
-	g.lineWidth = 1.5; g.beginPath(); g.moveTo(10, y); g.lineTo(W - 10, y); g.stroke();
-	speichereCanvas(k.canvas, "Elektronenbeugung_Messtabelle_" + zeilen.length + "_Werte.png");
-});
+/* ---------- Bildleisten: Kopieren (OneNote), Teilen, Speichern ---------- */
+function schirmBild() { const k = P.neuerCanvas(760, 500, 2); zeichneSchirm(k.ctx, 760, 500, true); return k.canvas; }
+function diagrammBild() { const k = P.neuerCanvas(760, 480, 2); zeichneDiagramm(k.ctx, 760, 480); return k.canvas; }
+const TABELLENKOPF = ["Nr.", "U_B in kV", "Ring", "2r in mm", "r in mm"];
+const tabellenZeilen = () => vollstaendig().map((m, i) => [String(i + 1), P.de(m.U, 2), m.ring === "innen" ? "innen" : "außen", P.de(m.d2, 1), P.de(m.d2 / 2, 2)]);
 
 /* ---------- Bedienung ---------- */
 const updU = P.regler("regler-u", "wert-u", v => P.de(v, 2) + "&nbsp;kV", v => zustand.U = v, zeichne);
@@ -1322,17 +1403,24 @@ document.getElementById("btn-messwert").addEventListener("click", () => {
 	messungen.push({ U: Math.round(zustand.U * 100) / 100, ring: zustand.ring, d2: Math.round(Math.abs(zustand.marken[1] - zustand.marken[0]) * 10) / 10 });
 	messungenSpeichern(); tabelleZeigen(); eingabeZeigen();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => {
+function tabelleLeeren() {
 	if (messungen.length && !confirm("Alle notierten Messwerte löschen?")) return;
 	messungen.length = 0; messungenSpeichern(); tabelleZeigen(); eingabeZeigen();
-});
-document.getElementById("btn-standard").addEventListener("click", () => {
+}
+function standardwerte() {
 	Object.assign(zustand, JSON.parse(JSON.stringify(STANDARD)));
 	document.getElementById("regler-u").value = zustand.U;
 	document.getElementById("btn-wege").classList.remove("aktiv"); document.getElementById("btn-tempo").classList.remove("aktiv");
 	document.querySelectorAll("#ring-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === "aussen"));
 	updU();
-});
+}
+bildLeiste(document.getElementById("seite-leinwand"), () => cSe, () => "Elektronenbeugung_Seitenansicht_U" + P.de(zustand.U, 2) + "kV").classList.add("unten");
+bildLeiste(document.getElementById("schirm-leinwand"), schirmBild,
+	() => "Elektronenbeugung_Schirmbild_U" + P.de(zustand.U, 2) + "kV_2r" + P.de(Math.abs(zustand.marken[1] - zustand.marken[0]), 1) + "mm",
+	[symbolKnopf("zurueck", "Standardwerte", standardwerte)]);
+bildLeiste(document.getElementById("tabelle"), () => tabellenBild(TABELLENKOPF, tabellenZeilen()), () => "Elektronenbeugung_Messtabelle_" + vollstaendig().length + "_Werte",
+	[symbolKnopf("loeschen", "Tabelle leeren", tabelleLeeren)]).classList.add("links");
+bildLeiste(document.getElementById("diagramm-leinwand"), diagrammBild, () => "Elektronenbeugung_lambda_ueber_1p_h" + P.de(zustand.steigung * 10, 2) + "e-34Js").classList.add("unten");
 
 function quelleSetzen(q) {
 	zustand.quelle = q;
