@@ -765,14 +765,144 @@ textarea.notiz {
 	padding: 0.3rem 0.45rem; border: 1.5px solid #AAA; border-radius: 1mm; resize: vertical; min-height: 3.2em;
 }
 textarea.notiz:focus { outline: none; border-color: var(--blue-frame); }
-.urteil button[data-wert="plausibel"].aktiv { background: #2E6B12; border-color: #2E6B12; }
-.urteil button[data-wert="abzulehnen"].aktiv { background: var(--red-frame); border-color: var(--red-frame); }
-.urteil button[data-wert="unklar"].aktiv { background: #8A6D00; border-color: #8A6D00; }
+.urteil button { min-width: 3.4rem; }
+.urteil button[data-wert="plausibel"] { color: #2E6B12; }
+.urteil button[data-wert="abzulehnen"] { color: var(--red-frame); }
+.urteil button[data-wert="unklar"] { color: #8A6D00; }
+.urteil button[data-wert="plausibel"].aktiv { background: #EAF4E4; border-color: #2E6B12; box-shadow: inset 0 0 0 1px #2E6B12; color: #2E6B12; }
+.urteil button[data-wert="abzulehnen"].aktiv { background: var(--red-title); border-color: var(--red-frame); box-shadow: inset 0 0 0 1px var(--red-frame); color: var(--red-frame); }
+.urteil button[data-wert="unklar"].aktiv { background: #FFF6DA; border-color: #8A6D00; box-shadow: inset 0 0 0 1px #8A6D00; color: #8A6D00; }
 td.plausibel { color: #2E6B12; font-weight: bold; }
 td.abzulehnen { color: var(--red-frame); font-weight: bold; }
 td.unklar { color: #8A6D00; }
 table.messtabelle td.links, table.messtabelle th.links { text-align: left; white-space: normal; }
 </style>
+
+
+<style>
+/* ---------- Bedienleiste in Gruppen (kleiner grauer Titel darüber) und Bildleiste (Kast 2026-10-06) ---------- */
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+div.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+div.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+	min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button:hover { background: #ebebeb; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+.kn button.dunkel:hover { background: #2a2d31; }
+.kn button.an, .kn button.laeuft { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+.kn button.symbol { min-width: 0; min-height: 0; }
+.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+.kn .zahl { font-variant-numeric: tabular-nums; }
+.leinwand { position: relative; }
+.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; z-index: 2; }
+.bildleiste.unten { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+.bildleiste.links { position: static; justify-content: flex-start; margin-top: 0.3rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+	border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+button.symbol.aktiv { border-color: var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+	border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+@media (max-width: 560px) {
+	.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; } .gruppen { gap: 0.6rem 0.9rem; }
+	.steuerung .zeile > label { flex: 1 1 100%; margin-bottom: -0.35rem; }
+}
+</style>
+<script>
+"use strict";
+/* ==========================================================================
+   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+   ========================================================================== */
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+	loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+	pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+	play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+	wuerfel: '<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"/>',
+	drehen: '<path fill="currentColor" d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/>',
+	vorspulen: '<path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>',
+	uhr: '<path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>',
+	kamera: '<path fill="currentColor" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>',
+	ein: '<path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/>'
+};
+function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+	b.addEventListener("click", aktion);
+	return b;
+}
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+}
+/* sprechender Dateiname ohne Umlaute und Sonderzeichen */
+function dateiname(t) {
+	return t.replace(/,\s+/g, "_").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae").replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss")
+		.replace(/[^A-Za-z0-9,]+/g, "_").replace(/^_+|_+$/g, "");
+}
+/* erzeuger(): liefert ein Canvas (weißer Hintergrund); name(): sprechender Name ohne Endung */
+function bildLeiste(behaelter, erzeuger, name, vorne = []) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	vorne.forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname(name()) + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname(name()) + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.appendChild(l);
+	return l;
+}
+/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+function weissKopie(c) {
+	const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+	const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+	return k;
+}
+/* Messtabelle als Bild (booktabs-Optik); "U_B" wird als U mit Index B gesetzt */
+function tabellenBild(kopf, zeilen) {
+	const dpr = 2, g = 15, zh = 26, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+	const schrift = getComputedStyle(document.body).fontFamily;
+	const teile = s => { const m = String(s).match(/^(.*?)_(\S+)(.*)$/); return m ? [m[1], m[2], m[3]] : [String(s), "", ""]; };
+	const breite = s => { const [a, i, b] = teile(s); x.font = g + "px " + schrift; let w = x.measureText(a).width + x.measureText(b).width; x.font = Math.round(g * 0.72) + "px " + schrift; return w + (i ? x.measureText(i).width + 1 : 0); };
+	const schreibe = (s, xm, y) => {
+		const [a, i, b] = teile(s); let xx = xm - breite(s) / 2;
+		x.textAlign = "left"; x.font = g + "px " + schrift; x.fillText(a, xx, y); xx += x.measureText(a).width;
+		if (i) { x.font = Math.round(g * 0.72) + "px " + schrift; x.fillText(i, xx + 0.5, y + g * 0.28); xx += x.measureText(i).width + 1; }
+		x.font = g + "px " + schrift; x.fillText(b, xx, y);
+	};
+	const breiten = kopf.map((k, i) => Math.max(breite(k), ...zeilen.map(z => breite(z[i]))) + 24);
+	const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = (zeilen.length + 1) * zh + 2 * pad;
+	c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+	x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+	x.fillStyle = "#111"; x.textBaseline = "middle";
+	const linie = (y, d) => { x.fillRect(pad, y, B - 2 * pad, d); };
+	linie(pad, 1.5); linie(pad + zh, 1);
+	[kopf, ...zeilen].forEach((z, j) => { let xx = pad; z.forEach((w, i) => { schreibe(w, xx + breiten[i] / 2, pad + j * zh + zh / 2 + 1); xx += breiten[i]; }); });
+	linie(pad + (zeilen.length + 1) * zh, 1.5);
+	return c;
+}
+</script>
 
 </head>
 
@@ -797,12 +927,13 @@ table.messtabelle td.links, table.messtabelle th.links { text-align: left; white
 			<p class="arbeitsschritt"><b>2. Versuch:</b> Was beobachten Sie tatsächlich?</p>
 			<textarea class="notiz" id="feld-beobachtung" rows="2" placeholder="Ich habe ... verändert und beobachtet, dass ..."></textarea>
 			<p class="arbeitsschritt"><b>3. Einschätzung:</b> Ist die Hypothese plausibel oder abzulehnen?</p>
-			<div class="knopfleiste urteil" id="urteil-knoepfe"><button data-wert="plausibel">plausibel</button><button data-wert="abzulehnen">abzulehnen</button><button data-wert="unklar">noch unklar</button></div>
+			<div class="kn urteil" id="urteil-knoepfe"><button data-wert="plausibel" title="plausibel" aria-label="plausibel"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></button><button data-wert="abzulehnen" title="abzulehnen" aria-label="abzulehnen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button><button data-wert="unklar" title="noch unklar" aria-label="noch unklar"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.07 12.85c.77-1.39 2.25-2.21 3.11-3.44.91-1.29.4-3.7-2.18-3.7-1.69 0-2.52 1.28-2.87 2.34L6.54 6.96C7.25 4.83 9.18 3 11.99 3c2.35 0 3.96 1.07 4.78 2.41.7 1.15 1.11 3.3.03 4.9-1.2 1.77-2.35 2.31-2.97 3.45-.25.46-.35.76-.35 2.24h-2.89c-.01-.78-.13-2.05.48-3.15zM14 20c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z"/></svg></button></div>
 
-			<div class="tabelle-wrap" style="margin-top:1rem">
-				<table class="messtabelle"><thead><tr><th>Nr.</th><th class="links">Hypothese</th><th class="links">Ihre Einschätzung</th></tr></thead><tbody id="uebersicht"></tbody></table>
+			<div class="leinwand" id="uebersicht-leinwand" style="margin-top:1rem">
+				<div class="tabelle-wrap">
+					<table class="messtabelle"><thead><tr><th>Nr.</th><th class="links">Hypothese</th><th class="links">Ihre Einschätzung</th></tr></thead><tbody id="uebersicht"></tbody></table>
+				</div>
 			</div>
-			<div class="knopfleiste" style="margin-top:0.6rem"><button id="btn-leeren">Alle Eingaben löschen</button></div>
 			<p class="fussnote">Ihre Eingaben bleiben nur in diesem Browser gespeichert.</p>
 		</div>
 	</div>
@@ -810,28 +941,26 @@ table.messtabelle td.links, table.messtabelle th.links { text-align: left; white
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Elektronenbeugungsröhre</div>
 		<div class="tcb-body">
-			<canvas id="seite-canvas" class="sim"></canvas>
-			<canvas id="schirm-canvas" class="sim" style="margin-top:0.5rem"></canvas>
+			<div class="leinwand" id="seite-leinwand"><canvas id="seite-canvas" class="sim"></canvas></div>
+			<div class="leinwand" id="schirm-leinwand" style="margin-top:0.5rem"><canvas id="schirm-canvas" class="sim"></canvas></div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Hochspannung</div><div class="kn"><button id="btn-hv" class="an" title="Hochspannung ein- und ausschalten" aria-label="Hochspannung ein- und ausschalten"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></svg><span id="hv-text" style="min-width:2em">ein</span></button></div></div>
+				<div class="gr"><div class="gt">Dauerbetrieb</div><div class="kn"><button id="btn-zeitraffer" title="Zeitraffer: 30 Minuten Betrieb" aria-label="Zeitraffer: 30 Minuten Betrieb"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg><span class="zahl">30 min</span></button><button id="btn-uhr" title="Uhr auf null" aria-label="Uhr auf null"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg><span class="zahl">0</span></button></div></div>
+				<div class="gr"><div class="gt">Magnet</div><div class="kn" id="magnet-knoepfe">
+					<button data-wert="kein" class="aktiv" title="kein Magnet" aria-label="kein Magnet"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="6" y="4" width="18" height="18" fill="none" stroke="#888" stroke-width="1.4" stroke-dasharray="3 2.5"/></svg></button>
+					<button data-wert="nord" title="Nordpol zur Röhre" aria-label="Nordpol zur Röhre"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="2" y="9" width="12" height="8" fill="#9EA7B0"/><rect x="14" y="5" width="14" height="16" rx="1" fill="#BF0000"/><text x="21" y="17.5" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="sans-serif">N</text></svg></button>
+					<button data-wert="sued" title="Südpol zur Röhre" aria-label="Südpol zur Röhre"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="2" y="9" width="12" height="8" fill="#9EA7B0"/><rect x="14" y="5" width="14" height="16" rx="1" fill="#295C06"/><text x="21" y="17.5" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="sans-serif">S</text></svg></button>
+				</div></div>
+				<div class="gr"><div class="gt">Graphitplättchen (nur in der Simulation)</div><div class="kn" id="graphit-knoepfe">
+					<button data-wert="poly" class="aktiv" title="wie in der Röhre: viele kleine Kristalle" aria-label="wie in der Röhre: viele kleine Kristalle"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><path d="M11.9 7.9 L8.7 11.7 L3.8 10.8 L2.1 6.1 L5.3 2.3 L10.2 3.2Z" fill="none" stroke="#444" stroke-width="1.2"/><circle cx="11.9" cy="7.9" r="1.6" fill="#111"/><circle cx="8.7" cy="11.7" r="1.6" fill="#111"/><circle cx="3.8" cy="10.8" r="1.6" fill="#111"/><circle cx="2.1" cy="6.1" r="1.6" fill="#111"/><circle cx="5.3" cy="2.3" r="1.6" fill="#111"/><circle cx="10.2" cy="3.2" r="1.6" fill="#111"/><path d="M26.0 11.0 L21.4 13.0 L17.4 10.0 L18.0 5.0 L22.6 3.0 L26.6 6.0Z" fill="none" stroke="#444" stroke-width="1.2"/><circle cx="26.0" cy="11.0" r="1.6" fill="#111"/><circle cx="21.4" cy="13.0" r="1.6" fill="#111"/><circle cx="17.4" cy="10.0" r="1.6" fill="#111"/><circle cx="18.0" cy="5.0" r="1.6" fill="#111"/><circle cx="22.6" cy="3.0" r="1.6" fill="#111"/><circle cx="26.6" cy="6.0" r="1.6" fill="#111"/><path d="M12.1 23.4 L7.1 24.1 L4.0 20.2 L5.9 15.6 L10.9 14.9 L14.0 18.8Z" fill="none" stroke="#444" stroke-width="1.2"/><circle cx="12.1" cy="23.4" r="1.6" fill="#111"/><circle cx="7.1" cy="24.1" r="1.6" fill="#111"/><circle cx="4.0" cy="20.2" r="1.6" fill="#111"/><circle cx="5.9" cy="15.6" r="1.6" fill="#111"/><circle cx="10.9" cy="14.9" r="1.6" fill="#111"/><circle cx="14.0" cy="18.8" r="1.6" fill="#111"/><path d="M27.1 22.0 L23.1 25.0 L18.5 23.0 L17.9 18.0 L21.9 15.0 L26.5 17.0Z" fill="none" stroke="#444" stroke-width="1.2"/><circle cx="27.1" cy="22.0" r="1.6" fill="#111"/><circle cx="23.1" cy="25.0" r="1.6" fill="#111"/><circle cx="18.5" cy="23.0" r="1.6" fill="#111"/><circle cx="17.9" cy="18.0" r="1.6" fill="#111"/><circle cx="21.9" cy="15.0" r="1.6" fill="#111"/><circle cx="26.5" cy="17.0" r="1.6" fill="#111"/></svg></button>
+					<button data-wert="einkristall" title="ein einziger Kristall" aria-label="ein einziger Kristall"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><path d="M16.0 13.0 L12.8 18.6 L6.3 18.6 L3.0 13.0 L6.2 7.4 L12.8 7.4Z" fill="none" stroke="#444" stroke-width="1.4"/><circle cx="16.0" cy="13.0" r="1.6" fill="#111"/><circle cx="12.8" cy="18.6" r="1.6" fill="#111"/><circle cx="6.3" cy="18.6" r="1.6" fill="#111"/><circle cx="3.0" cy="13.0" r="1.6" fill="#111"/><circle cx="6.2" cy="7.4" r="1.6" fill="#111"/><circle cx="12.8" cy="7.4" r="1.6" fill="#111"/><path d="M27.2 6.5 L24.0 12.1 L17.5 12.1 L14.2 6.5 L17.5 0.9 L24.0 0.9Z" fill="none" stroke="#444" stroke-width="1.4"/><circle cx="27.2" cy="6.5" r="1.6" fill="#111"/><circle cx="24.0" cy="12.1" r="1.6" fill="#111"/><circle cx="17.5" cy="12.1" r="1.6" fill="#111"/><circle cx="14.2" cy="6.5" r="1.6" fill="#111"/><circle cx="17.5" cy="0.9" r="1.6" fill="#111"/><circle cx="24.0" cy="0.9" r="1.6" fill="#111"/><path d="M27.2 19.5 L24.0 25.1 L17.5 25.1 L14.2 19.5 L17.5 13.9 L24.0 13.9Z" fill="none" stroke="#444" stroke-width="1.4"/><circle cx="27.2" cy="19.5" r="1.6" fill="#111"/><circle cx="24.0" cy="25.1" r="1.6" fill="#111"/><circle cx="17.5" cy="25.1" r="1.6" fill="#111"/><circle cx="14.2" cy="19.5" r="1.6" fill="#111"/><circle cx="17.5" cy="13.9" r="1.6" fill="#111"/><circle cx="24.0" cy="13.9" r="1.6" fill="#111"/></svg></button>
+					<button data-wert="ohne" title="Plättchen entfernt" aria-label="Plättchen entfernt"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="6" y="4" width="18" height="18" fill="none" stroke="#888" stroke-width="1.4" stroke-dasharray="3 2.5"/></svg></button>
+				</div></div>
+			</div>
 			<div class="steuerung">
-				<div class="gruppe-titel">Netzgerät</div>
-				<div class="zeile"><label>Hochspannung</label>
-					<span class="knopfleiste" id="hv-knoepfe"><button data-wert="ein" class="aktiv">ein</button><button data-wert="aus">aus</button></span>
-				</div>
 				<div class="zeile"><label>Beschleunigung <i class="gr">U</i><sub>B</sub></label><input type="range" id="regler-u" min="2" max="5" step="0.01" value="3.5"><span class="wert" id="wert-u"></span></div>
 				<div class="zeile"><label>Strahlstrom <i class="gr">I</i></label><input type="range" id="regler-i" min="20" max="200" step="1" value="80"><span class="wert" id="wert-i"></span></div>
-				<div class="zeile"><label>Dauerbetrieb</label>
-					<span class="knopfleiste"><button id="btn-zeitraffer">Zeitraffer: 30 Minuten</button><button id="btn-uhr">Uhr auf null</button></span>
-				</div>
-				<div class="gruppe-titel">Zubehör</div>
-				<div class="zeile"><label>Magnet</label>
-					<span class="knopfleiste" id="magnet-knoepfe"><button data-wert="kein" class="aktiv">kein Magnet</button><button data-wert="nord">Nordpol zur Röhre</button><button data-wert="sued">Südpol zur Röhre</button></span>
-				</div>
 				<div class="zeile verborgen" id="zeile-naehe"><label>Magnet annähern</label><input type="range" id="regler-naehe" min="0" max="100" step="1" value="60"><span class="wert" id="wert-naehe"></span></div>
-				<div class="gruppe-titel">Nur in der Simulation möglich</div>
-				<div class="zeile"><label>Graphitplättchen</label>
-					<span class="knopfleiste" id="graphit-knoepfe"><button data-wert="poly" class="aktiv">wie in der Röhre</button><button data-wert="einkristall">ein einziger Kristall</button><button data-wert="ohne">entfernt</button></span>
-				</div>
-				<div class="zeile"><span class="knopfleiste"><button id="btn-standard">Standardwerte</button></span></div>
 			</div>
 		</div>
 	</div>
@@ -1044,7 +1173,7 @@ function zeichneSeite() {
 	t("Anode", X(-70.5), Y(16) - 4, { ausrichtung: "center" });
 	if (art !== "ohne") t("Graphitplättchen", X(0), Y(-8) + fs + 2, { ausrichtung: "center" });
 	t("Leuchtschirm", X(L_MM * Math.cos(wMax)) - 6, Y(38), { ausrichtung: "right", farbe: "#1E8A1E" });
-	t("Glasröhre (Vakuum)", X(-60), Y(24) - 5, { ausrichtung: "center", farbe: glas });
+	t("Glasröhre (Vakuum)", X(-60), Y(W < 520 ? 34 : 24) - 5, { ausrichtung: "center", farbe: glas });
 	if (W >= 520) t("Seitenansicht, schematisch", 6, fs + 2, { groesse: fs - 1, farbe: "#666" });
 }
 
@@ -1099,13 +1228,13 @@ function zeichneSchirm() {
 		P.text(g, "Magnet", bx + bb / 2, cy + bh / 2 + fs + 4, { groesse: fs, ausrichtung: "center", farbe: "#CCC" });
 	}
 	const h = Math.floor(zustand.minuten / 60), m = Math.floor(zustand.minuten % 60);
-	P.text(g, "Betriebsdauer", W - 10, 20, { groesse: fs, farbe: "#CCC", ausrichtung: "right" });
-	P.text(g, h + " h " + String(m).padStart(2, "0") + " min", W - 10, 22 + fs + 6, { groesse: fs + 3, farbe: "#FFF", ausrichtung: "right", fett: true });
+	P.text(g, "Betriebsdauer", W - 10, H - 16 - fs - 6, { groesse: fs, farbe: "#CCC", ausrichtung: "right" });
+	P.text(g, h + " h " + String(m).padStart(2, "0") + " min", W - 10, H - 12, { groesse: fs + 3, farbe: "#FFF", ausrichtung: "right", fett: true });
 }
 
 function zeichne() { zeichneSeite(); zeichneSchirm(); }
 function groesse() {
-	({ W: WSe, H: HSe } = K.skaliereCanvas(cSe, gSe, 0.4));
+	({ W: WSe, H: HSe } = K.skaliereCanvas(cSe, gSe, w => w < 520 ? 0.52 : 0.4));
 	({ W: WS, H: HS } = K.skaliereCanvas(cS, gS, w => w < 520 ? 0.95 : 0.55));
 	zeichne();
 }
@@ -1114,7 +1243,9 @@ function groesse() {
 const updU = P.regler("regler-u", "wert-u", v => P.de(v, 2) + "&nbsp;kV", v => zustand.U = v, zeichne);
 const updI = P.regler("regler-i", "wert-i", v => v + "&nbsp;µA", v => zustand.I = v, zeichne);
 const updN = P.regler("regler-naehe", "wert-naehe", v => v + "&nbsp;%", v => zustand.naehe = v, zeichne);
-K.bindeKnopfgruppe("hv-knoepfe", w => zustand.hv = w, zeichne);
+const btnHv = document.getElementById("btn-hv");
+function zeigeHv() { btnHv.classList.toggle("an", zustand.hv === "ein"); document.getElementById("hv-text").textContent = zustand.hv === "ein" ? "ein" : "aus"; }
+btnHv.addEventListener("click", () => { zustand.hv = zustand.hv === "ein" ? "aus" : "ein"; zeigeHv(); zeichne(); });
 K.bindeKnopfgruppe("magnet-knoepfe", w => {
 	zustand.magnet = w;
 	document.getElementById("zeile-naehe").classList.toggle("verborgen", w === "kein");
@@ -1125,12 +1256,14 @@ let stoppZeit = null;
 const btnZeit = document.getElementById("btn-zeitraffer");
 function stoppeZeitraffer() {
 	if (stoppZeit) { stoppZeit(); stoppZeit = null; }
-	btnZeit.classList.remove("laeuft"); btnZeit.textContent = "Zeitraffer: 30 Minuten";
+	btnZeit.classList.remove("an"); btnZeit.innerHTML = symbolSvg("vorspulen") + '<span class="zahl">30 min</span>';
+	btnZeit.title = "Zeitraffer: 30 Minuten Betrieb"; btnZeit.setAttribute("aria-label", btnZeit.title);
 }
 btnZeit.addEventListener("click", () => {
 	if (stoppZeit) { stoppeZeitraffer(); return; }
 	let rest = 30;
-	btnZeit.classList.add("laeuft"); btnZeit.textContent = "Zeitraffer anhalten";
+	btnZeit.classList.add("an"); btnZeit.innerHTML = symbolSvg("pause") + '<span class="zahl">30 min</span>';
+	btnZeit.title = "Zeitraffer anhalten"; btnZeit.setAttribute("aria-label", btnZeit.title);
 	stoppZeit = K.starteSchleife(dt => {
 		const schritt = Math.min(rest, 6 * dt);                /* 30 Minuten in 5 Sekunden */
 		rest -= schritt;
@@ -1143,16 +1276,20 @@ btnZeit.addEventListener("click", () => {
 document.getElementById("btn-uhr").addEventListener("click", () => { zustand.minuten = 0; zeichneSchirm(); });
 
 function setzeGruppe(id, wert) { document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === wert)); }
-document.getElementById("btn-standard").addEventListener("click", () => {
+function standardwerte() {
 	stoppeZeitraffer();
 	Object.assign(zustand, STANDARD);
 	document.getElementById("regler-u").value = zustand.U;
 	document.getElementById("regler-i").value = zustand.I;
 	document.getElementById("regler-naehe").value = zustand.naehe;
-	setzeGruppe("hv-knoepfe", "ein"); setzeGruppe("magnet-knoepfe", "kein"); setzeGruppe("graphit-knoepfe", "poly");
+	zeigeHv(); setzeGruppe("magnet-knoepfe", "kein"); setzeGruppe("graphit-knoepfe", "poly");
 	document.getElementById("zeile-naehe").classList.add("verborgen");
 	updU(); updI(); updN();
-});
+}
+const MAGNET_NAME = { kein: "ohne_Magnet", nord: "Nordpol", sued: "Suedpol" }, GRAPHIT_NAME = { poly: "Graphit", einkristall: "Einkristall", ohne: "ohne_Plaettchen" };
+const roehrenName = () => "U_" + P.de(zustand.U, 2) + "kV_I_" + zustand.I + "muA_" + MAGNET_NAME[zustand.magnet] + "_" + GRAPHIT_NAME[zustand.graphit] + (zustand.hv === "ein" ? "" : "_aus");
+bildLeiste(document.getElementById("seite-leinwand"), () => cSe, () => "Elektronenbeugungsroehre_Seitenansicht_" + roehrenName()).classList.add("unten");
+bildLeiste(document.getElementById("schirm-leinwand"), () => cS, () => "Elektronenbeugungsroehre_Schirm_" + roehrenName(), [symbolKnopf("zurueck", "Standardwerte", standardwerte)]);
 
 /* ---------- Hypothesen ---------- */
 const UB = "<i class='gr'>U</i><sub>B</sub>";
@@ -1219,11 +1356,14 @@ document.getElementById("urteil-knoepfe").addEventListener("click", ev => {
 	setzeGruppe("urteil-knoepfe", notizen[aktuell].urteil);
 	speichere(); aktualisiereUebersicht();
 });
-document.getElementById("btn-leeren").addEventListener("click", () => {
-	if (!window.confirm("Wirklich alle Eingaben löschen?")) return;
-	notizen = HYPOTHESEN.map(() => ({ vorhersage: "", beobachtung: "", urteil: "" }));
-	speichere(); zeigeHypothese(aktuell); aktualisiereUebersicht();
-});
+bildLeiste(document.getElementById("uebersicht-leinwand"),
+	() => tabellenBild(["Nr.", "Hypothese", "Ihre Einschätzung"], HYPOTHESEN.map((h, i) => [i + 1, h.text, notizen[i].urteil ? URTEIL_TEXT[notizen[i].urteil] : ""])),
+	() => "Hypothesen_Elektronenbeugungsroehre",
+	[symbolKnopf("loeschen", "Alle Eingaben löschen", () => {
+		if (!window.confirm("Wirklich alle Eingaben löschen?")) return;
+		notizen = HYPOTHESEN.map(() => ({ vorhersage: "", beobachtung: "", urteil: "" }));
+		speichere(); zeigeHypothese(aktuell); aktualisiereUebersicht();
+	})]).classList.add("links");
 
 /* ---------- Start ---------- */
 updU(); updI(); updN();
