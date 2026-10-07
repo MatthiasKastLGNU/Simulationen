@@ -475,6 +475,19 @@ window.SimPlus = (function () {
 	/* Achsenkreuz mit Gitter.
 	   o = {dx, dy, dw, dh, xMin, xMax, yMin, yMax, xSchritt, ySchritt, xLabel, xEinheit, yLabel, yEinheit, xStellen, yStellen, gitter}
 	   Rueckgabe: {xPix, yPix, xWert, yWert, o} */
+	/* Achsenbeschriftung: Formelzeichen kursiv, Index nach "_" aufrecht und tiefgestellt (z. B. "E_kin"); liefert die Breite */
+	function beschrifte(ctx, s, x, y, rechtsbuendig) {
+		const [grund, index] = String(s).split("_");
+		ctx.save();
+		ctx.textAlign = "left";
+		ctx.font = "italic 13px " + SCHRIFT; const wG = ctx.measureText(grund).width;
+		ctx.font = "10px " + SCHRIFT; const wI = index ? ctx.measureText(index).width + 1 : 0;
+		const x0 = rechtsbuendig ? x - wG - wI : x;
+		ctx.font = "italic 13px " + SCHRIFT; ctx.fillText(grund, x0, y);
+		if (index) { ctx.font = "10px " + SCHRIFT; ctx.fillText(index, x0 + wG + 1, y + 4); }
+		ctx.restore();
+		return wG + wI;
+	}
 	function achsen(ctx, o) {
 		const xMin = o.xMin ?? 0, yMin = o.yMin ?? 0;
 		const xs = o.xSchritt || schrittFuer(o.xMax - xMin);
@@ -519,15 +532,15 @@ window.SimPlus = (function () {
 		ctx.textAlign = "left";
 		ctx.font = "italic 13px " + SCHRIFT;
 		if (o.yLabel) {
-			ctx.fillText(o.yLabel, o.dx + 6, o.dy + 2);
-			if (o.yEinheit) { const w = ctx.measureText(o.yLabel).width; ctx.font = "12px " + SCHRIFT; ctx.fillText(" in " + o.yEinheit, o.dx + 6 + w, o.dy + 2); }
+			const w = beschrifte(ctx, o.yLabel, o.dx + 6, o.dy + 2, false);
+			if (o.yEinheit) { ctx.font = "12px " + SCHRIFT; ctx.fillText(" in " + o.yEinheit, o.dx + 6 + w, o.dy + 2); }
 		}
 		ctx.font = "italic 13px " + SCHRIFT;
 		ctx.textAlign = "right";
 		if (o.xLabel) {
 			let t = o.xEinheit ? " in " + o.xEinheit : "";
 			ctx.font = "12px " + SCHRIFT; const wE = ctx.measureText(t).width; ctx.fillText(t, o.dx + o.dw, o.dy + o.dh + 30);
-			ctx.font = "italic 13px " + SCHRIFT; ctx.fillText(o.xLabel, o.dx + o.dw - wE, o.dy + o.dh + 30);
+			beschrifte(ctx, o.xLabel, o.dx + o.dw - wE, o.dy + o.dh + 30, true);
 		}
 		ctx.restore();
 		return { xPix, yPix, xWert, yWert, o: Object.assign({}, o, { xMin, yMin }) };
@@ -835,12 +848,15 @@ span[data-pfeil] svg { width: 1.7em; height: 0.75em; display: block; }
 "use strict";
 window.SimUI = (function () {
 	const P = {
-		play: '<path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/>',
-		pause: '<rect x="6" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/>',
+		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
 		stopp: '<rect x="5.5" y="5.5" width="13" height="13" rx="1.5" fill="currentColor"/>',
-		reset: '<path d="M12 5V2L7.5 6.5 12 11V8a5 5 0 1 1-5 5H4a8 8 0 1 0 8-8z" fill="currentColor"/>',
-		muell: '<path d="M4.5 6.5h15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9.5 6V4h5v2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.5 8.5l1 11h9l1-11z" fill="currentColor"/>',
-		download: '<path d="M12 3.5v10" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 10.5L12 16l5.5-5.5z" fill="currentColor"/><path d="M4.5 16.5v3h15v-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+		reset: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+		muell: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+		download: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+		kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+		teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+		speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
 		rechts: '<path d="M2.5 9h11V4l8.5 8-8.5 8v-5h-11z" fill="currentColor"/>',
 		links: '<path d="M21.5 9h-11V4L2 12l8.5 8v-5h11z" fill="currentColor"/>',
 		hoch: '<path d="M9 21.5v-11H4L12 2l8 8.5h-5v11z" fill="currentColor"/>',
@@ -852,7 +868,7 @@ window.SimUI = (function () {
 		haken: '<path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
 		notieren: '<rect x="3" y="4" width="13" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9h7M6 13h7M6 17h4" stroke="currentColor" stroke-width="1.8"/><path d="M19 12v8M15 16h8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
 		schritt: '<path d="M4 4.5v15l11-7.5z" fill="currentColor"/><rect x="16" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
-		zurueck: '<path d="M20 4.5v15L9 12z" fill="currentColor"/><rect x="4.4" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
+		zurueck: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>',
 		lupeplus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M10 7v6M7 10h6" stroke="currentColor" stroke-width="2"/>',
 		lupeminus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="2"/>',
 		drehen: '<path d="M18.5 12a6.5 6.5 0 1 1-2.2-4.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v6.3h-6.3z" fill="currentColor"/>',
@@ -997,64 +1013,96 @@ window.SimUI = (function () {
 	function istTablet() {
 		return (navigator.maxTouchPoints || 0) > 1 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 	}
-	/* Canvas als PNG speichern, mit weissem Grund und Beschriftungszeilen darunter.
-	   zeilen: Array von Strings (oder Funktion, die eins liefert). Auf Tablets ueber das Teilen-Menue. */
-	function speichereBild(canvas, dateiname, zeilen) {
-		/* Kein Text unter dem Bild (Kast, 2026-10-03): die Bedingungen stehen nur im Dateinamen */
-		zeilen = [];
-		const f = Math.max(1, canvas.width / (canvas.clientWidth || canvas.width));
-		const zh = Math.round(19 * f), rand = Math.round(10 * f);
-		const schrift = Math.round(14 * f) + "px 'Libertinus Sans', 'Segoe UI', sans-serif";
-		/* Beschriftung auf die Bildbreite umbrechen, nie abschneiden */
-		const mess = document.createElement("canvas").getContext("2d");
-		mess.font = schrift;
-		const breite = canvas.width - 2 * rand;
-		const umbrochen = [];
-		zeilen.forEach(z => {
-			let zeile = "";
-			String(z).split(" ").forEach(wort => {
-				const probe = zeile ? zeile + " " + wort : wort;
-				if (zeile && mess.measureText(probe).width > breite) { umbrochen.push(zeile); zeile = wort; }
-				else zeile = probe;
-			});
-			if (zeile) umbrochen.push(zeile);
-		});
+	/* Kurze Meldung unten am Bildschirm (z. B. "Bild kopiert") */
+	function meldung(text) {
+		let m = document.querySelector(".kit-meldung");
+		if (!m) { m = document.createElement("div"); m.className = "kit-meldung"; m.setAttribute("role", "status"); document.body.appendChild(m); }
+		m.textContent = text; m.classList.add("zeigen");
+		clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2400);
+	}
+	/* Stil fuer Meldung und Bildleiste einmal einhaengen */
+	(function () {
+		const st = document.createElement("style");
+		st.textContent = ".kit-meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem; border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }"
+			+ ".kit-meldung.zeigen { opacity: 0.94; }"
+			+ ".bildleiste .bl-start:not(:first-child) { margin-left: 0.55rem; }";
+		document.head.appendChild(st);
+	})();
+	/* Dateiname ohne Sonderzeichen */
+	function dateiName(dateiname) {
+		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
+	}
+	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
+	function bildBlob(canvas) {
 		const c = document.createElement("canvas");
-		c.width = canvas.width;
-		c.height = canvas.height + (umbrochen.length ? umbrochen.length * zh + 2 * rand : 0);
+		c.width = canvas.width; c.height = canvas.height;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
-		g.fillStyle = "#222";
-		g.font = schrift;
-		g.textBaseline = "top";
-		umbrochen.forEach((z, i) => g.fillText(z, rand, canvas.height + rand + i * zh));
-		const name = String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
-		c.toBlob(blob => {
+		return new Promise(ok => c.toBlob(ok, "image/png"));
+	}
+	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
+	function kannTeilen() {
+		try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); }
+		catch (e) { return false; }
+	}
+	/* In die Zwischenablage (danach in OneNote mit Strg+V einfuegen) */
+	async function kopiereBild(canvas) {
+		try {
+			await navigator.clipboard.write([new ClipboardItem({ "image/png": bildBlob(canvas) })]);
+			meldung("Bild kopiert: in OneNote mit Strg+V einfügen");
+		} catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}
+	async function teileBild(canvas, dateiname) {
+		try {
+			const blob = await bildBlob(canvas);
+			await navigator.share({ files: [new File([blob], dateiName(dateiname), { type: "image/png" })] });
+		} catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}
+	/* Canvas als PNG speichern (normaler Download) */
+	function speichereBild(canvas, dateiname) {
+		bildBlob(canvas).then(blob => {
 			if (!blob) return;
-			try {
-				const datei = new File([blob], name, { type: "image/png" });
-				if (istTablet() && navigator.canShare && navigator.canShare({ files: [datei] })) {
-					navigator.share({ files: [datei], title: name }).catch(() => {});
-					return;
-				}
-			} catch (e) { /* weiter mit normalem Download */ }
 			const a = document.createElement("a");
 			a.href = URL.createObjectURL(blob);
-			a.download = name;
+			a.download = dateiName(dateiname);
 			document.body.appendChild(a); a.click(); a.remove();
 			setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-		}, "image/png");
+		});
 	}
-	/* Knopf "Bild herunterladen" an ein Canvas binden */
-	function bildKnopf(btnId, canvasOderFn, dateiname, zeilenFn) {
+	/* Speichern-Knopf zur Bildleiste ausbauen: davor Kopieren und (wo moeglich) Teilen.
+	   holeCanvas() liefert das Bild, holeName() den sprechenden Dateinamen. */
+	function bildleisteAusbauen(btn, holeCanvas, holeName, was) {
+		setzeIcon(btn, "speichern", was + " speichern");
+		btn.classList.add("neben");
+		const neu = [];
+		if (kannKopieren()) {
+			const k = document.createElement("button");
+			k.type = "button"; k.className = "neben";
+			setzeIcon(k, "kopieren", was + " kopieren (in OneNote mit Strg+V einfügen)");
+			k.addEventListener("click", () => kopiereBild(holeCanvas()));
+			neu.push(k);
+		}
+		if (kannTeilen()) {
+			const t = document.createElement("button");
+			t.type = "button"; t.className = "neben";
+			setzeIcon(t, "teilen", was + " teilen (z. B. an OneNote senden)");
+			t.addEventListener("click", () => teileBild(holeCanvas(), holeName()));
+			neu.push(t);
+		}
+		neu.forEach(k => btn.parentNode.insertBefore(k, btn));
+		(neu[0] || btn).classList.add("bl-start");
+		btn.addEventListener("click", () => speichereBild(holeCanvas(), holeName()));
+	}
+	/* Knopf "Bild speichern" an ein Canvas binden (mit Kopieren und Teilen davor) */
+	function bildKnopf(btnId, canvasOderFn, dateiname) {
 		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
 		if (!btn) return;
-		btn.addEventListener("click", () => {
-			const cv = typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn;
-			const name = typeof dateiname === "function" ? dateiname() : dateiname;
-			speichereBild(cv, name, zeilenFn);
-		});
+		const alt = (btn.getAttribute("title") || "") + (btn.getAttribute("aria-label") || "");
+		const was = /Diagramm/.test(alt) ? "Diagramm" : /Tabelle/.test(alt) ? "Tabelle" : "Bild";
+		bildleisteAusbauen(btn,
+			() => typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn,
+			() => typeof dateiname === "function" ? dateiname() : dateiname, was);
 	}
 	/* Zelleninhalt als Text, Indizes/Hochzahlen als Unicode */
 	const TIEF = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "a": "ₐ", "e": "ₑ", "o": "ₒ", "x": "ₓ", "h": "ₕ", "k": "ₖ", "l": "ₗ", "m": "ₘ", "n": "ₙ", "p": "ₚ", "s": "ₛ", "t": "ₜ", "r": "ᵣ", "i": "ᵢ", "u": "ᵤ", "v": "ᵥ" };
@@ -1073,7 +1121,7 @@ window.SimUI = (function () {
 		return k.textContent.replace(/\s+/g, " ").trim();
 	}
 	/* Messtabelle als PNG speichern (Kopf fett, Linien wie booktabs, darunter Beschriftung) */
-	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
+	function tabellenCanvas(tabelle, titel, zeilen) {
 		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
 		if (typeof zeilen === "function") zeilen = zeilen();
 		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
@@ -1112,14 +1160,16 @@ window.SimUI = (function () {
 		linie(y, 1.4);
 		g.textAlign = "left"; g.font = "13px " + schrift; g.fillStyle = "#333";
 		(zeilen || []).forEach((z, i) => g.fillText(z, rand, y + 18 + i * 19));
-		/* ueber speichereBild ausgeben (ohne weitere Beschriftung) */
-		speichereBild(c, dateiname, []);
+		return c;
 	}
-	/* Knopf "Tabelle als Bild speichern" binden */
+	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
+		speichereBild(tabellenCanvas(tabelle, titel, zeilen), typeof dateiname === "function" ? dateiname() : dateiname);
+	}
+	/* Knopf "Tabelle speichern" binden (mit Kopieren und Teilen davor) */
 	function tabelleKnopf(btnId, tabelle, dateiname, titel, zeilenFn) {
 		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
 		if (!btn) return;
-		btn.addEventListener("click", () => speichereTabelle(tabelle, typeof dateiname === "function" ? dateiname() : dateiname, titel, zeilenFn));
+		bildleisteAusbauen(btn, () => tabellenCanvas(tabelle, titel, zeilenFn), () => typeof dateiname === "function" ? dateiname() : dateiname, "Tabelle");
 	}
 	/* Vorzeichen einer Ladung als gezeichnete Striche genau in der Kreismitte (nie als Textzeichen) */
 	function ladungsZeichen(g, x, y, r, q, farbe, breite) {
@@ -1133,7 +1183,7 @@ window.SimUI = (function () {
 		g.restore();
 	}
 	document.addEventListener("DOMContentLoaded", () => fuelleIcons());
-	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet };
+	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet, meldung, kopiereBild, bildleisteAusbauen, tabellenCanvas };
 })();
 	</script>
 
@@ -1176,7 +1226,7 @@ window.SimUI = (function () {
 			</div>
 			<canvas id="pendel-canvas" class="sim"></canvas>
 			<div class="phase verborgen" id="phase"></div>
-			<div class="bildleiste knopfleiste"><button id="btn-reset" class="neben" data-icon="zurueck" title="Zurücksetzen"></button><button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
+			<div class="bildleiste knopfleiste"><button id="btn-reset" class="neben" data-icon="reset" title="Zurücksetzen"></button><button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button></div>
 			<div class="bedienleiste" id="steuerung">
 				<div class="bgruppe">
 					<span class="btitel">Ablauf</span>
