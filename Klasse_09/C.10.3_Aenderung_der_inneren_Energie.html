@@ -252,11 +252,10 @@
 			</div>
 
 			<div class="gruppen">
-				<div class="gr" id="g-dreh"><span class="gt">Rohr umdrehen</span>
-					<span class="kn">
-						<button class="dunkel" id="btn-schritt" title="Rohr einmal umdrehen" aria-label="Rohr einmal umdrehen"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11a7.906 7.906 0 0 0-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42 1.42 1.41c.9-1.16 1.45-2.51 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/><rect x="10" y="8.5" width="4" height="7" rx="0.6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
-						<button class="haupt" id="btn-start"></button>
-					</span></div>
+				<div class="gr" id="g-dreh"><span class="gt">Einmal drehen</span>
+					<span class="kn"><button class="dunkel" id="btn-schritt" title="Rohr einmal umdrehen" aria-label="Rohr einmal umdrehen"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11a7.906 7.906 0 0 0-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42 1.42 1.41c.9-1.16 1.45-2.51 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/><rect x="10" y="8.5" width="4" height="7" rx="0.6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button></span></div>
+				<div class="gr" id="g-auto"><span class="gt">Automatik</span>
+					<span class="kn"><button class="haupt" id="btn-start"></button></span></div>
 				<div class="gr" id="z-stoff"><span class="gt">Stoff im Rohr</span>
 					<span class="kn"><select id="stoff" aria-label="Stoff im Rohr"></select><span class="wert" style="min-width:8.5em" id="wert-c">129&nbsp;J/(kg&middot;K)</span></span></div>
 				<div class="gr breit" id="z-masse"><span class="gt">Masse <i class="gr">m</i></span>
@@ -1335,6 +1334,7 @@
 		document.getElementById("z-mess").classList.toggle("aus", rohr);
 		document.getElementById("z-verd").classList.toggle("aus", rohr);
 		document.getElementById("g-dreh").classList.toggle("aus", !rohr);
+		document.getElementById("g-auto").classList.toggle("aus", !rohr);
 		document.getElementById("btn-schritt").disabled = !rohr;
 		document.getElementById("btn-start").disabled = !rohr;
 		document.getElementById("fussnote").innerHTML = rohr ? FUSS_ROHR : FUSS_FALL;
@@ -1416,7 +1416,7 @@
 	function automatik(an) {
 		z.laeuft = an;
 		btnStart.innerHTML = symbolSvg(an ? "pause" : "play", 24);
-		btnStart.title = an ? "Anhalten" : "Automatisch immer wieder umdrehen"; btnStart.setAttribute("aria-label", btnStart.title);
+		btnStart.title = an ? "Pause" : "Automatik: immer wieder umdrehen"; btnStart.setAttribute("aria-label", btnStart.title);
 		btnStart.classList.toggle("laeuft", an);
 		if (an) { drehen(); schleifeAn(); }
 	}
