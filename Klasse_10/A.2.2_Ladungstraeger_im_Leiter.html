@@ -476,9 +476,9 @@ const V = D / 1.0;          /* Grundgeschwindigkeit: ein Abstand pro Sekunde, in
 const ZAEHLSTELLE = 0.72;   /* Lage der Zählstelle, in L */
 const DAUER = 10;           /* Zählzeit in s */
 const REIHEN = [
-	{ abstand: D, v: V, text: "Geschwindigkeit v" },
-	{ abstand: D, v: 2 * V, text: "doppelte Geschwindigkeit 2v" },
-	{ abstand: D / 2, v: V, text: "doppelt so viele Elektronen" }
+	{ abstand: D, v: V, text: "Geschwindigkeit v", kurz: "Geschwindigkeit v" },
+	{ abstand: D, v: 2 * V, text: "doppelte Geschwindigkeit 2v", kurz: "Geschwindigkeit 2v" },
+	{ abstand: D / 2, v: V, text: "doppelt so viele Elektronen", kurz: "doppelte Anzahl" }
 ];
 
 const zustand = { t: 0, laeuft: false, stopp: null, versatz: [0, 0, 0], zaehler: [0, 0, 0] };
@@ -572,13 +572,18 @@ function zeichne() {
 		ctx.beginPath(); ctx.moveTo(xz, ym - g.lh / 2 - 7); ctx.lineTo(xz, ym + g.lh / 2 + 7); ctx.stroke(); ctx.restore();
 		/* Zähler */
 		ctx.save(); ctx.font = (g.schmal ? "13px " : "15px ") + schrift(); ctx.fillStyle = "#111"; ctx.textBaseline = "middle";
-		const tx = g.schmal ? g.lx : g.lx + g.lb + 14, ty = g.schmal ? ym - g.lh / 2 - 12 : ym;
-		ctx.textAlign = "left";
-		if (!g.schmal) ctx.fillText(reihe.text, tx, ty - 11);
-		ctx.font = "bold " + (g.schmal ? "13px " : "15px ") + schrift();
 		ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.strokeStyle = "#fff";
-	ctx.strokeText("gezählt: " + z.zaehler[i], tx, g.schmal ? ty : ty + 11);
-	ctx.fillText("gezählt: " + z.zaehler[i], tx, g.schmal ? ty : ty + 11);
+		if (g.schmal) {
+			/* schmal: Zeile zwischen den Feldkreuzen über dem Leiter, links der Fall, rechts der Zähler */
+			const ty = ym - g.zh / 2;
+			ctx.textAlign = "left"; ctx.strokeText(reihe.kurz, g.lx, ty); ctx.fillText(reihe.kurz, g.lx, ty);
+			ctx.font = "bold 13px " + schrift(); ctx.textAlign = "right";
+			ctx.strokeText("gezählt: " + z.zaehler[i], g.lx + g.lb, ty); ctx.fillText("gezählt: " + z.zaehler[i], g.lx + g.lb, ty);
+		} else {
+			const tx = g.lx + g.lb + 14;
+			ctx.textAlign = "left"; ctx.fillText(reihe.text, tx, ym - 11);
+			ctx.font = "bold 15px " + schrift(); ctx.fillText("gezählt: " + z.zaehler[i], tx, ym + 11);
+		}
 		ctx.restore();
 	});
 }
@@ -624,7 +629,7 @@ bildLeiste(document.getElementById("sim-leinwand"), () => weissKopie(canvas),
 	[symbolKnopf("zurueck", "Zurücksetzen", zuruecksetzen)]);
 
 function layout() {
-	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 0.82 : 0.5));
+	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 1.05 : 0.5));
 	zeichne();
 }
 window.addEventListener("resize", layout);
