@@ -225,6 +225,7 @@ button.symbol {
 	border: 1.5px solid #aaa; background: #fff; color: #555; cursor: pointer;
 }
 button.symbol:hover { background: #f2f2f2; color: #222; }
+button.haupt { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; }
 button.haupt:disabled { opacity: 0.45; cursor: default; }
 
 /* Status: Zeit, Fehler, Sterne */
@@ -563,8 +564,11 @@ window.KI = (function () {
 		tipp: '<path fill="currentColor" d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>',
 		auge: '<path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>',
 		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
-		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+		weiter: '<path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>'
 	};
+	/* Hauptknopf mit Piktogramm und kurzem Wort (Prüfen, Weiter, Nächste Stufe) */
+	KI.hauptKnopf = function (name, wort, klasse) { return el("button", "haupt" + (klasse ? " " + klasse : ""), KI.icon(name, 18) + "<span>" + wort + "</span>"); };
 	KI.icon = function (name, g = 18) {
 		return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>";
 	};
@@ -1056,7 +1060,7 @@ window.KI = (function () {
 		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
 		const feld = el("div", "kettenfeld"); behaelter.appendChild(feld);
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
 		behaelter.appendChild(steuer);
@@ -1156,7 +1160,7 @@ window.KI = (function () {
 		const text = el("div", "lueckentext"); behaelter.appendChild(text);
 		const bank = el("div", "wortbank"); behaelter.appendChild(bank);
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
 		behaelter.appendChild(steuer);
@@ -1233,7 +1237,7 @@ window.KI = (function () {
 		const farbe = (k, i) => k.farbe || STANDARDFARBEN[cfg.koerbe.length === 2 ? i * 2 : i] || "#555";
 		const koerbe = cfg.koerbe.map((k, i) => { const d = el("div", "korb", '<div class="kopf2">' + (k.icon || "") + k.name + "</div>"); d.style.setProperty("--korbfarbe", farbe(k, i)); d.dataset.k = i; kf.appendChild(d); return d; });
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
 		behaelter.appendChild(steuer);
@@ -1356,7 +1360,7 @@ window.KI = (function () {
 				d.querySelector("div").innerHTML = "<b>" + (k.ja ? "Stimmt doch!" : "Stimmt nicht!") + "</b><br>" + k.t + '<div class="erkl" style="margin-top:0.6rem;text-align:left">' + k.erkl + "</div>";
 				d.style.fontSize = "0.98rem"; d.style.cursor = "default";
 				rueck.innerHTML = "";
-				const w = el("button", "haupt", "Weiter"); w.style.marginTop = "0.4rem";
+				const w = KI.hauptKnopf("weiter", "Weiter"); w.style.marginTop = "0.4rem";
 				w.addEventListener("click", () => { wartet = false; weiter(); });
 				const p = el("div", "leiste"); p.style.justifyContent = "center"; p.appendChild(w); rueck.appendChild(p);
 			}
@@ -1461,7 +1465,7 @@ window.KI = (function () {
 		const streifen = el("div", "filmstreifen"); behaelter.appendChild(streifen);
 		const unten = el("div", ""); behaelter.appendChild(unten);
 		const steuer = el("div", "leiste");
-		const pruefKnopf = el("button", "haupt", "Prüfen");
+		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
 		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
 		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
@@ -1491,7 +1495,7 @@ window.KI = (function () {
 			KI.bestwert(cfg.id, s); kopf.markiere(nr);
 			KI.funken(p, 16); heft.hidden = false;
 			const n = KI.naechsteStufe(nr, cfg.stufen.length);
-			if (n >= 0) { const w = el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
+			if (n >= 0) { const w = KI.hauptKnopf("weiter", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
 		}
 		KI.ziehGruppe(grp, ".filmbild.platz, .filmvorrat", (q, z) => {
 			if (q.dataset.gesperrt) return;
@@ -2056,7 +2060,7 @@ BAU.drehen = function (b) {
 	function zeigeErklaerung(t) {
 		buehne.innerHTML = bild(true);
 		rueck.innerHTML = '<div class="erkl">' + t + "</div>";
-		const w = KI.el("button", "haupt", "Weiter");
+		const w = KI.hauptKnopf("weiter", "Weiter");
 		w.addEventListener("click", () => { abschluss(false); });
 		const l = KI.el("div", "leiste"); l.style.justifyContent = "center"; l.appendChild(w); rueck.appendChild(l);
 		serie = 0; zeigeStatus();
@@ -2078,7 +2082,7 @@ BAU.drehen = function (b) {
 			const p = KI.el("p", "rueck gut", richtig + " von " + ANZAHL + " richtig! " + KI.sterneHtml(st));
 			rueck.innerHTML = ""; rueck.appendChild(p); KI.funken(p, 6 * st);
 			const n = KI.naechsteStufe(nr, STUFEN.length), l = KI.el("div", "leiste");
-			if (n >= 0) { const w = KI.el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); l.appendChild(w); }
+			if (n >= 0) { const w = KI.hauptKnopf("weiter", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); l.appendChild(w); }
 			l.appendChild(KI.symbolKnopf("zurueck", "Stufe nochmal", () => starte(nr)));
 			rueck.appendChild(l); heft.hidden = false;
 			status.innerHTML = "<span>Richtig: " + richtig + " / " + ANZAHL + "</span>";
@@ -2218,10 +2222,10 @@ BAU.film = function (b) {
 		rueck.innerHTML = '<div class="erkl">' + st.erkl + "</div>";
 		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
 		const letzter = stNr === SZENEN[szNr].schritte.length - 1;
-		if (!letzter) { const w = KI.el("button", "haupt", "Weiter"); w.addEventListener("click", () => { stNr++; schritt(); }); l.appendChild(w); }
+		if (!letzter) { const w = KI.hauptKnopf("weiter", "Weiter"); w.addEventListener("click", () => { stNr++; schritt(); }); l.appendChild(w); }
 		else {
 			const n = KI.naechsteStufe(szNr, SZENEN.length);
-			if (n >= 0) { const w = KI.el("button", "haupt", "Nächste Szene"); w.addEventListener("click", () => szene(n)); l.appendChild(w); }
+			if (n >= 0) { const w = KI.hauptKnopf("weiter", "Nächste Szene"); w.addEventListener("click", () => szene(n)); l.appendChild(w); }
 			l.appendChild(KI.symbolKnopf("zurueck", "Szene nochmal", () => szene(szNr)));
 			heft.hidden = false;
 			const st2 = richtigGesamt >= gefragt - 1 ? 3 : richtigGesamt >= gefragt / 2 ? 2 : 1;
@@ -2259,7 +2263,7 @@ BAU.vorhersage = function (b) {
 	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
 	const lw = KI.el("div", "leinwand"); const cv = KI.el("canvas", "zeichen"); lw.appendChild(cv); b.appendChild(lw);
 	const steuer = KI.el("div", "leiste");
-	const los = KI.el("button", "haupt", "Messung starten"); steuer.appendChild(los);
+	const los = KI.hauptKnopf("play", "Messung starten"); steuer.appendChild(los);
 	steuer.appendChild(KI.symbolKnopf("zurueck", "Kurve löschen", () => runde(nr)));
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
