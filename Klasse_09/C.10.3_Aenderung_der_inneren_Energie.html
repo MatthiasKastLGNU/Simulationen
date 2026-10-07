@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>&Auml;nderung der inneren Energie &ndash; Simulation</title>
+	<title>&Auml;nderung der inneren Energie</title>
 	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFWElEQVRYha2XW2wUVRjHf2dmOrPtblvSNkVaIEobLC1QBYrKNcErWhWkCcaClYCXGOILD5YXNBKER43xQYNSSauYcAkiGBLDQytRLFaU9GaIib1AKL1Ad9vuTHfm+LDtbnd3dmmV/9PMme87///5vnO+74xgEsXFRq7MeFNKXgEWI/Byb3FHQouQfDr4958nJgcFQO7C8kLpcBYpy+8xaTJ8OyhGa7h2zdQoLjZmSl6ao5Kmxo6N29A2aE93iq25eEMDsE3kFi19R8LH0xcPp5/3sqZAixlr6g2x6fuRmUyDlEqlIgXVqYwKfUrC2OW+xJX+ditxzM13KoRwditISpMZLMtXaarysWFudLWKgL5RmWB7c9RBEdH3DXM1mqp8LMtXE2yn4FGRU7Q0cbYJ8hPPecnSBV1+h2dOB9heovPaIoM5XuHmwvURhyNtFvUd45zf5GV+psKwJdlydoQWl6gBuAqYSj4JywE9dUQjMG2JoUZ9U4lIEFDoU2iq8pFtuK8S4LYpabweoscvEUJS6FNYX6Cl9LljStYeD9AbcGLGtXjD3oDD9vOjfLQ+nQXZsUvuH5McaA7yTaeFLcGZkK4IUAVUl+jsrfCQ54kV0uV32NM4lkAO4BrUizdCVJ4JYE2x7xhyePxkgKPtFooQXKvJwlAFhhp+VoSgrs3iiZN+OoaijqYteepUgAs9IdfIJM3q9hI9kvP+McnWcyP0TKwgTYFsQ5CmxD4DdPslL/8QoD8YDo+hCqof1JPRuAtQBNQsijodaA5GyDM0wY6yNABqVxjUrjAAeHWRjkeLijjUHIz47yjTEUm2h5qeM/t9gIWzVL58MoPiWSolOSqbisIkt03JWxdGMVTwpQl2LtbZXKTTOeTQOyqxAcuG5fkqPl3QOeQgBPxxy+aNJQaGKsjSBUOmZOP9aexZZtDS5zAwEaHIJtRVWFOgJZTYxushbAmd27Iiu/zijRCb48rudy942bfSw76VHu6YkuKvhmnsDVH5QHghB1elR2z1KbUp4RTEo2vYwZFQVj+MoQr2VhiYiZuZK/027YM2B5tNTFviSPjH72IYh7uWlmS5mw6UafjeNQLzfQqKgNa4FMTjoTyV1XM0dpUZkRTM96XsA7ECLBt+uh6i+abNrTHJh6s8AKwr1FBFNAU1pTqbFqRxqtLL7/3h0vpwnkpmmmD/r0Hq2ixMW6IJWFsYFVB7cYzZGQoVs1Us20XAX7dtXjwT3liKgN3lOgVehWxDUF2iU9dmMRaSfHbVZNyG/Y95aB2wIyLf+2WML1otxiaCs7NUj/SSbr/kcKuFdGl7rnvAkXCkzYq8763wMC8zPFkwBEfbw98OXTY5dNkEoK5tPEI+P1Ph3QpPxL+u3XQlTyoAoL5jHNMOe+V5BMc2+iIixp1wcxl3Yp8nyY9t9JI70Q9MW1LfYblyQJJ2vHqO5tqMBoKSg81BGjosQnHNSBOwbZFO7QpPhHwSk83IrR/8p3Y8bEkae0N0T5TneT6FdYVazP0hHsna8bQvJPGXjFSYyYXEdQ+09NlsOTvCsBXW1uV3KG/ws/9StCm5odsv+eBSkKUNfromquA0rmRL7oDIcvu4LF/l+LNedv04GsmfEPD6Yj2mtkP4nE89ahvmahx+IoOqc8nJQQ5rIH4Gnk4Wifi8SQmzMxIDd59XiTlqF3pCrjmPhWhTpFQ+SWHhOkFFfmIFX+Fy/U5NDgLZEP43LC6vl1Km/EGZinvwawaSK4Pp9iMawAAjO3PI0ICt0/GdEVEScqGJSlpbrZhzlbug/CUp5NvAcmDW/2NJQAC4KpBfD3icz2lttQD+BaeYX5auMkA0AAAAAElFTkSuQmCC">
 	<style>
 		/* ==========================================================================
@@ -179,7 +179,49 @@
 		table.messtabelle td.sp-r { background: rgba(191,0,0,0.05); color: var(--red-frame); }
 		table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
 
-		.zeile.aus { display: none; }
+
+		/* ---------- Kopf mit Klassennummer, Bedienleiste in Gruppen, Bildleiste (Kast 2026-10-06) ---------- */
+		.kopf .nr { color: #808080; font-weight: normal; }
+		.kopf .zwilling { visibility: hidden; }
+		.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+		div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+		.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1.1; display: flex; align-items: center; gap: 0.3rem; }
+		.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+		.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+			min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+		.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+		.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+		.kn button.dunkel:hover { background: #2a2d31; }
+		.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+		.kn button.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+		.kn button:disabled { opacity: 0.4; cursor: default; }
+		.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+		.kn input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--blue-frame); }
+		.kn .wert { font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: right; }
+		.kn select { font: inherit; font-size: 0.95rem; padding: 0.3rem 0.35rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #fff; color: #111; min-height: 2.5rem; }
+		.leinwand { position: relative; }
+		.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+		.bildleiste.unten { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+		button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+			border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+		button.symbol:hover { background: #f2f2f2; color: #222; }
+		.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+			border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+		.meldung.zeigen { opacity: 0.94; }
+		.aus { display: none !important; }
+		@media (max-width: 560px) {
+			.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+			.gruppen { gap: 0.6rem 0.9rem; }
+			div.gr.breit { flex: 1 1 100%; }
+			div.gr.breit > .kn { flex-wrap: nowrap; }
+			div.gr.breit > .kn input[type="range"] { min-width: 70px; }
+			div.gr.breit > .kn .wert { min-width: 3.4em; }
+		}
+
+		.modusleiste { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0 0 0.7rem; }
+		.modusleiste button { font: inherit; font-size: 0.95rem; padding: 0.34rem 0.9rem; border: 1.5px solid var(--blue-frame); border-radius: 1mm;
+			background: #fff; color: var(--blue-frame); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; }
+		.modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
 		button:disabled { opacity: 0.35; cursor: not-allowed; }
 	</style>
 </head>
@@ -187,13 +229,19 @@
 <div class="blatt">
 
 	<div class="kopf">
+		<span class="nr">9</span>
 		<span class="kapitel">C.10.3 &Auml;nderung der inneren Energie</span>
+		<span class="nr zwilling">9</span>
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Simulation: Innere Energie durch Arbeit &ndash; Fallrohr und Wasserfall</div>
+		<div class="tcb-title">Simulation: Innere Energie durch Arbeit (Fallrohr und Wasserfall)</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas" class="sim"></canvas>
+			<div class="modusleiste" id="modus-knoepfe">
+				<button data-wert="rohr" class="aktiv" title="Versuch: Bleischrot-Fallrohr"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="20" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10.6" cy="18.6" r="1.4" fill="currentColor"/><circle cx="13.4" cy="18.6" r="1.4" fill="currentColor"/><circle cx="12" cy="16.2" r="1.4" fill="currentColor"/></svg><span>Fallrohr</span></button>
+				<button data-wert="fall" title="Versuch: Wasserfall"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h8v17H2z" fill="currentColor" opacity="0.45"/><path d="M10 5c3 0 4 3 4 8v6M13 5c3 0 4 3 4 8v6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 21h14" stroke="currentColor" stroke-width="2"/></svg><span>Wasserfall</span></button>
+			</div>
+			<div class="leinwand" id="leinwand"><canvas id="sim-canvas" class="sim" aria-label="Versuchsaufbau mit Thermometer und Diagramm"></canvas></div>
 
 			<div class="bilanz">
 				<div class="feld zu">zugef&uuml;hrte Arbeit<br><span class="zahl" id="a-w">0,0&nbsp;J</span></div>
@@ -203,68 +251,38 @@
 				<div class="feld ab">abgegebene W&auml;rme<br><span class="zahl" id="a-q">0,0&nbsp;J</span></div>
 			</div>
 
-			<div class="steuerung">
-				<div class="zeile">
-					<label>Versuch</label>
-					<span class="knopfleiste" id="modus-knoepfe">
-						<button data-wert="rohr" class="aktiv">Bleischrot-Fallrohr</button>
-						<button data-wert="fall">Wasserfall</button>
-					</span>
-					<span class="knopfleiste" style="margin-left:auto">
-						<button id="btn-schritt">1&times; drehen</button>
-						<button id="btn-start">Automatik</button>
-						<button id="btn-reset">Zur&uuml;cksetzen</button>
-					</span>
-				</div>
-				<div class="zeile" id="z-stoff">
-					<label>Stoff im Rohr</label>
-					<select id="stoff"></select>
-					<span class="wert" style="min-width:9em" id="wert-c">129&nbsp;J/(kg&middot;K)</span>
-				</div>
-				<div class="zeile" id="z-masse">
-					<label>Masse <i class="gr">m</i></label>
-					<input type="range" id="masse" min="100" max="1000" step="50" value="300">
-					<span class="wert" id="wert-masse">300&nbsp;g</span>
-				</div>
-				<div class="zeile" id="z-hoehe">
-					<label>Rohrl&auml;nge <i class="gr">h</i></label>
-					<input type="range" id="hoehe" min="0.2" max="2" step="0.1" value="1">
-					<span class="wert" id="wert-hoehe">1,0&nbsp;m</span>
-				</div>
-				<div class="zeile aus" id="z-hoehe-fall">
-					<label>Fallh&ouml;he <i class="gr">h</i></label>
-					<input type="range" id="hoehe-fall" min="10" max="300" step="5" value="100">
-					<span class="wert" id="wert-hoehe-fall">100&nbsp;m</span>
-				</div>
-				<div class="zeile" id="z-eta">
-					<label>im Stoff bleibt</label>
-					<input type="range" id="eta" min="50" max="100" step="1" value="100">
-					<span class="wert" id="wert-eta">100&nbsp;%</span>
-				</div>
-				<div class="zeile aus" id="z-mess">
-					<label>Thermometer</label>
-					<span class="knopfleiste" id="aufl-knoepfe">
+			<div class="gruppen">
+				<div class="gr" id="g-dreh"><span class="gt">Rohr umdrehen</span>
+					<span class="kn">
+						<button class="dunkel" id="btn-schritt" title="Rohr einmal umdrehen" aria-label="Rohr einmal umdrehen"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11a7.906 7.906 0 0 0-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42 1.42 1.41c.9-1.16 1.45-2.51 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/><rect x="10" y="8.5" width="4" height="7" rx="0.6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
+						<button class="haupt" id="btn-start"></button>
+					</span></div>
+				<div class="gr" id="z-stoff"><span class="gt">Stoff im Rohr</span>
+					<span class="kn"><select id="stoff" aria-label="Stoff im Rohr"></select><span class="wert" style="min-width:8.5em" id="wert-c">129&nbsp;J/(kg&middot;K)</span></span></div>
+				<div class="gr breit" id="z-masse"><span class="gt">Masse <i class="gr">m</i></span>
+					<span class="kn"><input type="range" id="masse" min="100" max="1000" step="50" value="300" aria-label="Masse"><span class="wert" id="wert-masse">300&nbsp;g</span></span></div>
+				<div class="gr breit" id="z-hoehe"><span class="gt">Rohrl&auml;nge <i class="gr">h</i></span>
+					<span class="kn"><input type="range" id="hoehe" min="0.2" max="2" step="0.1" value="1" aria-label="Rohrl&auml;nge"><span class="wert" id="wert-hoehe">1,0&nbsp;m</span></span></div>
+				<div class="gr breit aus" id="z-hoehe-fall"><span class="gt">Fallh&ouml;he <i class="gr">h</i></span>
+					<span class="kn"><input type="range" id="hoehe-fall" min="10" max="300" step="5" value="100" aria-label="Fallh&ouml;he"><span class="wert" id="wert-hoehe-fall">100&nbsp;m</span></span></div>
+				<div class="gr breit" id="z-eta"><span class="gt">Anteil, der im Stoff bleibt</span>
+					<span class="kn"><input type="range" id="eta" min="50" max="100" step="1" value="100" aria-label="Anteil, der im Stoff bleibt"><span class="wert" id="wert-eta">100&nbsp;%</span></span></div>
+				<div class="gr aus" id="z-mess"><span class="gt">Thermometer: Aufl&ouml;sung</span>
+					<span class="kn" id="aufl-knoepfe">
 						<button data-wert="1">1&nbsp;K</button>
 						<button data-wert="0.1" class="aktiv">0,1&nbsp;K</button>
 						<button data-wert="0.01">0,01&nbsp;K</button>
-					</span>
-					<span class="schalter">
-						<input type="checkbox" id="chk-verdunstung" checked>
-						<label for="chk-verdunstung" style="min-width:0">Verdunstung &amp; Wind</label>
-					</span>
-				</div>
-				<div class="zeile">
-					<label>Zeitraffer</label>
-					<span class="knopfleiste" id="tempo-knoepfe">
-						<button data-wert="1">1&times;</button>
-						<button data-wert="4" class="aktiv">4&times;</button>
-						<button data-wert="12">12&times;</button>
-					</span>
-					<span class="schalter">
-						<input type="checkbox" id="chk-teilchen">
-						<label for="chk-teilchen" style="min-width:0">Lupe: Teilchen</label>
-					</span>
-				</div>
+					</span></div>
+				<div class="gr aus" id="z-verd"><span class="gt">Verdunstung und Wind</span>
+					<span class="kn"><button id="btn-verd" class="an" title="Verdunstung und Wind k&uuml;hlen das Wasser (an/aus)" aria-label="Verdunstung und Wind an oder aus"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.5 17c0 1.65-1.35 3-3 3s-3-1.35-3-3h2c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1H2v-2h9.5c1.65 0 3 1.35 3 3zM19 6.5C19 4.57 17.43 3 15.5 3S12 4.57 12 6.5h2c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S16.33 8 15.5 8H2v2h13.5c1.93 0 3.5-1.57 3.5-3.5zm-.5 4.5H2v2h16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5v2c1.93 0 3.5-1.57 3.5-3.5S20.43 11 18.5 11z"/></svg></button></span></div>
+				<div class="gr"><span class="gt">Zeitraffer</span>
+					<span class="kn" id="tempo-knoepfe">
+						<button data-wert="1" title="Echtzeit" aria-label="Echtzeit"><span class="tempo">&rsaquo;</span></button>
+						<button data-wert="4" class="aktiv" title="4-mal schneller" aria-label="4-mal schneller"><span class="tempo">&rsaquo;&rsaquo;</span></button>
+						<button data-wert="12" title="12-mal schneller" aria-label="12-mal schneller"><span class="tempo">&rsaquo;&rsaquo;&rsaquo;</span></button>
+					</span></div>
+				<div class="gr"><span class="gt">Lupe: Teilchen</span>
+					<span class="kn"><button id="btn-lupe" title="Lupe: Teilchenbewegung zeigen" aria-label="Lupe: Teilchenbewegung zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><circle cx="8" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="11" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="9.5" cy="11.1" r="1.2" fill="#BF0000"/></svg></button></span></div>
 			</div>
 
 			<div class="ergebnis">
@@ -275,12 +293,11 @@
 			<p class="fussnote" id="fussnote"></p>
 
 			<div class="messblock">
-				<div class="zeile">
-					<span class="knopfleiste">
-						<button id="btn-messwert">Messwert notieren</button>
-						<button id="btn-tabelle-leeren">Tabelle leeren</button>
-					</span>
+				<div class="gruppen">
+					<div class="gr"><span class="gt">Messung</span>
+						<span class="kn"><button class="haupt" id="btn-messwert">Messwert notieren</button></span></div>
 				</div>
+				<div id="tabellenleiste"></div>
 				<div class="tabelle-wrap">
 					<table class="messtabelle" id="messtabelle">
 						<thead id="messtabelle-kopf"></thead>
@@ -457,6 +474,100 @@
 	/* ==================================================================
 	   C.10.3  Aenderung der inneren Energie
 	   ================================================================== */
+
+	/* ==========================================================================
+	   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+	   ========================================================================== */
+	const SYMBOL = {
+		kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+		teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+		speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+		zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+		loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+	};
+	function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+	function symbolKnopf(name, titel, aktion) {
+		const b = document.createElement("button");
+		b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+		b.addEventListener("click", aktion);
+		return b;
+	}
+	function meldung(t) {
+		let m = document.querySelector(".meldung");
+		if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+		m.textContent = t; m.classList.add("zeigen");
+		clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+	}
+	/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+	function bildLeiste(behaelter, erzeuger, dateiname, vorne = [], hinten = []) {
+		const l = document.createElement("div"); l.className = "bildleiste";
+		vorne.forEach(k => l.appendChild(k));
+		const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+		if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+			try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+			catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+		}));
+		let teilenGeht = false;
+		try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+		if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+			try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+			catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+		}));
+		l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+			const blob = await blobVon(), a = document.createElement("a");
+			a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+			document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+		}));
+		hinten.forEach(k => l.appendChild(k));
+		behaelter.appendChild(l);
+		return l;
+	}
+	/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+	function weissKopie(c) {
+		const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+		const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+		return k;
+	}
+	/* Messtabelle als Bild (booktabs-Optik); Zellen als HTML, <i> kursiv, <sub> tiefgestellt, Spaltenfarbe aus der Klasse */
+	function tabellenBild(tabelle, farben = {}) {
+		const zeilen = [...tabelle.querySelectorAll("tr")].map(tr => [...tr.children].map(td => ({ html: td.innerHTML, farbe: farben[td.className] || "#111" })));
+		const SCHR = getComputedStyle(document.body).fontFamily;
+		const dpr = 2, g = 15, zh = 28, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+		function teile(html) {
+			const d = document.createElement("div"); d.innerHTML = html; const r = [];
+			(function lauf(k, kursiv, tief) {
+				k.childNodes.forEach(n => {
+					if (n.nodeType === 3) { if (n.textContent) r.push({ t: n.textContent.replace(/\s+/g, " "), kursiv, tief }); }
+					else lauf(n, kursiv || n.tagName === "I", tief || n.tagName === "SUB");
+				});
+			})(d, false, false);
+			return r;
+		}
+		const font = (p) => (p.kursiv ? "italic " : "") + (p.tief ? g * 0.72 : g) + "px " + SCHR;
+		const breite = (ts) => ts.reduce((s, p) => { x.font = font(p); return s + x.measureText(p.t).width; }, 0);
+		const zt = zeilen.map(z => z.map(zelle => ({ ...zelle, ts: teile(zelle.html) })));
+		const sp = Math.max(...zt.map(z => z.length));
+		const breiten = [...Array(sp)].map((_, i) => Math.max(...zt.map(z => z[i] ? breite(z[i].ts) : 0)) + 24);
+		const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = zt.length * zh + 2 * pad;
+		c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+		x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+		x.textBaseline = "alphabetic"; x.textAlign = "left";
+		const linie = (y, d) => { x.fillStyle = "#111"; x.fillRect(pad, y, B - 2 * pad, d); };
+		linie(pad, 1.5); linie(pad + zh, 1); linie(pad + zt.length * zh, 1.5);
+		zt.forEach((z, j) => {
+			let xx = pad;
+			z.forEach((zelle, i) => {
+				let px = xx + (breiten[i] - breite(zelle.ts)) / 2;
+				const py = pad + j * zh + zh / 2 + 5;
+				zelle.ts.forEach(p => { x.font = font(p); x.fillStyle = zelle.farbe; x.fillText(p.t, px, py + (p.tief ? 4 : 0)); px += x.measureText(p.t).width; });
+				xx += breiten[i];
+			});
+		});
+		return c;
+	}
+
 	const K = window.SimKit;
 	const de = K.de;
 
@@ -554,11 +665,18 @@
 	function layout() {
 		const schmal = W < 560;
 		const fall = z.modus === "fall";
+		if (schmal && fall) {
+			return {
+				app:   { x: 4, y: 14, b: W * 0.56, h: H * 0.50 },
+				therm: { x: W * 0.58, y: 14, h: H * 0.50 - 70, b: W * 0.42 - 4 },
+				dia:   { x: 4, y: H * 0.56, b: W - 12, h: H * 0.44 - 14 }
+			};
+		}
 		if (schmal) {
 			return {
-				app:   { x: 4, y: 14, b: fall ? W * 0.50 : W * 0.60, h: H * 0.50 },
-				therm: { x: fall ? W * 0.52 : W * 0.62, y: 40, h: H * 0.50 - 70, b: W * 0.46 },
-				dia:   { x: 4, y: H * 0.56, b: W - 12, h: H * 0.44 - 14 }
+				app:   { x: 4, y: 14, b: W * 0.60, h: H * 0.62 },
+				therm: { x: W * 0.70, y: 40, h: H * 0.62 - 90, b: W * 0.28 },
+				dia:   { x: 4, y: H * 0.66, b: W - 12, h: H * 0.34 - 14 }
 			};
 		}
 		if (fall) {
@@ -568,13 +686,13 @@
 			return {
 				app:   { x: 4, y: 14, b: ab, h: H - 46 },
 				therm: { x: ab + 12, y: 40, h: H - 140, b: gb },
-				dia:   { x: ab + gb + 26, y: 12, b: W - (ab + gb + 34), h: H - 30 }
+				dia:   { x: ab + gb + 26, y: 46, b: W - (ab + gb + 34), h: H - 64 }
 			};
 		}
 		return {
 			app:   { x: 4, y: 14, b: W * 0.36, h: H - 46 },
 			therm: { x: W * 0.36 + 16, y: 46, h: H - 140, b: 80 },
-			dia:   { x: W * 0.36 + 104, y: 12, b: W - (W * 0.36 + 112), h: H - 30 }
+			dia:   { x: W * 0.36 + 104, y: 46, b: W - (W * 0.36 + 112), h: H - 64 }
 		};
 	}
 
@@ -762,8 +880,9 @@
 		}
 		ctx.restore();
 
-		const zeilen = opt.text ||
-			[geordnet ? "geordnete Bewegung → Arbeit" : "ungeordnete Bewegung → innere Energie"];
+		const zeilen = opt.text || (W < 560
+			? (geordnet ? ["geordnete Bewegung", "→ Arbeit"] : ["ungeordnete Bewegung", "→ innere Energie"])
+			: [geordnet ? "geordnete Bewegung → Arbeit" : "ungeordnete Bewegung → innere Energie"]);
 		ctx.textAlign = "center";
 		ctx.font = "bold " + (opt.text ? 11 : 12) + "px " + K.SCHRIFT;
 		ctx.fillStyle = geordnet ? "#0000BF" : "#BF0000";
@@ -1177,25 +1296,25 @@
 	K.bindeKnopfgruppe("modus-knoepfe", w => { z.modus = w; modusWechsel(); });
 
 	K.bindeKnopfgruppe("aufl-knoepfe", w => { z.aufl = +w; neueAblesung(); aktualisiere(); });
-	document.getElementById("chk-verdunstung").addEventListener("change", ev => {
-		z.verdunstung = ev.target.checked; neueAblesung(); aktualisiere();
+	document.getElementById("btn-verd").addEventListener("click", ev => {
+		z.verdunstung = !z.verdunstung; ev.currentTarget.classList.toggle("an", z.verdunstung); neueAblesung(); aktualisiere();
 	});
 
-	document.getElementById("chk-teilchen").addEventListener("change", ev => {
-		z.teilchen = ev.target.checked;
+	document.getElementById("btn-lupe").addEventListener("click", ev => {
+		z.teilchen = !z.teilchen; ev.currentTarget.classList.toggle("an", z.teilchen);
 		if (z.teilchen) schleifeAn(); else aktualisiere();
 	});
 
 	const FUSS_ROHR = "Modell: Bei jeder Drehung fällt das Schrot die volle Rohrlänge <i class='gr'>h</i>. " +
 		"Die Höhenenergie <i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>&thinsp;&middot;&thinsp;<i class='gr'>h</i> " +
 		"wird beim Aufprall als Arbeit am Schrot verrichtet (<i class='gr'>g</i> = 9,81&nbsp;m/s&sup2;, Start bei 20&nbsp;&deg;C). " +
-		"Der Regler &bdquo;im Stoff bleibt&ldquo; gibt an, welcher Anteil der Arbeit die innere Energie des Schrots erhöht – " +
-		"der Rest wird als Wärme an Rohr und Luft abgegeben.";
+		"Der Regler &bdquo;im Stoff bleibt&ldquo; gibt an, welcher Anteil der Arbeit die innere Energie des Schrots erhöht. " +
+		"Der Rest wird als Wärme an Rohr und Luft abgegeben.";
 	const FUSS_FALL = "Messversuch: Das Wasser st\u00fcrzt die H\u00f6he <i class='gr'>h</i> hinab, die H\u00f6henenergie erh\u00f6ht " +
 		"die innere Energie (<i class='gr'>c</i><sub>Wasser</sub> = 4186&nbsp;J/(kg&middot;K)). Zugleich k\u00fchlt Verdunstung das Wasser " +
-		"um etwa 0,15&nbsp;K ab \u2013 daf\u00fcr m\u00fcssen nur rund 0,3&nbsp;Promille des Wassers verdunsten. " +
+		"um etwa 0,15&nbsp;K ab. Daf\u00fcr m\u00fcssen nur rund 0,3&nbsp;Promille des Wassers verdunsten. " +
 		"Jede Ablesung streut zus\u00e4tzlich um &plusmn;0,08&nbsp;K (Str\u00f6mung, Sonne, Durchmischung) und wird auf die " +
-		"eingestellte Aufl\u00f6sung gerundet. Miss mehrfach und bilde den Mittelwert \u2013 gelingt der Nachweis?";
+		"eingestellte Aufl\u00f6sung gerundet. Miss mehrfach und bilde den Mittelwert: Gelingt der Nachweis?";
 
 	const KOPF_ROHR = '<tr><th>Nr.</th><th>Stoff</th><th><i class="gr">m</i> in g</th>' +
 		'<th><i class="gr">h</i> in m</th><th><i class="gr">n</i></th><th><i class="gr">W</i> in J</th>' +
@@ -1207,12 +1326,15 @@
 		'<th class="sp-r">&Delta;<i class="gr">&vartheta;</i><sub>gemessen</sub> in K</th>' +
 		'<th class="sp-i">&Delta;<i class="gr">&vartheta;</i><sub>berechnet</sub> in K</th></tr>';
 
+	let gestartet = false;
 	function modusWechsel() {
 		const rohr = z.modus === "rohr";
 		["z-stoff", "z-masse", "z-hoehe", "z-eta"].forEach(id =>
 			document.getElementById(id).classList.toggle("aus", !rohr));
 		document.getElementById("z-hoehe-fall").classList.toggle("aus", rohr);
 		document.getElementById("z-mess").classList.toggle("aus", rohr);
+		document.getElementById("z-verd").classList.toggle("aus", rohr);
+		document.getElementById("g-dreh").classList.toggle("aus", !rohr);
 		document.getElementById("btn-schritt").disabled = !rohr;
 		document.getElementById("btn-start").disabled = !rohr;
 		document.getElementById("fussnote").innerHTML = rohr ? FUSS_ROHR : FUSS_FALL;
@@ -1220,6 +1342,7 @@
 		tabelleLeeren();
 		zuruecksetzen();
 		if (!rohr) { neueAblesung(); schleifeAn(); }
+		if (gestartet) neuLayouten();      /* Handy: Bildhöhe hängt vom Versuch ab */
 	}
 
 	function zuruecksetzen() {
@@ -1229,7 +1352,7 @@
 		if (z.modus === "fall") neueAblesung();
 		aktualisiere();
 	}
-	document.getElementById("btn-reset").addEventListener("click", zuruecksetzen);
+
 
 	/* ---------------- Animation ---------------- */
 	const T_DREH = 0.6;                      /* Dauer einer Drehung in s */
@@ -1292,7 +1415,8 @@
 	const btnStart = document.getElementById("btn-start");
 	function automatik(an) {
 		z.laeuft = an;
-		btnStart.textContent = an ? "Pause" : "Automatik";
+		btnStart.innerHTML = symbolSvg(an ? "pause" : "play", 24);
+		btnStart.title = an ? "Anhalten" : "Automatisch immer wieder umdrehen"; btnStart.setAttribute("aria-label", btnStart.title);
 		btnStart.classList.toggle("laeuft", an);
 		if (an) { drehen(); schleifeAn(); }
 	}
@@ -1324,7 +1448,7 @@
 		const mw = gleiche.reduce((s, p) => s + p.dT, 0) / gleiche.length;
 		feld.innerHTML = "Mittelwert aus " + gleiche.length + " Messung" + (gleiche.length > 1 ? "en" : "") +
 			" bei <i class='gr'>h</i> = " + z.hFall + "&nbsp;m: <b>&Delta;&vartheta; = " + de(mw, 3) +
-			"&nbsp;K</b> &ndash; berechnet w&auml;ren " + de(dTideal(), 3) + "&nbsp;K.";
+			"&nbsp;K</b> (berechnet: " + de(dTideal(), 3) + "&nbsp;K).";
 	}
 
 	function tabelleLeeren() {
@@ -1352,18 +1476,27 @@
 			], ["", "", "", "", "", "", "sp-i", "sp-r"]);
 		}
 	});
-	document.getElementById("btn-tabelle-leeren").addEventListener("click", tabelleLeeren);
+	bildLeiste(document.getElementById("tabellenleiste"),
+		() => tabellenBild(document.getElementById("messtabelle"), { "sp-i": "#0000BF", "sp-r": "#BF0000" }),
+		() => "Messtabelle_" + (z.modus === "fall" ? "Wasserfall" : "Fallrohr"),
+		[], [symbolKnopf("loeschen", "Tabelle leeren", tabelleLeeren)]).classList.add("unten");
+	bildLeiste(document.getElementById("leinwand"), () => weissKopie(canvas),
+		() => z.modus === "fall" ? "Wasserfall_h" + z.hFall + "m"
+			: "Fallrohr_" + stoff().name + "_" + Math.round(z.m * 1000) + "g_h" + de(z.h, 1) + "m_n" + z.n,
+		[symbolKnopf("zurueck", "Zurücksetzen", zuruecksetzen)]);
 
 	/* ---------------- Start ---------------- */
 	window.__sim = { z: z, zeichne: zeichne };     /* nur fuer automatische Tests */
 
 	function neuLayouten() {
-		({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 1.0 : 0.60));
+		({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? (z.modus === "fall" ? 1.75 : 1.7) : 0.60));
 		aktualisiere();
 	}
 	/* Modus aus der URL lesen: ...#wasserfall / ...#fallrohr (auch Kurzform #wasser / #fall). */
 	function modusAusHash() {
-		const h = (location.hash || "").toLowerCase();
+		const q = (new URLSearchParams(location.search).get("modus") || "").toLowerCase();
+		if (q) document.getElementById("modus-knoepfe").classList.add("aus");
+		const h = ((location.hash || "") + " " + q).toLowerCase();
 		if (h.indexOf("wasser") >= 0) return "fall";
 		if (h.indexOf("fallrohr") >= 0 || h.indexOf("rohr") >= 0) return "rohr";
 		if (h.indexOf("fall") >= 0) return "fall";   /* #fall -> Wasserfall */
@@ -1390,6 +1523,7 @@
 
 	window.addEventListener("resize", neuLayouten);
 	modusWechsel();          /* setzt Fussnote, Tabellenkopf und Sichtbarkeiten */
+	gestartet = true;
 	neuLayouten();
 	K.nachFontLaden(zeichne);
 </script>
