@@ -148,6 +148,7 @@ input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame)
 	background: #fff; color: var(--blue-frame); cursor: pointer;
 }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
+.modusleiste button { display: inline-flex; align-items: center; gap: 0.4rem; }
 .zeile > label, .gruppe { min-width: 10em; }
 .haken { min-width: 0 !important; display: inline-flex; align-items: center; gap: 0.3rem; }
 .schrittkasten {
@@ -208,8 +209,8 @@ button.symbol:hover { background: #f2f2f2; color: #222; }
 	</div>
 
 	<div class="modusleiste" id="modusleiste">
-		<button data-modus="schritte" class="aktiv">Schritt für Schritt</button>
-		<button data-modus="frei">Selbst einstellen</button>
+		<button data-modus="schritte" class="aktiv"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path d="M3 20h5v-5h5v-5h5V5h3" fill="none" stroke="#333" stroke-width="2.4" stroke-linejoin="round"/><text x="4.2" y="13" font-size="8" font-weight="bold" fill="#0000BF">1</text><text x="9" y="8.5" font-size="8" font-weight="bold" fill="#0000BF">2</text></svg><span>Schritt für Schritt</span></button>
+		<button data-modus="frei"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="0.5" y="0.5" width="23" height="23" rx="3" fill="#fff" stroke="#c8c8d8"/><path fill="#333" d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg><span>Selbst einstellen</span></button>
 	</div>
 
 	<div class="tcb blau">
