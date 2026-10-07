@@ -3,8 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Erwärmen verschiedener Stoffe – Simulation</title>
-	<link rel="icon" type="image/png" href="/Simulationen/favicon.png">
+	<title>Erwärmen verschiedener Stoffe</title>
+	<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFWElEQVRYha2XW2wUVRjHf2dmOrPtblvSNkVaIEobLC1QBYrKNcErWhWkCcaClYCXGOILD5YXNBKER43xQYNSSauYcAkiGBLDQytRLFaU9GaIib1AKL1Ad9vuTHfm+LDtbnd3dmmV/9PMme87///5vnO+74xgEsXFRq7MeFNKXgEWI/Byb3FHQouQfDr4958nJgcFQO7C8kLpcBYpy+8xaTJ8OyhGa7h2zdQoLjZmSl6ao5Kmxo6N29A2aE93iq25eEMDsE3kFi19R8LH0xcPp5/3sqZAixlr6g2x6fuRmUyDlEqlIgXVqYwKfUrC2OW+xJX+ditxzM13KoRwditISpMZLMtXaarysWFudLWKgL5RmWB7c9RBEdH3DXM1mqp8LMtXE2yn4FGRU7Q0cbYJ8hPPecnSBV1+h2dOB9heovPaIoM5XuHmwvURhyNtFvUd45zf5GV+psKwJdlydoQWl6gBuAqYSj4JywE9dUQjMG2JoUZ9U4lIEFDoU2iq8pFtuK8S4LYpabweoscvEUJS6FNYX6Cl9LljStYeD9AbcGLGtXjD3oDD9vOjfLQ+nQXZsUvuH5McaA7yTaeFLcGZkK4IUAVUl+jsrfCQ54kV0uV32NM4lkAO4BrUizdCVJ4JYE2x7xhyePxkgKPtFooQXKvJwlAFhhp+VoSgrs3iiZN+OoaijqYteepUgAs9IdfIJM3q9hI9kvP+McnWcyP0TKwgTYFsQ5CmxD4DdPslL/8QoD8YDo+hCqof1JPRuAtQBNQsijodaA5GyDM0wY6yNABqVxjUrjAAeHWRjkeLijjUHIz47yjTEUm2h5qeM/t9gIWzVL58MoPiWSolOSqbisIkt03JWxdGMVTwpQl2LtbZXKTTOeTQOyqxAcuG5fkqPl3QOeQgBPxxy+aNJQaGKsjSBUOmZOP9aexZZtDS5zAwEaHIJtRVWFOgJZTYxushbAmd27Iiu/zijRCb48rudy942bfSw76VHu6YkuKvhmnsDVH5QHghB1elR2z1KbUp4RTEo2vYwZFQVj+MoQr2VhiYiZuZK/027YM2B5tNTFviSPjH72IYh7uWlmS5mw6UafjeNQLzfQqKgNa4FMTjoTyV1XM0dpUZkRTM96XsA7ECLBt+uh6i+abNrTHJh6s8AKwr1FBFNAU1pTqbFqRxqtLL7/3h0vpwnkpmmmD/r0Hq2ixMW6IJWFsYFVB7cYzZGQoVs1Us20XAX7dtXjwT3liKgN3lOgVehWxDUF2iU9dmMRaSfHbVZNyG/Y95aB2wIyLf+2WML1otxiaCs7NUj/SSbr/kcKuFdGl7rnvAkXCkzYq8763wMC8zPFkwBEfbw98OXTY5dNkEoK5tPEI+P1Ph3QpPxL+u3XQlTyoAoL5jHNMOe+V5BMc2+iIixp1wcxl3Yp8nyY9t9JI70Q9MW1LfYblyQJJ2vHqO5tqMBoKSg81BGjosQnHNSBOwbZFO7QpPhHwSk83IrR/8p3Y8bEkae0N0T5TneT6FdYVazP0hHsna8bQvJPGXjFSYyYXEdQ+09NlsOTvCsBXW1uV3KG/ws/9StCm5odsv+eBSkKUNfromquA0rmRL7oDIcvu4LF/l+LNedv04GsmfEPD6Yj2mtkP4nE89ahvmahx+IoOqc8nJQQ5rIH4Gnk4Wifi8SQmzMxIDd59XiTlqF3pCrjmPhWhTpFQ+SWHhOkFFfmIFX+Fy/U5NDgLZEP43LC6vl1Km/EGZinvwawaSK4Pp9iMawAAjO3PI0ICt0/GdEVEScqGJSlpbrZhzlbug/CUp5NvAcmDW/2NJQAC4KpBfD3icz2lttQD+BaeYX5auMkA0AAAAAElFTkSuQmCC">
 	<style>
 		@font-face {
 			font-family: 'Libertinus Sans';
@@ -133,6 +133,47 @@
 
 		.fussnote { font-size: 0.85rem; color: #555; margin: 0.55rem 0 0; }
 
+
+		/* ---------- Kopf mit Klassennummer, Bedienleiste in Gruppen, Bildleiste (Kast 2026-10-06) ---------- */
+		.kopf .nr { color: #808080; font-weight: normal; }
+		.kopf .zwilling { visibility: hidden; }
+		.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.3rem; align-items: flex-end; margin-top: 0.7rem; }
+		div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+		.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1.1; display: flex; align-items: center; gap: 0.3rem; }
+		.gr > .kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+		.kn button { font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+			min-height: 2.5rem; min-width: 2.7rem; padding: 0.2rem 0.5rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+		.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+		.kn button.dunkel { background: #3b3f45; border-color: #3b3f45; color: #fff; }
+		.kn button.dunkel:hover { background: #2a2d31; }
+		.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 0.9rem; font-size: 0.95rem; }
+		.kn button.an { background: #FFF4D6; color: #7A4A00; border-color: #E0A100; box-shadow: inset 0 0 0 1px #E0A100; }
+		.kn button:disabled { opacity: 0.4; cursor: default; }
+		.kn .tempo { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
+		.kn input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--blue-frame); }
+		.kn .wert { font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: right; }
+		.kn select { font: inherit; font-size: 0.95rem; padding: 0.3rem 0.35rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #fff; color: #111; min-height: 2.5rem; }
+		.leinwand { position: relative; }
+		.bildleiste { position: absolute; right: 6px; top: 6px; display: flex; gap: 0.25rem; }
+		.bildleiste.unten { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+		button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; padding: 0;
+			border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+		button.symbol:hover { background: #f2f2f2; color: #222; }
+		.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem;
+			border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+		.meldung.zeigen { opacity: 0.94; }
+		.aus { display: none !important; }
+		@media (max-width: 560px) {
+			.bildleiste { position: static; justify-content: flex-end; margin-top: 0.3rem; }
+			.gruppen { gap: 0.6rem 0.9rem; }
+			div.gr.breit { flex: 1 1 100%; }
+			div.gr.breit > .kn { flex-wrap: nowrap; }
+			div.gr.breit > .kn input[type="range"] { min-width: 70px; }
+			div.gr.breit > .kn .wert { min-width: 3.4em; }
+		}
+
+		.zeit-anzeige { font-size: 1.2rem; }
+		.gt .punkt { width: 0.7em; height: 0.7em; }
 		@media (max-width: 560px) {
 			.blatt { padding: 1rem 0.8rem 1.4rem; }
 			.zeile > label { min-width: 0; }
@@ -144,65 +185,50 @@
 <div class="blatt">
 
 	<div class="kopf">
+		<span class="nr">9</span>
 		<span class="kapitel">C.10.2 Spezifische W&auml;rmekapazit&auml;t</span>
+		<span class="nr zwilling">9</span>
 	</div>
 
 	<div class="tcb">
 		<div class="tcb-title">Simulation: Tauchsieder und W&auml;rmekapazit&auml;t</div>
 		<div class="tcb-body">
-			<canvas id="sim-canvas"></canvas>
+			<div class="leinwand" id="leinwand"><canvas id="sim-canvas" aria-label="Zwei Bechergl&auml;ser mit Thermometer und Temperatur-Zeit-Diagramm"></canvas></div>
 
-			<div class="steuerung">
-				<div class="zeile">
-					<label>Zeit <i class="gr">t</i></label>
-					<span class="knopfleiste" id="zeit-knoepfe">
-						<button data-dt="-1" title="1 s zur&uuml;ck">&minus;1&nbsp;s</button>
-						<button data-dt="-0.1" title="0,1 s zur&uuml;ck">&minus;0,1&nbsp;s</button>
-						<button data-dt="0.1" title="0,1 s vor">+0,1&nbsp;s</button>
-						<button data-dt="1" title="1 s vor">+1&nbsp;s</button>
-					</span>
-					<span class="zeit-anzeige" id="zeit-anzeige" style="margin-left:auto"><i class="gr">t</i> = 0,0&nbsp;s</span>
-				</div>
-				<div class="zeile">
-					<label><span class="punkt" style="background:#0000BF"></span> Becherglas A</label>
-					<select id="stoff-a"></select>
-					<input type="range" id="masse-a" min="50" max="500" step="10" value="200">
-					<span class="wert" id="wert-masse-a">200&nbsp;g</span>
-				</div>
-				<div class="zeile">
-					<label><span class="punkt" style="background:#BF0000"></span> Becherglas B</label>
-					<select id="stoff-b"></select>
-					<input type="range" id="masse-b" min="50" max="500" step="10" value="200">
-					<span class="wert" id="wert-masse-b">200&nbsp;g</span>
-				</div>
-				<div class="zeile">
-					<label>Modus</label>
-					<span class="knopfleiste" id="modus-knoepfe">
-						<button data-modus="heizen" class="aktiv">Erw&auml;rmen</button>
-						<button data-modus="kuehlen">Abk&uuml;hlen</button>
-					</span>
-				</div>
-				<div class="zeile">
-					<label>Leistung <i class="gr">P</i></label>
-					<input type="range" id="leistung" min="100" max="1000" step="25" value="300">
-					<span class="wert" id="wert-leistung">300&nbsp;W</span>
-				</div>
-				<div class="zeile">
-					<label>Zeitraffer</label>
-					<span class="knopfleiste" id="tempo-knoepfe">
-						<button data-tempo="1">1&times;</button>
-						<button data-tempo="5" class="aktiv">5&times;</button>
-						<button data-tempo="10">10&times;</button>
-					</span>
-					<span class="knopfleiste" style="margin-left:auto">
-						<button id="btn-start">Start</button>
-						<button id="btn-reset">Zur&uuml;cksetzen</button>
-					</span>
-					<span class="schalter">
-						<input type="checkbox" id="chk-energie">
-						<label for="chk-energie" style="min-width:0">Energiesymbole</label>
-					</span>
-				</div>
+			<div class="gruppen">
+				<div class="gr breit"><span class="gt"><span class="punkt" style="background:#0000BF"></span>Becherglas A: Stoff und Masse</span>
+					<span class="kn"><select id="stoff-a" aria-label="Stoff in Becherglas A"></select><input type="range" id="masse-a" min="50" max="500" step="10" value="200" aria-label="Masse in Becherglas A"><span class="wert" id="wert-masse-a">200&nbsp;g</span></span></div>
+				<div class="gr breit"><span class="gt"><span class="punkt" style="background:#BF0000"></span>Becherglas B: Stoff und Masse</span>
+					<span class="kn"><select id="stoff-b" aria-label="Stoff in Becherglas B"></select><input type="range" id="masse-b" min="50" max="500" step="10" value="200" aria-label="Masse in Becherglas B"><span class="wert" id="wert-masse-b">200&nbsp;g</span></span></div>
+			</div>
+			<div class="gruppen">
+				<div class="gr"><span class="gt">Erw&auml;rmen oder Abk&uuml;hlen</span>
+					<span class="kn" id="modus-knoepfe">
+						<button data-modus="heizen" class="aktiv" title="Erw&auml;rmen mit Tauchsieder (20 &deg;C bis 100 &deg;C)" aria-label="Erw&auml;rmen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#E2571B" d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.37-.78-.75-.55C9.29 3.71 6.68 8 8.87 13.62c.18.46-.36.89-.75.59-1.81-1.37-2-3.34-1.84-4.75.06-.52-.62-.77-.91-.34C4.69 10.16 4 11.84 4 14.37c.38 5.6 5.11 7.32 6.81 7.54 2.43.31 5.06-.14 6.95-1.87 2.08-1.93 2.84-5.01 1.72-7.69zm-9.28 5.03c1.44-.35 2.18-1.39 2.38-2.31.33-1.43-.96-2.83-.09-5.09.33 1.87 3.27 3.04 3.27 5.08.08 2.53-2.66 4.7-5.56 2.32z"/></svg></button>
+						<button data-modus="kuehlen" title="Abk&uuml;hlen mit K&uuml;hlelement (80 &deg;C bis 20 &deg;C)" aria-label="Abk&uuml;hlen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="#2B6FE2" d="M22 11h-4.17l3.24-3.24-1.41-1.42L15 11h-2V9l4.66-4.66-1.42-1.41L13 6.17V2h-2v4.17L7.76 2.93 6.34 4.34 11 9v2H9L4.34 6.34 2.93 7.76 6.17 11H2v2h4.17l-3.24 3.24 1.41 1.42L9 13h2v2l-4.66 4.66 1.42 1.41L11 17.83V22h2v-4.17l3.24 3.24 1.42-1.41L13 15v-2h2l4.66 4.66 1.41-1.42L17.83 13H22z"/></svg></button>
+					</span></div>
+				<div class="gr breit"><span class="gt">Leistung <i class="gr">P</i> (beide Ger&auml;te)</span>
+					<span class="kn"><input type="range" id="leistung" min="100" max="1000" step="25" value="300" aria-label="Leistung"><span class="wert" id="wert-leistung">300&nbsp;W</span></span></div>
+			</div>
+			<div class="gruppen">
+				<div class="gr"><span class="gt">Start</span>
+					<span class="kn"><button class="haupt" id="btn-start" title="Start" aria-label="Start"></button></span></div>
+				<div class="gr"><span class="gt">Zeitraffer</span>
+					<span class="kn" id="tempo-knoepfe">
+						<button data-tempo="1" title="Echtzeit" aria-label="Echtzeit"><span class="tempo">&rsaquo;</span></button>
+						<button data-tempo="5" class="aktiv" title="5-mal schneller" aria-label="5-mal schneller"><span class="tempo">&rsaquo;&rsaquo;</span></button>
+						<button data-tempo="10" title="10-mal schneller" aria-label="10-mal schneller"><span class="tempo">&rsaquo;&rsaquo;&rsaquo;</span></button>
+					</span></div>
+				<div class="gr"><span class="gt">Zeit springen</span>
+					<span class="kn" id="zeit-knoepfe">
+						<button class="dunkel" data-dt="-1" title="1 s zur&uuml;ck" aria-label="1 s zur&uuml;ck">&laquo;&nbsp;1&nbsp;s</button>
+						<button class="dunkel" data-dt="-0.1" title="0,1 s zur&uuml;ck" aria-label="0,1 s zur&uuml;ck">&lsaquo;&nbsp;0,1&nbsp;s</button>
+						<button class="dunkel" data-dt="0.1" title="0,1 s vor" aria-label="0,1 s vor">0,1&nbsp;s&nbsp;&rsaquo;</button>
+						<button class="dunkel" data-dt="1" title="1 s vor" aria-label="1 s vor">1&nbsp;s&nbsp;&raquo;</button>
+						<span class="zeit-anzeige" id="zeit-anzeige"><i class="gr">t</i> = 0,0&nbsp;s</span>
+					</span></div>
+				<div class="gr"><span class="gt">Energie</span>
+					<span class="kn"><button id="btn-energie" title="Energiesymbole zeigen (1 Symbol = 1 kJ)" aria-label="Energiesymbole zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="#F5C518" stroke="#8A6D00" stroke-width="1.5"/><text x="12" y="17" text-anchor="middle" font-size="13" font-weight="bold" font-style="italic" fill="#5A4700" font-family="Libertinus Sans, Segoe UI, sans-serif">E</text></svg></button></span></div>
 			</div>
 			<p class="fussnote">
 				Beide Ger&auml;te arbeiten mit derselben Leistung <i class="gr">P</i>, die
@@ -213,12 +239,11 @@
 			</p>
 
 			<div class="messblock">
-				<div class="zeile">
-					<span class="knopfleiste">
-						<button id="btn-messwert">Messwert notieren</button>
-						<button id="btn-tabelle-leeren">Tabelle leeren</button>
-					</span>
+				<div class="gruppen">
+					<div class="gr"><span class="gt">Messung</span>
+						<span class="kn"><button class="haupt" id="btn-messwert">Messwert notieren</button></span></div>
 				</div>
+				<div id="tabellenleiste"></div>
 				<div class="tabelle-wrap">
 					<table class="messtabelle" id="messtabelle">
 						<thead>
@@ -246,6 +271,99 @@
 
 <script>
 	"use strict";
+
+	/* ==========================================================================
+	   Bildleiste: Bild kopieren (OneNote: Strg+V), teilen (Tablet), speichern; Symbole wie in allen Simulationen
+	   ========================================================================== */
+	const SYMBOL = {
+		kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+		teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+		speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+		zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+		loeschen: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
+		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>'
+	};
+	function symbolSvg(name, g = 18) { return '<svg width="' + g + '" height="' + g + '" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>"; }
+	function symbolKnopf(name, titel, aktion) {
+		const b = document.createElement("button");
+		b.className = "symbol"; b.type = "button"; b.innerHTML = symbolSvg(name); b.title = titel; b.setAttribute("aria-label", titel);
+		b.addEventListener("click", aktion);
+		return b;
+	}
+	function meldung(t) {
+		let m = document.querySelector(".meldung");
+		if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+		m.textContent = t; m.classList.add("zeigen");
+		clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
+	}
+	/* erzeuger(): liefert ein Canvas (weißer Hintergrund); dateiname(): sprechender Name ohne Endung */
+	function bildLeiste(behaelter, erzeuger, dateiname, vorne = [], hinten = []) {
+		const l = document.createElement("div"); l.className = "bildleiste";
+		vorne.forEach(k => l.appendChild(k));
+		const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+		if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+			try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+			catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+		}));
+		let teilenGeht = false;
+		try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+		if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+			try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+			catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+		}));
+		l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+			const blob = await blobVon(), a = document.createElement("a");
+			a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+			document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+		}));
+		hinten.forEach(k => l.appendChild(k));
+		behaelter.appendChild(l);
+		return l;
+	}
+	/* Canvas mit weißem Hintergrund kopieren (für Bilder, deren Canvas durchsichtig ist) */
+	function weissKopie(c) {
+		const k = document.createElement("canvas"); k.width = c.width; k.height = c.height;
+		const x = k.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, k.height); x.drawImage(c, 0, 0);
+		return k;
+	}
+	/* Messtabelle als Bild (booktabs-Optik); Zellen als HTML, <i> kursiv, <sub> tiefgestellt, Spaltenfarbe aus der Klasse */
+	function tabellenBild(tabelle, farben = {}) {
+		const zeilen = [...tabelle.querySelectorAll("tr")].map(tr => [...tr.children].map(td => ({ html: td.innerHTML, farbe: farben[td.className] || "#111" })));
+		const SCHR = getComputedStyle(document.body).fontFamily;
+		const dpr = 2, g = 15, zh = 28, pad = 14, c = document.createElement("canvas"), x = c.getContext("2d");
+		function teile(html) {
+			const d = document.createElement("div"); d.innerHTML = html; const r = [];
+			(function lauf(k, kursiv, tief) {
+				k.childNodes.forEach(n => {
+					if (n.nodeType === 3) { if (n.textContent) r.push({ t: n.textContent.replace(/\s+/g, " "), kursiv, tief }); }
+					else lauf(n, kursiv || n.tagName === "I", tief || n.tagName === "SUB");
+				});
+			})(d, false, false);
+			return r;
+		}
+		const font = (p) => (p.kursiv ? "italic " : "") + (p.tief ? g * 0.72 : g) + "px " + SCHR;
+		const breite = (ts) => ts.reduce((s, p) => { x.font = font(p); return s + x.measureText(p.t).width; }, 0);
+		const zt = zeilen.map(z => z.map(zelle => ({ ...zelle, ts: teile(zelle.html) })));
+		const sp = Math.max(...zt.map(z => z.length));
+		const breiten = [...Array(sp)].map((_, i) => Math.max(...zt.map(z => z[i] ? breite(z[i].ts) : 0)) + 24);
+		const B = breiten.reduce((a, b) => a + b, 0) + 2 * pad, H = zt.length * zh + 2 * pad;
+		c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+		x.fillStyle = "#fff"; x.fillRect(0, 0, B, H);
+		x.textBaseline = "alphabetic"; x.textAlign = "left";
+		const linie = (y, d) => { x.fillStyle = "#111"; x.fillRect(pad, y, B - 2 * pad, d); };
+		linie(pad, 1.5); linie(pad + zh, 1); linie(pad + zt.length * zh, 1.5);
+		zt.forEach((z, j) => {
+			let xx = pad;
+			z.forEach((zelle, i) => {
+				let px = xx + (breiten[i] - breite(zelle.ts)) / 2;
+				const py = pad + j * zh + zh / 2 + 5;
+				zelle.ts.forEach(p => { x.font = font(p); x.fillStyle = zelle.farbe; x.fillText(p.t, px, py + (p.tief ? 4 : 0)); px += x.measureText(p.t).width; });
+				xx += breiten[i];
+			});
+		});
+		return c;
+	}
 
 	/* c-Werte in J/(kg*K) und Materialfarben; Werte wie auf dem Arbeitsblatt */
 	const STOFFE = [
@@ -336,8 +454,9 @@
 		document.querySelectorAll("#modus-knoepfe button").forEach(x => x.classList.toggle("aktiv", x === b));
 		reset();
 	});
-	document.getElementById("chk-energie").addEventListener("change", ev => {
-		zustand.energieSymbole = ev.target.checked;
+	document.getElementById("btn-energie").addEventListener("click", ev => {
+		zustand.energieSymbole = !zustand.energieSymbole;
+		ev.currentTarget.classList.toggle("an", zustand.energieSymbole);
 		zeichne();
 	});
 
@@ -351,8 +470,7 @@
 	function schritt(delta) {
 		if (zustand.laeuft) {
 			zustand.laeuft = false;
-			btnStart.textContent = "Start";
-			btnStart.classList.remove("laeuft");
+			startKnopf(false);
 		}
 		const grenze = tSchluss();
 		zustand.t = Math.min(grenze, Math.max(0, +(zustand.t + delta).toFixed(1)));
@@ -380,7 +498,7 @@
 		const zelle = (text, klasse = "") => `<td${klasse ? ` class="${klasse}"` : ""}>${text}</td>`;
 		const zeile = document.createElement("tr");
 		/* Ein Gefaess, das sein Ziel schon erreicht hat, liefert keine neuen
-		   Messwerte mehr - dort erscheint ein Gedankenstrich statt einer Zahl */
+		   Messwerte mehr: dort steht "aus" (Geraet abgeschaltet) statt einer Zahl */
 		const werte = [zustand.a, zustand.b].map(k => kFertig(k) ? null : {
 			T: temperatur(k, zustand.t),
 			dT: temperatur(k, zustand.t) - tStart(),
@@ -388,7 +506,7 @@
 		});
 		const spalten = (w, klasse) => w
 			? zelle(zahl(w.T), klasse) + zelle(zahl(w.dT), klasse) + zelle(zahl(w.E), klasse)
-			: zelle("&ndash;", klasse) + zelle("&ndash;", klasse) + zelle("&ndash;", klasse);
+			: zelle("aus", klasse) + zelle("aus", klasse) + zelle("aus", klasse);
 		zeile.innerHTML =
 			zelle(nr) +
 			zelle(zahl(zustand.t)) +
@@ -396,23 +514,31 @@
 			spalten(werte[1], "sp-b");
 		messkoerper.appendChild(zeile);
 	});
-	document.getElementById("btn-tabelle-leeren").addEventListener("click", () => {
-		messkoerper.innerHTML = "";
-	});
+	{
+		const leiste = bildLeiste(document.getElementById("tabellenleiste"),
+			() => tabellenBild(document.getElementById("messtabelle"), { "sp-a": "#0000BF", "sp-b": "#BF0000" }),
+			() => "Messtabelle_A_" + STOFFE[zustand.a.stoff].name + "_B_" + STOFFE[zustand.b.stoff].name,
+			[], [symbolKnopf("loeschen", "Tabelle leeren", () => { messkoerper.innerHTML = ""; })]);
+		leiste.classList.add("unten");
+	}
 
 	const btnStart = document.getElementById("btn-start");
+	function startKnopf(laeuft) {
+		btnStart.innerHTML = symbolSvg(laeuft ? "pause" : "play", 24);
+		btnStart.title = laeuft ? "Anhalten" : "Start"; btnStart.setAttribute("aria-label", btnStart.title);
+	}
+	startKnopf(false);
 	btnStart.addEventListener("click", () => {
 		if (zustand.fertig) reset();
 		zustand.laeuft = !zustand.laeuft;
-		btnStart.textContent = zustand.laeuft ? "Pause" : "Start";
-		btnStart.classList.toggle("laeuft", zustand.laeuft);
+		startKnopf(zustand.laeuft);
 		messknopfAktualisieren();
 		if (zustand.laeuft) {
 			zustand.letzterFrame = null;
 			requestAnimationFrame(schleife);
 		}
 	});
-	document.getElementById("btn-reset").addEventListener("click", reset);
+
 
 	function reset() {
 		zustand.t = 0;
@@ -420,8 +546,7 @@
 		zustand.fertig = false;
 		zustand.pakete = [[], []];
 		zustand.naechstesPaket = [1000 / zustand.P, 1000 / zustand.P];
-		btnStart.textContent = "Start";
-		btnStart.classList.remove("laeuft");
+		startKnopf(false);
 		messknopfAktualisieren();
 		zeichne();
 	}
@@ -474,7 +599,7 @@
 			L.bx0 = Math.max(52 - Math.round(L.br / 2), Math.round((bw - (2 * L.br + L.abstand + 14)) / 2));
 			L.gx0 = bw + 56;                               /* Platz fuer Tick-Zahlen links  */
 			L.gx1 = W - 40;
-			L.gy0 = 46;                                    /* Platz fuer Pfeil + T in \u00B0C */
+			L.gy0 = 58;                                    /* Platz fuer Pfeil + T in \u00B0C und die Bildleiste */
 			L.gy1 = L.H - 48;                              /* Platz fuer Ticks + t in s     */
 		} else {
 			L.br = Math.min(96, Math.round(W * 0.26));
@@ -742,7 +867,7 @@
 		textTeile([
 			{ t: "t", f: fnt(15, "bold italic") },
 			{ t: " = " + zahl(zustand.t) + " s", f: fnt(15, "bold") }
-		], gx1 + 12, gy0 - 28, "right");
+		], LO.eng ? gx1 + 12 : W - 170, LO.eng ? gy0 - 28 : 26, "right");
 
 		/* Kurven: linear, jede endet an ihrer Zieltemperatur */
 		for (const [k, farbe] of [[zustand.a, "#0000BF"], [zustand.b, "#BF0000"]]) {
@@ -845,14 +970,17 @@
 		if (zustand.t >= schluss) {
 			zustand.laeuft = false;
 			zustand.fertig = true;
-			btnStart.textContent = "Start";
-			btnStart.classList.remove("laeuft");
+			startKnopf(false);
 			messknopfAktualisieren();
 		}
 		zeichne();
 		if (zustand.laeuft) requestAnimationFrame(schleife);
 	}
 
+	bildLeiste(document.getElementById("leinwand"), () => weissKopie(canvas),
+		() => (zustand.modus === "heizen" ? "Erwaermen" : "Abkuehlen") + "_A_" + STOFFE[zustand.a.stoff].name + "_" + Math.round(zustand.a.m * 1000) + "g_B_" +
+			STOFFE[zustand.b.stoff].name + "_" + Math.round(zustand.b.m * 1000) + "g_" + zustand.P + "W_t" + zahl(zustand.t) + "s",
+		[symbolKnopf("zurueck", "Zurücksetzen (t = 0)", reset)]);
 	window.addEventListener("resize", () => { skaliere(); zeichne(); });
 	skaliere();
 	reset();
