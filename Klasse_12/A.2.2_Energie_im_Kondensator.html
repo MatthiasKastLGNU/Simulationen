@@ -478,6 +478,19 @@ window.SimPlus = (function () {
 	/* Achsenkreuz mit Gitter.
 	   o = {dx, dy, dw, dh, xMin, xMax, yMin, yMax, xSchritt, ySchritt, xLabel, xEinheit, yLabel, yEinheit, xStellen, yStellen, gitter}
 	   Rueckgabe: {xPix, yPix, xWert, yWert, o} */
+	/* Achsenbeschriftung: Formelzeichen kursiv, Index nach "_" aufrecht und tiefgestellt (z. B. "E_kin"); liefert die Breite */
+	function beschrifte(ctx, s, x, y, rechtsbuendig) {
+		const [grund, index] = String(s).split("_");
+		ctx.save();
+		ctx.textAlign = "left";
+		ctx.font = "italic 13px " + SCHRIFT; const wG = ctx.measureText(grund).width;
+		ctx.font = "10px " + SCHRIFT; const wI = index ? ctx.measureText(index).width + 1 : 0;
+		const x0 = rechtsbuendig ? x - wG - wI : x;
+		ctx.font = "italic 13px " + SCHRIFT; ctx.fillText(grund, x0, y);
+		if (index) { ctx.font = "10px " + SCHRIFT; ctx.fillText(index, x0 + wG + 1, y + 4); }
+		ctx.restore();
+		return wG + wI;
+	}
 	function achsen(ctx, o) {
 		const xMin = o.xMin ?? 0, yMin = o.yMin ?? 0;
 		const xs = o.xSchritt || schrittFuer(o.xMax - xMin);
@@ -522,15 +535,15 @@ window.SimPlus = (function () {
 		ctx.textAlign = "left";
 		ctx.font = "italic 13px " + SCHRIFT;
 		if (o.yLabel) {
-			ctx.fillText(o.yLabel, o.dx + 6, o.dy + 2);
-			if (o.yEinheit) { const w = ctx.measureText(o.yLabel).width; ctx.font = "12px " + SCHRIFT; ctx.fillText(" in " + o.yEinheit, o.dx + 6 + w, o.dy + 2); }
+			const w = beschrifte(ctx, o.yLabel, o.dx + 6, o.dy + 2, false);
+			if (o.yEinheit) { ctx.font = "12px " + SCHRIFT; ctx.fillText(" in " + o.yEinheit, o.dx + 6 + w, o.dy + 2); }
 		}
 		ctx.font = "italic 13px " + SCHRIFT;
 		ctx.textAlign = "right";
 		if (o.xLabel) {
 			let t = o.xEinheit ? " in " + o.xEinheit : "";
 			ctx.font = "12px " + SCHRIFT; const wE = ctx.measureText(t).width; ctx.fillText(t, o.dx + o.dw, o.dy + o.dh + 30);
-			ctx.font = "italic 13px " + SCHRIFT; ctx.fillText(o.xLabel, o.dx + o.dw - wE, o.dy + o.dh + 30);
+			beschrifte(ctx, o.xLabel, o.dx + o.dw - wE, o.dy + o.dh + 30, true);
 		}
 		ctx.restore();
 		return { xPix, yPix, xWert, yWert, o: Object.assign({}, o, { xMin, yMin }) };
@@ -834,12 +847,15 @@ span[data-pfeil] svg { width: 1.7em; height: 0.75em; display: block; }
 "use strict";
 window.SimUI = (function () {
 	const P = {
-		play: '<path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/>',
-		pause: '<rect x="6" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1" fill="currentColor"/>',
+		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
+		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
 		stopp: '<rect x="5.5" y="5.5" width="13" height="13" rx="1.5" fill="currentColor"/>',
-		reset: '<path d="M12 5V2L7.5 6.5 12 11V8a5 5 0 1 1-5 5H4a8 8 0 1 0 8-8z" fill="currentColor"/>',
-		muell: '<path d="M4.5 6.5h15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9.5 6V4h5v2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6.5 8.5l1 11h9l1-11z" fill="currentColor"/>',
-		download: '<path d="M12 3.5v10" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 10.5L12 16l5.5-5.5z" fill="currentColor"/><path d="M4.5 16.5v3h15v-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+		reset: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
+		muell: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
+		download: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+		kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+		teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+		speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
 		rechts: '<path d="M2.5 9h11V4l8.5 8-8.5 8v-5h-11z" fill="currentColor"/>',
 		links: '<path d="M21.5 9h-11V4L2 12l8.5 8v-5h11z" fill="currentColor"/>',
 		hoch: '<path d="M9 21.5v-11H4L12 2l8 8.5h-5v11z" fill="currentColor"/>',
@@ -851,7 +867,7 @@ window.SimUI = (function () {
 		haken: '<path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
 		notieren: '<rect x="3" y="4" width="13" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9h7M6 13h7M6 17h4" stroke="currentColor" stroke-width="1.8"/><path d="M19 12v8M15 16h8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
 		schritt: '<path d="M4 4.5v15l11-7.5z" fill="currentColor"/><rect x="16" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
-		zurueck: '<path d="M20 4.5v15L9 12z" fill="currentColor"/><rect x="4.4" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
+		zurueck: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>',
 		lupeplus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M10 7v6M7 10h6" stroke="currentColor" stroke-width="2"/>',
 		lupeminus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="2"/>',
 		drehen: '<path d="M18.5 12a6.5 6.5 0 1 1-2.2-4.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v6.3h-6.3z" fill="currentColor"/>',
@@ -996,64 +1012,96 @@ window.SimUI = (function () {
 	function istTablet() {
 		return (navigator.maxTouchPoints || 0) > 1 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 	}
-	/* Canvas als PNG speichern, mit weissem Grund und Beschriftungszeilen darunter.
-	   zeilen: Array von Strings (oder Funktion, die eins liefert). Auf Tablets ueber das Teilen-Menue. */
-	function speichereBild(canvas, dateiname, zeilen) {
-		/* Kein Text unter dem Bild (Kast, 2026-10-03): die Bedingungen stehen nur im Dateinamen */
-		zeilen = [];
-		const f = Math.max(1, canvas.width / (canvas.clientWidth || canvas.width));
-		const zh = Math.round(19 * f), rand = Math.round(10 * f);
-		const schrift = Math.round(14 * f) + "px 'Libertinus Sans', 'Segoe UI', sans-serif";
-		/* Beschriftung auf die Bildbreite umbrechen, nie abschneiden */
-		const mess = document.createElement("canvas").getContext("2d");
-		mess.font = schrift;
-		const breite = canvas.width - 2 * rand;
-		const umbrochen = [];
-		zeilen.forEach(z => {
-			let zeile = "";
-			String(z).split(" ").forEach(wort => {
-				const probe = zeile ? zeile + " " + wort : wort;
-				if (zeile && mess.measureText(probe).width > breite) { umbrochen.push(zeile); zeile = wort; }
-				else zeile = probe;
-			});
-			if (zeile) umbrochen.push(zeile);
-		});
+	/* Kurze Meldung unten am Bildschirm (z. B. "Bild kopiert") */
+	function meldung(text) {
+		let m = document.querySelector(".kit-meldung");
+		if (!m) { m = document.createElement("div"); m.className = "kit-meldung"; m.setAttribute("role", "status"); document.body.appendChild(m); }
+		m.textContent = text; m.classList.add("zeigen");
+		clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2400);
+	}
+	/* Stil fuer Meldung und Bildleiste einmal einhaengen */
+	(function () {
+		const st = document.createElement("style");
+		st.textContent = ".kit-meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem; border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }"
+			+ ".kit-meldung.zeigen { opacity: 0.94; }"
+			+ ".bildleiste .bl-start:not(:first-child) { margin-left: 0.55rem; }";
+		document.head.appendChild(st);
+	})();
+	/* Dateiname ohne Sonderzeichen */
+	function dateiName(dateiname) {
+		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
+	}
+	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
+	function bildBlob(canvas) {
 		const c = document.createElement("canvas");
-		c.width = canvas.width;
-		c.height = canvas.height + (umbrochen.length ? umbrochen.length * zh + 2 * rand : 0);
+		c.width = canvas.width; c.height = canvas.height;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
-		g.fillStyle = "#222";
-		g.font = schrift;
-		g.textBaseline = "top";
-		umbrochen.forEach((z, i) => g.fillText(z, rand, canvas.height + rand + i * zh));
-		const name = String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
-		c.toBlob(blob => {
+		return new Promise(ok => c.toBlob(ok, "image/png"));
+	}
+	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
+	function kannTeilen() {
+		try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); }
+		catch (e) { return false; }
+	}
+	/* In die Zwischenablage (danach in OneNote mit Strg+V einfuegen) */
+	async function kopiereBild(canvas) {
+		try {
+			await navigator.clipboard.write([new ClipboardItem({ "image/png": bildBlob(canvas) })]);
+			meldung("Bild kopiert: in OneNote mit Strg+V einfügen");
+		} catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}
+	async function teileBild(canvas, dateiname) {
+		try {
+			const blob = await bildBlob(canvas);
+			await navigator.share({ files: [new File([blob], dateiName(dateiname), { type: "image/png" })] });
+		} catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}
+	/* Canvas als PNG speichern (normaler Download) */
+	function speichereBild(canvas, dateiname) {
+		bildBlob(canvas).then(blob => {
 			if (!blob) return;
-			try {
-				const datei = new File([blob], name, { type: "image/png" });
-				if (istTablet() && navigator.canShare && navigator.canShare({ files: [datei] })) {
-					navigator.share({ files: [datei], title: name }).catch(() => {});
-					return;
-				}
-			} catch (e) { /* weiter mit normalem Download */ }
 			const a = document.createElement("a");
 			a.href = URL.createObjectURL(blob);
-			a.download = name;
+			a.download = dateiName(dateiname);
 			document.body.appendChild(a); a.click(); a.remove();
 			setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-		}, "image/png");
+		});
 	}
-	/* Knopf "Bild herunterladen" an ein Canvas binden */
-	function bildKnopf(btnId, canvasOderFn, dateiname, zeilenFn) {
+	/* Speichern-Knopf zur Bildleiste ausbauen: davor Kopieren und (wo moeglich) Teilen.
+	   holeCanvas() liefert das Bild, holeName() den sprechenden Dateinamen. */
+	function bildleisteAusbauen(btn, holeCanvas, holeName, was) {
+		setzeIcon(btn, "speichern", was + " speichern");
+		btn.classList.add("neben");
+		const neu = [];
+		if (kannKopieren()) {
+			const k = document.createElement("button");
+			k.type = "button"; k.className = "neben";
+			setzeIcon(k, "kopieren", was + " kopieren (in OneNote mit Strg+V einfügen)");
+			k.addEventListener("click", () => kopiereBild(holeCanvas()));
+			neu.push(k);
+		}
+		if (kannTeilen()) {
+			const t = document.createElement("button");
+			t.type = "button"; t.className = "neben";
+			setzeIcon(t, "teilen", was + " teilen (z. B. an OneNote senden)");
+			t.addEventListener("click", () => teileBild(holeCanvas(), holeName()));
+			neu.push(t);
+		}
+		neu.forEach(k => btn.parentNode.insertBefore(k, btn));
+		(neu[0] || btn).classList.add("bl-start");
+		btn.addEventListener("click", () => speichereBild(holeCanvas(), holeName()));
+	}
+	/* Knopf "Bild speichern" an ein Canvas binden (mit Kopieren und Teilen davor) */
+	function bildKnopf(btnId, canvasOderFn, dateiname) {
 		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
 		if (!btn) return;
-		btn.addEventListener("click", () => {
-			const cv = typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn;
-			const name = typeof dateiname === "function" ? dateiname() : dateiname;
-			speichereBild(cv, name, zeilenFn);
-		});
+		const alt = (btn.getAttribute("title") || "") + (btn.getAttribute("aria-label") || "");
+		const was = /Diagramm/.test(alt) ? "Diagramm" : /Tabelle/.test(alt) ? "Tabelle" : "Bild";
+		bildleisteAusbauen(btn,
+			() => typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn,
+			() => typeof dateiname === "function" ? dateiname() : dateiname, was);
 	}
 	/* Zelleninhalt als Text, Indizes/Hochzahlen als Unicode */
 	const TIEF = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "a": "ₐ", "e": "ₑ", "o": "ₒ", "x": "ₓ", "h": "ₕ", "k": "ₖ", "l": "ₗ", "m": "ₘ", "n": "ₙ", "p": "ₚ", "s": "ₛ", "t": "ₜ", "r": "ᵣ", "i": "ᵢ", "u": "ᵤ", "v": "ᵥ" };
@@ -1072,7 +1120,7 @@ window.SimUI = (function () {
 		return k.textContent.replace(/\s+/g, " ").trim();
 	}
 	/* Messtabelle als PNG speichern (Kopf fett, Linien wie booktabs, darunter Beschriftung) */
-	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
+	function tabellenCanvas(tabelle, titel, zeilen) {
 		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
 		if (typeof zeilen === "function") zeilen = zeilen();
 		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
@@ -1111,14 +1159,16 @@ window.SimUI = (function () {
 		linie(y, 1.4);
 		g.textAlign = "left"; g.font = "13px " + schrift; g.fillStyle = "#333";
 		(zeilen || []).forEach((z, i) => g.fillText(z, rand, y + 18 + i * 19));
-		/* ueber speichereBild ausgeben (ohne weitere Beschriftung) */
-		speichereBild(c, dateiname, []);
+		return c;
 	}
-	/* Knopf "Tabelle als Bild speichern" binden */
+	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
+		speichereBild(tabellenCanvas(tabelle, titel, zeilen), typeof dateiname === "function" ? dateiname() : dateiname);
+	}
+	/* Knopf "Tabelle speichern" binden (mit Kopieren und Teilen davor) */
 	function tabelleKnopf(btnId, tabelle, dateiname, titel, zeilenFn) {
 		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
 		if (!btn) return;
-		btn.addEventListener("click", () => speichereTabelle(tabelle, typeof dateiname === "function" ? dateiname() : dateiname, titel, zeilenFn));
+		bildleisteAusbauen(btn, () => tabellenCanvas(tabelle, titel, zeilenFn), () => typeof dateiname === "function" ? dateiname() : dateiname, "Tabelle");
 	}
 	/* Vorzeichen einer Ladung als gezeichnete Striche genau in der Kreismitte (nie als Textzeichen) */
 	function ladungsZeichen(g, x, y, r, q, farbe, breite) {
@@ -1132,7 +1182,7 @@ window.SimUI = (function () {
 		g.restore();
 	}
 	document.addEventListener("DOMContentLoaded", () => fuelleIcons());
-	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet };
+	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet, meldung, kopiereBild, bildleisteAusbauen, tabellenCanvas };
 })();
 	</script>
 
@@ -1283,9 +1333,10 @@ function qAktuell() { return Q0 * (1 - kugel.schritte / kugel.n); }
 
 function zeichneKugel() {
 	const c = kctx; c.clearRect(0, 0, KW, KH);
-	const breiteL = KW * 0.4;
+	/* Handy: Kondensator oben, Diagramm darunter; sonst nebeneinander */
+	const eng = KW < 560, breiteL = eng ? KW : KW * 0.4, hoeheL = eng ? Math.round(KH * 0.46) : KH;
 	/* Kondensator mit Kugel */
-	const cx = breiteL / 2, yo = 50, yu = KH - 50, xl = cx - 90, xr = cx + 90;
+	const cx = breiteL / 2, yo = 50, yu = hoeheL - 50, xl = cx - 90, xr = cx + 90;
 	c.fillStyle = "#9A9A9A"; c.fillRect(xl - 8, yo, 8, yu - yo); c.fillRect(xr, yo, 8, yu - yo);
 	const Q = qAktuell(), nz = Math.round(Q / Q0 * 16);
 	for (let k = 0; k < nz; k++) {
@@ -1307,12 +1358,13 @@ function zeichneKugel() {
 	if (kugel.anim) { fuellung = kugel.richtung > 0 ? "#F4B4B4" : "#B4B4F4"; zeichen = kugel.richtung > 0 ? "+" : "−"; }
 	c.beginPath(); c.arc(px, py, 13, 0, 2 * Math.PI); c.fillStyle = fuellung; c.fill(); c.strokeStyle = "#333"; c.stroke();
 	if (zeichen) P.text(c, zeichen, px, py + 5, { groesse: 15, ausrichtung: "center", fett: true, farbe: kugel.richtung > 0 ? P.FARBEN.rot : P.FARBEN.blau });
-	P.text(c, "U = " + P.de(Q / C_K, 0) + " V", cx, KH - 18, { groesse: 13, ausrichtung: "center" });
-	P.text(c, "schematisch", 6, KH - 4, { groesse: 10, farbe: "#888" });
+	P.text(c, "U = " + P.de(Q / C_K, 0) + " V", cx, hoeheL - 18, { groesse: 13, ausrichtung: "center" });
+	P.text(c, "schematisch", 6, hoeheL - 4, { groesse: 10, farbe: "#888" });
 
 	/* Q-U-Diagramm */
-	const u = P.achsen(c, { dx: breiteL + 50, dy: 24, dw: KW - breiteL - 80, dh: KH - 70, xMin: 0, xMax: 200, yMin: 0, yMax: 200,
-		xSchritt: 25, ySchritt: 25, xLabel: "Q", xEinheit: "nC", yLabel: "U", yEinheit: "V", xStellen: 0, yStellen: 0 });
+	const lage = eng ? { dx: 50, dy: hoeheL + 22, dw: KW - 76, dh: KH - hoeheL - 64 } : { dx: breiteL + 50, dy: 24, dw: KW - breiteL - 80, dh: KH - 70 };
+	const u = P.achsen(c, { ...lage, xMin: 0, xMax: 200, yMin: 0, yMax: 200,
+		xSchritt: eng ? 50 : 25, ySchritt: eng ? 50 : 25, xLabel: "Q", xEinheit: "nC", yLabel: "U", yEinheit: "V", xStellen: 0, yStellen: 0 });
 	const dQ = Q0 / kugel.n;
 	for (let k = 0; k < kugel.schritte; k++) {
 		const qVor = Q0 - k * dQ, uVor = qVor / C_K;
@@ -1364,27 +1416,29 @@ function hoehe(C, U) { const E = 0.5 * C * U * U; return Math.max(0, ETA * (E - 
 function zeichneMotor() {
 	const c = mctx; c.clearRect(0, 0, MW, MH);
 	/* Stromkreis */
-	const x0 = 40, y0 = 70;
+	/* Handy: Stromkreis waagrecht gestaucht (k), damit Motor und Maßstab nebeneinander passen */
+	const eng = MW < 560, k = eng ? 0.68 : 1;
+	const x0 = eng ? 20 : 40, y0 = 70;
 	c.strokeStyle = "#111"; c.lineWidth = 1.5;
 	const hb = 12 + 400 * motor.C;   /* halbe Plattenbreite wächst mit der Kapazität */
-	c.beginPath(); c.moveTo(x0 + 60, y0); c.lineTo(x0 + 60, y0 + 40); c.moveTo(x0 + 60 - hb, y0 + 40); c.lineTo(x0 + 60 + hb, y0 + 40);
-	c.moveTo(x0 + 60 - hb, y0 + 50); c.lineTo(x0 + 60 + hb, y0 + 50); c.moveTo(x0 + 60, y0 + 50); c.lineTo(x0 + 60, y0 + 110);
-	c.moveTo(x0 + 60, y0); c.lineTo(x0 + 220, y0); c.lineTo(x0 + 220, y0 + 35);
-	c.moveTo(x0 + 60, y0 + 110); c.lineTo(x0 + 220, y0 + 110); c.lineTo(x0 + 220, y0 + 75); c.stroke();
-	c.beginPath(); c.arc(x0 + 220, y0 + 55, 20, 0, 2 * Math.PI); c.stroke();
-	P.text(c, "M", x0 + 220, y0 + 60, { groesse: 15, ausrichtung: "center", fett: true });
-	P.text(c, "C = " + P.de(motor.C * 1000, 0) + " mF", x0 + 66 + hb, y0 + 50, { groesse: 13 });
-	P.text(c, "U = " + P.de(motor.uAnz, 1) + " V", x0 + 60, y0 + 140, { groesse: 13, ausrichtung: "center" });
+	c.beginPath(); c.moveTo(x0 + 60 * k, y0); c.lineTo(x0 + 60 * k, y0 + 40); c.moveTo(x0 + 60 * k - hb, y0 + 40); c.lineTo(x0 + 60 * k + hb, y0 + 40);
+	c.moveTo(x0 + 60 * k - hb, y0 + 50); c.lineTo(x0 + 60 * k + hb, y0 + 50); c.moveTo(x0 + 60 * k, y0 + 50); c.lineTo(x0 + 60 * k, y0 + 110);
+	c.moveTo(x0 + 60 * k, y0); c.lineTo(x0 + 220 * k, y0); c.lineTo(x0 + 220 * k, y0 + 35);
+	c.moveTo(x0 + 60 * k, y0 + 110); c.lineTo(x0 + 220 * k, y0 + 110); c.lineTo(x0 + 220 * k, y0 + 75); c.stroke();
+	c.beginPath(); c.arc(x0 + 220 * k, y0 + 55, 20, 0, 2 * Math.PI); c.stroke();
+	P.text(c, "M", x0 + 220 * k, y0 + 60, { groesse: 15, ausrichtung: "center", fett: true });
+	P.text(c, "C = " + P.de(motor.C * 1000, 0) + " mF", x0 + 66 * k + hb, y0 + 50, { groesse: 13 });
+	P.text(c, "U = " + P.de(motor.uAnz, 1) + " V", x0 + 60 * k, y0 + 140, { groesse: 13, ausrichtung: "center" });
 	/* Rolle, Faden, Massestück, Maßstab 0 bis 1 m */
-	const xr = MW * 0.62, yOben = 26, yBoden = MH - 20, skala = (yBoden - yOben - 50) / 1.0;
-	c.beginPath(); c.moveTo(x0 + 240, y0 + 55); c.lineTo(xr - 18, yOben + 10); c.stroke();
+	const xr = MW * (eng ? 0.72 : 0.62), yOben = 26, yBoden = MH - 20, skala = (yBoden - yOben - 50) / 1.0;
+	c.beginPath(); c.moveTo(x0 + 220 * k + 20, y0 + 55); c.lineTo(xr - 18, yOben + 10); c.stroke();
 	c.beginPath(); c.arc(xr, yOben + 10, 10, 0, 2 * Math.PI); c.fillStyle = "#999"; c.fill();
 	const yUnten = yBoden - 6 - motor.h * skala;   // Unterkante des Massestücks
 	c.beginPath(); c.moveTo(xr + 10, yOben + 10); c.lineTo(xr + 10, yUnten - 28); c.stroke();
 	c.fillStyle = "#777"; c.fillRect(xr - 4, yUnten - 28, 28, 28);
 	P.text(c, "100 g", xr + 10, yUnten - 10, { groesse: 10, ausrichtung: "center", farbe: "#fff" });
 	c.strokeStyle = "#111"; c.beginPath(); c.moveTo(xr - 40, yBoden); c.lineTo(xr + 80, yBoden); c.stroke();
-	const xs = xr + 60;
+	const xs = xr + (eng ? 46 : 60);
 	c.lineWidth = 1; c.beginPath(); c.moveTo(xs, yBoden - 6); c.lineTo(xs, yBoden - 6 - skala); c.stroke();
 	for (let k = 0; k <= 10; k++) {
 		const y = yBoden - 6 - k * 0.1 * skala;
@@ -1394,7 +1448,7 @@ function zeichneMotor() {
 	P.text(c, "h in cm", xs + 6, yBoden - 16 - skala, { groesse: 11, farbe: "#555" });
 	c.strokeStyle = P.FARBEN.rot; c.setLineDash([4, 3]);
 	c.beginPath(); c.moveTo(xr + 24, yUnten); c.lineTo(xs, yUnten); c.stroke(); c.setLineDash([]);
-	P.text(c, "h = " + P.de(motor.h * 100, 1) + " cm", MW - 10, 40, { groesse: 15, ausrichtung: "right", fett: true });
+	P.text(c, "h = " + P.de(motor.h * 100, 1) + " cm", eng ? x0 : MW - 10, 40, { groesse: 15, ausrichtung: eng ? "left" : "right", fett: true });
 }
 
 function starte() {
@@ -1472,8 +1526,10 @@ function zeichneAbstand() {
 	const c = actx; c.clearRect(0, 0, AW, AH);
 	const g = abGroessen(ab.d), g0 = abGroessen(3);
 	/* Kondensator links: waagrechte Platten, 1 mm = 18 px */
-	const breiteL = AW * 0.42, kante = Math.min(breiteL * 0.62, 210), tx = kante * 0.4, ty = -kante * 0.24, dicke = 9;
-	const spalt = ab.d * 18, cx = breiteL * 0.57, cy = AH * 0.52;
+	/* Handy: Kondensator oben, Diagramm darunter */
+	const eng = AW < 560, breiteL = eng ? AW : AW * 0.42, hoeheL = eng ? Math.round(AH * 0.5) : AH;
+	const kante = Math.min(breiteL * (eng ? 0.5 : 0.62), 210), tx = kante * 0.4, ty = -kante * 0.24, dicke = 9;
+	const spalt = ab.d * 18, cx = breiteL * (eng ? 0.45 : 0.57), cy = hoeheL * 0.52;
 	const xl = cx - kante / 2 - tx / 2, yO = cy - spalt / 2 - dicke, yU = cy + spalt / 2;
 	abPlatte = { x1: xl, x2: xl + kante + tx, y1: yO + ty - 8, y2: yO + dicke + 8, cy };
 	quaderE(c, xl, yU, kante, dicke, tx, ty, "#D2D2D2", "#9A9A9A", "#B4B4B4");
@@ -1503,7 +1559,7 @@ function zeichneAbstand() {
 	c.beginPath(); c.moveTo(xd, yO + dicke); c.lineTo(xd, yU); c.moveTo(xd - 4, yO + dicke); c.lineTo(xd + 4, yO + dicke); c.moveTo(xd - 4, yU); c.lineTo(xd + 4, yU); c.stroke();
 	P.text(c, "d", xd - 6, cy + 4, { groesse: 13, kursiv: true, ausrichtung: "right" });
 	/* Zuleitungen */
-	const yq = AH - 22;
+	const yq = hoeheL - 22;
 	c.strokeStyle = "#111"; c.lineWidth = 1.5;
 	c.beginPath(); c.moveTo(xl + kante, yO + dicke / 2); c.lineTo(xl + kante + 16, yO + dicke / 2); c.lineTo(xl + kante + 16, yq); c.lineTo(cx + 34, yq);
 	c.moveTo(xl + kante * 0.2, yU + dicke); c.lineTo(xl + kante * 0.2, yq); c.lineTo(cx - 34, yq); c.stroke();
@@ -1517,7 +1573,8 @@ function zeichneAbstand() {
 	P.text(c, "obere Platte ziehen ⇕", cx + tx / 2, yO + ty - 10, { groesse: 11, farbe: P.FARBEN.blau, ausrichtung: "center" });
 	P.text(c, "schematisch", 6, 14, { groesse: 10, farbe: "#888" });
 	/* Diagramm rechts: Feldenergie über d */
-	const u = P.achsen(c, { dx: breiteL + 56, dy: 24, dw: AW - breiteL - 84, dh: AH - 70, xMin: 0, xMax: 10, yMin: 0, yMax: 12,
+	const lage = eng ? { dx: 50, dy: hoeheL + 22, dw: AW - 76, dh: AH - hoeheL - 64 } : { dx: breiteL + 56, dy: 24, dw: AW - breiteL - 84, dh: AH - 70 };
+	const u = P.achsen(c, { ...lage, xMin: 0, xMax: 10, yMin: 0, yMax: 12,
 		xSchritt: 1, ySchritt: 2, xLabel: "d", xEinheit: "mm", yLabel: "E", yEinheit: "µJ (Feldenergie)", xStellen: 0, yStellen: 0 });
 	c.save(); c.beginPath(); c.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); c.clip();
 	P.kurve(c, u, x => abGroessen(Math.max(0.05, x)).E * 1e6, 0.3, 10, "rgba(0,0,191,0.35)", { breite: 2 });
@@ -1613,8 +1670,8 @@ function ausHash() {
 window.addEventListener("hashchange", ausHash);
 
 function layout() {
-	if (!document.getElementById("box-kugel").classList.contains("verborgen")) { ({ W: KW, H: KH } = K.skaliereCanvas(kb, kctx, w => w < 560 ? 0.9 : 0.44)); zeichneKugel(); }
-	if (!document.getElementById("box-abstand").classList.contains("verborgen")) { ({ W: AW, H: AH } = K.skaliereCanvas(abb, actx, w => w < 560 ? 0.9 : 0.44)); zeichneAbstand(); }
+	if (!document.getElementById("box-kugel").classList.contains("verborgen")) { ({ W: KW, H: KH } = K.skaliereCanvas(kb, kctx, w => w < 560 ? 1.6 : 0.44)); zeichneKugel(); }
+	if (!document.getElementById("box-abstand").classList.contains("verborgen")) { ({ W: AW, H: AH } = K.skaliereCanvas(abb, actx, w => w < 560 ? 1.5 : 0.44)); zeichneAbstand(); }
 	if (!document.getElementById("box-motor").classList.contains("verborgen")) {
 		({ W: MW, H: MH } = K.skaliereCanvas(mb, mctx, w => w < 560 ? 0.7 : 0.38)); zeichneMotor();
 		({ W: DW, H: DH } = K.skaliereCanvas(md, mdctx, w => w < 560 ? 0.7 : 0.42)); zeichneMotorDiagramm();
