@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generator interaktiv</title>
+<title>Elektromotor interaktiv</title>
 <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAFWElEQVRYha2XW2wUVRjHf2dmOrPtblvSNkVaIEobLC1QBYrKNcErWhWkCcaClYCXGOILD5YXNBKER43xQYNSSauYcAkiGBLDQytRLFaU9GaIib1AKL1Ad9vuTHfm+LDtbnd3dmmV/9PMme87///5vnO+74xgEsXFRq7MeFNKXgEWI/Byb3FHQouQfDr4958nJgcFQO7C8kLpcBYpy+8xaTJ8OyhGa7h2zdQoLjZmSl6ao5Kmxo6N29A2aE93iq25eEMDsE3kFi19R8LH0xcPp5/3sqZAixlr6g2x6fuRmUyDlEqlIgXVqYwKfUrC2OW+xJX+ditxzM13KoRwditISpMZLMtXaarysWFudLWKgL5RmWB7c9RBEdH3DXM1mqp8LMtXE2yn4FGRU7Q0cbYJ8hPPecnSBV1+h2dOB9heovPaIoM5XuHmwvURhyNtFvUd45zf5GV+psKwJdlydoQWl6gBuAqYSj4JywE9dUQjMG2JoUZ9U4lIEFDoU2iq8pFtuK8S4LYpabweoscvEUJS6FNYX6Cl9LljStYeD9AbcGLGtXjD3oDD9vOjfLQ+nQXZsUvuH5McaA7yTaeFLcGZkK4IUAVUl+jsrfCQ54kV0uV32NM4lkAO4BrUizdCVJ4JYE2x7xhyePxkgKPtFooQXKvJwlAFhhp+VoSgrs3iiZN+OoaijqYteepUgAs9IdfIJM3q9hI9kvP+McnWcyP0TKwgTYFsQ5CmxD4DdPslL/8QoD8YDo+hCqof1JPRuAtQBNQsijodaA5GyDM0wY6yNABqVxjUrjAAeHWRjkeLijjUHIz47yjTEUm2h5qeM/t9gIWzVL58MoPiWSolOSqbisIkt03JWxdGMVTwpQl2LtbZXKTTOeTQOyqxAcuG5fkqPl3QOeQgBPxxy+aNJQaGKsjSBUOmZOP9aexZZtDS5zAwEaHIJtRVWFOgJZTYxushbAmd27Iiu/zijRCb48rudy942bfSw76VHu6YkuKvhmnsDVH5QHghB1elR2z1KbUp4RTEo2vYwZFQVj+MoQr2VhiYiZuZK/027YM2B5tNTFviSPjH72IYh7uWlmS5mw6UafjeNQLzfQqKgNa4FMTjoTyV1XM0dpUZkRTM96XsA7ECLBt+uh6i+abNrTHJh6s8AKwr1FBFNAU1pTqbFqRxqtLL7/3h0vpwnkpmmmD/r0Hq2ixMW6IJWFsYFVB7cYzZGQoVs1Us20XAX7dtXjwT3liKgN3lOgVehWxDUF2iU9dmMRaSfHbVZNyG/Y95aB2wIyLf+2WML1otxiaCs7NUj/SSbr/kcKuFdGl7rnvAkXCkzYq8763wMC8zPFkwBEfbw98OXTY5dNkEoK5tPEI+P1Ph3QpPxL+u3XQlTyoAoL5jHNMOe+V5BMc2+iIixp1wcxl3Yp8nyY9t9JI70Q9MW1LfYblyQJJ2vHqO5tqMBoKSg81BGjosQnHNSBOwbZFO7QpPhHwSk83IrR/8p3Y8bEkae0N0T5TneT6FdYVazP0hHsna8bQvJPGXjFSYyYXEdQ+09NlsOTvCsBXW1uV3KG/ws/9StCm5odsv+eBSkKUNfromquA0rmRL7oDIcvu4LF/l+LNedv04GsmfEPD6Yj2mtkP4nE89ahvmahx+IoOqc8nJQQ5rIH4Gnk4Wifi8SQmzMxIDd59XiTlqF3pCrjmPhWhTpFQ+SWHhOkFFfmIFX+Fy/U5NDgLZEP43LC6vl1Km/EGZinvwawaSK4Pp9iMawAAjO3PI0ICt0/GdEVEScqGJSlpbrZhzlbug/CUp5NvAcmDW/2NJQAC4KpBfD3icz2lttQD+BaeYX5auMkA0AAAAAElFTkSuQmCC">
 <style>
 @font-face {
@@ -450,24 +450,21 @@ button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
 	.kino { max-width: 260px; }
 	.kinobild svg { max-height: 200px; }
 }
+/* A.2.3 Elektromotor: Zusätze zu kast_interaktiv.css */
+.antwortknoepfe { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0 0.3rem; }
+.antwortknoepfe button { font: inherit; font-size: 1rem; padding: 0.4rem 0.75rem; border: 2px solid #bbb; border-radius: 2mm; background: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; }
+.antwortknoepfe button:hover:not(:disabled) { border-color: var(--blue-frame); }
+.antwortknoepfe button.richtig { border-color: var(--gut); background: var(--gut-hg); }
+.antwortknoepfe button.falsch { border-color: var(--falsch); background: var(--falsch-hg); }
+.antwortknoepfe button:disabled { cursor: default; opacity: 0.6; }
+.antwortknoepfe button.richtig:disabled, .antwortknoepfe button.falsch:disabled { opacity: 1; }
+.schrittfrage { text-align: center; font-weight: bold; margin: 0.6rem 0 0; }
+.buehne { max-width: 520px; margin: 0.3rem auto 0; }
+.buehne svg { display: block; width: 100%; height: auto; }
 </style>
 </head>
 <body>
-<div class="blatt">
-	<div class="kopf">
-		<span class="nr">10</span>
-		<span class="kapitel">A.3.3 Generator</span>
-		<span class="nr zwilling">10</span>
-	</div>
-	<div class="modusleiste" id="modusleiste"></div>
-	<section class="tcb blau" id="m-paare" hidden><div class="tcb-title">Spiel: Paare finden</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-kette" hidden><div class="tcb-title">Kausalkette ordnen</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-vorhersage" hidden><div class="tcb-title">Vorhersage: Spannung beim Drehen</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-sortieren" hidden><div class="tcb-title">Sortieren: Generator oder Elektromotor?</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-wischen" hidden><div class="tcb-title">Stimmt's?</div><div class="tcb-body"></div></section>
-	<section class="tcb blau" id="m-fehler" hidden><div class="tcb-title">Fehler finden: Sixtus erklärt</div><div class="tcb-body"></div></section>
-	<div class="fuss-autor">Kast</div>
-</div>
+<div class="blatt"></div>
 <script>
 /* ==========================================================================
    Kast-Interaktiv: Bausteine für interaktive Übungen (Bibliothek, nicht für GitHub)
@@ -1693,129 +1690,136 @@ window.KI = (function () {
 </script>
 <script>
 /* ==========================================================================
-   A.3.3 Generator: interaktive Werkstatt (Kast)
-   Inhalte und eigene Übungen; nutzt die Bibliothek KI (kast_interaktiv.js)
-   Bezeichnungen wie auf dem Arbeitsblatt: Seite 1 orange (Ring 1), Seite 2 violett (Ring 2),
-   Blick von vorne entlang der Drehachse, Schleifringe vorne, Drehung im Uhrzeigersinn.
+   A.2.3 Elektromotor: interaktive Übungen (Kast)
+   Nutzt die Bibliothek KI (kast_interaktiv.js). Bezeichnungen wie auf dem Arbeitsblatt:
+   Blick von vorne entlang der Drehachse, Seite 1 orange, Seite 2 violett, Nordpol links (rot), Südpol rechts (grün).
+   Ohne Kommutator ist Seite 1 mit dem Pluspol verbunden. Mit Kommutator liegt der rechte Schleifkontakt am Pluspol;
+   der Halbring einer Seite berührt den rechten Kontakt, solange diese Seite rechts liegt.
+   Winkel w: Lage von Seite 1 gegen die Waagrechte (Grad, gegen den Uhrzeigersinn positiv). Stellung a: 0, b: -45, c: -90, d: -135.
    ========================================================================== */
 "use strict";
 const S = KI.svg;
 const SH = String.fromCharCode(173);   /* weiche Trennstelle für lange Wörter auf schmalen Karten */
-const ORANGE = "#E17300", VIOLETT = "#7D3CAF", BLAU = "#0000BF", ROT = "#D32F2F", GRUEN = "#2E7D32", FELD = "#5B7BE0";
+const ORANGE = "#E17300", VIOLETT = "#7D3CAF", BLAU = "#0000BF", ROT = "#D32F2F", GRUEN = "#2E7D32", KRAFT = "#BF0000";
 
-/* ---------- Piktogramme ---------- */
-/* Generator von vorne: w = Winkel der Seite 1 gegen die Waagrechte (Grad, mathematisch), Drehung im Uhrzeigersinn */
-function bildVorne(w, breite = 150) {
-	const cx = 80, cy = 55, R = 34, e = 27.2;
-	let s = '<rect x="4" y="12" width="20" height="86" fill="' + ROT + '"/><rect x="136" y="12" width="20" height="86" fill="' + GRUEN + '"/>' +
-		'<text x="14" y="60" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">N</text><text x="146" y="60" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">S</text>';
-	for (const k of [-1.05, -0.75, -0.45, -0.15, 0.15, 0.45, 0.75, 1.05]) s += S.pfeil(25, cy - k * e, 134, cy - k * e, "rgba(91,123,224,0.55)", 1);
-	const r = w * Math.PI / 180, x1 = cx + R * Math.cos(r), y1 = cy - R * Math.sin(r), x2 = cx - R * Math.cos(r), y2 = cy + R * Math.sin(r);
-	s += '<line x1="' + x2.toFixed(1) + '" y1="' + y2.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="#555" stroke-width="2" stroke-dasharray="5 3"/>';
-	s += '<circle cx="' + cx + '" cy="' + cy + '" r="2.5" fill="#888"/>';
-	/* Bewegung im Uhrzeigersinn: Richtung w - 90 Grad */
-	const v = (x, y, wi) => { const a = wi * Math.PI / 180; return S.pfeil(x + 10 * Math.cos(a), y - 10 * Math.sin(a), x + 26 * Math.cos(a), y - 26 * Math.sin(a), "#111", 2); };
-	s += v(x1, y1, w - 90) + v(x2, y2, w + 90);
-	s += '<circle cx="' + x1.toFixed(1) + '" cy="' + y1.toFixed(1) + '" r="7" fill="#fff" stroke="' + ORANGE + '" stroke-width="3"/>';
-	s += '<circle cx="' + x2.toFixed(1) + '" cy="' + y2.toFixed(1) + '" r="7" fill="#fff" stroke="' + VIOLETT + '" stroke-width="3"/>';
-	return S.rahmen(160, 110, s, breite);
+/* ---------- Physik ---------- */
+/* Strom in Seite 1: +1 = in die Zeichenebene hinein, -1 = heraus, 0 = kein Strom (Schleifkontakte an den Lücken) */
+function strom1(w, komm, plusRechts = true) {
+	const p = plusRechts ? 1 : -1;
+	if (!komm) return p;
+	const c = Math.cos(w * Math.PI / 180);
+	if (Math.abs(c) < 0.05) return 0;
+	return Math.sign(c) * p;
 }
-/* U(t) über eine Umdrehung (Start in a)) mit Punkt zur Zeit t0 (0 ... 1) */
-function bildKurve(t0) {
-	const x0 = 22, y0 = 58, xb = 128, yh = 44;
-	const extra = '<circle cx="' + (x0 + t0 * xb).toFixed(1) + '" cy="' + (y0 - Math.cos(2 * Math.PI * t0) * yh).toFixed(1) + '" r="6" fill="' + ROT + '"/>';
-	return S.diagramm(t => Math.cos(2 * Math.PI * t), "t", "U", BLAU, -1, extra);
+/* Kraft auf Seite 1: +1 nach oben, -1 nach unten (Drei-Finger-Regel; Feld nach rechts, wenn der Nordpol links ist) */
+function kraft1(s1, nordLinks = true) { return -s1 * (nordLinks ? 1 : -1); }
+/* Drehsinn: +1 im Uhrzeigersinn, -1 gegen den Uhrzeigersinn, 0 keine Drehwirkung */
+function drehsinn(w, s1, nordLinks = true) {
+	const d = s1 * (nordLinks ? 1 : -1) * Math.cos(w * Math.PI / 180);
+	return Math.abs(d) < 0.05 ? 0 : Math.sign(d);
 }
-const W_ = { a: 0, b: -45, c: -90, d: -135, e: -180 };
-const V_ = {}, K_ = {};
-for (const k in W_) { V_[k] = { svg: bildVorne(W_[k]), alt: "Stellung " + k + ")" }; K_[k] = { svg: bildKurve(-W_[k] / 360) }; }
 
-/* ---------- Modusleiste ---------- */
-const MI = {
-	paare: '<rect x="2" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="5" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8" stroke="currentColor" stroke-width="2"/>',
-	kette: '<rect x="3" y="2" width="18" height="5" rx="1" fill="currentColor"/><rect x="3" y="10" width="18" height="5" rx="1" fill="currentColor" opacity="0.7"/><rect x="3" y="18" width="18" height="5" rx="1" fill="currentColor" opacity="0.45"/>',
-	vorhersage: '<path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 8 C8 2 10 2 12 12 S17 22 21 13" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"/>',
-	sortieren: '<path d="M3 9h7l-1 12H4zM14 9h7l-1 12h-5z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="5" fill="currentColor"/>',
-	wischen: '<rect x="6" y="3" width="12" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2" transform="rotate(12 12 12)"/><path d="M1 21l3-3M23 21l-3-3" stroke="currentColor" stroke-width="2"/>',
-	fehler: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="3"/>'
+/* ---------- Bild von vorne als SVG (für Karten, Filmleiste, Spiel, Film) ----------
+   o: { w, komm, nordLinks, plusRechts, s1 (sonst aus der Physik), zeigeI, zeigeF, dreh (+1, -1, 0, sonst aus der Physik), zeigeDreh, nummern } */
+function motorSvg(o, breite = 150) {
+	const w = o.w, r = w * Math.PI / 180, nl = o.nordLinks !== false, plusR = o.plusRechts !== false;
+	const s1 = o.s1 !== undefined ? o.s1 : strom1(w, o.komm, plusR);
+	const cx = 80, cy = 54, R = 31;
+	let s = "";
+	const pol = (x, f, t) => '<rect x="' + x + '" y="10" width="17" height="86" fill="' + f + '" stroke="#222" stroke-width="0.8"/><text x="' + (x + 8.5) + '" y="58" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold">' + t + "</text>";
+	s += pol(2, nl ? ROT : GRUEN, nl ? "N" : "S") + pol(141, nl ? GRUEN : ROT, nl ? "S" : "N");
+	for (const k of [-34, -17, 0, 17, 34]) s += nl ? S.pfeil(20, cy + k, 139, cy + k, "rgba(91,123,224,0.5)", 1) : S.pfeil(140, cy + k, 21, cy + k, "rgba(91,123,224,0.5)", 1);
+	const x1 = cx + R * Math.cos(r), y1 = cy - R * Math.sin(r), x2 = cx - R * Math.cos(r), y2 = cy + R * Math.sin(r);
+	s += '<line x1="' + x2.toFixed(1) + '" y1="' + y2.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="#555" stroke-width="1.6" stroke-dasharray="4 3"/>';
+	if (o.komm) {
+		const p = a => { const b = a * Math.PI / 180; return (cx + 9 * Math.cos(b)).toFixed(2) + " " + (cy - 9 * Math.sin(b)).toFixed(2); };
+		const halb = (m, f) => '<path d="M' + cx + " " + cy + " L" + p(m - 84) + " A9 9 0 0 0 " + p(m + 84) + 'Z" fill="' + f + '" stroke="#222" stroke-width="0.8"/>';
+		s += halb(w, "#F2BB86") + halb(w + 180, "#C3A3DD");
+		s += '<line x1="' + (cx + 11.5) + '" y1="' + (cy + 3) + '" x2="' + (cx + 11.5) + '" y2="104" stroke="#222" stroke-width="1.6"/><line x1="' + (cx - 11.5) + '" y1="' + (cy + 3) + '" x2="' + (cx - 11.5) + '" y2="104" stroke="#222" stroke-width="1.6"/>';
+		s += '<rect x="' + (cx + 8) + '" y="' + (cy - 3) + '" width="7" height="6" fill="#333"/><rect x="' + (cx - 15) + '" y="' + (cy - 3) + '" width="7" height="6" fill="#333"/>';
+		s += '<text x="' + (cx + 11.5) + '" y="116" font-size="13" text-anchor="middle" font-weight="bold">' + (plusR ? "+" : "−") + '</text><text x="' + (cx - 11.5) + '" y="116" font-size="13" text-anchor="middle" font-weight="bold">' + (plusR ? "−" : "+") + "</text>";
+	} else {
+		s += '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="#999" stroke="#222" stroke-width="0.6"/>';
+		if (o.anschluss) s += '<text x="' + cx + '" y="114" font-size="9.5" fill="#555" text-anchor="middle">Seite 1 am ' + (plusR ? "Pluspol" : "Minuspol") + "</text>";
+	}
+	/* Kräfte zuerst (unter den Kreisen) */
+	if (o.zeigeF && s1 !== 0) {
+		const f = kraft1(s1, nl);
+		s += S.pfeil(x1, y1 - f * 9, x1, y1 - f * 27, KRAFT, 2.2) + S.pfeil(x2, y2 + f * 9, x2, y2 + f * 27, KRAFT, 2.2);
+	}
+	const seite = (x, y, farbe, st, nr) => {
+		let t = '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="7.5" fill="#fff" stroke="' + farbe + '" stroke-width="2.6"/>';
+		if (o.zeigeI && st > 0) t += '<path d="M' + (x - 4.2).toFixed(1) + " " + (y - 4.2).toFixed(1) + "l8.4 8.4M" + (x + 4.2).toFixed(1) + " " + (y - 4.2).toFixed(1) + 'l-8.4 8.4" stroke="#111" stroke-width="1.6"/>';
+		if (o.zeigeI && st < 0) t += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.2" fill="#111"/>';
+		if (o.nummern !== false) {
+			const lx = x >= cx - 1 ? x + 13 : x - 13;
+			t += '<text x="' + lx.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" font-size="10.5" fill="' + farbe + '" text-anchor="middle" font-weight="bold">' + nr + "</text>";
+		}
+		return t;
+	};
+	s += seite(x1, y1, ORANGE, s1, 1) + seite(x2, y2, VIOLETT, -s1, 2);
+	if (o.zeigeDreh) {
+		const d = o.dreh !== undefined ? o.dreh : drehsinn(w, s1, nl);
+		if (d !== 0) {
+			const p = a => { const b = a * Math.PI / 180; return [cx + 45 * Math.cos(b), cy - 45 * Math.sin(b)]; };
+			const [a0, a1] = d > 0 ? [116, 64] : [64, 116], q0 = p(a0), q1 = p(a1), q2 = p(d > 0 ? 58 : 122);
+			s += '<path d="M' + q0[0].toFixed(1) + " " + q0[1].toFixed(1) + " A45 45 0 0 " + (d > 0 ? 1 : 0) + " " + q1[0].toFixed(1) + " " + q1[1].toFixed(1) + '" fill="none" stroke="#444" stroke-width="2"/>' + S.pfeil(q1[0], q1[1], q2[0], q2[1], "#444", 1.2);
+		}
+	}
+	return S.rahmen(160, 120, s, breite);
+}
+
+/* kleine Symbole für Antwortknöpfe */
+const ICON = {
+	uhr: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" style="transform:scaleX(-1)"><path d="M5 9a8 8 0 1 1 1.2 9" fill="none" stroke="#333" stroke-width="2.4"/><path d="M1.5 6.5l7 1-4.5 5z" fill="#333"/></svg>',
+	gegen: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9a8 8 0 1 1 1.2 9" fill="none" stroke="#333" stroke-width="2.4"/><path d="M1.5 6.5l7 1-4.5 5z" fill="#333"/></svg>',
+	steht: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="#333"/></svg>',
+	hinein: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff" stroke="#111" stroke-width="1.8"/><path d="M7 7l10 10M17 7L7 17" stroke="#111" stroke-width="1.8"/></svg>',
+	heraus: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff" stroke="#111" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="#111"/></svg>',
+	kein: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fff" stroke="#999" stroke-width="1.8" stroke-dasharray="3 2"/></svg>',
+	pendel: '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9a9 9 0 0 0 16 0" fill="none" stroke="#333" stroke-width="2.2"/><path d="M1 7l5 0-2 5zM23 7l-5 0 2 5z" fill="#333"/></svg>'
 };
-const MODI = [["paare", "Paare"], ["kette", "Kette"], ["vorhersage", "Vorhersage"], ["sortieren", "Sortieren"], ["wischen", "Stimmt's?"], ["fehler", "Fehler finden"]];
-const gebaut = {};
-function modusleiste() {
-	const leiste = document.getElementById("modusleiste");
-	const params = new URLSearchParams(location.search);
-	/* ?modus=kette-1: Übung „kette“, NUR Stufe 1; ?modus=paare,kette: mehrere Übungen (für QR-Codes auf dem Arbeitsblatt) */
-	const erlaubt = params.get("modus") ? params.get("modus").split(",").map(m => {
-		const [name, stufe] = m.split("-");
-		if (stufe) KI.festeStufen = stufe.split(".").map(z => parseInt(z, 10) - 1).filter(z => z >= 0);
-		return name;
-	}) : MODI.map(m => m[0]);
-	if (!MODI.some(m => erlaubt.includes(m[0]))) erlaubt.splice(0, erlaubt.length, ...MODI.map(m => m[0]));   /* unbekannter Modus (alter QR-Code): alle Übungen */
-	const knoepfe = {};
-	for (const [id, name] of MODI) {
-		if (!erlaubt.includes(id)) { document.getElementById("m-" + id).remove(); continue; }
-		const b = KI.el("button", "", '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + MI[id] + "</svg><span>" + name + '</span><span class="mstern"></span>');
-		b.addEventListener("click", () => zeige(id));
-		leiste.appendChild(b); knoepfe[id] = b;
-	}
-	if (Object.keys(knoepfe).length <= 1) leiste.hidden = true;
-	function sterne() { for (const id in knoepfe) { const s = KI.speicher.lies("sterne_" + id, 0); knoepfe[id].querySelector(".mstern").textContent = s ? "★".repeat(s) : ""; } }
-	document.addEventListener("ki-sterne", sterne); sterne();
-	function zeige(id) {
-		for (const k in knoepfe) { knoepfe[k].classList.toggle("aktiv", k === id); document.getElementById("m-" + k).hidden = k !== id; }
-		if (!gebaut[id]) { gebaut[id] = true; BAU[id](document.querySelector("#m-" + id + " .tcb-body")); }
-		KI.speicher.schreib("letzterModus", id);
-	}
-	const letzter = KI.speicher.lies("letzterModus", null);
-	zeige(knoepfe[letzter] ? letzter : Object.keys(knoepfe)[0]);
-}
 
 /* ==========================================================================
-   Inhalte der Bausteine
+   Inhalte
    ========================================================================== */
 const BAU = {};
-const HINWEIS_VORNE = "Blick von vorne entlang der Drehachse, Drehung im Uhrzeigersinn. Die Schleifringe sitzen vorne. Ring 1 gehört zur <b style=\"color:" + ORANGE + "\">orangen</b> Seite 1.";
+const HINWEIS_VORNE = "Blick von vorne entlang der Drehachse. Der rechte Schleifkontakt liegt am Pluspol.";
+const V = (w, komm, extra = {}) => ({ svg: motorSvg(Object.assign({ w, komm, zeigeI: true }, extra)), alt: "Schleife von vorne" });
 
 BAU.paare = (b) => KI.paare(b, {
 	id: "paare",
 	stufen: [
 		{
-			name: "Bauteile", titel: "Generator: Bauteile und ihre Aufgabe",
+			name: "Bauteile", titel: "Elektromotor: Bauteile und ihre Aufgabe",
 			auftrag: "Tippe zwei Karten an, die zusammengehören. Passende Paare verschwinden.",
 			gruppen: [
-				[{ text: "Schleifringe" }, { text: "verbinden die sich drehende Schleife mit dem Messgerät" }],
-				[{ text: "Schleifkontakte" }, { text: "liegen fest an den Ringen an und leiten den Strom weiter" }],
-				[{ text: "Kommutator" }, { text: "polt die Anschlüsse nach jeder halben Umdrehung um" }],
-				[{ text: "Feldmagnet" }, { text: "Elektromagnet, der das Magnetfeld erzeugt" }],
-				[{ text: "Kurbel oder Turbine" }, { text: "dreht die Schleife" }],
-				[{ text: "Eisenkern" }, { text: "führt und verstärkt das Magnetfeld" }]
+				[{ text: "Stator" }, { text: "feststehender Magnet, erzeugt das Magnetfeld" }],
+				[{ text: "Rotor" }, { text: "drehbare Leiterschleife bzw. Spule" }],
+				[{ text: "Kommutator" }, { text: "kehrt nach jeder halben Umdrehung die Stromrichtung um" }],
+				[{ text: "Schleif" + SH + "kontakte" }, { text: "stehen fest und leiten den Strom zu den Halbringen" }],
+				[{ text: "Halbringe" }, { text: "gegeneinander isoliert, drehen sich mit der Schleife" }],
+				[{ text: "Anker" }, { text: "Spule auf einem Eisenkern, wird zum Elektromagneten" }]
 			]
 		},
 		{
-			name: "Stellung und Spannung", titel: "Generator: Stellung und Spannung",
-			auftrag: "Welche Aussage gehört zu welcher Stellung? " + HINWEIS_VORNE,
+			name: "Stellung und Wirkung", titel: "Elektromotor: Stellung und Wirkung",
+			auftrag: "Welche Aussage gehört zu welchem Bild? " + HINWEIS_VORNE,
 			gruppen: [
-				[V_.a, { text: "größte Spannung, Ring 1 ist Pluspol" }],
-				[V_.b, { text: "kleinere Spannung, Ring 1 ist Pluspol" }],
-				[V_.c, { text: "keine Spannung" }],
-				[V_.d, { text: "kleinere Spannung, Ring 2 ist Pluspol" }],
-				[V_.e, { text: "größte Spannung, Ring 2 ist Pluspol" }]
+				[V(0, true), { text: "größte Drehwirkung im Uhrzeigersinn" }],
+				[V(-45, true), { text: "Drehwirkung im Uhrzeigersinn, aber kleiner" }],
+				[V(-90, true), { text: "kein Strom: Die Schleifkontakte liegen an den Lücken." }],
+				[V(-135, false), { text: "ohne Kommutator: Die Kraft dreht die Schleife zurück." }],
+				[V(-135, true), { text: "umgepolt: Die Schleife dreht sich weiter im Uhrzeigersinn." }]
 			]
 		},
 		{
-			name: "Stellung und Diagramm", titel: "Generator: Stellung und Punkt im Diagramm",
-			auftrag: "Das Diagramm zeigt die Spannung während einer Umdrehung (positiv: Ring 1 ist Pluspol). Welcher rote Punkt gehört zu welcher Stellung? " + HINWEIS_VORNE,
-			gruppen: [[V_.a, K_.a], [V_.b, K_.b], [V_.c, K_.c], [V_.d, K_.d], [V_.e, K_.e]]
-		},
-		{
-			name: "Trios", titel: "Generator: Stellung, Feldlinien, Diagramm",
-			auftrag: "Jetzt gehören immer <b>drei</b> Karten zusammen: Stellung, Aussage über die Feldlinien durch die Schleife und Punkt im Diagramm.",
-			gruppen: [
-				[V_.a, { text: "keine Feldlinien durch die Schleife, ihre Zahl ändert sich am schnellsten" }, K_.a],
-				[V_.c, { text: "die meisten Feldlinien, ihre Zahl ändert sich gerade nicht" }, K_.c],
-				[V_.b, { text: "Feldlinien kommen hinzu, ihre Zahl ändert sich mittelschnell" }, K_.b],
-				[V_.e, { text: "wieder keine Feldlinien, aber die Seiten sind vertauscht" }, K_.e]
-			]
+			name: "Bild und Diagramm", titel: "Elektromotor: Stellung und Punkt im Diagramm",
+			auftrag: "Das Diagramm zeigt die Drehwirkung der Kräfte während einer Umdrehung im Uhrzeigersinn (Motor mit Kommutator). Welcher rote Punkt gehört zu welcher Stellung? " + HINWEIS_VORNE,
+			gruppen: [0, -45, -90, -135, -180].map(w => {
+				const t0 = -w / 360, x = 22 + t0 * 128, y = 92 - Math.abs(Math.cos(2 * Math.PI * t0)) * 78;
+				return [V(w, true), { svg: S.diagramm(t => Math.abs(Math.cos(2 * Math.PI * t)), "t", "", BLAU, 0, '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="6" fill="' + ROT + '"/>') }];
+			})
 		}
 	]
 });
@@ -1824,98 +1828,432 @@ BAU.kette = (b) => KI.kette(b, {
 	id: "kette",
 	ketten: [
 		{
-			name: "Lorentzkraft", titel: "Warum entsteht beim Drehen eine Spannung?",
+			name: "Ohne Kommutator", titel: "Warum bleibt die Schleife ohne Kommutator stehen?",
 			auftrag: "Bringe die Bausteine in die richtige Reihenfolge. Zwei Bausteine sind falsch: Sie kommen in den grauen Korb.",
 			schritte: [
-				"Die Kurbel dreht die Schleife im Magnetfeld.",
-				"Die Ladungsträger in den langen Seiten bewegen sich mit, quer zu den Feldlinien.",
-				"Auf sie wirkt die Lorentzkraft entlang des Drahts.",
-				"Positive Ladungsträger sammeln sich an einem Schleifring, negative am anderen.",
-				"Zwischen den Schleifringen liegt eine Spannung."
+				"Strom fließt durch die Leiterschleife im Magnetfeld.",
+				"Auf die beiden langen Seiten wirken entgegengesetzte Kräfte: Die Schleife dreht sich.",
+				"Steht die Schleife senkrecht, zeigen die Kräfte entlang der Schleife: keine Drehwirkung.",
+				"Wegen ihrer Trägheit dreht sich die Schleife über diese Stellung hinaus.",
+				"Der Strom fließt weiter in derselben Richtung: Die Kräfte drehen die Schleife zurück.",
+				"Die Schleife pendelt, bis sie in der senkrechten Stellung stehen bleibt."
 			],
-			falsche: ["Der Magnet gibt elektrische Ladung an die Schleife ab.", "Die Schleifkontakte erzeugen die Spannung durch Reibung."]
+			falsche: ["In der senkrechten Stellung ist die Drehwirkung am größten.", "Ohne Kommutator kehrt sich der Strom von selbst um."]
 		},
 		{
-			name: "Feldlinien", titel: "Warum entsteht eine Wechselspannung?",
+			name: "Kommutator", titel: "Warum dreht sich die Schleife mit Kommutator immer weiter?",
 			auftrag: "Bringe die Bausteine in die richtige Reihenfolge. Zwei Bausteine sind falsch.",
 			schritte: [
-				"Die Schleife dreht sich gleichmäßig im Magnetfeld.",
-				"Die Zahl der Feldlinien durch die Schleife ändert sich ständig.",
-				"In der Schleife wird eine Spannung induziert.",
-				"Steht die Schleife parallel zum Feld, ändert sich die Zahl am schnellsten: größte Spannung.",
-				"Nach einer halben Umdrehung kehrt sich die Änderung um: Das Vorzeichen wechselt.",
-				"Es entsteht eine Wechselspannung."
+				"In der senkrechten Stellung liegen die Schleifkontakte an den Lücken: kurz kein Strom.",
+				"Wegen ihrer Trägheit dreht sich die Schleife über diese Stellung hinaus.",
+				"Jetzt berührt jeder Schleifkontakt den anderen Halbring.",
+				"Die Stromrichtung in der Schleife kehrt sich um.",
+				"Damit kehren sich auch die Kräfte auf die beiden Seiten um.",
+				"Die Schleife dreht sich in dieselbe Richtung weiter."
 			],
-			falsche: ["Je mehr Feldlinien durch die Schleife gehen, desto größer ist die Spannung.", "Die Spannung ist immer gleich groß, nur die Richtung wechselt."]
+			falsche: ["Der Kommutator kehrt die Richtung des Magnetfelds um.", "Die Schleifkontakte drehen sich mit der Schleife mit."]
+		},
+		{
+			name: "Büroklammermotor", titel: "Warum dreht sich der Büroklammermotor immer weiter?",
+			auftrag: "Bringe die Bausteine in die richtige Reihenfolge. Zwei Bausteine sind falsch.",
+			schritte: [
+				"Die blanke Hälfte des Drahtendes liegt auf der Büroklammer: Strom fließt.",
+				"In dieser halben Umdrehung treibt die Kraft die Spule an.",
+				"Dann liegt die lackierte Hälfte auf: Der Stromkreis ist unterbrochen.",
+				"Ohne Strom wirkt keine Kraft, die die Spule zurückdreht.",
+				"Wegen ihrer Trägheit dreht sich die Spule weiter, bis wieder die blanke Hälfte aufliegt."
+			],
+			falsche: ["Der Lack kehrt die Stromrichtung um wie ein Kommutator.", "Die Batterie wird nach jeder halben Umdrehung umgepolt."]
 		}
 	]
 });
 
 BAU.sortieren = (b) => KI.sortieren(b, {
-	id: "sortieren", titel: "Generator oder Elektromotor?",
-	auftrag: "Arbeitet hier ein Generator (Bewegungsenergie wird zu elektrischer Energie) oder ein Elektromotor (elektrische Energie wird zu Bewegungsenergie)? Sortiere die Karten in die Körbe.",
-	koerbe: [{ name: "Generator", farbe: "#0000BF" }, { name: "Elektromotor", farbe: "#B35C00" }],
+	id: "sortieren", titel: "Was passiert mit der Drehrichtung?",
+	auftrag: "Ein Motor mit Kommutator dreht sich im Uhrzeigersinn. Was passiert mit der Drehrichtung, wenn man das auf der Karte Genannte ändert? Sortiere die Karten in die Körbe.",
+	koerbe: [{ name: "Drehrichtung kehrt sich um", farbe: "#B35C00" }, { name: "Drehrichtung bleibt gleich", farbe: "#0000BF" }],
 	dinge: [
-		{ text: "Fahrraddynamo", korb: 0 },
-		{ text: "Windkraft" + SH + "anlage", korb: 0 },
-		{ text: "Wasser" + SH + "kraftwerk", korb: 0 },
-		{ text: "Elektroauto beim Bremsen", korb: 0, warum: "Beim Bremsen treiben die Räder den Motor an: Er arbeitet als Generator und lädt den Akku." },
-		{ text: "Kurbel" + SH + "taschen" + SH + "lampe", korb: 0 },
-		{ text: "Notstrom" + SH + "aggregat", korb: 0, warum: "Ein Verbrennungsmotor dreht einen Generator." },
-		{ text: "Ventilator", korb: 1 },
-		{ text: "Bohr" + SH + "maschine", korb: 1 },
-		{ text: "Elektroauto beim Anfahren", korb: 1, warum: "Beim Anfahren treibt der Akku den Motor an: elektrische Energie wird zu Bewegungsenergie." },
-		{ text: "Wasch" + SH + "maschine", korb: 1 },
-		{ text: "E-Bike am Berg", korb: 1, warum: "Der Motor unterstützt beim Treten: elektrische Energie aus dem Akku wird zu Bewegungsenergie." },
-		{ text: "elektrische Zahn" + SH + "bürste", korb: 1 }
+		{ text: "Spannungs" + SH + "quelle umpolen", korb: 0 },
+		{ text: "Magnet umdrehen", korb: 0 },
+		{ text: "Zuleitungen an den Schleif" + SH + "kontakten vertauschen", korb: 0, warum: "Das ist dasselbe wie Umpolen: Der Strom fließt andersherum durch die Schleife." },
+		{ text: "Kommutator um 180° gedreht aufstecken", korb: 0, warum: "Dann berührt jede Seite der Schleife den anderen Schleifkontakt: Der Strom fließt andersherum." },
+		{ text: "Magnet umdrehen und umpolen", korb: 1, warum: "Zwei Umkehrungen heben sich auf: Die Kräfte zeigen wieder in die alte Richtung." },
+		{ text: "größere Stromstärke", korb: 1, warum: "Die Kräfte werden größer, zeigen aber in dieselbe Richtung." },
+		{ text: "stärkerer Magnet", korb: 1 },
+		{ text: "mehr Windungen", korb: 1 },
+		{ text: "Eisenkern in die Spule", korb: 1 },
+		{ text: "Schleife in die andere Richtung anstoßen", korb: 1, warum: "Die Kräfte bremsen die falsche Drehung ab und drehen die Schleife dann wieder im Uhrzeigersinn." }
 	]
 });
 
 BAU.wischen = (b) => KI.wischen(b, {
-	id: "wischen", titel: "Stimmt's? Generator",
+	id: "wischen", titel: "Stimmt's? Elektromotor",
 	auftrag: "Wische nach rechts, wenn die Aussage stimmt, nach links, wenn nicht. Oder tippe auf die Knöpfe.",
 	karten: [
-		{ t: "Ein Generator wandelt Bewegungsenergie in elektrische Energie um.", ja: true, erkl: "" },
-		{ t: "Ein Generator erzeugt Energie aus dem Nichts.", ja: false, erkl: "Er wandelt nur um: Die elektrische Energie stammt aus der Bewegungsenergie beim Drehen." },
-		{ t: "Gehen die meisten Feldlinien durch die Schleife, ist die Spannung am größten.", ja: false, erkl: "Dann ändert sich die Zahl der Feldlinien gerade nicht: Die Spannung ist null." },
-		{ t: "Die Spannung ist am größten, wenn sich die Zahl der Feldlinien durch die Schleife am schnellsten ändert.", ja: true, erkl: "" },
-		{ t: "Dreht man doppelt so schnell, wird die Spannung doppelt so groß.", ja: true, erkl: "" },
-		{ t: "Dreht man doppelt so schnell, wechselt das Vorzeichen der Spannung genauso oft wie vorher.", ja: false, erkl: "Doppelt so viele Umdrehungen in derselben Zeit: Das Vorzeichen wechselt doppelt so häufig." },
-		{ t: "Mit Schleifringen liefert der Generator eine Wechselspannung.", ja: true, erkl: "" },
-		{ t: "Mit einem Kommutator liefert der Generator ebenfalls eine Wechselspannung.", ja: false, erkl: "Der Kommutator polt nach jeder halben Umdrehung um: Es entsteht eine pulsierende Gleichspannung." },
-		{ t: "Die kurzen Seiten der Schleife tragen zur Spannung bei.", ja: false, erkl: "Die Lorentzkraft wirkt dort quer zum Draht, nicht an ihm entlang." },
-		{ t: "Hält man die Schleife an, ist die Spannung null, auch wenn sie im Magnetfeld steht.", ja: true, erkl: "" },
-		{ t: "Beim Fahrraddynamo dreht sich der Magnet, die Spule steht still.", ja: true, erkl: "" }
+		{ t: "Ein Elektromotor wandelt elektrische Energie in mechanische Energie um.", ja: true, erkl: "" },
+		{ t: "Ohne Kommutator pendelt die Schleife und bleibt in der senkrechten Stellung stehen.", ja: true, erkl: "" },
+		{ t: "Steht die Schleife senkrecht zum Magnetfeld, ist die Drehwirkung am größten.", ja: false, erkl: "Dann zeigen die Kräfte entlang der Schleife: Die Drehwirkung ist null." },
+		{ t: "Der Kommutator kehrt die Richtung des Magnetfelds um.", ja: false, erkl: "Er kehrt die Stromrichtung in der Schleife um. Der Magnet bleibt, wie er ist." },
+		{ t: "Der Kommutator dreht sich mit der Schleife mit.", ja: true, erkl: "" },
+		{ t: "Die Schleifkontakte drehen sich mit der Schleife mit.", ja: false, erkl: "Die Schleifkontakte stehen fest. Nur die Halbringe drehen sich mit." },
+		{ t: "Der Kommutator polt nach jeder halben Umdrehung um.", ja: true, erkl: "" },
+		{ t: "Polt man die Spannungsquelle um, dreht sich der Motor andersherum.", ja: true, erkl: "" },
+		{ t: "Polt man um und dreht zugleich den Magneten um, dreht sich der Motor andersherum.", ja: false, erkl: "Zwei Umkehrungen heben sich auf: Die Drehrichtung bleibt gleich." },
+		{ t: "Ein Motor mit einer Schleife läuft in jeder Stellung von selbst an.", ja: false, erkl: "Steht die Schleife senkrecht, liegen die Schleifkontakte an den Lücken: kein Strom, keine Kraft." },
+		{ t: "Mehr Windungen und ein Eisenkern verstärken die Kraftwirkung.", ja: true, erkl: "" },
+		{ t: "Über die Stellung, in der umgepolt wird, kommt die Schleife wegen ihrer Trägheit hinweg.", ja: true, erkl: "" },
+		{ t: "Beim Büroklammermotor kehrt der halb entfernte Lack die Stromrichtung um.", ja: false, erkl: "Der Lack unterbricht den Strom nur in der halben Umdrehung, in der die Kraft bremsen würde." }
 	]
 });
 
 BAU.fehler = (b) => KI.markieren(b, {
-	id: "fehler", titel: "Erklärung: Generator (verbessert)",
-	auftrag: "Sixtus erklärt den Generator. In seiner Erklärung stecken <b>vier Fehler</b>. Tippe sie an.",
-	text: "Wird die Schleife im Magnetfeld gedreht, bewegen sich die Ladungsträger in den langen Seiten mit. Auf sie wirkt die {Gewichtskraft|Lorentzkraft}, die sie entlang des Drahts verschiebt. So entsteht zwischen den Schleifringen eine Spannung. Am größten ist sie, wenn sich die Seiten {parallel|senkrecht} zum Feld bewegen. Steht die Schleife senkrecht zum Feld, gehen die meisten Feldlinien durch sie hindurch. Trotzdem ist die Spannung dort {am größten|null}, weil sich die Zahl der Feldlinien gerade nicht ändert. Nach einer halben Umdrehung kehrt sich die Spannung um: Es entsteht eine {Gleichspannung|Wechselspannung}."
+	id: "fehler", titel: "Erklärung: Elektromotor (verbessert)",
+	auftrag: "Cornelius erklärt den Elektromotor. In seiner Erklärung stecken <b>vier Fehler</b>. Tippe sie an.",
+	text: "Fließt Strom durch die Leiterschleife, wirkt im Magnetfeld auf ihre beiden langen Seiten je eine Kraft. Die beiden Kräfte zeigen in {dieselbe|entgegengesetzte} Richtung, deshalb dreht sich die Schleife. Steht die Schleife senkrecht zum Magnetfeld, ist die Drehwirkung {am größten|null}. Damit sich die Schleife weiterdreht, kehrt der Kommutator nach jeder halben Umdrehung die {Richtung des Magnetfelds|Stromrichtung} um. Er besteht aus zwei Halbringen, die sich mit der Schleife mitdrehen. Die Schleifkontakte {drehen sich ebenfalls mit|stehen fest}. Über die Stellung, in der umgepolt wird, kommt die Schleife wegen ihrer Trägheit hinweg."
 });
 
 /* ==========================================================================
-   Vorhersage: Verlauf der Spannung während einer Umdrehung zeichnen
+   Filmleiste: Der Motor dreht sich (Einzelbilder im Abstand einer Achtelumdrehung)
+   ========================================================================== */
+const F = (w, extra = {}) => ({ svg: motorSvg(Object.assign({ w, komm: true, zeigeI: true, zeigeF: true }, extra), 160) });
+const UHR = [0, -45, -90, -135, -180, -225];
+BAU.filmleiste = (b) => KI.filmleiste(b, {
+	id: "filmleiste",
+	stufen: [
+		{
+			name: "Ordnen", art: "ordnen", titel: "Filmleiste: Motor mit Kommutator",
+			auftrag: "Die Bilder zeigen einen Motor mit Kommutator im Abstand einer Achtelumdrehung, mit Stromrichtung und Kräften. Bild 1 ist Stellung a) (Seite 1 rechts). Bringe die Bilder in die richtige Reihenfolge. Die Kräfte verraten dir, in welche Richtung sich die Schleife dreht.",
+			bilder: UHR.map(w => F(w)),
+			schluss: "Die Kräfte drehen die Schleife im Uhrzeigersinn. In der senkrechten Stellung fließt kein Strom, danach ist umgepolt."
+		},
+		{
+			name: "Magnet umgedreht", art: "ordnen", titel: "Filmleiste: Magnet umgedreht",
+			auftrag: "Jetzt ist der Magnet umgedreht: links Südpol, rechts Nordpol. Bild 1 ist wieder Stellung a). Bringe die Bilder in die richtige Reihenfolge.",
+			bilder: UHR.map(w => F(-w, { nordLinks: false })),
+			schluss: "Mit umgedrehtem Magneten zeigen alle Kräfte andersherum: Die Schleife dreht sich gegen den Uhrzeigersinn."
+		},
+		{
+			name: "Fehlendes Bild", art: "luecke", titel: "Filmleiste: Fehlendes Bild",
+			auftrag: "Ein Bild fehlt. Welches gehört in die Lücke?",
+			bilder: UHR.map(w => F(w)),
+			luecke: {
+				stelle: 3,
+				wahl: [
+					{ svg: F(-135).svg, ok: true },
+					{ svg: F(-135, { s1: -1 }).svg, ok: false, warum: "In diesem Bild wurde nicht umgepolt: Die Kräfte würden die Schleife zurückdrehen." },
+					{ svg: F(135).svg, ok: false, warum: "Seite 1 (orange) liegt hier links oben. Die Schleife dreht sich aber im Uhrzeigersinn, Seite 1 kommt also von rechts unten." }
+				]
+			},
+			schluss: "Nach der senkrechten Stellung hat der Kommutator umgepolt: Seite 1 bekommt Strom heraus aus der Zeichenebene, ihre Kraft zeigt nach oben."
+		},
+		{
+			name: "Falsches Bild", art: "fehler", titel: "Filmleiste: Falsches Bild",
+			auftrag: "In der Filmleiste ist ein Bild falsch. Tippe es an.",
+			bilder: UHR.map(w => F(w)),
+			fehler: [
+				{ stelle: 3, svg: F(-135, { s1: -1 }).svg, warum: "In Bild 4 wurde nicht umgepolt. Mit Kommutator fließt der Strom in Seite 1 jetzt heraus aus der Zeichenebene, die Kraft zeigt nach oben." },
+				{ stelle: 1, svg: F(-45, { s1: -1 }).svg, warum: "In Bild 2 stimmt die Stromrichtung nicht: Der Halbring von Seite 1 liegt am rechten Schleifkontakt (Pluspol), der Strom fließt hinein." },
+				{ stelle: 2, svg: F(-90, { s1: 1 }).svg, warum: "In Bild 3 liegen die Schleifkontakte an den Lücken: Es fließt kein Strom, es wirkt keine Kraft." },
+				{ stelle: 4, svg: F(-180, { s1: 1 }).svg, warum: "In Bild 5 fließt der Strom in Seite 1 falsch herum. Seite 1 liegt links, ihr Halbring berührt den Minuspol: Strom heraus." }
+			],
+			schluss: "Der Kommutator sorgt dafür, dass in der rechten Seite der Strom immer hinein fließt: Die Kraft rechts zeigt immer nach unten."
+		}
+	]
+});
+
+/* ==========================================================================
+   Spiel: Wie dreht sich die Schleife? (Stromrichtung und Drehsinn in neuen Stellungen)
+   ========================================================================== */
+BAU.drehen = function (b) {
+	const STUFEN = [
+		{ name: "Ohne Kommutator", komm: false, zufall: false, text: "Ohne Kommutator: Seite 1 ist fest mit dem Pluspol verbunden." },
+		{ name: "Mit Kommutator", komm: true, zufall: false, text: "Mit Kommutator: Der rechte Schleifkontakt liegt am Pluspol." },
+		{ name: "Alles gemischt", komm: true, zufall: true, text: "Mit Kommutator. Achtung: Auch der Magnet und die Polung können umgedreht sein!" }
+	];
+	const ANZAHL = 8;
+	const kopf = KI.el("div", "leiste"); b.appendChild(kopf);
+	const chips = KI.el("div", "chips"); kopf.appendChild(chips);
+	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); kopf.appendChild(rechts);
+	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
+	const buehne = KI.el("div", "buehne"); b.appendChild(buehne);
+	const frage = KI.el("p", "schrittfrage"); b.appendChild(frage);
+	const antw = KI.el("div", "antwortknoepfe"); b.appendChild(antw);
+	const rueck = KI.el("div", ""); b.appendChild(rueck);
+	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Spiel Drehsinn: " + STUFEN[nr].name + ", " + richtig + " von " + ANZAHL + " richtig" },
+		{ art: "reihe", elemente: verlauf.slice(-4).map(svg => ({ svg })) }]), "Spiel_Drehsinn_Elektromotor");
+	heft.hidden = true;
+	let nr = 0, aufgaben = [], i = 0, richtig = 0, fehler = 0, serie = 0, schritt = 1, fehlerHier = false, verlauf = [];
+	const knoepfe = STUFEN.map((s, j) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => starte(j)); chips.appendChild(k); return k; });
+	KI.chipsBeschraenken(chips, knoepfe);
+	function markiere() {
+		knoepfe.forEach((k, j) => {
+			k.classList.toggle("aktiv", j === nr);
+			const st = KI.speicher.lies("sterne_drehen_" + j, 0);
+			k.innerHTML = STUFEN[j].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : "");
+		});
+	}
+	function zeigeStatus() { status.innerHTML = "<span>" + Math.min(i + 1, ANZAHL) + " / " + ANZAHL + "</span><span>Richtig: " + richtig + "</span>" + (serie >= 2 ? '<span class="serie">🔥 ' + serie + "</span>" : ""); }
+	function starte(j) {
+		nr = j; i = 0; richtig = 0; fehler = 0; serie = 0; verlauf = [];
+		const st = STUFEN[j], pool = KI.mischen([0, 45, -45, 90, -90, 135, -135, 180]);
+		aufgaben = pool.map(w => ({ w, komm: st.komm, nordLinks: st.zufall ? Math.random() < 0.5 : true, plusRechts: st.zufall ? Math.random() < 0.5 : true }));
+		markiere(); auftrag.innerHTML = st.text + " Bestimme zuerst die Stromrichtung in Seite 1 (orange), dann den Drehsinn.";
+		rueck.innerHTML = ""; heft.hidden = true; antw.hidden = false;
+		neueAufgabe();
+	}
+	function a() { return aufgaben[i]; }
+	function bild(loesung) {
+		const z = a();
+		return motorSvg(Object.assign({}, z, { zeigeI: loesung || schritt === 2, zeigeF: loesung, zeigeDreh: loesung, anschluss: !z.komm }), 520);
+	}
+	function neueAufgabe() {
+		schritt = 1; fehlerHier = false; rueck.innerHTML = "";
+		buehne.innerHTML = bild(false);
+		frage.textContent = "Wie fließt der Strom in Seite 1?";
+		antw.innerHTML = "";
+		[["hinein", "hinein", 1], ["heraus", "heraus", -1], ["kein", "kein Strom", 0]].forEach(([ic, t, wert]) => {
+			const k = KI.el("button", "", ICON[ic] + "<span>" + t + "</span>"); k.addEventListener("click", () => antworteStrom(k, wert)); antw.appendChild(k);
+		});
+		zeigeStatus();
+	}
+	function sperren() { antw.querySelectorAll("button").forEach(x => x.disabled = true); }
+	function erklaerStrom(z, s1) {
+		if (!z.komm) return "Ohne Kommutator ist Seite 1 immer mit dem " + (z.plusRechts ? "Pluspol" : "Minuspol") + " verbunden: Strom " + (s1 > 0 ? "hinein" : "heraus") + ".";
+		if (s1 === 0) return "Die Schleife steht senkrecht: Die Schleifkontakte liegen an den Lücken. Es fließt kein Strom.";
+		const rechtsS1 = Math.cos(z.w * Math.PI / 180) > 0;
+		return "Seite 1 liegt " + (rechtsS1 ? "rechts" : "links") + ", ihr Halbring berührt also den " + (rechtsS1 ? "rechten" : "linken") + " Schleifkontakt. Der liegt am " + ((rechtsS1 === z.plusRechts) ? "Pluspol" : "Minuspol") + ": Strom " + (s1 > 0 ? "hinein." : "heraus.");
+	}
+	function antworteStrom(k, wert) {
+		const z = a(), s1 = strom1(z.w, z.komm, z.plusRechts);
+		if (wert === s1) {
+			k.classList.add("richtig"); sperren();
+			if (s1 === 0) { abschluss(true); return; }
+			setTimeout(() => {
+				schritt = 2; buehne.innerHTML = bild(false);
+				frage.textContent = "Wie dreht sich die Schleife?";
+				antw.innerHTML = "";
+				[["uhr", "im Uhrzeigersinn", 1], ["steht", "keine Drehwirkung", 0], ["gegen", "gegen den Uhrzeigersinn", -1]].forEach(([ic, t, wert2]) => {
+					const k2 = KI.el("button", "", ICON[ic] + "<span>" + t + "</span>"); k2.addEventListener("click", () => antworteDreh(k2, wert2)); antw.appendChild(k2);
+				});
+			}, 500);
+		} else {
+			fehlerHier = true; k.classList.add("falsch"); sperren();
+			antw.querySelectorAll("button").forEach((x, j) => { if ([1, -1, 0][j] === s1) x.classList.add("richtig"); });
+			zeigeErklaerung(erklaerStrom(z, s1));
+		}
+	}
+	function antworteDreh(k, wert) {
+		const z = a(), s1 = strom1(z.w, z.komm, z.plusRechts), d = drehsinn(z.w, s1, z.nordLinks);
+		sperren();
+		if (wert === d) { k.classList.add("richtig"); abschluss(!fehlerHier); return; }
+		fehlerHier = true; k.classList.add("falsch");
+		antw.querySelectorAll("button").forEach((x, j) => { if ([1, 0, -1][j] === d) x.classList.add("richtig"); });
+		const f = kraft1(s1, z.nordLinks), rechtsS1 = Math.cos(z.w * Math.PI / 180);
+		let t = "Drei-Finger-Regel: Feld von N nach S (" + (z.nordLinks ? "nach rechts" : "nach links") + "), Strom in Seite 1 " + (s1 > 0 ? "hinein" : "heraus") + ": Die Kraft auf Seite 1 zeigt nach " + (f > 0 ? "oben" : "unten") + ". ";
+		t += Math.abs(rechtsS1) < 0.05 ? "Seite 1 liegt genau oben oder unten: Die Kraft zeigt entlang der Schleife, keine Drehwirkung." : "Seite 1 liegt " + (rechtsS1 > 0 ? "rechts" : "links") + ": Die Schleife dreht sich " + (d > 0 ? "im Uhrzeigersinn." : "gegen den Uhrzeigersinn.");
+		zeigeErklaerung(t);
+	}
+	function zeigeErklaerung(t) {
+		buehne.innerHTML = bild(true);
+		rueck.innerHTML = '<div class="erkl">' + t + "</div>";
+		const w = KI.el("button", "haupt", "Weiter");
+		w.addEventListener("click", () => { abschluss(false); });
+		const l = KI.el("div", "leiste"); l.style.justifyContent = "center"; l.appendChild(w); rueck.appendChild(l);
+		serie = 0; zeigeStatus();
+	}
+	function abschluss(ok) {
+		buehne.innerHTML = bild(true); verlauf.push(bild(true));
+		if (ok) { richtig++; serie++; if (serie % 4 === 0) KI.funken(buehne, 12); }
+		else fehler++;
+		zeigeStatus();
+		setTimeout(() => weiter(), ok ? 1100 : 0);
+	}
+	function weiter() {
+		i++;
+		if (i >= ANZAHL) {
+			antw.hidden = true; frage.textContent = "";
+			const st = fehler <= 1 ? 3 : fehler <= 3 ? 2 : 1;
+			KI.speicher.schreib("sterne_drehen_" + nr, Math.max(st, KI.speicher.lies("sterne_drehen_" + nr, 0)));
+			KI.bestwert("drehen", st); markiere();
+			const p = KI.el("p", "rueck gut", richtig + " von " + ANZAHL + " richtig! " + KI.sterneHtml(st));
+			rueck.innerHTML = ""; rueck.appendChild(p); KI.funken(p, 6 * st);
+			const n = KI.naechsteStufe(nr, STUFEN.length), l = KI.el("div", "leiste");
+			if (n >= 0) { const w = KI.el("button", "haupt", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); l.appendChild(w); }
+			l.appendChild(KI.symbolKnopf("zurueck", "Stufe nochmal", () => starte(nr)));
+			rueck.appendChild(l); heft.hidden = false;
+			status.innerHTML = "<span>Richtig: " + richtig + " / " + ANZAHL + "</span>";
+			i = ANZAHL - 1;
+			return;
+		}
+		neueAufgabe();
+	}
+	starte(KI.startStufe(STUFEN.length));
+};
+
+/* ==========================================================================
+   Film mit Stopps: Was passiert gleich? (Physik wie in der Simulation A.2.3_Elektromotor)
+   ========================================================================== */
+BAU.film = function (b) {
+	const K_MOTOR = 4.8, REIB_LIN = 0.4, REIB_QUAD = 0.15, REIB_HAFT = 0.45, LUECKE = Math.sin(7 * Math.PI / 180);
+	const UHR = { icon: ICON.uhr, t: "dreht im Uhrzeigersinn" }, GEGEN = { icon: ICON.gegen, t: "dreht gegen den Uhrzeigersinn" }, STEHT = { icon: ICON.steht, t: "bleibt stehen" };
+	const mit = (o, ok) => Object.assign({}, o, { ok });
+	const SZENEN = [
+		{
+			name: "Ohne Kommutator", art: "ohne", start: 0,
+			schritte: [
+				{ frage: "Die Schleife steht in Stellung a). Der Strom wird eingeschaltet. Was passiert?", opt: [mit(UHR, true), mit(GEGEN, false), mit(STEHT, false)],
+					bis: z => z.phi <= -Math.PI / 2, erkl: "Die Kraft auf Seite 1 (rechts) zeigt nach unten, die auf Seite 2 nach oben: Die Schleife dreht sich im Uhrzeigersinn." },
+				{ frage: "Die Schleife erreicht Stellung c). Was passiert jetzt?", opt: [{ t: "bleibt sofort stehen", ok: false }, { t: "dreht sich wegen ihrer Trägheit über c) hinaus", ok: true }, { t: "dreht sich immer weiter im Kreis", ok: false }],
+					bis: z => z.omega > 0, erkl: "In c) zeigen die Kräfte entlang der Schleife: keine Drehwirkung. Wegen ihrer Trägheit dreht sich die Schleife aber über c) hinaus." },
+				{ frage: "Die Schleife ist über c) hinaus. Was passiert?", opt: [{ icon: ICON.uhr, t: "dreht sich weiter im Uhrzeigersinn", ok: false }, { icon: ICON.pendel, t: "wird zurückgedreht, pendelt und bleibt in c) stehen", ok: true }, { icon: ICON.steht, t: "bleibt sofort stehen", ok: false }],
+					bis: (z, t) => t > 7 || (t > 1.5 && Math.abs(z.omega) < 0.02), erkl: "Ohne Kommutator fließt der Strom in Seite 1 immer hinein, ihre Kraft zeigt immer nach unten. Hinter c) dreht sie die Schleife zurück. Die Schleife pendelt, Reibung bremst: Sie bleibt in c) stehen." }
+			]
+		},
+		{
+			name: "Mit Kommutator", art: "mit", start: 0,
+			schritte: [
+				{ frage: "Jetzt mit Kommutator. Die Schleife steht in a), der Strom wird eingeschaltet. Was passiert?", opt: [mit(UHR, true), mit(GEGEN, false), mit(STEHT, false)],
+					bis: z => z.phi <= -84 * Math.PI / 180, erkl: "Wie ohne Kommutator: Die Kräfte drehen die Schleife im Uhrzeigersinn." },
+				{ frage: "In Stellung c) liegen die Schleifkontakte an den Lücken. Was passiert?", opt: [{ t: "bleibt stehen, weil kein Strom fließt", ok: false }, { t: "dreht sich wegen ihrer Trägheit über c) hinaus", ok: true }, { t: "wird zurückgedreht", ok: false }],
+					bis: z => z.phi <= -125 * Math.PI / 180 && z.phi > -Math.PI, erkl: "Kurz fließt kein Strom. Die Schleife dreht sich wegen ihrer Trägheit über c) hinaus." },
+				{ frage: "Die Schleife ist über c) hinaus. Was passiert jetzt?", opt: [{ icon: ICON.pendel, t: "wird zurückgedreht", ok: false }, { icon: ICON.uhr, t: "dreht sich im Uhrzeigersinn weiter", ok: true }, { icon: ICON.steht, t: "bleibt stehen", ok: false }],
+					bis: (z, t) => t > 4.5, erkl: "Hinter c) berührt jeder Schleifkontakt den anderen Halbring: umgepolt! Die Kraft auf Seite 1 zeigt jetzt nach oben. Die Schleife dreht sich immer weiter im Uhrzeigersinn." }
+			]
+		},
+		{
+			name: "Start in c)", art: "mit", start: -90,
+			schritte: [
+				{ frage: "Die Schleife mit Kommutator steht genau in Stellung c). Der Strom wird eingeschaltet. Was passiert?", opt: [mit(UHR, false), mit(STEHT, true), mit(GEGEN, false)],
+					bis: (z, t) => t > 2.2, erkl: "Die Schleifkontakte liegen an den Lücken: Es fließt kein Strom, es wirkt keine Kraft. Der Motor läuft nicht an." },
+				{ frage: "Jetzt wird die Schleife leicht im Uhrzeigersinn angestoßen. Was passiert?", opt: [{ icon: ICON.uhr, t: "dreht sich immer weiter", ok: true }, { icon: ICON.steht, t: "bleibt nach kurzer Zeit stehen", ok: false }, { icon: ICON.pendel, t: "pendelt um c)", ok: false }],
+					stoss: -2.5, bis: (z, t) => t > 4.5, erkl: "Nach dem Anstoß berühren die Schleifkontakte die Halbringe: Strom fließt, die Kräfte treiben die Schleife an. Ein Motor mit nur einer Schleife läuft deshalb nicht in jeder Stellung von selbst an." }
+			]
+		},
+		{
+			name: "Büroklammermotor", art: "klammer", start: 0,
+			schritte: [
+				{ frage: "Büroklammermotor: Der Lack ist am vorderen Drahtende nur zur Hälfte entfernt. Strom ein, die Spule wird angestoßen. Was passiert?", opt: [{ icon: ICON.uhr, t: "dreht sich immer weiter", ok: true }, { icon: ICON.pendel, t: "pendelt und bleibt stehen", ok: false }, { icon: ICON.steht, t: "bleibt sofort stehen", ok: false }],
+					stoss: -2.5, bis: (z, t) => t > 5, erkl: "Strom fließt nur in der halben Umdrehung, in der die Kraft antreibt. In der anderen Hälfte liegt der Lack auf: kein Strom, keine bremsende Kraft. Die Spule dreht sich wegen ihrer Trägheit weiter." },
+				{ frage: "Jetzt wird der Lack auch an diesem Ende ganz entfernt. Was passiert?", opt: [{ icon: ICON.uhr, t: "dreht sich immer weiter", ok: false }, { icon: ICON.pendel, t: "pendelt und bleibt stehen", ok: true }, { icon: ICON.uhr, t: "dreht sich schneller", ok: false }],
+					lack: "ganz", bis: (z, t) => t > 8 || (t > 2 && Math.abs(z.omega) < 0.02), erkl: "Jetzt fließt immer Strom in derselben Richtung, wie ohne Kommutator: Die Spule pendelt und bleibt stehen." }
+			]
+		}
+	];
+	const kopf = KI.el("div", "leiste"); b.appendChild(kopf);
+	const chips = KI.el("div", "chips"); kopf.appendChild(chips);
+	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); kopf.appendChild(rechts);
+	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
+	const buehne = KI.el("div", "buehne"); b.appendChild(buehne);
+	const frage = KI.el("p", "schrittfrage"); b.appendChild(frage);
+	const wahl = KI.el("div", "antwortknoepfe"); b.appendChild(wahl);
+	const rueck = KI.el("div", ""); b.appendChild(rueck);
+	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Film: " + SZENEN[szNr].name }].concat(notizen.map(n => ({ art: "text", teile: [{ t: n.f + " ", fett: true }, { t: n.e }], groesse: 22 })))), "Film_Elektromotor");
+	heft.hidden = true;
+	let szNr = 0, stNr = 0, z, phase = "frage", tLauf = 0, letzte = 0, richtigGesamt = 0, gefragt = 0, notizen = [];
+	const knoepfe = SZENEN.map((s, i) => { const k = KI.el("button", "", s.name); k.addEventListener("click", () => szene(i)); chips.appendChild(k); return k; });
+	KI.chipsBeschraenken(chips, knoepfe);
+	const erlaubte = SZENEN.map((_, i) => i).filter(KI.stufeErlaubt);
+	function s1von(phi) {
+		const c = Math.cos(phi);
+		if (!z.strom) return 0;
+		if (z.art === "ohne") return 1;
+		if (z.art === "klammer") return z.lack === "ganz" || c > 0 ? 1 : 0;
+		return Math.abs(c) <= LUECKE ? 0 : Math.sign(c);
+	}
+	function physik(dt) {
+		const n = 20, h = dt / n, k = z.art === "klammer" ? 2 : 1;
+		for (let i = 0; i < n; i++) {
+			const tau = -K_MOTOR * k * s1von(z.phi) * Math.cos(z.phi), w = z.omega;
+			if (Math.abs(w) < 0.03 && Math.abs(tau) <= REIB_HAFT) { z.omega = 0; continue; }
+			const reib = REIB_LIN * w + REIB_QUAD * w * Math.abs(w) + REIB_HAFT * Math.sign(w || tau);
+			z.omega += (tau - reib) * h; z.phi += z.omega * h;
+		}
+	}
+	function zeichne() {
+		const wGrad = z.phi * 180 / Math.PI, s1 = s1von(z.phi);
+		buehne.innerHTML = motorSvg({ w: wGrad, komm: z.art === "mit", s1, zeigeI: true, zeigeF: true, zeigeDreh: Math.abs(z.omega) > 0.25, dreh: -Math.sign(z.omega), anschluss: z.art === "ohne" }, 520);
+	}
+	function szene(i) {
+		szNr = i; stNr = 0; notizen = []; heft.hidden = true;
+		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
+		const s = SZENEN[i];
+		z = { art: s.art, phi: s.start * Math.PI / 180, omega: 0, strom: false, lack: "halb" };
+		schritt();
+	}
+	function schritt() {
+		const st = SZENEN[szNr].schritte[stNr];
+		phase = "frage"; tLauf = 0;
+		auftrag.textContent = "Szene " + (erlaubte.indexOf(szNr) + 1) + " von " + erlaubte.length + ", Stopp " + (stNr + 1) + " von " + SZENEN[szNr].schritte.length + ". Was passiert gleich? Tippe deine Vermutung an.";
+		frage.textContent = st.frage;
+		wahl.innerHTML = ""; rueck.innerHTML = "";
+		for (const o of st.opt) {
+			const k = KI.el("button", "", (o.icon || "") + "<span>" + o.t + "</span>");
+			k.addEventListener("click", () => antwort(k, o));
+			wahl.appendChild(k);
+		}
+		zeichne();
+		status.innerHTML = gefragt ? "<span>Richtig vermutet: " + richtigGesamt + " / " + gefragt + "</span>" : "";
+	}
+	function antwort(k, o) {
+		if (phase !== "frage") return;
+		const st = SZENEN[szNr].schritte[stNr];
+		gefragt++; if (o.ok) richtigGesamt++;
+		wahl.querySelectorAll("button").forEach(x => x.disabled = true);
+		k.classList.add(o.ok ? "richtig" : "falsch");
+		frage.innerHTML = o.ok ? '<span style="color:var(--gut)">Gut vermutet! Schau genau hin:</span>' : '<span style="color:var(--falsch)">Schau genau hin, was passiert:</span>';
+		z.strom = true;
+		if (st.stoss) z.omega += st.stoss;
+		if (st.lack) z.lack = st.lack;
+		phase = "laeuft"; tLauf = 0; letzte = performance.now();
+		requestAnimationFrame(lauf);
+	}
+	function lauf(jetzt) {
+		if (phase !== "laeuft") return;
+		const dt = Math.min(0.05, (jetzt - letzte) / 1000); letzte = jetzt; tLauf += dt;
+		physik(dt); zeichne();
+		const st = SZENEN[szNr].schritte[stNr];
+		if (!st.bis(z, tLauf)) { requestAnimationFrame(lauf); return; }
+		phase = "erklaert";
+		notizen.push({ f: st.frage.replace(/ Was passiert( jetzt| gleich)?\?$/, ""), e: st.erkl });
+		rueck.innerHTML = '<div class="erkl">' + st.erkl + "</div>";
+		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
+		const letzter = stNr === SZENEN[szNr].schritte.length - 1;
+		if (!letzter) { const w = KI.el("button", "haupt", "Weiter"); w.addEventListener("click", () => { stNr++; schritt(); }); l.appendChild(w); }
+		else {
+			const n = KI.naechsteStufe(szNr, SZENEN.length);
+			if (n >= 0) { const w = KI.el("button", "haupt", "Nächste Szene"); w.addEventListener("click", () => szene(n)); l.appendChild(w); }
+			l.appendChild(KI.symbolKnopf("zurueck", "Szene nochmal", () => szene(szNr)));
+			heft.hidden = false;
+			const st2 = richtigGesamt >= gefragt - 1 ? 3 : richtigGesamt >= gefragt / 2 ? 2 : 1;
+			KI.bestwert("film", st2);
+			status.innerHTML = "<span>Richtig vermutet: " + richtigGesamt + " / " + gefragt + "</span>";
+		}
+		rueck.appendChild(l);
+	}
+	szene(KI.startStufe(SZENEN.length));
+};
+
+/* ==========================================================================
+   Vorhersage: Drehwirkung während einer Umdrehung zeichnen (positiv: dreht im Uhrzeigersinn)
    ========================================================================== */
 BAU.vorhersage = function (b) {
 	const DT = 0.01;
 	const BUCHSTABEN = ["a", "b", "c", "d", "e", "f", "g", "h"];
+	const c2 = t => Math.cos(2 * Math.PI * t);
 	const RUNDEN = [
-		{ name: "Start in a)", start: 0, umdrehungen: 1, ymax: 1.3, ref: null,
-			auftrag: "Die Schleife startet in Stellung a) und dreht sich einmal gleichmäßig im Uhrzeigersinn. Zeichne mit dem Finger, wie sich die Spannung <i class=\"gr\">U</i> dabei ändert (positiv: Ring 1 ist Pluspol). Unter der Zeitachse siehst du die Stellungen.",
-			nach: { f: "In welchen Stellungen ist die Spannung null?", opt: [["in c) und g): Die Seiten bewegen sich parallel zum Feld.", true], ["in a) und e): Dort gehen keine Feldlinien durch die Schleife.", false], ["nirgends: Die Schleife dreht sich ja immer.", false]],
-				erkl: "In c) und g) bewegen sich die Seiten parallel zum Feld. Die Zahl der Feldlinien durch die Schleife ändert sich dort gerade nicht: keine Spannung." } },
-		{ name: "Start in c)", start: 2, umdrehungen: 1, ymax: 1.3, ref: null,
-			auftrag: "Jetzt startet die Schleife in Stellung <b>c)</b>. Zeichne den Verlauf der Spannung während einer Umdrehung.",
-			nach: { f: "Warum beginnt die Kurve jetzt bei null?", opt: [["In c) ändert sich die Zahl der Feldlinien gerade nicht.", true], ["In c) gehen keine Feldlinien durch die Schleife.", false], ["Am Anfang dreht sich die Schleife noch nicht.", false]],
-				erkl: "Die Kurve ist dieselbe wie vorher, nur um eine Viertelumdrehung verschoben." } },
-		{ name: "Doppelt so schnell", start: 0, umdrehungen: 2, ymax: 2.4, ref: t => Math.cos(2 * Math.PI * t),
-			auftrag: "Die Schleife startet wieder in a), dreht sich aber <b>doppelt so schnell</b>: zwei Umdrehungen in derselben Zeit. Grau: die Messung bei normaler Drehzahl. Zeichne deine Vorhersage.",
-			nach: { f: "Was ändert sich beim doppelt so schnellen Drehen?", opt: [["Die Spannung wird doppelt so groß und wechselt doppelt so häufig das Vorzeichen.", true], ["Nur die Spannung wird doppelt so groß.", false], ["Nur das Vorzeichen wechselt doppelt so häufig.", false]],
-				erkl: "Die Zahl der Feldlinien ändert sich doppelt so schnell: doppelte Spannung. Und in derselben Zeit gibt es doppelt so viele Umdrehungen." } }
+		{ name: "Ohne Kommutator", art: "ohne", f: t => c2(t), ymax: 1.3, ref: null,
+			auftrag: "Eine Schleife <b>ohne Kommutator</b> wird von Hand gleichmäßig im Uhrzeigersinn gedreht, der Strom ist eingeschaltet. Zeichne mit dem Finger, wie sich die Drehwirkung der Kräfte während einer Umdrehung ändert (positiv: Die Kräfte drehen im Uhrzeigersinn). Unter der Achse siehst du die Stellungen.",
+			nach: { f: "Wo bremsen die Kräfte die Drehung?", opt: [["zwischen c) und g): Dort ist die Drehwirkung negativ.", true], ["in a) und e): Dort ist die Drehwirkung am größten.", false], ["nirgends: Die Kräfte treiben immer an.", false]],
+				erkl: "Ohne Kommutator zeigt die Kraft auf Seite 1 immer nach unten. Liegt Seite 1 links (zwischen c) und g)), dreht diese Kraft gegen den Uhrzeigersinn: Sie bremst." } },
+		{ name: "Mit Kommutator", art: "mit", f: t => Math.abs(c2(t)), ymax: 1.3, ref: null,
+			auftrag: "Jetzt dreht sich ein Motor <b>mit Kommutator</b> gleichmäßig im Uhrzeigersinn. Zeichne die Drehwirkung während einer Umdrehung.",
+			nach: { f: "Was bewirkt der Kommutator im Diagramm?", opt: [["Er klappt die negativen Teile nach oben: Die Drehwirkung ist nie negativ.", true], ["Die Drehwirkung ist jetzt immer gleich groß.", false], ["Die Kurve wird doppelt so hoch.", false]],
+				erkl: "Nach jeder halben Umdrehung polt der Kommutator um. Die Kräfte treiben immer im Uhrzeigersinn an, die Drehwirkung schwankt aber zwischen null (in c) und g)) und dem größten Wert." } },
+		{ name: "Zwei Schleifen", art: "zwei", f: t => Math.max(Math.abs(c2(t)), Math.abs(Math.sin(2 * Math.PI * t))), ymax: 1.3, ref: t => Math.abs(c2(t)),
+			auftrag: "Ein Motor mit <b>zwei Schleifen</b> (um 90° versetzt, Kommutator mit vier Teilen) dreht sich gleichmäßig. Grau: die Drehwirkung bei einer Schleife. Zeichne deine Vorhersage.",
+			nach: { f: "Warum läuft der Motor mit zwei Schleifen gleichmäßiger?", opt: [["Die Drehwirkung wird nie null, sie schwankt nur wenig.", true], ["Beide Schleifen haben immer gleichzeitig Strom.", false], ["Die Drehwirkung ist überall doppelt so groß.", false]],
+				erkl: "Es hat immer die Schleife Strom, die gerade fast waagrecht liegt. Steht eine Schleife senkrecht, treibt die andere an: Die Drehwirkung wird nie null." } }
 	];
-	const f = (r, t) => (r.umdrehungen) * Math.cos(2 * Math.PI * (r.umdrehungen * t + r.start / 8));
 	const kopf = KI.el("div", "leiste"); b.appendChild(kopf);
 	const chips = KI.el("div", "chips"); kopf.appendChild(chips);
 	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
@@ -1925,7 +2263,7 @@ BAU.vorhersage = function (b) {
 	steuer.appendChild(KI.symbolKnopf("zurueck", "Kurve löschen", () => runde(nr)));
 	b.appendChild(steuer);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
-	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Vorhersage: Spannung beim Drehen, " + RUNDEN[nr].name }, { art: "bild", quelle: KI.canvasKopie(cv) }]), "Vorhersage_Generator");
+	const heft = KI.heftleiste(b, async () => KI.blattBild([{ art: "titel", t: "Vorhersage: Drehwirkung, " + RUNDEN[nr].name }, { art: "bild", quelle: KI.canvasKopie(cv) }]), "Vorhersage_Elektromotor");
 	let nr = 0, eigen = [], phase = "zeichnen", tMess = 0, letzte = 0, geo = null;
 	const knoepfe = RUNDEN.map((r, i) => { const k = KI.el("button", "", r.name); k.addEventListener("click", () => runde(i)); chips.appendChild(k); return k; });
 	KI.chipsBeschraenken(chips, knoepfe);
@@ -1935,71 +2273,68 @@ BAU.vorhersage = function (b) {
 		auftrag.innerHTML = RUNDEN[i].auftrag; rueck.innerHTML = ""; heft.hidden = true; los.disabled = true;
 		zeichne();
 	}
-	function schleife(c, x, y, R, w) {   /* kleine Ansicht von vorne, w in Grad (Seite 1) */
+	/* kleine Ansicht von vorne: Schleife(n) mit Seite 1 orange, w in Grad */
+	function schleife(c, x, y, R, w, art) {
 		c.fillStyle = ROT; c.fillRect(x - 1.75 * R, y - 1.15 * R, 0.45 * R, 2.3 * R);
 		c.fillStyle = GRUEN; c.fillRect(x + 1.3 * R, y - 1.15 * R, 0.45 * R, 2.3 * R);
-		c.strokeStyle = "rgba(91,123,224,0.45)"; c.lineWidth = 1;
-		for (let k = -0.8; k <= 0.81; k += 0.4) { c.beginPath(); c.moveTo(x - 1.3 * R, y + k * R); c.lineTo(x + 1.3 * R, y + k * R); c.stroke(); }
-		const r = w * Math.PI / 180, dx = R * Math.cos(r), dy = -R * Math.sin(r);
-		c.setLineDash([5, 3]); c.strokeStyle = "#555"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x - dx, y - dy); c.lineTo(x + dx, y + dy); c.stroke(); c.setLineDash([]);
-		const p = (px, py, f) => { c.fillStyle = "#fff"; c.strokeStyle = f; c.lineWidth = Math.max(2, R * 0.1); c.beginPath(); c.arc(px, py, R * 0.2, 0, 2 * Math.PI); c.fill(); c.stroke(); };
-		p(x + dx, y + dy, ORANGE); p(x - dx, y - dy, VIOLETT);
+		const linie = (wg, f1, f2) => {
+			const r = wg * Math.PI / 180, dx = R * Math.cos(r), dy = -R * Math.sin(r);
+			c.setLineDash([4, 3]); c.strokeStyle = "#555"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - dx, y - dy); c.lineTo(x + dx, y + dy); c.stroke(); c.setLineDash([]);
+			const p = (px, py, f) => { c.fillStyle = "#fff"; c.strokeStyle = f; c.lineWidth = Math.max(2, R * 0.12); c.beginPath(); c.arc(px, py, R * 0.22, 0, 2 * Math.PI); c.fill(); c.stroke(); };
+			p(x + dx, y + dy, f1); p(x - dx, y - dy, f2);
+		};
+		if (art === "zwei") linie(w + 90, "#00838F", "#8D5A3B");
+		linie(w, ORANGE, VIOLETT);
 	}
 	function zeichne() {
 		const { ctx: c, B, H } = KI.leinwand(cv, B => Math.max(300, B * 0.6));
 		const r = RUNDEN[nr], schmal = B < 560, g = schmal ? 12 : 14;
-		const x0 = schmal ? 30 : 42, x1 = B - (schmal ? 16 : 24), yLeiste = H - (schmal ? 36 : 44), y1 = 22, y0 = (y1 + yLeiste - 30) / 2;
-		const yh = (y0 - y1 - 6) / r.ymax;
-		geo = { x0, x1, y0, yh, tx: t => x0 + (x1 - x0) * t, uy: u => y0 - u * yh, r };
+		const x0 = schmal ? 30 : 42, x1 = B - (schmal ? 16 : 24), yLeiste = H - (schmal ? 36 : 44), y1 = 24;
+		const y0 = r.art === "ohne" ? (y1 + yLeiste - 30) / 2 : yLeiste - 52;
+		const yh = r.art === "ohne" ? (y0 - y1 - 6) / r.ymax : (y0 - y1 - 6) / 1.15;
+		geo = { x0, x1, y0, yh, ymin: r.art === "ohne" ? -r.ymax : -0.15, ymax: r.art === "ohne" ? r.ymax : 1.15, tx: t => x0 + (x1 - x0) * t, uy: u => y0 - u * yh, r };
 		c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
-		/* Gitter und Achsen */
 		c.strokeStyle = "#EEE"; c.lineWidth = 1;
-		for (let k = 1; k <= 8; k++) { const x = geo.tx(k / 8); c.beginPath(); c.moveTo(x, geo.uy(r.ymax)); c.lineTo(x, geo.uy(-r.ymax)); c.stroke(); }
-		KI.pfeil(c, x0, y0, x1 + 6, y0, "#222", 1.5); KI.pfeil(c, x0, geo.uy(-r.ymax), x0, y1 - 10, "#222", 1.5);
+		for (let k = 1; k <= 8; k++) { const x = geo.tx(k / 8); c.beginPath(); c.moveTo(x, geo.uy(geo.ymax)); c.lineTo(x, geo.uy(geo.ymin)); c.stroke(); }
+		KI.pfeil(c, x0, y0, x1 + 6, y0, "#222", 1.5); KI.pfeil(c, x0, geo.uy(geo.ymin), x0, y1 - 12, "#222", 1.5);
 		KI.text(c, "t", x1, y0 + 14, g, "#222", "right", "italic");
-		KI.text(c, "U", x0 + 10, y1 - 8, g, "#222", "left", "italic");
-		/* Stellungen unter der Zeitachse */
+		KI.text(c, "Drehwirkung", x0 + 8, y1 - 10, g, "#222", "left", "italic");
 		const R = Math.min((x1 - x0) / 8 * 0.27, 13);
 		for (let k = 0; k <= 8; k++) {
-			const x = geo.tx(k / 8), stellung = (r.start + k * r.umdrehungen) % 8;
-			c.strokeStyle = "#CCC"; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(x, geo.uy(-r.ymax)); c.lineTo(x, yLeiste - R * 1.3); c.stroke(); c.setLineDash([]);
-			schleife(c, x, yLeiste, R, -45 * stellung);
-			if (r.umdrehungen === 1 || k % 2 === 0) KI.text(c, BUCHSTABEN[stellung] + ")", x, yLeiste + R * 1.15 + 9, g - 1, "#444");
+			const x = geo.tx(k / 8);
+			c.strokeStyle = "#CCC"; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(x, geo.uy(geo.ymin)); c.lineTo(x, yLeiste - R * 1.3); c.stroke(); c.setLineDash([]);
+			schleife(c, x, yLeiste, R, -45 * k, r.art);
+			KI.text(c, BUCHSTABEN[k % 8] + ")", x, yLeiste + R * 1.15 + 9, g - 1, "#444");
 		}
-		/* Vergleichskurve grau */
 		if (r.ref) {
 			c.strokeStyle = "#AAA"; c.lineWidth = 2; c.setLineDash([6, 4]); c.beginPath();
 			for (let t = 0; t <= 1.0001; t += 0.005) { const x = geo.tx(t), y = geo.uy(r.ref(t)); t ? c.lineTo(x, y) : c.moveTo(x, y); }
 			c.stroke(); c.setLineDash([]);
 		}
-		/* eigene Kurve */
 		c.strokeStyle = BLAU; c.lineWidth = 3; c.lineJoin = "round"; c.beginPath();
 		let an = false;
 		eigen.forEach((u, i) => { if (u === null) { an = false; return; } const x = geo.tx(i * DT), y = geo.uy(u); an ? c.lineTo(x, y) : c.moveTo(x, y); an = true; });
 		c.stroke();
-		/* Messkurve und laufende Stellung */
 		if (phase !== "zeichnen") {
 			c.strokeStyle = ROT; c.lineWidth = 3; c.beginPath();
-			for (let t = 0; t <= Math.min(tMess, 1) + 1e-9; t += 0.004) { const x = geo.tx(t), y = geo.uy(f(r, t)); t ? c.lineTo(x, y) : c.moveTo(x, y); }
+			for (let t = 0; t <= Math.min(tMess, 1) + 1e-9; t += 0.004) { const x = geo.tx(t), y = geo.uy(r.f(t)); t ? c.lineTo(x, y) : c.moveTo(x, y); }
 			c.stroke();
 			const t = Math.min(tMess, 1), x = geo.tx(t);
-			c.fillStyle = ROT; c.beginPath(); c.arc(x, geo.uy(f(r, t)), 5, 0, 2 * Math.PI); c.fill();
+			c.fillStyle = ROT; c.beginPath(); c.arc(x, geo.uy(r.f(t)), 5, 0, 2 * Math.PI); c.fill();
 			c.fillStyle = "rgba(255,255,255,0.9)"; c.fillRect(x - R * 1.9, yLeiste - R * 1.25, R * 3.8, R * 2.5);
 			c.strokeStyle = ROT; c.lineWidth = 2; c.strokeRect(x - R * 1.9, yLeiste - R * 1.25, R * 3.8, R * 2.5);
-			schleife(c, x, yLeiste, R, -45 * r.start - 360 * r.umdrehungen * t);
+			schleife(c, x, yLeiste, R, -360 * t, r.art);
 		}
-		/* Legende */
-		const lx = x1 - (schmal ? 110 : 140), ly = y1 + 2;
+		const lx = x1 - (schmal ? 110 : 140), ly = y1 - 12;
 		c.fillStyle = BLAU; c.fillRect(lx, ly, 18, 3); KI.text(c, "deine Vorhersage", lx + 24, ly + 2, g - 1, BLAU, "left");
 		if (phase !== "zeichnen") { c.fillStyle = ROT; c.fillRect(lx, ly + 17, 18, 3); KI.text(c, "Messung", lx + 24, ly + 19, g - 1, ROT, "left"); }
 	}
-	/* Zeichnen mit dem Finger */
 	let zeichnet = false, letzterI = null;
 	function punkt(e) {
 		const rr = cv.getBoundingClientRect();
 		const x = e.clientX - rr.left, y = e.clientY - rr.top;
 		const t = (x - geo.x0) / (geo.x1 - geo.x0);
-		const u = Math.max(-geo.r.ymax, Math.min(geo.r.ymax, (geo.y0 - y) / geo.yh));
+		const u = Math.max(geo.ymin, Math.min(geo.ymax, (geo.y0 - y) / geo.yh));
 		return { i: Math.round(t / DT), u };
 	}
 	cv.addEventListener("pointerdown", (e) => { if (phase !== "zeichnen") return; zeichnet = true; cv.setPointerCapture(e.pointerId); letzterI = null; setze(punkt(e)); });
@@ -2033,11 +2368,13 @@ BAU.vorhersage = function (b) {
 			let fe = 0, n = 0;
 			for (let i = 0; i < eigen.length; i++) {
 				const w = glatt[i + versatz];
-				fe += w === null || w === undefined ? 0.5 : Math.abs(w * faktor - f(r, i * DT)) / r.umdrehungen; n++;
+				fe += w === null || w === undefined ? 0.5 : Math.abs(w * faktor - r.f(i * DT)); n++;
 			}
 			besterFehler = Math.min(besterFehler, fe / n);
 		}
-		const st = besterFehler < 0.2 ? 3 : besterFehler < 0.33 ? 2 : besterFehler < 0.5 ? 1 : 0;
+		/* bei Kurven ohne Vorzeichenwechsel zählt die Form stärker: Maßstab halbieren */
+		const m = r.art === "ohne" ? 1 : 0.6;
+		const st = besterFehler < 0.2 * m ? 3 : besterFehler < 0.33 * m ? 2 : besterFehler < 0.5 * m ? 1 : 0;
 		const lob = ["Da lag deine Vermutung noch daneben. Vergleiche die beiden Kurven.", "Die Richtung stimmt schon.", "Gute Vorhersage!", "Ausgezeichnete Vorhersage!"][st];
 		rueck.innerHTML = '<p class="rueck ' + (st ? "gut" : "schlecht") + '">' + lob + " " + KI.sterneHtml(st) + "</p>";
 		if (st) {
@@ -2060,7 +2397,24 @@ BAU.vorhersage = function (b) {
 	window.addEventListener("resize", () => { if (b.offsetParent) zeichne(); });
 };
 
-modusleiste();
+/* ==========================================================================
+   Seite
+   ========================================================================== */
+const MOTOR_ICON = '<path d="M12 3a9 9 0 1 1-8.5 6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M1 5l5 0.5-2.5 4.5z" fill="currentColor"/><path d="M12 12V5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>';
+KI.seite({
+	klasse: 10, kapitel: "A.2.3 Elektromotor",
+	modi: [
+		{ id: "film", name: "Film", titel: "Film mit Stopps: Was passiert gleich?", bau: BAU.film },
+		{ id: "drehen", name: "Drehspiel", titel: "Spiel: Wie dreht sich die Schleife?", bau: BAU.drehen, icon: MOTOR_ICON },
+		{ id: "filmleiste", name: "Filmleiste", titel: "Filmleiste: Der Motor dreht sich", bau: BAU.filmleiste },
+		{ id: "kette", name: "Kette", titel: "Kausalkette ordnen", bau: BAU.kette },
+		{ id: "vorhersage", name: "Vorhersage", titel: "Vorhersage: Drehwirkung während einer Umdrehung", bau: BAU.vorhersage },
+		{ id: "paare", name: "Paare", titel: "Spiel: Paare finden", bau: BAU.paare },
+		{ id: "sortieren", name: "Sortieren", titel: "Sortieren: Was passiert mit der Drehrichtung?", bau: BAU.sortieren },
+		{ id: "wischen", name: "Stimmt's?", titel: "Stimmt's?", bau: BAU.wischen },
+		{ id: "fehler", name: "Fehler finden", titel: "Fehler finden: Cornelius erklärt", bau: BAU.fehler }
+	]
+});
 </script>
 </body>
 </html>
