@@ -1727,13 +1727,26 @@ const BEW = {
 
 /* ---------- Piktogramme ---------- */
 /* Spule (Achse waagrecht, Mitte bei cx) mit Magnet; mx = Mitte des Magneten; pfeil: "rechts", "links", "beide", "durch" */
-function spulePfade(cx, cy, l, ry, n, vorne) {
-	let s = "";
-	for (let i = 0; i < n; i++) {
-		const x = (cx - l / 2 + (i + 0.5) * l / n).toFixed(1);
-		s += '<path d="M' + x + " " + (cy - ry) + " A 4 " + ry + " 0 0 " + (vorne ? 1 : 0) + " " + x + " " + (cy + ry) + '" fill="none" stroke="' + (vorne ? KUPFER : KUPFER_H) + '" stroke-width="' + (vorne ? 2.4 : 1.6) + '"/>';
+/* Punkte der Spule als durchgehende Schraubenlinie aus einem Draht (wie auf dem Arbeitsblatt): beginnt links unten,
+   läuft hinten schräg nach oben, vorne schräg nach unten in die nächste Windung, endet rechts unten.
+   Liefert je Windung die Punkte der hinteren (vorne = false) bzw. vorderen Hälfte. */
+function wendelPunkte(xa, xb, cy, ry, e, n, vorne, schritte = 12) {
+	const p = (xb - xa) / n, aus = [];
+	for (let k = 0; k < n; k++) {
+		const pts = [];
+		for (let j = 0; j <= schritte; j++) {
+			const t = Math.PI * (j / schritte + (vorne ? 1 : 0));
+			pts.push([xa + (k + t / (2 * Math.PI)) * p - e * Math.sin(t), cy + ry * Math.cos(t)]);
+		}
+		aus.push(pts);
 	}
-	return s;
+	return aus;
+}
+function spulePfade(cx, cy, l, ry, n, vorne) {
+	const xa = cx - l / 2, xb = cx + l / 2;
+	let d = wendelPunkte(xa, xb, cy, ry, 4, n, vorne).map(pts => "M" + pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" L")).join(" ");
+	if (vorne) d += " M" + xa + " " + (cy + ry) + " v6 M" + xb + " " + (cy + ry) + " v6";   /* die beiden Drahtenden */
+	return '<path d="' + d + '" fill="none" stroke="' + (vorne ? KUPFER : KUPFER_H) + '" stroke-width="' + (vorne ? 2.4 : 1.6) + '" stroke-linecap="round" stroke-linejoin="round"/>';
 }
 function bildSituation(o, breite = 150) {
 	const cy = 56, mx = o.mx === undefined ? 46 : o.mx;
@@ -1928,7 +1941,9 @@ BAU.vorhersage = function (b) {
 		const sk = Math.max(1, (xb - xa) / 44), cx = (xa + xb) / 2 + 4 * sk, ry = Math.min(h * 0.42, 2.4 * sk), n = 8, l = 6 * sk;
 		const windung = (vorne) => {
 			c.strokeStyle = vorne ? KUPFER : KUPFER_H; c.lineWidth = vorne ? 2.2 : 1.4;
-			for (let i = 0; i < n; i++) { const wx = cx - l / 2 + (i + 0.5) * l / n; c.beginPath(); c.ellipse(wx, y, Math.max(2, 0.3 * sk), ry, 0, vorne ? -Math.PI / 2 : Math.PI / 2, vorne ? Math.PI / 2 : 3 * Math.PI / 2); c.stroke(); }
+			c.lineCap = "round"; c.lineJoin = "round";
+			wendelPunkte(cx - l / 2, cx + l / 2, y, ry, Math.max(2, 0.3 * sk), n, vorne).forEach(pts => { c.beginPath(); pts.forEach((q, j) => j ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); });
+			if (vorne) { c.beginPath(); c.moveTo(cx - l / 2, y + ry); c.lineTo(cx - l / 2, y + ry + 5); c.moveTo(cx + l / 2, y + ry); c.lineTo(cx + l / 2, y + ry + 5); c.stroke(); }
 		};
 		windung(false);
 		const ml = 6 * sk, mh = Math.max(10, Math.min(ry * 0.8, 1.3 * sk)), mx = cx + x * sk;
