@@ -392,17 +392,19 @@ function qrSvg(url) {
 	const ecke = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
 	const ls = Math.round(n * 0.24) | 1, l0 = (n - ls) / 2;
 	const logo = (r, c) => r >= l0 && r < l0 + ls && c >= l0 && c < l0 + ls;
+	// abgerundetes Rechteck als Pfad (wie auf den Arbeitsblättern: Module abgerundet, Ecken leicht gerundet)
+	const rr = (x, y, w, h, k) => 'M' + +(x + k).toFixed(2) + ' ' + +y.toFixed(2) + 'h' + +(w - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 ' + k + ' ' + k +
+		'v' + +(h - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 -' + k + ' ' + k + 'h-' + +(w - 2 * k).toFixed(2) +
+		'a' + k + ' ' + k + ' 0 0 1 -' + k + ' -' + k + 'v-' + +(h - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 ' + k + ' -' + k + 'z';
 	let p = '';
 	for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
-		if (q.isDark(r, c) && !ecke(r, c) && !logo(r, c)) p += 'M' + (c + z + 0.93) + ' ' + (r + z + 0.5) + 'a0.43 0.43 0 1 0-0.86 0a0.43 0.43 0 1 0 0.86 0';
-	let e = '';
+		if (q.isDark(r, c) && !ecke(r, c) && !logo(r, c)) p += rr(c + z + 0.04, r + z + 0.04, 0.92, 0.92, 0.28);
 	for (const [r, c] of [[0, 0], [0, n - 7], [n - 7, 0]]) {
 		const x = c + z, y = r + z;
-		e += '<rect x="' + (x + 0.5) + '" y="' + (y + 0.5) + '" width="6" height="6" rx="0.45" fill="none" stroke="' + F + '"/>' +
-			'<rect x="' + (x + 2) + '" y="' + (y + 2) + '" width="3" height="3" rx="0.25" fill="' + F + '"/>';
+		p += rr(x, y, 7, 7, 0.5) + rr(x + 1, y + 1, 5, 5, 0.35) + rr(x + 2, y + 2, 3, 3, 0.25);
 	}
 	return '<svg viewBox="0 0 ' + T + ' ' + T + '" role="img" aria-label="QR-Code"><rect width="' + T + '" height="' + T + '" fill="#fff"/>' +
-		'<path d="' + p + '" fill="' + F + '"/>' + e +
+		'<path d="' + p + '" fill="' + F + '" fill-rule="evenodd"/>' +
 		'<svg x="' + (l0 + z) + '" y="' + (l0 + z) + '" width="' + ls + '" height="' + ls + '" viewBox="0 0 32 32">' + QR_LOGO + '</svg></svg>';
 }
 function qrOeffnen(titel, url, link) {
