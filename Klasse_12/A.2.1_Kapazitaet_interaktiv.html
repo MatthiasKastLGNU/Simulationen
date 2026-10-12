@@ -2007,7 +2007,7 @@ function diag(art, x, y) {
 	if (art === "gerade") d = "M" + x0 + " " + y0 + " L" + (x0 + xb - 6) + " " + (y0 - yh + 6);
 	else for (let i = 0; i <= 60; i++) { const t = 0.13 + 0.87 * i / 60, w = 0.12 / t; d += (i ? "L" : "M") + (x0 + t * xb).toFixed(1) + " " + (y0 - w * yh / 0.95).toFixed(1); }
 	s += '<path d="' + d + '" fill="none" stroke="' + BLAU + '" stroke-width="2.6"/>';
-	return KI.svg.rahmen(160, 110, s, 150);
+	return KI.svg.rahmen(160, 115, s, 150);
 }
 BAU.paare = (b) => KI.paare(b, {
 	id: "paare",
@@ -2019,7 +2019,7 @@ BAU.paare = (b) => KI.paare(b, {
 				[{ svg: diag("gerade", "U", "Q"), alt: "Q-U-Diagramm" }, { text: "<span><i>Q</i> ~ <i>U</i></span>" }, { text: "<span><i>Q</i>/<i>U</i> ist konstant (Quotienten­gleichheit).</span>" }],
 				[{ svg: diag("hyperbel", "d", "C"), alt: "C-d-Diagramm" }, { text: "<span><i>C</i> ~ 1/<i>d</i></span>" }, { text: "<span><i>C</i>·<i>d</i> ist konstant (Produkt­gleichheit).</span>" }],
 				[{ svg: diag("gerade", "A", "C"), alt: "C-A-Diagramm" }, { text: "<span><i>C</i> ~ <i>A</i></span>" }, { text: "<span>Doppelte Platten­fläche, doppelte Kapazität.</span>" }],
-				[{ svg: diag("gerade", 'ε<tspan dy="4" font-size="10">r</tspan>', "C"), alt: "C-εr-Diagramm" }, { text: "<span><i>C</i> ~ ε<sub>r</sub></span>" }, { text: "<span>Glas statt Luft: Kapazität etwa fünfmal so groß.</span>" }]
+				[{ svg: diag("gerade", 'ε<tspan dy="3" font-size="10">r</tspan>', "C"), alt: "C-εr-Diagramm" }, { text: "<span><i>C</i> ~ ε<sub>r</sub></span>" }, { text: "<span>Glas statt Luft: Kapazität etwa fünfmal so groß.</span>" }]
 			]
 		},
 		{
