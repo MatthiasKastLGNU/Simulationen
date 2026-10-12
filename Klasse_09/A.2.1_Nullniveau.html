@@ -2336,7 +2336,7 @@ BAU.kette = (b) => KI.kette(b, {
 });
 
 /* ==========================================================================
-   Rechentrainer E = m · g · Δh (erste Übung der Formel)
+   Rechentrainer E = m · g · h und ΔE = m · g · Δh (erste Übung der Formel)
    Stufen: 1 Energie berechnen, 2 Höhe oder Masse, 3 mit Nullniveau
    ========================================================================== */
 const G = 9.81;
@@ -2362,7 +2362,7 @@ function liesZahl(t) {
 }
 const GE = "9,81&nbsp;<span class=\"bruch\"><span>m</span><span>s<sup>2</sup></span></span>";
 
-/* Aufgabe: { text, gesucht: "E"|"Δh"|"m", einheit, wert, weg: [Zeilen HTML], tipp, fallen: [{wert, hinweis}] } */
+/* Aufgabe: { text, gesucht: "E"|"ΔE"|"h"|"m", einheit, wert, weg: [Zeilen HTML], tipp, fallen: [{wert, hinweis}] } */
 const STUFEN = [
 	{
 		name: "Energie", titel: "Höhenenergie berechnen", anzahl: 5,
@@ -2379,11 +2379,11 @@ const STUFEN = [
 			const E = mKg * G * h;
 			return {
 				text: text + (art === "apfel" || art === "rucksack" ? "" : " Berechne die Zunahme der Höhenenergie."),
-				gesucht: "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
-				weg: ["<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>",
+				gesucht: (art === "apfel" ? "" : "Δ") + "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
+				weg: [art === "apfel" ? "<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i>" : "Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>",
 					"= " + mAnz + " · " + GE + " · " + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m",
 					"= " + zahl(E) + "&nbsp;J"],
-				tipp: "Setze in <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> ein, mit <i class=\"gr\">g</i> = " + GE + "." + (art === "apfel" ? " Achtung: Die Masse muss in kg eingesetzt werden." : ""),
+				tipp: (art === "apfel" ? "Setze in <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> ein" : "Die Zunahme hängt nur vom Höhenunterschied ab: Setze in Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> ein") + ", mit <i class=\"gr\">g</i> = " + GE + "." + (art === "apfel" ? " Achtung: Die Masse muss in kg eingesetzt werden." : ""),
 				fallen: [{ wert: E / G, hinweis: "Hast du die Fallbeschleunigung g vergessen?" }, { wert: E * 1000, hinweis: "Rechne die Masse zuerst in kg um: 1000 g = 1 kg." }]
 			};
 		}
@@ -2397,10 +2397,10 @@ const STUFEN = [
 				const E = runde3(m * G * h), loes = E / (m * G);
 				return {
 					text: art[0] + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) hat gegenüber dem Tal eine Höhenenergie von " + zahl(E, 0) + "&nbsp;J. Wie hoch über dem Tal ist " + (art[0].startsWith("Eine") ? "sie" : "er") + "?",
-					gesucht: "Δ<i class=\"gr\">h</i>", einheit: "m", wert: loes,
-					weg: ["<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> &nbsp;⇒&nbsp; Δ<i class=\"gr\">h</i> = <span class=\"bruch\"><span><i class=\"gr\">E</i><sub>pot</sub></span><span><i class=\"gr\">m</i> · <i class=\"gr\">g</i></span></span>",
-						"Δ<i class=\"gr\">h</i> = <span class=\"bruch\"><span>" + zahl(E, 0) + "&nbsp;J</span><span>" + m + "&nbsp;kg · " + GE + "</span></span> = " + zahl(loes) + "&nbsp;m"],
-					tipp: "Stelle <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> nach Δ<i class=\"gr\">h</i> um: Teile durch <i class=\"gr\">m</i> · <i class=\"gr\">g</i>.",
+					gesucht: "<i class=\"gr\">h</i>", einheit: "m", wert: loes,
+					weg: ["<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> &nbsp;⇒&nbsp; <i class=\"gr\">h</i> = <span class=\"bruch\"><span><i class=\"gr\">E</i><sub>pot</sub></span><span><i class=\"gr\">m</i> · <i class=\"gr\">g</i></span></span>",
+						"<i class=\"gr\">h</i> = <span class=\"bruch\"><span>" + zahl(E, 0) + "&nbsp;J</span><span>" + m + "&nbsp;kg · " + GE + "</span></span> = " + zahl(loes) + "&nbsp;m"],
+					tipp: "Stelle <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> nach <i class=\"gr\">h</i> um: Teile durch <i class=\"gr\">m</i> · <i class=\"gr\">g</i>.",
 					fallen: [{ wert: E / m, hinweis: "Du musst auch durch g teilen." }, { wert: E * m * G, hinweis: "Umstellen: Teile durch m · g, statt zu multiplizieren." }]
 				};
 			}
@@ -2409,9 +2409,9 @@ const STUFEN = [
 			return {
 				text: "Ein Kran hebt eine Last um " + h + "&nbsp;m an. Ihre Höhenenergie nimmt dabei um " + zahl(E, 0) + "&nbsp;J zu. Berechne die Masse der Last.",
 				gesucht: "<i class=\"gr\">m</i>", einheit: "kg", wert: loes,
-				weg: ["<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> &nbsp;⇒&nbsp; <i class=\"gr\">m</i> = <span class=\"bruch\"><span><i class=\"gr\">E</i><sub>pot</sub></span><span><i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i></span></span>",
+				weg: ["Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> &nbsp;⇒&nbsp; <i class=\"gr\">m</i> = <span class=\"bruch\"><span>Δ<i class=\"gr\">E</i><sub>pot</sub></span><span><i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i></span></span>",
 					"<i class=\"gr\">m</i> = <span class=\"bruch\"><span>" + zahl(E, 0) + "&nbsp;J</span><span>" + GE + " · " + h + "&nbsp;m</span></span> = " + zahl(loes) + "&nbsp;kg"],
-				tipp: "Stelle <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> nach <i class=\"gr\">m</i> um: Teile durch <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>.",
+				tipp: "Stelle Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> nach <i class=\"gr\">m</i> um: Teile durch <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>.",
 				fallen: [{ wert: E / h, hinweis: "Du musst auch durch g teilen." }, { wert: E * G * h, hinweis: "Umstellen: Teile durch g · Δh, statt zu multiplizieren." }]
 			};
 		}
@@ -2427,10 +2427,10 @@ const STUFEN = [
 				return {
 					text: "Das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) steht im Keller, " + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m tiefer. Berechne die Höhenenergie.",
 					gesucht: "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
-					weg: ["Δ<i class=\"gr\">h</i> = −" + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m (unter dem Nullniveau)",
+					weg: ["<i class=\"gr\">h</i> = −" + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m (unter dem Nullniveau)",
 						"<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · (−" + zahl(h, h % 1 ? 1 : 0) + "&nbsp;m) = " + zahl(E) + "&nbsp;J"],
-					tipp: "Unterhalb des Nullniveaus ist Δ<i class=\"gr\">h</i> negativ.",
-					fallen: [{ wert: -E, hinweis: "Fast! Unterhalb des Nullniveaus ist Δh negativ, also auch E<sub>pot</sub>." }]
+					tipp: "Unterhalb des Nullniveaus ist <i class=\"gr\">h</i> negativ.",
+					fallen: [{ wert: -E, hinweis: "Fast! Unterhalb des Nullniveaus ist h negativ, also auch E<sub>pot</sub>." }]
 				};
 			}
 			if (art === "gipfel") {
@@ -2439,20 +2439,20 @@ const STUFEN = [
 				return {
 					text: n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) wählt den Gipfel als Nullniveau. Gerade ist " + er + " noch " + d + "&nbsp;m unter dem Gipfel. Berechne die Höhenenergie.",
 					gesucht: "<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
-					weg: ["Δ<i class=\"gr\">h</i> = −" + d + "&nbsp;m", "<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · (−" + d + "&nbsp;m) = " + zahl(E) + "&nbsp;J"],
-					tipp: "Unterhalb des Nullniveaus ist Δ<i class=\"gr\">h</i> negativ.",
-					fallen: [{ wert: -E, hinweis: "Fast! Unterhalb des Nullniveaus ist Δh negativ, also auch E<sub>pot</sub>." }]
+					weg: ["<i class=\"gr\">h</i> = −" + d + "&nbsp;m", "<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · (−" + d + "&nbsp;m) = " + zahl(E) + "&nbsp;J"],
+					tipp: "Unterhalb des Nullniveaus ist <i class=\"gr\">h</i> negativ.",
+					fallen: [{ wert: -E, hinweis: "Fast! Unterhalb des Nullniveaus ist h negativ, also auch E<sub>pot</sub>." }]
 				};
 			}
 			const m = zufall(50, 90), u = zufall(1, 2), o = zufall(2, 6);
 			const dh = 3 * (u + o), E = m * G * dh;
 			return {
 				text: "Ein Haus hat Stockwerke von je 3&nbsp;m Höhe, das Nullniveau liegt im Erdgeschoss. " + n + " (<i class=\"gr\">m</i>&nbsp;=&nbsp;" + m + "&nbsp;kg) fährt mit dem Aufzug vom " + u + ". Untergeschoss in den " + o + ". Stock. Berechne die Änderung der Höhenenergie.",
-				gesucht: "Δ<i class=\"gr\">E</i>", einheit: "J", wert: E,
-				weg: ["Start: Δ<i class=\"gr\">h</i> = −" + 3 * u + "&nbsp;m, &nbsp;Ziel: Δ<i class=\"gr\">h</i> = +" + 3 * o + "&nbsp;m",
-					"Δ<i class=\"gr\">E</i> = " + m + "&nbsp;kg · " + GE + " · " + 3 * o + "&nbsp;m − " + m + "&nbsp;kg · " + GE + " · (−" + 3 * u + "&nbsp;m)",
+				gesucht: "Δ<i class=\"gr\">E</i><sub>pot</sub>", einheit: "J", wert: E,
+				weg: ["Start: <i class=\"gr\">h</i> = −" + 3 * u + "&nbsp;m, &nbsp;Ziel: <i class=\"gr\">h</i> = +" + 3 * o + "&nbsp;m",
+					"Δ<i class=\"gr\">E</i><sub>pot</sub> = " + m + "&nbsp;kg · " + GE + " · " + 3 * o + "&nbsp;m − " + m + "&nbsp;kg · " + GE + " · (−" + 3 * u + "&nbsp;m)",
 					"= " + m + "&nbsp;kg · " + GE + " · " + dh + "&nbsp;m = " + zahl(E) + "&nbsp;J"],
-				tipp: "Berechne E<sub>pot</sub> am Ziel minus E<sub>pot</sub> am Start. Der Höhenunterschied ist " + 3 * u + "&nbsp;m + " + 3 * o + "&nbsp;m.",
+				tipp: "Berechne E<sub>pot</sub> am Ziel minus E<sub>pot</sub> am Start. Oder direkt: Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> mit dem Höhenunterschied Δ<i class=\"gr\">h</i> = " + 3 * u + "&nbsp;m + " + 3 * o + "&nbsp;m.",
 				fallen: [{ wert: m * G * 3 * (o - u), hinweis: "Das Untergeschoss liegt unter dem Nullniveau: Der Höhenunterschied ist die Summe beider Strecken." }, { wert: m * G * 3 * o, hinweis: "Du hast nur die Strecke über dem Erdgeschoss gerechnet. Der Aufzug startet unter dem Nullniveau." }]
 			};
 		}
@@ -2469,7 +2469,7 @@ BAU.rechnen = function (behaelter) {
 	KI.chipsBeschraenken(chips, chipKnoepfe);
 	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); leiste.appendChild(rechts);
 	behaelter.appendChild(leiste);
-	const formel = KI.el("p", "auftrag", "Rechne mit <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i> und <i class=\"gr\">g</i> = " + GE + ". Runde sinnvoll, kleine Rundungsabweichungen sind in Ordnung.");
+	const formel = KI.el("p", "auftrag", "Rechne mit <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> (Änderung: Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>) und <i class=\"gr\">g</i> = " + GE + ". Runde sinnvoll, kleine Rundungsabweichungen sind in Ordnung.");
 	behaelter.appendChild(formel);
 	const karte = KI.el("div", "rechenkarte"); behaelter.appendChild(karte);
 	const aufgabeEl = KI.el("p", "rechenaufgabe"); karte.appendChild(aufgabeEl);
