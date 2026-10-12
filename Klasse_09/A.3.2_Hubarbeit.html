@@ -1964,7 +1964,7 @@ BAU.wege = function (b) {
 	});
 	leiste.appendChild(g3.g);
 	bildleiste(rahmen, canvas, () => "Hubarbeit_Weg_" + z.weg.id, () => neu(), "Wagen zurück an den Start");
-	bildleiste(rahmenD, canvasD, () => "Hubarbeit_Diagramm", () => { z.laeufe = []; z.aktiv = null; zeichneD(); }, "Diagramm löschen");
+	bildleiste(rahmenD, canvasD, () => "Hubarbeit_Diagramm", () => { z.laeufe = []; z.aktiv = null; if (z.laeuft) neueFahrt(); zeichneD(); }, "Diagramm löschen");
 
 	function neu() {
 		stoppe(); z.s = 0; z.aktiv = null; zeichne(); zeichneD();
@@ -1974,9 +1974,13 @@ BAU.wege = function (b) {
 		z.laeuft = true; los.innerHTML = KI.icon("pause", 22); tAlt = 0;
 		if (!z.aktiv || z.aktiv.weg !== z.weg || z.s === 0) {
 			z.laeufe = z.laeufe.filter(l => l.weg !== z.weg);   /* pro Weg nur die letzte Fahrt */
-			z.aktiv = { weg: z.weg, pkte: [[0, 0]], fertig: false }; z.laeufe.push(z.aktiv);
+			neueFahrt();
 		}
 		anim = requestAnimationFrame(takt);
+	}
+	/* neue Kurve ab der aktuellen Stelle (nach „Diagramm löschen“ auch während der Fahrt) */
+	function neueFahrt() {
+		z.aktiv = { weg: z.weg, pkte: [z.s === 0 ? [0, 0] : [z.s, FG * aufWeg(z.weg, z.s).y]], fertig: false }; z.laeufe.push(z.aktiv);
 	}
 	function stoppe() { z.laeuft = false; los.innerHTML = KI.icon("play", 22); cancelAnimationFrame(anim); }
 	function takt(t) {
