@@ -767,6 +767,34 @@ window.KI = (function () {
 	           {art:"bild", quelle:canvas} {art:"spalten", spalten:[{titel, farbe, zeilen:[String]}]}
 	           {art:"abstand", h}
 	   ========================================================================== */
+	/* HTML-Text (aus Karten, Aufträgen) in Teile für das Ergebnisbild zerlegen:
+	   <i>/<em> kursiv, <b>/<strong> fett, <sub>/<sup> tief/hoch, color-Stil als Farbe, <br> Zeilenumbruch.
+	   Ohne diese Zerlegung stünden im Bild die Tags als Text (Kast 2026-10-12). */
+	KI.htmlTeile = function (teil) {
+		const t = String(teil.t);
+		if (!/[<&]/.test(t)) return [teil];
+		const box = document.createElement("template"); box.innerHTML = t;
+		const aus = [];
+		(function lauf(knoten, stil) {
+			for (const k of knoten.childNodes) {
+				if (k.nodeType === 3) { if (k.nodeValue) aus.push(Object.assign({}, stil, { t: k.nodeValue.replace(/\s+/g, " ") })); continue; }
+				if (k.nodeType !== 1) continue;
+				const n = k.nodeName.toLowerCase(), s = Object.assign({}, stil);
+				if (n === "br") { aus.push(Object.assign({}, stil, { t: "\n" })); continue; }
+				if (n === "svg" || n === "script" || n === "style") continue;
+				if (n === "i" || n === "em") s.kursiv = true;
+				if (n === "b" || n === "strong") s.fett = true;
+				if (n === "sub") s.tief = true;
+				if (n === "sup") s.hoch = true;
+				if (n === "u") s.unterstrich = true;
+				if (k.style && k.style.color) s.farbe = k.style.color;
+				lauf(k, s);
+			}
+		})(box.content, Object.assign({}, teil, { t: "" }));
+		return aus;
+	};
+	/* reiner Text ohne Tags (für Überschriften, die ohne Formatierung gezeichnet werden) */
+	KI.reinText = function (t) { return KI.htmlTeile({ t: t }).map(x => x.t).join("").replace(/\n/g, " "); };
 	KI.blattBild = async function (bloecke) {
 		await (document.fonts ? document.fonts.ready : Promise.resolve());
 		const B = 1000, R = 36;
@@ -784,16 +812,28 @@ window.KI = (function () {
 			return { n, fw, fh, th, h: fh + th + 10 + 2 * FILMRAND };
 		}
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
+		function teilFont(t, g) { return font(t.tief || t.hoch ? Math.round(g * 0.7) : g, t.fett, t.kursiv); }
+		function teilY(t, g) { return t.tief ? g * 0.22 : t.hoch ? -g * 0.38 : 0; }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
 			const zeilen = [[]]; let x = 0;
-			for (const t of teile) {
-				const woerter = String(t.t).split(/( )/);
+			for (const t of [].concat(...teile.map(KI.htmlTeile))) {
+				const woerter = String(t.t).split(/( |\n)/);
 				for (const w of woerter) {
 					if (w === "") continue;
-					ctx.font = font(g, t.fett, t.kursiv);
+					if (w === "\n") { zeilen.push([]); x = 0; continue; }
+					ctx.font = teilFont(t, g);
 					const wb = ctx.measureText(w).width;
-					if (w !== " " && x + wb > breite && x > 0) { zeilen.push([]); x = 0; }
+					const z = zeilen[zeilen.length - 1], klebt = z.length && z[z.length - 1].w !== " ";
+					if (w !== " " && x + wb > breite && x > 0) {
+						/* zusammenhängendes Wort (z. B. ε mit tiefgestelltem r) gemeinsam umbrechen */
+						let a = z.length; while (klebt && a > 0 && z[a - 1].w !== " ") a--;
+						const mit = a > 0 ? z.splice(a) : [];
+						while (z.length && z[z.length - 1].w === " ") z.pop();
+						const x0 = mit.length ? mit[0].x : 0;
+						mit.forEach(m => m.x -= x0);
+						zeilen.push(mit); x = mit.length ? mit[mit.length - 1].x + mit[mit.length - 1].wb : 0;
+					}
 					if (w === " " && x === 0) continue;
 					zeilen[zeilen.length - 1].push({ w, t, x, wb });
 					x += wb;
@@ -824,9 +864,9 @@ window.KI = (function () {
 		function zeichneZeilen(zeilen, x0, y0, g, zh, standardFarbe) {
 			zeilen.forEach((z, i) => {
 				for (const s of z) {
-					ctx.font = font(g, s.t.fett, s.t.kursiv);
+					ctx.font = teilFont(s.t, g);
 					ctx.fillStyle = s.t.farbe || standardFarbe || "#111";
-					ctx.fillText(s.w, x0 + s.x, y0 + i * zh + g);
+					ctx.fillText(s.w, x0 + s.x, y0 + i * zh + g + teilY(s.t, g));
 					if (s.t.unterstrich && s.w !== " ") { ctx.fillRect(x0 + s.x, y0 + i * zh + g + 4, s.wb, 2); }
 				}
 			});
@@ -834,7 +874,7 @@ window.KI = (function () {
 		for (const b of bloecke) {
 			const h = hoehe(b), g = b.groesse || 26;
 			if (b.art === "titel") {
-				ctx.font = font(30, true); ctx.fillStyle = "#0000BF"; ctx.fillText(b.t, R, y + 34);
+				ctx.font = font(30, true); ctx.fillStyle = "#0000BF"; ctx.fillText(KI.reinText(b.t), R, y + 34);
 				ctx.fillStyle = "#0000BF"; ctx.fillRect(R, y + 46, B - 2 * R, 2);
 			} else if (b.art === "text") {
 				zeichneZeilen(umbrechen(b.teile, B - 2 * R, g), R, y, g, g * 1.45);
@@ -856,11 +896,17 @@ window.KI = (function () {
 						const s = Math.min((lw - 16) / e.img.width, 156 / e.img.height);
 						ctx.drawImage(e.img, x + lw / 2 - e.img.width * s / 2, y + 89 - e.img.height * s / 2, e.img.width * s, e.img.height * s);
 					} else {
-						const z = umbrechen([{ t: e.text }], lw - 24, 24);
+						/* Schrift verkleinern, bis jede Zeile in den Kasten passt und höchstens 4 Zeilen entstehen */
+						const zb = zeile => zeile.length ? zeile[zeile.length - 1].x + zeile[zeile.length - 1].wb : 0;
+						let g = 24, z;
+						for (; ; g -= 1) { z = umbrechen([{ t: e.text }], lw - 24, g); if (g <= 15 || (z.length * g * 1.4 <= 156 && z.every(zl => zb(zl) <= lw - 20))) break; }
+						const zh = g * 1.4;
 						z.forEach((zeile, k) => {
-							const breite = zeile.length ? zeile[zeile.length - 1].x + zeile[zeile.length - 1].wb : 0;
-							ctx.font = font(24); ctx.fillStyle = "#111";
-							for (const st of zeile) ctx.fillText(st.w, x + (lw - breite) / 2 + st.x, y + 89 - z.length * 17 + k * 34 + 24);
+							const breite = zb(zeile);
+							for (const st of zeile) {
+								ctx.font = teilFont(st.t, g); ctx.fillStyle = st.t.farbe || "#111";
+								ctx.fillText(st.w, x + (lw - breite) / 2 + st.x, y + 89 - z.length * zh / 2 + k * zh + g * 0.8 + teilY(st.t, g));
+							}
 						});
 					}
 					if (i < n - 1) { ctx.font = font(30, true); ctx.fillStyle = "#2E7D32"; ctx.textAlign = "center"; ctx.fillText(b.trenner || "=", x + lw + 20, y + 99); ctx.textAlign = "left"; }
@@ -880,7 +926,7 @@ window.KI = (function () {
 						const s = Math.min((m.fw - 10) / e.img.width, m.fh / e.img.height);
 						ctx.drawImage(e.img, x + m.fw / 2 - e.img.width * s / 2, yb + m.fh / 2 - e.img.height * s / 2, e.img.width * s, e.img.height * s);
 					}
-					if (e.text) { ctx.font = font(20); ctx.fillStyle = "#333"; ctx.textAlign = "center"; ctx.fillText(e.text, x + m.fw / 2, yb + m.fh + 22, m.fw - 6); ctx.textAlign = "left"; }
+					if (e.text) { ctx.font = font(20); ctx.fillStyle = "#333"; ctx.textAlign = "center"; ctx.fillText(KI.reinText(e.text), x + m.fw / 2, yb + m.fh + 22, m.fw - 6); ctx.textAlign = "left"; }
 				});
 			} else if (b.art === "spalten") {
 				const n = b.spalten.length, sb = (B - 2 * R) / n;
@@ -888,7 +934,7 @@ window.KI = (function () {
 					const x = R + i * sb;
 					ctx.strokeStyle = s.farbe; ctx.lineWidth = 2.5;
 					ctx.beginPath(); ctx.roundRect(x + 4, y + 2, sb - 8, h - 8, 8); ctx.stroke();
-					ctx.font = font(24, true); ctx.fillStyle = s.farbe; ctx.textAlign = "center"; ctx.fillText(s.titel, x + sb / 2, y + 32); ctx.textAlign = "left";
+					ctx.font = font(24, true); ctx.fillStyle = s.farbe; ctx.textAlign = "center"; ctx.fillText(KI.reinText(s.titel), x + sb / 2, y + 32); ctx.textAlign = "left";
 					let yy = y + 50;
 					for (const zeile of s.zeilen) {
 						const z = umbrechen([{ t: "· " + zeile }], sb - 30, 22);
@@ -1075,7 +1121,7 @@ window.KI = (function () {
 			plaetze.forEach((p, i) => {
 				const k = p.querySelector(".karte");
 				if (i) b.push({ art: "pfeil" });
-				b.push({ art: "kasten", teile: [{ t: k ? k.textContent : "…" }], groesse: 24 });
+				b.push({ art: "kasten", teile: [{ t: k ? k.innerHTML : "…" }], groesse: 24 });
 			});
 			return KI.blattBild(b);
 		}, cfg.id);
