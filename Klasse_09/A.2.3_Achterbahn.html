@@ -2505,24 +2505,24 @@ const R_STUFEN = [
 			if (art === "pendel") {
 				const cm = zufall(5, 40); const h = cm / 100, v = Math.sqrt(2 * G * h);
 				return { text: "Eine Pendelkugel wird um " + cm + "&nbsp;cm angehoben und losgelassen. Berechne ihre Geschwindigkeit im tiefsten Punkt.", gesucht: gr("v"), einheit: "m/s", wert: v,
-					weg: [gr("v") + " = " + wurzel("2 · " + gr("g") + " · Δ" + gr("h")), "= " + wurzel("2 · " + GE + " · " + zahl(h, 2) + "&nbsp;m"), "= " + zahl(v, 2) + "&nbsp;" + MS],
-					tipp: "Aus ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> = " + gr("m") + "·" + gr("g") + "·Δ" + gr("h") + " folgt " + gr("v") + " = " + wurzel("2·" + gr("g") + "·Δ" + gr("h")) + ". Höhe in m einsetzen!",
-					fallen: [{ wert: Math.sqrt(2 * G * cm), hinweis: "Rechne die Höhe zuerst in m um: " + cm + " cm = " + zahl(h, 2) + " m." }, { wert: 2 * G * h, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: Math.sqrt(G * h), hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·Δh)." }] };
+					weg: [gr("v") + " = " + wurzel("2 · " + gr("g") + " · " + gr("h")), "= " + wurzel("2 · " + GE + " · " + zahl(h, 2) + "&nbsp;m"), "= " + zahl(v, 2) + "&nbsp;" + MS],
+					tipp: "Aus ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> = " + gr("m") + "·" + gr("g") + "·" + gr("h") + " folgt " + gr("v") + " = " + wurzel("2·" + gr("g") + "·" + gr("h")) + ". Höhe in m einsetzen!",
+					fallen: [{ wert: Math.sqrt(2 * G * cm), hinweis: "Rechne die Höhe zuerst in m um: " + cm + " cm = " + zahl(h, 2) + " m." }, { wert: 2 * G * h, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: Math.sqrt(G * h), hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·h)." }] };
 			}
 			if (art === "bahn") {
 				const h = zufall(20, 80), v = Math.sqrt(2 * G * h), kmh = v * 3.6;
 				return { text: "Ein Achterbahnzug startet aus dem Stand und rollt ohne Reibung " + h + "&nbsp;m tief hinab. Berechne seine Geschwindigkeit unten in km/h.", gesucht: gr("v"), einheit: "km/h", wert: kmh,
 					weg: [gr("v") + " = " + wurzel("2 · " + GE + " · " + h + "&nbsp;m") + " = " + zahl(v, 2) + "&nbsp;" + MS, "= " + zahl(v, 2) + " · 3,6&nbsp;" + KMH + " = " + zahl(kmh, 0) + "&nbsp;" + KMH],
-					tipp: gr("v") + " = " + wurzel("2·" + gr("g") + "·Δ" + gr("h")) + " ergibt m/s. Für km/h mit 3,6 multiplizieren.",
-					fallen: [{ wert: v, hinweis: "Das ist die Geschwindigkeit in m/s. Rechne noch in km/h um (· 3,6)." }, { wert: 2 * G * h, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: v / 3.6, hinweis: "Von m/s nach km/h wird mit 3,6 multipliziert, nicht geteilt." }, { wert: Math.sqrt(G * h) * 3.6, hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·Δh)." }] };
+					tipp: gr("v") + " = " + wurzel("2·" + gr("g") + "·" + gr("h")) + " ergibt m/s. Für km/h mit 3,6 multiplizieren.",
+					fallen: [{ wert: v, hinweis: "Das ist die Geschwindigkeit in m/s. Rechne noch in km/h um (· 3,6)." }, { wert: 2 * G * h, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: v / 3.6, hinweis: "Von m/s nach km/h wird mit 3,6 multipliziert, nicht geteilt." }, { wert: Math.sqrt(G * h) * 3.6, hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·h)." }] };
 			}
 			const hoehe = art === "turm" ? wahl([3, 5, 7.5, 10]) : zufall(4, 10) / 2;
 			const text = (art === "turm" ? wahl(NAMEN) + " springt vom " + zahl(hoehe, hoehe % 1 ? 1 : 0) + "-Meter-Turm ins Wasser." : "Ein Apfel fällt aus " + zahl(hoehe, 1) + "&nbsp;m Höhe vom Baum.") + " Berechne die Geschwindigkeit beim Aufprall (ohne Luftreibung).";
 			const v = Math.sqrt(2 * G * hoehe);
 			return { text, gesucht: gr("v"), einheit: "m/s", wert: v,
-				weg: [gr("v") + " = " + wurzel("2 · " + gr("g") + " · Δ" + gr("h")), "= " + wurzel("2 · " + GE + " · " + zahl(hoehe, hoehe % 1 ? 1 : 0) + "&nbsp;m"), "= " + zahl(v, 1) + "&nbsp;" + MS],
-				tipp: "Energiebilanz: ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> = " + gr("m") + "·" + gr("g") + "·Δ" + gr("h") + ". Die Masse kürzt sich: " + gr("v") + " = " + wurzel("2·" + gr("g") + "·Δ" + gr("h")) + ".",
-				fallen: [{ wert: 2 * G * hoehe, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: Math.sqrt(G * hoehe), hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·Δh)." }, { wert: G * hoehe, hinweis: "Stelle ½·m·v² = m·g·Δh nach v um: v = √(2·g·Δh)." }] };
+				weg: [gr("v") + " = " + wurzel("2 · " + gr("g") + " · " + gr("h")), "= " + wurzel("2 · " + GE + " · " + zahl(hoehe, hoehe % 1 ? 1 : 0) + "&nbsp;m"), "= " + zahl(v, 1) + "&nbsp;" + MS],
+				tipp: "Energiebilanz: ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> = " + gr("m") + "·" + gr("g") + "·" + gr("h") + ". Die Masse kürzt sich: " + gr("v") + " = " + wurzel("2·" + gr("g") + "·" + gr("h")) + ".",
+				fallen: [{ wert: 2 * G * hoehe, hinweis: "Das ist v². Du musst noch die Wurzel ziehen." }, { wert: Math.sqrt(G * hoehe), hinweis: "Fast! Der Faktor 2 fehlt: v = √(2·g·h)." }, { wert: G * hoehe, hinweis: "Stelle ½·m·v² = m·g·h nach v um: v = √(2·g·h)." }] };
 		}
 	},
 	{
@@ -2531,22 +2531,22 @@ const R_STUFEN = [
 			const art = wahl(["auto", "ball", "pendel"]);
 			if (art === "auto") {
 				const kmh = wahl([20, 30, 40, 50, 60, 70, 80, 100]), v = kmh / 3.6, h = v * v / (2 * G);
-				return { text: "Ein Auto prallt mit " + kmh + "&nbsp;km/h gegen eine Wand. Aus welcher Höhe müsste es fallen, um genauso schnell aufzuprallen?", gesucht: "Δ" + gr("h"), einheit: "m", wert: h,
-					weg: [gr("v") + " = " + kmh + " : 3,6&nbsp;" + MS + " = " + zahl(v, 2) + "&nbsp;" + MS, "Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + zahl(v, 2) + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 1) + "&nbsp;m"],
-					tipp: "Aus " + gr("m") + "·" + gr("g") + "·Δ" + gr("h") + " = ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> folgt Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span>. Vorher km/h in m/s umrechnen (: 3,6).",
+				return { text: "Ein Auto prallt mit " + kmh + "&nbsp;km/h gegen eine Wand. Aus welcher Höhe müsste es fallen, um genauso schnell aufzuprallen?", gesucht: gr("h"), einheit: "m", wert: h,
+					weg: [gr("v") + " = " + kmh + " : 3,6&nbsp;" + MS + " = " + zahl(v, 2) + "&nbsp;" + MS, gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + zahl(v, 2) + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 1) + "&nbsp;m"],
+					tipp: "Aus " + gr("m") + "·" + gr("g") + "·" + gr("h") + " = ½·" + gr("m") + "·" + gr("v") + "<sup>2</sup> folgt " + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span>. Vorher km/h in m/s umrechnen (: 3,6).",
 					fallen: [{ wert: kmh * kmh / (2 * G), hinweis: "Rechne die Geschwindigkeit zuerst in m/s um (: 3,6)." }, { wert: v * v / G, hinweis: "Fast! Im Nenner steht 2·g." }, { wert: v / (2 * G), hinweis: "Die Geschwindigkeit muss quadriert werden." }] };
 			}
 			if (art === "pendel") {
 				const v = zufall(5, 30) / 10, h = v * v / (2 * G), cm = h * 100;
-				return { text: "Eine Pendelkugel schwingt mit " + zahl(v, 1) + "&nbsp;m/s durch den tiefsten Punkt. Wie hoch schwingt sie? Gib das Ergebnis in cm an.", gesucht: "Δ" + gr("h"), einheit: "cm", wert: cm,
-					weg: ["Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + zahl(v, 1) + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 3) + "&nbsp;m = " + zahl(cm, 1) + "&nbsp;cm"],
-					tipp: "Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span> ergibt m. 1&nbsp;m = 100&nbsp;cm.",
+				return { text: "Eine Pendelkugel schwingt mit " + zahl(v, 1) + "&nbsp;m/s durch den tiefsten Punkt. Wie hoch schwingt sie? Gib das Ergebnis in cm an.", gesucht: gr("h"), einheit: "cm", wert: cm,
+					weg: [gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + zahl(v, 1) + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 3) + "&nbsp;m = " + zahl(cm, 1) + "&nbsp;cm"],
+					tipp: gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span> ergibt m. 1&nbsp;m = 100&nbsp;cm.",
 					fallen: [{ wert: h, hinweis: "Das Ergebnis ist in m. Gib es in cm an (· 100)." }, { wert: 2 * cm, hinweis: "Fast! Im Nenner steht 2·g." }, { wert: v / (2 * G) * 100, hinweis: "Die Geschwindigkeit muss quadriert werden." }] };
 			}
 			const v = zufall(6, 20), h = v * v / (2 * G);
-			return { text: wahl(NAMEN) + " wirft einen Ball mit " + v + "&nbsp;m/s senkrecht nach oben. Wie hoch steigt er über die Abwurfstelle?", gesucht: "Δ" + gr("h"), einheit: "m", wert: h,
-				weg: ["Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + v + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 2) + "&nbsp;m"],
-				tipp: "Nullniveau: Abwurfstelle. Oben ist die ganze kinetische Energie in Höhenenergie umgewandelt: Δ" + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span>.",
+			return { text: wahl(NAMEN) + " wirft einen Ball mit " + v + "&nbsp;m/s senkrecht nach oben. Wie hoch steigt er über die Abwurfstelle?", gesucht: gr("h"), einheit: "m", wert: h,
+				weg: [gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2 · " + gr("g") + "</span></span> = <span class=\"bruch\"><span>(" + v + "&nbsp;m/s)<sup>2</sup></span><span>2 · " + GE + "</span></span> = " + zahl(h, 2) + "&nbsp;m"],
+				tipp: "Nullniveau: Abwurfstelle. Oben ist die ganze kinetische Energie in Höhenenergie umgewandelt: " + gr("h") + " = <span class=\"bruch\"><span>" + gr("v") + "<sup>2</sup></span><span>2·" + gr("g") + "</span></span>.",
 				fallen: [{ wert: 2 * h, hinweis: "Fast! Im Nenner steht 2·g." }, { wert: v / (2 * G), hinweis: "Die Geschwindigkeit muss quadriert werden." }] };
 		}
 	},
@@ -2685,7 +2685,7 @@ BAU.wischen = (b) => KI.wischen(b, {
 	auftrag: "Wische nach rechts, wenn die Aussage stimmt, nach links, wenn nicht (oder tippe auf die Knöpfe).",
 	karten: [
 		{ t: "Ohne Reibung hat der Achterbahnzug an jeder Stelle der Fahrt dieselbe Gesamtenergie.", ja: true, erkl: "" },
-		{ t: "Ein schwerer Wagen ist unten schneller als ein leichter (ohne Reibung).", ja: false, erkl: "Die Masse kürzt sich in ½·m·v² = m·g·Δh heraus: v = √(2·g·Δh) hängt nicht von der Masse ab." },
+		{ t: "Ein schwerer Wagen ist unten schneller als ein leichter (ohne Reibung).", ja: false, erkl: "Die Masse kürzt sich in ½·m·v² = m·g·h heraus: v = √(2·g·h) hängt nicht von der Masse ab." },
 		{ t: "Aus doppelter Höhe fällt ein Körper mit doppelter Geschwindigkeit auf.", ja: false, erkl: "Doppelte Höhe heißt doppelte Energie. Weil E<sub>kin</sub> ~ v², wird v nur √2-mal so groß, also etwa 1,4-mal." },
 		{ t: "Für die doppelte Geschwindigkeit braucht man die vierfache Fallhöhe.", ja: true, erkl: "" },
 		{ t: "Am höchsten Punkt einer Bahn ist die kinetische Energie immer null.", ja: false, erkl: "Nur wenn der Körper dort umkehrt. Ein Achterbahnzug fährt über einen Hügel (Position 4) mit 85 km/h." },
@@ -2696,7 +2696,7 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Ein Pendel ohne Reibung schwingt immer wieder auf dieselbe Höhe.", ja: true, erkl: "" },
 		{ t: "Mit Reibung erreicht eine Achterbahn die Starthöhe nie wieder (ohne Antrieb).", ja: true, erkl: "" },
 		{ t: "Ohne Antrieb ist der Wagen dort am schnellsten, wo die Bahn am tiefsten liegt.", ja: true, erkl: "" },
-		{ t: "Auf dem Mond steigt ein mit gleicher Geschwindigkeit hochgeworfener Ball genauso hoch wie auf der Erde.", ja: false, erkl: "Δh = v²/(2·g): Auf dem Mond ist g etwa ein Sechstel so groß, der Ball steigt also etwa sechsmal so hoch." }
+		{ t: "Auf dem Mond steigt ein mit gleicher Geschwindigkeit hochgeworfener Ball genauso hoch wie auf der Erde.", ja: false, erkl: "h = v²/(2·g): Auf dem Mond ist g etwa ein Sechstel so groß, der Ball steigt also etwa sechsmal so hoch." }
 	]
 });
 
