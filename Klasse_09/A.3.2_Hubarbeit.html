@@ -1935,8 +1935,12 @@ function kraftpfeil(c, x1, y1, x2, y2, farbe, kontur, b = 5) {
    Reiter 1: Wege vergleichen
    ========================================================================== */
 const BAU = {};
+/* Stufen über die Adresse: wege-1 = nur die Wege des Versuchs (senkrecht, zwei Rampen), wege-2 = alle Wege, Bergweg vorgewählt */
 BAU.wege = function (b) {
-	b.appendChild(KI.el("p", "hinweis", "Der Wagen (<i class=\"gr\">F</i><sub>G</sub> = 2,0&nbsp;N) wird langsam und ohne Reibung vom Start <b>S</b> zum Ziel <b>Z</b> gezogen, 0,30&nbsp;m höher. Wähle einen Weg und starte. Der Kraftmesser zeigt die nötige Kraft, das Diagramm die bisher verrichtete Hubarbeit. Vergleiche die Wege!"));
+	const fest = KI.festeStufen && KI.festeStufen.length ? KI.festeStufen[0] : -1;
+	const wege = fest === 0 ? WEGE.slice(0, 3) : WEGE;
+	b.appendChild(KI.el("p", "hinweis", "Der Wagen (<i class=\"gr\">F</i><sub>G</sub> = 2,0&nbsp;N) wird langsam und ohne Reibung vom Start <b>S</b> zum Ziel <b>Z</b> gezogen, 0,30&nbsp;m höher. Wähle einen Weg und starte. Der Kraftmesser zeigt die nötige Kraft, das Diagramm die bisher verrichtete Hubarbeit. " +
+		(fest === 1 ? "Beobachte beim <b>Bergweg</b>, was mit der Hubarbeit bergab passiert, und vergleiche mit den anderen Wegen!" : "Vergleiche die Wege!")));
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const canvas = KI.el("canvas", "sim"); canvas.setAttribute("aria-label", "Wagen auf einem Weg von S nach Z"); rahmen.appendChild(canvas);
 	const mess = KI.el("div", "messzeile"); b.appendChild(mess);
@@ -1945,10 +1949,10 @@ BAU.wege = function (b) {
 	const rahmenD = KI.el("div", "bildrahmen"); b.appendChild(rahmenD);
 	const canvasD = KI.el("canvas", "sim"); canvasD.setAttribute("aria-label", "Diagramm Hubarbeit über Weg"); rahmenD.appendChild(canvasD);
 
-	const z = { weg: WEGE[2], s: 0, laeuft: false, tempo: 1, laeufe: [], aktiv: null };
+	const z = { weg: fest === 1 ? WEGE[4] : WEGE[2], s: 0, laeuft: false, tempo: 1, laeufe: [], aktiv: null };
 	/* Bedienung */
 	const g1 = gruppe("Weg"); const wegKn = [];
-	WEGE.forEach(w => {
+	wege.forEach(w => {
 		const k = wahlKnopf(svg24(SYMW[w.id]), "Weg: " + w.name, () => { z.weg = w; wegKn.forEach(x => x.classList.toggle("aktiv", x === k)); neu(); });
 		if (w === z.weg) k.classList.add("aktiv"); wegKn.push(k); g1.r.appendChild(k);
 	});
