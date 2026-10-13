@@ -524,16 +524,14 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 
 /* ---------- A.3.3: Fachsprache (Fehler antippen, Kärtchen ersetzen) ---------- */
 .fstext { line-height: 2.05; font-size: 1.05rem; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.6rem 0.9rem; background: #FFFEF8; }
-.fstext .w { cursor: pointer; border-radius: 1mm; }
-.fstext .w:hover { background: #EEF; }
+.fstext .w { cursor: pointer; border-radius: 1mm; padding: 0 1px; }
+.fstext .w:hover { background: #E6E6F8; }
 .fstext .w.daneben { text-decoration: underline wavy var(--falsch); text-decoration-thickness: 1px; }
-.fstext .seg { cursor: pointer; border-radius: 1mm; }
-.fstext .seg:hover { background: #EEF; }
-.fstext .seg.aktiv { background: #FFF3B0; box-shadow: 0 0 0 2px #E0B000; }
-.fstext .seg.richtig { color: var(--gut); font-weight: bold; cursor: default; background: var(--gut-hg); }
-.fstext .seg.falsch { color: #8A4500; font-weight: bold; cursor: default; background: #FFF0DD; }
-.fstext .seg.falsch s { color: var(--falsch); font-weight: normal; }
-.fstext .seg.tipp { background: #FFF3B0; transition: background 0.3s; }
+.fstext .w.aktiv { background: #FFF3B0; box-shadow: 0 0 0 2px #E0B000; }
+.fstext .w.richtig { color: var(--gut); font-weight: bold; cursor: default; background: var(--gut-hg); }
+.fstext .w.falsch { color: #8A4500; font-weight: bold; cursor: default; background: #FFF0DD; }
+.fstext .w.falsch s { color: var(--falsch); font-weight: normal; }
+.fstext .w.tipp { background: #FFF3B0; transition: background 0.3s; }
 .wahlkasten { border: 2px solid var(--blue-frame); border-radius: 2mm; padding: 0.5rem 0.7rem; margin: 0.6rem 0; background: var(--blue-title); }
 .wahlkasten .wtitel { font-size: 0.95rem; margin-bottom: 0.35rem; }
 .wahlkasten .wtitel s { color: var(--falsch); }
@@ -555,6 +553,7 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 
 @media (max-width: 560px) { .koerbe { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .duellzeile .gesucht { flex-basis: 100%; } }
+.status span { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1900,82 +1899,186 @@ function bildleiste(rahmen, canvas, dateiname, zuruecksetzen, zuruecksetzenTitel
 const BAU = {};
 
 /* ==========================================================================
-   Reiter 1: Fachsprache. Fehler im Bericht antippen, durch das richtige Kärtchen ersetzen.
-   Ein Versuch pro Fehler; daneben getippte Wörter zählen als Fehlgriff.
+   Reiter 1: Fachsprache. Falsches Wort im Text antippen, durch das richtige Kärtchen ersetzen.
+   Schummelschutz: Jedes Wort ist einzeln antippbar und sieht beim Überfahren gleich aus (keine Blöcke),
+   bei jedem Start sind andere Stellen falsch (Positionen merken hilft nicht), daneben getippte Wörter
+   zählen als Fehlgriff (auch richtig verwendete Fachwörter: wahlloses Antippen kostet), ein Versuch pro
+   Stelle, höchstens zwei Tipps.
+   Teile eines Textes: Zeichenkette = fester Text; { f, r, w, e } = Stelle, die mal falsch (f), mal richtig (r)
+   erscheint, w = falsche Kärtchen, e = Erklärung; { t, e } = richtig verwendetes Fachwort (Falle).
    ========================================================================== */
-const BERICHT = [
-	"Gestern war ich mit meinem Bruder Cletus im Fitnessstudio. Nach zehn Minuten an der Hantelbank ",
-	{ f: "war meine Kraft komplett verbraucht", r: "konnten meine Muskeln kaum noch Kraft aufbringen", w: ["war meine Leistung komplett verbraucht", "war meine Arbeit komplett verbraucht"], e: "Kraft ist kein Vorrat, der verbraucht wird. Die Muskeln können nur keine große Kraft mehr aufbringen." },
-	". Mein Körper hatte dabei viel chemische Energie umgewandelt. Cletus stemmt 80 kg ohne Mühe, ",
-	{ f: "er hat einfach mehr Energie in den Armen", r: "er kann mit seinen Armen eine größere Kraft aufbringen", w: ["er hat einfach mehr Leistung in den Armen", "er verrichtet mit seinen Armen mehr Kraft"], e: "Zum Stemmen braucht man eine große Kraft. Kraft ist nicht in den Armen gespeichert, und Kraft verrichtet man nicht." },
-	". Danach sind wir mit dem Rad auf den Kalvarienberg gefahren. Wir beide wiegen samt Rad gleich viel. Cletus war in der halben Zeit oben, ",
-	{ f: "also hat er nur die halbe Arbeit verrichtet", r: "also hat er die gleiche Arbeit mit doppelter Leistung verrichtet", w: ["also hat er die doppelte Arbeit verrichtet", "also hatte er die doppelte Energie"], e: "Gleiche Masse und gleiche Höhe ergeben die gleiche Hubarbeit. In der halben Zeit bedeutet das die doppelte Leistung." },
-	". Bei der Abfahrt ",
-	{ f: "hat mein Fahrrad neue Kraft getankt", r: "wurde Höhenenergie in kinetische Energie umgewandelt", w: ["hat mein Fahrrad neue Energie getankt", "hat mein Fahrrad Leistung gesammelt"], e: "Beim Hinabrollen wird Höhenenergie in kinetische Energie umgewandelt. Neue Energie kommt nicht dazu." },
-	", ich musste gar nicht treten. Der Akku von Cletus' E-Bike ",
-	{ f: "hat übrigens 0,5 kWh Leistung", r: "speichert übrigens 0,5 kWh Energie", w: ["hat übrigens 0,5 kWh Kraft", "hat übrigens 0,5 kWh Leistung pro Stunde"], e: "Die Kilowattstunde ist eine Einheit der Energie (Leistung mal Zeit): 1 kWh = 3 600 000 J." },
-	". Am Abend haben wir der Nachbarin beim Umzug geholfen. Ich habe eine schwere Kiste zehn Minuten lang festgehalten, während Cletus die Tür aufgesperrt hat. ",
-	{ f: "Das war richtig viel Arbeit!", r: "Das war anstrengend, aber an der Kiste habe ich keine Arbeit verrichtet!", w: ["Das war richtig viel Leistung!", "Das war richtig viel Energie!"], e: "Die Kiste bewegt sich nicht, ihre Energie ändert sich nicht: keine Arbeit an der Kiste. Anstrengend ist es trotzdem, weil die Muskeln ständig chemische Energie umwandeln." },
-	" Danach hat Cletus die Kiste in den dritten Stock getragen und dabei Arbeit an ihr verrichtet. Zum Glück ",
-	{ f: "hatte der Umzugswagen 150 PS Kraft", r: "hatte der Motor des Umzugswagens eine Leistung von 150 PS", w: ["hatte der Umzugswagen 150 PS Energie", "hatte der Umzugswagen 150 PS Arbeit"], e: "PS ist eine Einheit der Leistung: 1 PS ≈ 736 W." },
-	". Am Ende war ich so platt, ",
-	{ f: "dass ich keine Leistung mehr übrig hatte", r: "dass ich keine große Leistung mehr erbringen konnte", w: ["dass ich keine Kraft mehr übrig hatte", "dass ich keine Arbeit mehr übrig hatte"], e: "Leistung ist kein Vorrat. Sie gibt an, wie schnell Energie umgewandelt wird." },
-	"."
+const FS_TEXTE = [
+	{
+		name: "Cäcilias Tag", titel: "Cäcilias Bericht in Fachsprache", wer: "Cäcilias Bericht", falsch: 7,
+		teile: [
+			"Gestern war ich mit meinem Bruder Cletus im Fitnessstudio. An der Hantelbank hat mein Körper viel chemische ",
+			{ f: "Kraft", r: "Energie", w: ["Leistung", "Arbeit"], e: "Im Körper wird chemische Energie umgewandelt. Kraft ist kein Vorrat, der in einem Körper steckt." },
+			" umgewandelt. Cletus hält 80 kg ruhig über dem Kopf. Dazu braucht er eine große ",
+			{ f: "Leistung", r: "Kraft", w: ["Energie", "Arbeit"], e: "Zum Halten braucht man eine große Kraft. Die Hantel bewegt sich nicht, ihre Energie ändert sich nicht: Auf die Hantel wird keine Energie übertragen." },
+			". Danach sind wir mit dem Rad auf den Kalvarienberg gefahren. Beim Anfahren habe ich mit großer ",
+			{ t: "Kraft", e: "Der Fuß übt eine Kraft auf das Pedal aus." },
+			" auf die Pedale gedrückt. Wir beide wiegen samt Rad gleich viel, aber Cletus war in der halben Zeit oben. Er hat also die gleiche ",
+			{ t: "Arbeit", e: "Gleiche Masse und gleicher Höhenunterschied ergeben die gleiche Hubarbeit." },
+			" mit der doppelten ",
+			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "Gleiche Arbeit in der halben Zeit bedeutet die doppelte Leistung." },
+			" verrichtet. Bei der Abfahrt wurde ",
+			{ f: "Leistung", r: "Höhenenergie", w: ["Kraft", "Arbeit"], e: "Beim Hinabrollen wird Höhenenergie in kinetische Energie umgewandelt." },
+			" in kinetische ",
+			{ t: "Energie", e: "Das rollende Rad hat kinetische Energie." },
+			" umgewandelt, ich musste gar nicht treten. Der Akku von Cletus' E-Bike speichert 0,5 kWh ",
+			{ f: "Leistung", r: "Energie", w: ["Kraft", "Arbeit"], e: "Die Kilowattstunde ist eine Einheit der Energie: 1 kWh = 3 600 000 J." },
+			", sein Motor hat eine ",
+			{ f: "Energie", r: "Leistung", w: ["Kraft", "Arbeit"], e: "Watt ist die Einheit der Leistung." },
+			" von 250 W. Am Abend haben wir der Nachbarin beim Umzug geholfen. Ich habe eine schwere Kiste zehn Minuten lang festgehalten, während Cletus die Tür aufgesperrt hat. Das war richtig anstrengend. An der Kiste habe ich dabei ",
+			{ f: "viel", r: "keine", w: ["wenig", "doppelte"], e: "Die Kiste bewegt sich nicht, ihre Energie ändert sich nicht: keine Arbeit an der Kiste. Anstrengend ist es trotzdem, weil die Muskeln ständig chemische Energie umwandeln." },
+			" Arbeit verrichtet. Danach hat Cletus die Kiste in den dritten Stock getragen und dabei ",
+			{ t: "Arbeit", e: "Die Kiste wird angehoben, ihre Höhenenergie nimmt zu: Cletus verrichtet Arbeit an ihr." },
+			" an ihr verrichtet. Zum Glück hatte der Motor des Umzugswagens eine ",
+			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "PS ist eine Einheit der Leistung: 1 PS ≈ 736 W." },
+			" von 150 PS. Am Ende des Tages hatte mein Körper viel Energie ",
+			{ f: "verbraucht", r: "umgewandelt", w: ["vernichtet", "erzeugt"], e: "Energie geht nicht verloren und entsteht nicht neu. Sie wird umgewandelt, zum Beispiel in thermische Energie." },
+			"."
+		]
+	},
+	{
+		name: "Pumpspeicherkraftwerk", titel: "Zeitungsartikel in Fachsprache", wer: "Sixtus' Zeitungsartikel", falsch: 6,
+		teile: [
+			"Das Pumpspeicherkraftwerk Goldisthal in Thüringen ist eines der größten in Europa. Nachts, wenn wenig elektrische Energie benötigt wird, pumpen große Pumpen Wasser aus dem unteren Becken etwa 300 m hinauf. Dabei verrichten die Pumpen ",
+			{ t: "Arbeit", e: "Die Pumpen übertragen Energie auf das Wasser: Sie verrichten Arbeit am Wasser." },
+			" am Wasser: Elektrische Energie wird in ",
+			{ f: "Kraft", r: "Höhenenergie", w: ["Leistung", "Arbeit"], e: "Das hochgepumpte Wasser hat mehr Höhenenergie als vorher." },
+			" des Wassers umgewandelt. Zusammen haben die Pumpen eine Leistung von etwa 1000 ",
+			{ f: "MJ", r: "MW", w: ["MN", "MWh"], e: "Leistung misst man in Watt: 1 MW = 1 000 000 W. MJ und MWh sind Einheiten der Energie, MN ist eine Einheit der Kraft." },
+			". Das obere Becken fasst 12 Millionen Kubikmeter Wasser und speichert so etwa 8,5 Millionen kWh ",
+			{ f: "Leistung", r: "Energie", w: ["Kraft", "Arbeit"], e: "Die Kilowattstunde ist eine Einheit der Energie." },
+			". Je höher das obere Becken liegt, desto mehr ",
+			{ f: "Kraft", r: "Energie", w: ["Leistung", "Arbeit"], e: "ΔE = m · g · Δh: Je größer der Höhenunterschied, desto mehr Energie speichert dieselbe Wassermenge." },
+			" kann man mit derselben Wassermenge speichern. Tagsüber strömt das Wasser zurück nach unten und drückt mit großer ",
+			{ f: "Energie", r: "Kraft", w: ["Leistung", "Arbeit"], e: "Das Wasser übt eine Kraft auf die Schaufeln der Turbinen aus." },
+			" gegen die Schaufeln der Turbinen. Die Generatoren haben zusammen eine ",
+			{ f: "Energie", r: "Leistung", w: ["Kraft", "Arbeit"], e: "Watt ist die Einheit der Leistung: 1060 MW ist eine Leistung." },
+			" von 1060 MW. Mit dem vollen Becken kann das Kraftwerk etwa acht Stunden lang mit voller ",
+			{ t: "Leistung", e: "Δt = ΔE : P = 8 500 000 kWh : 1 060 000 kW ≈ 8 h." },
+			" elektrische Energie liefern. Im Kraftwerk wird also Energie ",
+			{ f: "erzeugt", r: "umgewandelt", w: ["verbraucht", "vernichtet"], e: "Energie wird nicht erzeugt: Höhenenergie wird in elektrische Energie umgewandelt." },
+			". Ein kleiner Teil der Energie wird dabei durch Reibung in thermische ",
+			{ t: "Energie", e: "Durch Reibung entsteht thermische Energie." },
+			" umgewandelt. Mit Pumpen der doppelten ",
+			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "Doppelte Leistung heißt: dieselbe Energie in der halben Zeit." },
+			" wäre das obere Becken in der halben Zeit gefüllt."
+		]
+	},
+	{
+		name: "Mensch gegen Toaster", titel: "Sportreportage in Fachsprache", wer: "Laurentius' Sportreportage", falsch: 6,
+		teile: [
+			"Bahnradsprinter Robert Förstemann will einen Toaster nur mit seinen Beinen betreiben. Auf dem Toaster steht 700 W, das ist seine ",
+			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "Watt ist die Einheit der Leistung." },
+			". Förstemann tritt mit enormer ",
+			{ f: "Energie", r: "Kraft", w: ["Leistung", "Arbeit"], e: "Der Fuß übt eine Kraft auf das Pedal aus." },
+			" in die Pedale. Der Generator wandelt die kinetische ",
+			{ t: "Energie", e: "Das sich drehende Rad hat kinetische Energie." },
+			" des Rades in elektrische Energie um. Damit der Toaster richtig heiß wird, muss Förstemann in jeder Sekunde 700 ",
+			{ f: "W", r: "J", w: ["N", "kWh"], e: "700 W bedeutet: 700 J in jeder Sekunde." },
+			" liefern. Für eine Scheibe Toast wandelt der Toaster 84 000 J ",
+			{ f: "Leistung", r: "Energie", w: ["Kraft", "Arbeit"], e: "Joule ist die Einheit der Energie." },
+			" um, weniger als in zwei Stück Würfelzucker steckt. Ein untrainierter Mensch hat also nicht zu wenig Energie, sondern zu wenig ",
+			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "Ein untrainierter Mensch schafft auf Dauer nur etwa 80 W: Er kann die Energie nicht schnell genug liefern." },
+			". Nach einer Minute lässt Förstemanns ",
+			{ t: "Leistung", e: "Er schafft die 700 W nicht mehr lange: Seine Leistung lässt nach." },
+			" spürbar nach. Im kurzen Sprint erreicht er sogar über 2 ",
+			{ f: "kJ", r: "kW", w: ["kN", "kWh"], e: "Eine Leistung misst man in Watt: 2 kW = 2000 W." },
+			". Seine Beine haben am Generator viel ",
+			{ f: "Leistung", r: "Arbeit", w: ["Kraft", "Höhenenergie"], e: "Mit der Kraft seiner Beine überträgt er Energie auf den Generator: Er verrichtet Arbeit." },
+			" verrichtet. Am Ende ist der Toast goldbraun: Im Heizdraht wurde elektrische Energie in thermische Energie umgewandelt. Danach isst Förstemann zwei Brote mit Honig. Darin steckt viel chemische ",
+			{ f: "Kraft", r: "Energie", w: ["Leistung", "Arbeit"], e: "In der Nahrung steckt chemische Energie." },
+			"."
+		]
+	}
 ];
 BAU.fachsprache = function (b) {
 	const id = "fachsprache";
-	const leiste = KI.el("div", "leiste"); const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); leiste.appendChild(rechts); b.appendChild(leiste);
-	b.appendChild(KI.el("p", "auftrag", "In Cäcilias Bericht sind <b>acht Stellen</b> physikalisch falsch. Tippe eine falsche Stelle an und ersetze sie durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>. Daneben getippte Wörter zählen als Fehlgriff."));
+	const leiste = KI.el("div", "leiste"); const chips = KI.el("div", "chips");
+	const chipKnoepfe = FS_TEXTE.map((tx, i) => { const k = KI.el("button", "", tx.name); k.addEventListener("click", () => starte(i)); chips.appendChild(k); return k; });
+	leiste.appendChild(chips); KI.chipsBeschraenken(chips, chipKnoepfe);
+	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); leiste.appendChild(rechts); b.appendChild(leiste);
+	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
 	const text = KI.el("div", "fstext"); b.appendChild(text);
 	const kasten = KI.el("div", "wahlkasten"); kasten.hidden = true; b.appendChild(kasten);
 	const rueck = KI.el("div", ""); b.appendChild(rueck);
 	const steuer = KI.el("div", "leiste");
-	steuer.appendChild(KI.symbolKnopf("tipp", "Tipp: eine falsche Stelle kurz aufleuchten lassen", tipp));
-	steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
+	const tippKnopf = KI.symbolKnopf("tipp", "Tipp: eine falsche Stelle kurz aufleuchten lassen (höchstens zweimal)", tipp);
+	steuer.appendChild(tippKnopf);
+	steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen (andere Stellen sind falsch)", () => starte(nrText)));
 	b.appendChild(steuer);
 	const ende = KI.el("div", ""); b.appendChild(ende);
-	let segs = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0;
-	const fehlerZahl = BERICHT.filter(t => typeof t !== "string").length;
+	let nrText = 0, tx = null, falschIdx = new Set(), stellen = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0, fehlerZahl = 0;
 	const heft = KI.heftleiste(b, () => {
 		const teile = [];
-		BERICHT.forEach((t, i) => {
+		tx.teile.forEach((t, i) => {
 			if (typeof t === "string") teile.push({ t });
-			else teile.push({ t: t.r, farbe: "#2E7D32", fett: true });
+			else if (t.t) teile.push({ t: t.t });
+			else if (falschIdx.has(i)) teile.push({ t: t.r, farbe: "#2E7D32", fett: true });
+			else teile.push({ t: t.r });
 		});
-		return KI.blattBild([{ art: "titel", t: "Cäcilias Bericht in Fachsprache" }, { art: "text", groesse: 24, teile },
-			{ art: "abstand", h: 8 }, { art: "text", groesse: 20, teile: [{ t: "Grün: verbesserte Stellen. Kraft wird nicht verbraucht, Leistung hat man nicht übrig, kWh misst Energie, PS misst Leistung.", farbe: "#555", kursiv: true }] }]);
+		return KI.blattBild([{ art: "titel", t: tx.titel }, { art: "text", groesse: 24, teile },
+			{ art: "abstand", h: 8 }, { art: "text", groesse: 20, teile: [{ t: "Grün: verbesserte Stellen. Kraft ist kein Vorrat, Energie wird nur umgewandelt, Leistung gibt an, wie schnell. kWh und J messen Energie, W und PS messen Leistung, N misst Kraft.", farbe: "#555", kursiv: true }] }]);
 	}, "Fachsprache_Leistung");
 	heft.hidden = true;
-	function zeigeStatus() { status.innerHTML = "<span>Erledigt: " + erledigt + " / " + fehlerZahl + "</span><span>Richtig: " + richtig + "</span><span>Fehlgriffe: " + daneben + "</span>"; }
-	function starte() {
-		text.innerHTML = ""; segs = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0;
-		kasten.hidden = true; rueck.innerHTML = ""; ende.innerHTML = ""; heft.hidden = true;
-		BERICHT.forEach(t => {
-			if (typeof t === "string") {
-				t.split(/(\s+)/).forEach(w => {
-					if (w === "") return;
-					if (/^\s+$/.test(w)) { text.appendChild(document.createTextNode(w)); return; }
-					const sp = KI.el("span", "w", w);
-					sp.addEventListener("click", () => {
-						if (erledigt === fehlerZahl || sp.classList.contains("daneben")) return;
-						sp.classList.add("daneben"); daneben++; zeigeStatus();
-						rueck.innerHTML = '<p class="rueck schlecht">Das ist richtig so. Fehlgriff!</p>';
-					});
-					text.appendChild(sp);
-				});
-			} else {
-				const s = KI.el("span", "seg", t.f); s._t = t; s._fertig = false;
-				s.addEventListener("click", () => oeffne(s));
-				segs.push(s); text.appendChild(s);
-			}
+	function markiereChips() {
+		chipKnoepfe.forEach((k, j) => {
+			k.classList.toggle("aktiv", j === nrText);
+			const st = KI.speicher.lies("sterne_" + id + "_" + j, 0);
+			k.innerHTML = FS_TEXTE[j].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : "");
 		});
-		zeigeStatus();
+	}
+	function zeigeStatus() { status.innerHTML = "<span>Gefunden: " + erledigt + " / " + fehlerZahl + "</span><span>Richtig ersetzt: " + richtig + "</span><span>Fehlgriffe: " + daneben + "</span>"; }
+	/* ein Wort als antippbare Stelle; Satzzeichen davor und danach sind nicht antippbar */
+	function wort(w, daten) {
+		const m = w.match(/^([(„"']*)(.*?)([.,;:!?)"“']*)$/);
+		if (m[1]) text.appendChild(document.createTextNode(m[1]));
+		const sp = KI.el("span", "w", m[2]); Object.assign(sp, daten || {});
+		sp.addEventListener("click", () => tippe(sp));
+		text.appendChild(sp);
+		if (m[3]) text.appendChild(document.createTextNode(m[3]));
+		return sp;
+	}
+	function starte(i) {
+		nrText = i; tx = FS_TEXTE[i];
+		text.innerHTML = ""; stellen = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0;
+		kasten.hidden = true; rueck.innerHTML = ""; ende.innerHTML = ""; heft.hidden = true; tippKnopf.disabled = false;
+		/* zufällig, welche Stellen diesmal falsch sind */
+		const kandidaten = tx.teile.map((t, j) => (typeof t !== "string" && t.f) ? j : -1).filter(j => j >= 0);
+		falschIdx = new Set(KI.mischen(kandidaten).slice(0, tx.falsch));
+		fehlerZahl = falschIdx.size;
+		auftrag.innerHTML = "In " + tx.wer + " sind <b>" + fehlerZahl + " Wörter</b> physikalisch falsch. Tippe ein falsches Wort an und ersetze es durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>. Daneben getippte Wörter zählen als Fehlgriff, auch richtig verwendete Fachwörter.";
+		tx.teile.forEach((t, j) => {
+			if (typeof t !== "string") {
+				if (t.t) wort(t.t, { _erkl: t.e });
+				else if (falschIdx.has(j)) stellen.push(wort(t.f, { _stelle: t, _fertig: false }));
+				else wort(t.r, { _erkl: t.e });
+				return;
+			}
+			t.split(/(\s+)/).forEach(w => {
+				if (w === "") return;
+				if (/^\s+$/.test(w) || /^[.,;:!?()„“"']+$/.test(w)) { text.appendChild(document.createTextNode(w)); return; }
+				wort(w);
+			});
+		});
+		markiereChips(); zeigeStatus();
+	}
+	function tippe(sp) {
+		if (erledigt === fehlerZahl) return;
+		if (sp._stelle) { oeffne(sp); return; }
+		if (sp.classList.contains("daneben")) return;
+		sp.classList.add("daneben"); daneben++; zeigeStatus();
+		if (aktiv) { aktiv.classList.remove("aktiv"); aktiv = null; kasten.hidden = true; }
+		rueck.innerHTML = '<p class="rueck schlecht">Das ist richtig so. Fehlgriff!</p>' + (sp._erkl ? '<div class="erkl">' + KI.icon("tipp", 15) + " " + sp._erkl + "</div>" : "");
 	}
 	function oeffne(s) {
 		if (s._fertig) return;
 		if (aktiv) aktiv.classList.remove("aktiv");
 		aktiv = s; s.classList.add("aktiv"); rueck.innerHTML = "";
-		const t = s._t;
+		const t = s._stelle;
 		kasten.innerHTML = '<div class="wtitel">Ersetze <s>' + t.f + "</s> durch:</div>";
 		const reihe = KI.el("div", "wahlreihe"); kasten.appendChild(reihe);
 		KI.mischen([{ t: t.r, ok: true }].concat(t.w.map(x => ({ t: x, ok: false })))).forEach(k => {
@@ -1987,7 +2090,7 @@ BAU.fachsprache = function (b) {
 		kasten.scrollIntoView({ block: "nearest", behavior: "smooth" });
 	}
 	function waehle(s, ok) {
-		const t = s._t;
+		const t = s._stelle;
 		s._fertig = true; s.classList.remove("aktiv"); aktiv = null; erledigt++;
 		if (ok) { richtig++; s.classList.add("richtig"); s.textContent = t.r; KI.funken(s, 6); rueck.innerHTML = '<p class="rueck gut">Richtig!</p><div class="erkl">' + KI.icon("tipp", 15) + " " + t.e + "</div>"; }
 		else { s.classList.add("falsch"); s.innerHTML = "<s>" + t.f + "</s> " + t.r; rueck.innerHTML = '<p class="rueck schlecht">Leider falsch. Richtig ist: ' + t.r + '</p><div class="erkl">' + KI.icon("tipp", 15) + " " + t.e + "</div>"; }
@@ -1995,17 +2098,22 @@ BAU.fachsprache = function (b) {
 		if (erledigt === fehlerZahl) fertig();
 	}
 	function tipp() {
-		const s = segs.find(x => !x._fertig);
-		if (!s) return;
-		tipps++; s.classList.add("tipp"); setTimeout(() => s.classList.remove("tipp"), 900);
+		const s = stellen.find(x => !x._fertig);
+		if (!s || tipps >= 2) return;
+		tipps++; if (tipps >= 2) tippKnopf.disabled = true;
+		s.classList.add("tipp"); setTimeout(() => s.classList.remove("tipp"), 900);
 	}
 	function fertig() {
 		const abzug = daneben + tipps;
-		const s = richtig === fehlerZahl && abzug <= 1 ? 3 : richtig >= fehlerZahl - 2 && abzug <= 3 ? 2 : 1;
-		const p = KI.el("p", "rueck gut", richtig + " von " + fehlerZahl + " Stellen richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
-		ende.innerHTML = ""; ende.appendChild(p); KI.funken(p, 18); KI.bestwert(id, s); heft.hidden = false;
+		const s = richtig === fehlerZahl && abzug <= 1 ? 3 : richtig >= fehlerZahl - 1 && abzug <= 3 ? 2 : 1;
+		const p = KI.el("p", "rueck gut", richtig + " von " + fehlerZahl + " Wörtern richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
+		ende.innerHTML = ""; ende.appendChild(p); KI.funken(p, 18);
+		KI.speicher.schreib("sterne_" + id + "_" + nrText, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + nrText, 0))); KI.bestwert(id, s); markiereChips();
+		const folge = KI.naechsteStufe(nrText, FS_TEXTE.length);
+		if (folge >= 0) { const l = KI.el("div", "leiste"), k = KI.hauptKnopf("weiter", "Nächster Text: " + FS_TEXTE[folge].name); k.addEventListener("click", () => starte(folge)); l.appendChild(k); ende.appendChild(l); }
+		heft.hidden = false;
 	}
-	starte();
+	starte(KI.startStufe(FS_TEXTE.length));
 };
 
 /* ==========================================================================
@@ -2051,7 +2159,7 @@ BAU.spiel = function (b) {
 
 	let d = null, gewaehlt = null, versucht = false, nr = 0, treffer = [], tipps = 0, protokoll = [];
 	let tSim = 0, laeuft = false, anim = 0, tAlt = 0;
-	bildleiste(rahmen, canvas, () => "Leistungsduell_" + (d ? d.a.name + "_" + d.b.name : ""), () => neueSerie(), "Neue Serie");
+	bildleiste(rahmen, canvas, () => "Leistungsduell_" + (d ? d.a.name + "_" + d.b.name : ""));   /* kein Neustart mitten in der Serie: Fehlschläge lassen sich nicht wegklicken */
 	const heft = KI.heftleiste(b, () => {
 		const bl = [{ art: "titel", t: "Leistungsduell: meine Serie" }];
 		protokoll.forEach((p, i) => {
