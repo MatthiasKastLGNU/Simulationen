@@ -2170,6 +2170,9 @@ function BAU_ZAEHL(b) {
 		c.fillStyle = gD; c.beginPath(); c.moveTo(x0, yD); c.lineTo(x1, yD); c.ellipse(x1, yD + hD / 2, rx, hD / 2, 0, -Math.PI / 2, Math.PI / 2); c.lineTo(x0, yD + hD); c.ellipse(x0, yD + hD / 2, rx, hD / 2, 0, Math.PI / 2, 3 * Math.PI / 2); c.closePath(); c.fill();
 		c.strokeStyle = "#7A4A1E"; c.lineWidth = 1; c.stroke();
 		c.fillStyle = "#D9A274"; c.beginPath(); c.ellipse(x1, yD + hD / 2, rx, hD / 2, 0, 0, 2 * Math.PI); c.fill(); c.stroke();
+		/* Zählstelle am Querschnitt: Fläche und hintere (rechte) Hälfte gestrichelt hinter den Elektronen, vordere (linke) Hälfte durchgezogen davor; die rechte Stirnfläche ist sichtbar */
+		c.fillStyle = z.blitzQ > 0 ? "rgba(191,0,0,0.38)" : "rgba(191,0,0,0.18)"; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, 0, 2 * Math.PI); c.fill();
+		c.strokeStyle = ROT; c.lineWidth = 2; c.setLineDash([4, 3]); c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, -Math.PI / 2, Math.PI / 2); c.stroke(); c.setLineDash([]);
 		const r = Math.max(3.5, Math.min(7, 0.33 * s / d));
 		c.save(); c.beginPath(); c.rect(x0, yD, x1 - x0, hD); c.clip();
 		for (const p of z.ladungen) {
@@ -2180,10 +2183,7 @@ function BAU_ZAEHL(b) {
 			}
 		}
 		c.restore();
-		/* Zählstelle am Querschnitt: Fläche durchscheinend; rechte Stirnfläche sichtbar, also vorne = linke Hälfte (durchgezogen), hinten = rechte Hälfte (gestrichelt) */
-		c.fillStyle = z.blitzQ > 0 ? "rgba(191,0,0,0.38)" : "rgba(191,0,0,0.18)"; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, 0, 2 * Math.PI); c.fill();
-		c.strokeStyle = ROT; c.lineWidth = 2; c.setLineDash([4, 3]); c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, -Math.PI / 2, Math.PI / 2); c.stroke(); c.setLineDash([]);
-		c.lineWidth = z.blitzQ > 0 ? 4 : 2.5; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, Math.PI / 2, 3 * Math.PI / 2); c.stroke();
+		c.strokeStyle = ROT; c.lineWidth = z.blitzQ > 0 ? 4 : 2.5; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, Math.PI / 2, 3 * Math.PI / 2); c.stroke();
 		KI.text(c, schmal ? "Zählstelle" : "Zählstelle (Querschnitt)", schmal ? B - rand : xz + 6, yD - 16, 13 * gr, ROT, schmal ? "right" : "left");
 		/* Anzeigen: Zählerstand, Zeit und nach der Messung das Ergebnis */
 		const t = z.m ? z.m.t : 0, fertig = z.m && z.m.fertig;
