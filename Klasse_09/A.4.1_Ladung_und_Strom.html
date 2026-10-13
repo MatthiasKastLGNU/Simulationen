@@ -451,6 +451,25 @@ button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
 	.kino { max-width: 260px; }
 	.kinobild svg { max-height: 200px; }
 }
+
+/* Baustein Fachsprache (KI.fachsprache): jedes Wort einzeln, beim Überfahren gleich markiert */
+.fstext { line-height: 2.05; font-size: 1.05rem; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.6rem 0.9rem; background: #FFFEF8; }
+.fstext .w { cursor: pointer; border-radius: 1mm; padding: 0 1px; }
+.fstext .w:hover { background: #E6E6F8; }
+.fstext .w.daneben { text-decoration: underline wavy var(--falsch); text-decoration-thickness: 1px; }
+.fstext .w.aktiv { background: #FFF3B0; box-shadow: 0 0 0 2px #E0B000; }
+.fstext .w.richtig { color: var(--gut); font-weight: bold; cursor: default; background: var(--gut-hg); }
+.fstext .w.falsch { color: #8A4500; font-weight: bold; cursor: default; background: #FFF0DD; }
+.fstext .w.falsch s { color: var(--falsch); font-weight: normal; }
+.fstext .w.tipp { background: #FFF3B0; transition: background 0.3s; }
+.wahlkasten { border: 2px solid var(--blue-frame); border-radius: 2mm; padding: 0.5rem 0.7rem; margin: 0.6rem 0; background: var(--blue-title); }
+.wahlkasten .wtitel { font-size: 0.95rem; margin-bottom: 0.35rem; }
+.wahlkasten .wtitel s { color: var(--falsch); }
+.wahlreihe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+.wahlkarte { font: inherit; font-size: 0.98rem; text-align: left; padding: 0.45rem 0.6rem; border: 2px solid var(--karte-rand); border-radius: 2mm; background: #fff; cursor: pointer; line-height: 1.3; }
+.wahlkarte:hover { border-color: #7A7AD0; }
+.status span { white-space: nowrap; }
+@media (max-width: 560px) { .wahlreihe { grid-template-columns: 1fr; } .fstext { font-size: 1rem; padding: 0.5rem 0.6rem; } }
 /* A.4.1 Ladung und Stromstärke: Zählstelle, Stimmt's?, Rechentraining */
 .hinweis { font-size: 0.95rem; color: #333; margin: 0 0 0.6rem; }
 .zahl { font-variant-numeric: tabular-nums; }
@@ -462,7 +481,7 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 .bildleiste button.symbol { background: rgba(255,255,255,0.92); }
 
 /* Bedienleiste in Gruppen mit kleinem grauem Titel */
-.bedienleiste { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin-top: 0.7rem; align-items: flex-end; }
+.bedienleiste { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin-top: 0.7rem; align-items: flex-start; }
 .bgruppe { display: flex; flex-direction: column; gap: 0.2rem; }
 .bgruppe > .gtitel { font-size: 0.78rem; color: #808080; }
 .knopfreihe { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
@@ -1556,6 +1575,132 @@ window.KI = (function () {
 	};
 
 	/* ==========================================================================
+	   Baustein: Fachsprache. Falsches Wort im Text antippen, durch das richtige Kärtchen ersetzen
+	   (Kast 2026-10-13: „Fachsprache Simulation ist echt super!! Gerne noch mehr davon!“).
+	   cfg: { id, merksatz?, texte:[{ name, titel, wer, falsch, teile:[...] }] }
+	     name   = Name der Stufe (Chip), titel = Überschrift im Ergebnisbild, wer = „Cäcilias Bericht“ (im Auftrag)
+	     falsch = wie viele der möglichen Stellen bei jedem Start zufällig falsch erscheinen
+	     teile  = Zeichenkette (fester Text) | { f, r, w:[falsch, falsch], e } (Stelle: falsch f, richtig r,
+	              Ablenkkärtchen w, Erklärung e) | { t, e } (richtig verwendetes Fachwort als Falle)
+	   Schummelschutz: jedes Wort einzeln antippbar und beim Überfahren gleich markiert (keine Blöcke),
+	   bei jedem Start andere falsche Stellen, Fehlgriffe zählen (auch Fallen), ein Versuch pro Stelle,
+	   höchstens zwei Tipps. Stellen kurz halten (ein Wort oder eine Einheit), dann wird kaum gestrichen.
+	   ?modus=id-1 zeigt nur Text 1, ohne Stufenangabe alle Texte mit Chips.
+	   ========================================================================== */
+	KI.fachsprache = function (behaelter, cfg) {
+		const texte = cfg.texte, id = cfg.id;
+		const kopf = kopfzeile(behaelter, texte, id, (i) => starte(i));
+		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
+		const text = el("div", "fstext"); behaelter.appendChild(text);
+		const kasten = el("div", "wahlkasten"); kasten.hidden = true; behaelter.appendChild(kasten);
+		const rueck = el("div", ""); behaelter.appendChild(rueck);
+		const steuer = el("div", "leiste");
+		const tippKnopf = KI.symbolKnopf("tipp", "Tipp: eine falsche Stelle kurz aufleuchten lassen (höchstens zweimal)", tipp);
+		steuer.appendChild(tippKnopf);
+		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen (andere Stellen sind falsch)", () => starte(nr)));
+		behaelter.appendChild(steuer);
+		const ende = el("div", ""); behaelter.appendChild(ende);
+		let nr = 0, tx = null, falschIdx = new Set(), stellen = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0, anzahl = 0;
+		const heft = KI.heftleiste(behaelter, () => {
+			const teile = [];
+			tx.teile.forEach((t, i) => {
+				if (typeof t === "string") teile.push({ t });
+				else if (t.t) teile.push({ t: t.t });
+				else if (falschIdx.has(i)) teile.push({ t: t.r, farbe: "#2E7D32", fett: true });
+				else teile.push({ t: t.r });
+			});
+			const bl = [{ art: "titel", t: tx.titel }, { art: "text", groesse: 24, teile }, { art: "abstand", h: 8 }];
+			bl.push({ art: "text", groesse: 20, teile: [{ t: "Grün: verbesserte Stellen." + (cfg.merksatz ? " " + cfg.merksatz : ""), farbe: "#555", kursiv: true }] });
+			return KI.blattBild(bl);
+		}, id);
+		heft.hidden = true;
+		function status() { kopf.status.innerHTML = "<span>Gefunden: " + erledigt + " / " + anzahl + "</span><span>Richtig ersetzt: " + richtig + "</span><span>Fehlgriffe: " + daneben + "</span>"; }
+		/* ein Wort als antippbare Stelle; Satzzeichen davor und danach sind nicht antippbar */
+		function wort(w, daten) {
+			const m = w.match(/^([(„"']*)(.*?)([.,;:!?)"“']*)$/);
+			if (m[1]) text.appendChild(document.createTextNode(m[1]));
+			const sp = el("span", "w", m[2]); Object.assign(sp, daten || {});
+			sp.addEventListener("click", () => tippe(sp));
+			text.appendChild(sp);
+			if (m[3]) text.appendChild(document.createTextNode(m[3]));
+			return sp;
+		}
+		function starte(i) {
+			nr = i; tx = texte[i];
+			text.innerHTML = ""; stellen = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0;
+			kasten.hidden = true; rueck.innerHTML = ""; ende.innerHTML = ""; heft.hidden = true; tippKnopf.disabled = false;
+			const kandidaten = tx.teile.map((t, j) => (typeof t !== "string" && t.f) ? j : -1).filter(j => j >= 0);
+			falschIdx = new Set(mischen(kandidaten).slice(0, tx.falsch || kandidaten.length));
+			anzahl = falschIdx.size;
+			auftrag.innerHTML = "In " + tx.wer + " sind <b>" + anzahl + " Wörter</b> physikalisch falsch. Tippe ein falsches Wort an und ersetze es durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>. Daneben getippte Wörter zählen als Fehlgriff, auch richtig verwendete Fachwörter.";
+			tx.teile.forEach((t, j) => {
+				if (typeof t !== "string") {
+					if (t.t) wort(t.t, { _erkl: t.e });
+					else if (falschIdx.has(j)) stellen.push(wort(t.f, { _stelle: t, _fertig: false }));
+					else wort(t.r, { _erkl: t.e });
+					return;
+				}
+				t.split(/(\s+)/).forEach(w => {
+					if (w === "") return;
+					if (/^\s+$/.test(w) || /^[.,;:!?()„“"']+$/.test(w)) { text.appendChild(document.createTextNode(w)); return; }
+					wort(w);
+				});
+			});
+			kopf.markiere(nr); status();
+		}
+		function tippe(sp) {
+			if (erledigt === anzahl) return;
+			if (sp._stelle) { oeffne(sp); return; }
+			if (sp.classList.contains("daneben")) return;
+			sp.classList.add("daneben"); daneben++; status();
+			if (aktiv) { aktiv.classList.remove("aktiv"); aktiv = null; kasten.hidden = true; }
+			rueck.innerHTML = '<p class="rueck schlecht">Das ist richtig so. Fehlgriff!</p>' + (sp._erkl ? '<div class="erkl">' + KI.icon("tipp", 15) + " " + sp._erkl + "</div>" : "");
+		}
+		function oeffne(s) {
+			if (s._fertig) return;
+			if (aktiv) aktiv.classList.remove("aktiv");
+			aktiv = s; s.classList.add("aktiv"); rueck.innerHTML = "";
+			const t = s._stelle;
+			kasten.innerHTML = '<div class="wtitel">Ersetze <s>' + t.f + "</s> durch:</div>";
+			const reihe = el("div", "wahlreihe"); kasten.appendChild(reihe);
+			mischen([{ t: t.r, ok: true }].concat(t.w.map(x => ({ t: x, ok: false })))).forEach(k => {
+				const knopf = el("button", "wahlkarte", k.t);
+				knopf.addEventListener("click", () => waehle(s, k.ok));
+				reihe.appendChild(knopf);
+			});
+			kasten.hidden = false;
+			kasten.scrollIntoView({ block: "nearest", behavior: "smooth" });
+		}
+		function waehle(s, ok) {
+			const t = s._stelle;
+			s._fertig = true; s.classList.remove("aktiv"); aktiv = null; erledigt++;
+			const erkl = '<div class="erkl">' + KI.icon("tipp", 15) + " " + t.e + "</div>";
+			if (ok) { richtig++; s.classList.add("richtig"); s.textContent = t.r; KI.funken(s, 6); rueck.innerHTML = '<p class="rueck gut">Richtig!</p>' + erkl; }
+			else { s.classList.add("falsch"); s.innerHTML = "<s>" + t.f + "</s> " + t.r; rueck.innerHTML = '<p class="rueck schlecht">Leider falsch. Richtig ist: ' + t.r + "</p>" + erkl; }
+			kasten.hidden = true; status();
+			if (erledigt === anzahl) fertig();
+		}
+		function tipp() {
+			const s = stellen.find(x => !x._fertig);
+			if (!s || tipps >= 2) return;
+			tipps++; if (tipps >= 2) tippKnopf.disabled = true;
+			s.classList.add("tipp"); setTimeout(() => s.classList.remove("tipp"), 900);
+		}
+		function fertig() {
+			const abzug = daneben + tipps;
+			const s = richtig === anzahl && abzug <= 1 ? 3 : richtig >= anzahl - 1 && abzug <= 3 ? 2 : 1;
+			const p = el("p", "rueck gut", richtig + " von " + anzahl + " Wörtern richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
+			ende.innerHTML = ""; ende.appendChild(p); KI.funken(p, 18);
+			KI.speicher.schreib("sterne_" + id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + nr, 0)));
+			KI.bestwert(id, s); kopf.markiere(nr);
+			const folge = KI.naechsteStufe(nr, texte.length);
+			if (folge >= 0) { const l = el("div", "leiste"), k = KI.hauptKnopf("weiter", "Nächster Text: " + texte[folge].name); k.addEventListener("click", () => starte(folge)); l.appendChild(k); ende.appendChild(l); }
+			heft.hidden = false;
+		}
+		starte(KI.startStufe(texte.length));
+	};
+
+	/* ==========================================================================
 	   Baustein: Filmleiste. Ein Ablauf als Reihe von Einzelbildern.
 	   cfg: { id, stufen:[{ name, titel, auftrag, art, bilder:[{ svg, text }], schluss, takt }] }
 	   art "ordnen": Bilder liegen gemischt unten und kommen in die richtige Reihenfolge
@@ -1882,142 +2027,170 @@ const DICHTEN = [1, 2, 4];          /* Autos bzw. Ladungspunkte pro m */
 const TEMPI = [0.5, 1, 2];          /* m/s (Autobahn: Zeitraffer, 1 s ≙ 1 min) */
 const AUTOFARBEN = ["#E57373", "#64B5F6", "#FFD54F", "#BDBDBD", "#81C784", "#FFB74D", "#9575CD", "#90A4AE"];
 
+const TMESS = 10;                  /* Messdauer in s (Autobahn: 10 min im Zeitraffer) */
+const ROT = "#BF0000", KUPFER = "#B87333", KUPFERHELL = "#F6D6B4", ELEKTRON = "#0000B3";
+
 function BAU_ZAEHL(b) {
-	b.appendChild(KI.el("p", "hinweis", "Stelle Dichte und Tempo ein. Starte die Stoppuhr und zähle mit, was die Zählstelle passiert. Vergleiche lockeren Verkehr, schnellen Verkehr und Stau. Im Draht steht ein Punkt für 1&nbsp;C."));
+	b.appendChild(KI.el("p", "hinweis", "Stelle Dichte und Tempo ein und tippe auf <b>Messen</b>: Beide Zählstellen zählen dann " + TMESS + "&nbsp;s lang, was vorbeikommt (auf der Autobahn im Zeitraffer " + TMESS + "&nbsp;min). Vergleiche lockeren Verkehr, schnellen Verkehr und Stau. Im Draht steht ein Punkt für 1&nbsp;C."));
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const cv = KI.el("canvas", "sim"); rahmen.appendChild(cv);
-	const z = { di: 1, vi: 1, s: 0, sStart: 0, t: 0, laeuft: false, autos: [], ladungen: [], L: 6 };
+	/* m: null (keine Messung), sonst { s0: Weg beim Start, t: Messzeit, fertig } */
+	const z = { di: 1, vi: 1, s: 0, m: null, autos: [], ladungen: [], L: 6, blitzA: 0, blitzQ: 0, altA: 0, altQ: 0 };
 	function neueTeilchen() {
 		const d = DICHTEN[z.di], n = Math.round(d * z.L);
-		const versatz = () => (Math.random() - 0.5) * 0.35 / d;
-		z.autos = Array.from({ length: n }, (_, k) => ({ b: (k + 0.5) / d + versatz(), f: AUTOFARBEN[(k * 5) % AUTOFARBEN.length], spur: k % 2 }));
-		z.ladungen = Array.from({ length: n }, (_, k) => ({ b: (k + 0.5) / d + versatz(), y: ((k * 37) % 7) / 6 - 0.5 }));
+		z.autos = Array.from({ length: n }, (_, k) => ({ b: (k + 0.5) / d, f: AUTOFARBEN[(k * 5) % AUTOFARBEN.length], spur: k % 2 }));
+		z.ladungen = Array.from({ length: n }, (_, k) => ({ b: (k + 0.5) / d, y: ((k * 37) % 7) / 6 - 0.5 }));
 	}
-	/* Wie oft ein Teilchen mit Grundlage b die Zählstelle xz überquert hat, seit der Weg sStart war */
-	function gezaehlt(liste) {
+	/* Wie oft die Teilchen die Zählstelle xz überquert haben, während der Weg von s0 auf s1 wuchs */
+	function gezaehlt(liste, s0, s1) {
 		const xz = 0.7 * z.L;
 		let n = 0;
-		for (const p of liste) n += Math.floor((p.b + z.s - xz) / z.L) - Math.floor((p.b + z.sStart - xz) / z.L);
+		for (const p of liste) n += Math.floor((p.b + s1 - xz) / z.L) - Math.floor((p.b + s0 - xz) / z.L);
 		return n;
 	}
-	function stoppuhrNull() { z.sStart = z.s; z.t = 0; }
+	function messungWeg() { z.m = null; knopfZustand(); }
 
 	bildLeiste(rahmen, async () => KI.canvasKopie(cv), () => "Zaehlstelle_Dichte_" + DICHTEN[z.di] + "_Tempo_" + de(TEMPI[z.vi], 1),
-		[KI.symbolKnopf("zurueck", "Stoppuhr auf null", () => { z.laeuft = false; stoppuhrNull(); knopfZustand(); })]);
+		[KI.symbolKnopf("zurueck", "Messung löschen", messungWeg)]);
 
 	/* Bedienleiste */
 	const leiste = KI.el("div", "bedienleiste"); b.appendChild(leiste);
 	const g1 = KI.el("div", "bgruppe", '<span class="gtitel">Dichte</span>'); const r1 = KI.el("div", "knopfreihe"); g1.appendChild(r1); leiste.appendChild(g1);
 	const dichteSvg = (n) => {
-		let s = '<svg width="40" height="22" viewBox="0 0 40 22" aria-hidden="true"><rect x="0.5" y="4" width="39" height="14" rx="3" fill="#F5C99B" stroke="#B5651D"/>';
-		for (let k = 0; k < n; k++) { const x = (k + 0.5) * 40 / n; s += '<circle cx="' + x + '" cy="11" r="3.2" fill="#1A237E"/><line x1="' + (x - 1.8) + '" y1="11" x2="' + (x + 1.8) + '" y2="11" stroke="#fff" stroke-width="1"/>'; }
+		let s = '<svg width="40" height="22" viewBox="0 0 40 22" aria-hidden="true"><rect x="0.5" y="4" width="39" height="14" rx="3" fill="' + KUPFERHELL + '" stroke="' + KUPFER + '"/>';
+		for (let k = 0; k < n; k++) { const x = (k + 0.5) * 40 / n; s += '<circle cx="' + x + '" cy="11" r="3.2" fill="' + ELEKTRON + '"/><line x1="' + (x - 1.8) + '" y1="11" x2="' + (x + 1.8) + '" y2="11" stroke="#fff" stroke-width="1"/>'; }
 		return s + "</svg>";
 	};
 	const dichteKnoepfe = DICHTEN.map((d, i) => {
 		const k = KI.el("button", "wahl", dichteSvg([2, 4, 8][i]));
 		k.title = ["locker", "mittel", "dicht"][i] + " (" + d + " pro Meter)"; k.setAttribute("aria-label", k.title);
-		k.addEventListener("click", () => { z.di = i; neueTeilchen(); stoppuhrNull(); markiere(); });
+		k.addEventListener("click", () => { z.di = i; neueTeilchen(); messungWeg(); markiere(); });
 		r1.appendChild(k); return k;
 	});
 	const g2 = KI.el("div", "bgruppe", '<span class="gtitel">Tempo</span>'); const r2 = KI.el("div", "knopfreihe"); g2.appendChild(r2); leiste.appendChild(g2);
 	const tempoKnoepfe = TEMPI.map((v, i) => {
 		const k = KI.el("button", "wahl tempo", ["›", "››", "›››"][i]);
 		k.title = ["langsam", "mittel", "schnell"][i]; k.setAttribute("aria-label", k.title);
-		k.addEventListener("click", () => { z.vi = i; stoppuhrNull(); markiere(); });
+		k.addEventListener("click", () => { z.vi = i; messungWeg(); markiere(); });
 		r2.appendChild(k); return k;
 	});
-	const g3 = KI.el("div", "bgruppe", '<span class="gtitel">Stoppuhr</span>'); const r3 = KI.el("div", "knopfreihe"); g3.appendChild(r3); leiste.appendChild(g3);
-	const uhrKnopf = KI.el("button", "haupt", ""); r3.appendChild(uhrKnopf);
+	const g3 = KI.el("div", "bgruppe", '<span class="gtitel">Zählstellen</span>'); const r3 = KI.el("div", "knopfreihe"); g3.appendChild(r3); leiste.appendChild(g3);
+	const messKnopf = KI.el("button", "haupt", ""); r3.appendChild(messKnopf);
 	function knopfZustand() {
-		uhrKnopf.innerHTML = KI.icon(z.laeuft ? "pause" : "play", 22);
-		uhrKnopf.title = z.laeuft ? "Stoppuhr anhalten" : "Stoppuhr starten (von null)"; uhrKnopf.setAttribute("aria-label", uhrKnopf.title);
+		const laeuft = z.m && !z.m.fertig;
+		messKnopf.innerHTML = KI.icon("play", 20) + "<span>" + (laeuft ? "misst …" : "Messen") + "</span>";
+		messKnopf.disabled = !!laeuft;
+		messKnopf.title = "Beide Zählstellen " + TMESS + " s lang zählen lassen"; messKnopf.setAttribute("aria-label", messKnopf.title);
 	}
-	uhrKnopf.addEventListener("click", () => { if (!z.laeuft) stoppuhrNull(); z.laeuft = !z.laeuft; knopfZustand(); });
+	messKnopf.addEventListener("click", () => { z.m = { s0: z.s, t: 0, fertig: false }; knopfZustand(); });
 	function markiere() {
 		dichteKnoepfe.forEach((k, i) => k.classList.toggle("aktiv", i === z.di));
 		tempoKnoepfe.forEach((k, i) => k.classList.toggle("aktiv", i === z.vi));
 	}
 	b.appendChild(KI.el("p", "hinweis", "Modell: Die Elektronen sind hier stark beschleunigt dargestellt. In Wirklichkeit kommen sie in einem Draht nur weniger als 1&nbsp;mm pro Sekunde voran."));
 
-	/* Zeichnung */
+	/* Bewegung und Messung */
 	let letzte = null;
 	function schritt(zeit) {
 		const dt = letzte === null ? 1 / 60 : Math.min(0.05, (zeit - letzte) / 1000); letzte = zeit;
-		z.s += TEMPI[z.vi] * dt;
-		if (z.laeuft) z.t += dt;
+		const v = TEMPI[z.vi];
+		if (z.m && !z.m.fertig) {
+			const rest = TMESS - z.m.t;
+			if (dt >= rest) { z.m.t = TMESS; z.m.s1 = z.s + v * rest; z.m.fertig = true; setTimeout(knopfZustand, 0); }
+			else z.m.t += dt;
+		}
+		z.s += v * dt;
+		const nA = gezaehlt(z.autos, z.s - v * dt, z.s), nQ = gezaehlt(z.ladungen, z.s - v * dt, z.s);
+		z.blitzA = nA > 0 ? 0.25 : Math.max(0, z.blitzA - dt); z.blitzQ = nQ > 0 ? 0.25 : Math.max(0, z.blitzQ - dt);
 		zeichne(); requestAnimationFrame(schritt);
 	}
-	function anzeige(c, x, y, w, h, zeilen, gr) {
-		c.fillStyle = "#33373D"; c.beginPath(); c.roundRect(x, y, w, h, 4); c.fill();
-		zeilen.forEach((t, i) => KI.text(c, t, x + w / 2, y + h * (i + 0.5) / zeilen.length, 16 * gr, "#7CFF7C", "center"));
+	function anzeige(c, x, y, w, h, zeilen, gr, hell) {
+		c.fillStyle = "#26292E"; c.beginPath(); c.roundRect(x, y, w, h, 4); c.fill();
+		if (hell) { c.strokeStyle = ROT; c.lineWidth = 2; c.stroke(); }
+		zeilen.forEach((t, i) => KI.text(c, t, x + w / 2, y + h * (i + 0.5) / zeilen.length, 15 * gr, i === 2 ? "#FFE066" : "#7CFF7C", "center"));
 	}
 	/* Lage aller Teile in Abhängigkeit von der Breite B (Handy: Anzeigen unter den Bahnen, sonst rechts daneben) */
 	function lage(B) {
-		const schmal = B < 560, rand = 12, dispW = schmal ? (B - 2 * rand - 10) / 2 : 165, dispH = 44;
+		const schmal = B < 560, rand = 12, dispW = schmal ? B - 2 * rand : 175, dispH = 64;
 		const laneW = schmal ? B - 2 * rand : B - 2 * rand - dispW - 16;
 		const L = schmal ? 4 : 6, s = laneW / L;
-		const yA = schmal ? 30 : 58, hA = Math.max(46, 0.42 * s), hD = Math.max(34, 0.3 * s);
+		const yA = schmal ? 34 : 58, hA = Math.max(64, 0.72 * s), hD = Math.max(34, 0.3 * s);
 		const k = { schmal, rand, dispW, dispH, laneW, L, s, yA, hA, hD, xz: rand + 0.7 * L * s };
 		if (schmal) {
-			k.autoBox = [rand, yA + hA + 26];
-			k.yD = yA + hA + 26 + dispH + 46;
-			k.ladBox = [rand, k.yD + hD + 26]; k.amBox = [rand + dispW + 10, k.yD + hD + 26];
+			k.autoBox = [rand, yA + hA + 12];
+			k.yD = yA + hA + 12 + dispH + 42;
+			k.ladBox = [rand, k.yD + hD + 26];
 			k.H = k.yD + hD + 26 + dispH + 12;
 		} else {
 			const xb = rand + laneW + 16;
 			k.autoBox = [xb, yA + hA / 2 - dispH / 2];
-			k.yD = yA + hA + 70;
-			k.ladBox = [xb, k.yD + hD / 2 - dispH / 2]; k.amBox = [xb, k.yD + hD / 2 + dispH / 2 + 12];
-			k.H = Math.max(k.yD + hD + 34, k.amBox[1] + dispH + 12);
+			k.yD = yA + hA + 64;
+			k.ladBox = [xb, k.yD + hD / 2 - dispH / 2];
+			k.H = Math.max(k.yD + hD + 34, k.ladBox[1] + dispH + 8);
 		}
 		return k;
+	}
+	function auto(c, x, y, la, ba, f) {
+		c.fillStyle = "rgba(0,0,0,0.22)"; c.beginPath(); c.roundRect(x - la + 2, y + 2, la, ba, 3); c.fill();
+		c.fillStyle = f; c.strokeStyle = "#666"; c.lineWidth = 1; c.beginPath(); c.roundRect(x - la, y, la, ba, 3); c.fill(); c.stroke();
+		c.fillStyle = "rgba(255,255,255,0.3)"; c.beginPath(); c.roundRect(x - la * 0.75, y + ba * 0.17, la * 0.34, ba * 0.66, 1.5); c.fill();
+		c.fillStyle = "#3A3A3A"; c.beginPath(); c.moveTo(x - la * 0.39, y + ba * 0.12); c.lineTo(x - la * 0.22, y + ba * 0.2); c.lineTo(x - la * 0.22, y + ba * 0.8); c.lineTo(x - la * 0.39, y + ba * 0.88); c.closePath(); c.fill();
+		c.fillStyle = "#555"; c.fillRect(x - la * 0.9, y + ba * 0.2, la * 0.1, ba * 0.6);
 	}
 	function zeichne() {
 		const { ctx: c, B } = KI.leinwand(cv, w => lage(w).H);
 		const k = lage(B), { schmal, rand, laneW, s, yA, hA, yD, hD, xz } = k;
-		if (k.L !== z.L) { z.L = k.L; neueTeilchen(); stoppuhrNull(); }
+		if (k.L !== z.L) { z.L = k.L; neueTeilchen(); z.m = null; knopfZustand(); }
 		const gr = schmal ? 1.05 : 1;
 		c.fillStyle = "#fff"; c.fillRect(0, 0, B, k.H);
-		const nA = gezaehlt(z.autos), nQ = gezaehlt(z.ladungen);
-		const tAnz = de(z.t, 1);
-		/* Autobahn */
-		KI.text(c, schmal ? "Autobahn (1 s entspricht 1 min)" : "Autobahn (Zeitraffer: 1 s entspricht 1 min)", rand, yA - 15, 14 * gr, "#111", "left", "bold");
-		c.fillStyle = "#C8C8C8"; c.fillRect(rand, yA, laneW, hA);
-		c.strokeStyle = "#fff"; c.lineWidth = 2; c.setLineDash([16, 12]); c.beginPath(); c.moveTo(rand, yA + hA / 2); c.lineTo(rand + laneW, yA + hA / 2); c.stroke(); c.setLineDash([]);
-		const d = DICHTEN[z.di], la = Math.min(0.62 / d, 0.36) * s, ba = hA * 0.3;
-		c.save(); c.beginPath(); c.rect(rand, yA - 2, laneW, hA + 4); c.clip();
+		const s1 = z.m && z.m.fertig ? z.m.s1 : z.s;
+		const nA = z.m ? gezaehlt(z.autos, z.m.s0, s1) : 0, nQ = z.m ? gezaehlt(z.ladungen, z.m.s0, s1) : 0;
+		/* Autobahn: Grünstreifen, Fahrbahn, Markierung */
+		KI.text(c, schmal ? "Autobahn (1 s ≙ 1 min)" : "Autobahn (Zeitraffer: 1 s entspricht 1 min)", rand, yA - 16, 14 * gr, "#111", "left", "bold");
+		const gs = 0.13 * hA;
+		c.fillStyle = "#A8CFA2"; c.fillRect(rand, yA, laneW, gs); c.fillRect(rand, yA + hA - gs, laneW, gs);
+		c.fillStyle = "#BBBBBB"; c.fillRect(rand, yA + gs, laneW, hA - 2 * gs);
+		c.strokeStyle = "#fff"; c.lineWidth = 2;
+		c.beginPath(); c.moveTo(rand, yA + gs + 3); c.lineTo(rand + laneW, yA + gs + 3); c.moveTo(rand, yA + hA - gs - 3); c.lineTo(rand + laneW, yA + hA - gs - 3); c.stroke();
+		c.setLineDash([16, 12]); c.beginPath(); c.moveTo(rand, yA + hA / 2); c.lineTo(rand + laneW, yA + hA / 2); c.stroke(); c.setLineDash([]);
+		const d = DICHTEN[z.di], la = Math.min(0.62 / d, 0.36) * s, ba = (hA - 2 * gs) * 0.3;
+		c.save(); c.beginPath(); c.rect(rand, yA, laneW, hA); c.clip();
 		for (const p of z.autos) {
-			const x = rand + (((p.b + z.s) % z.L) + z.L) % z.L * s, y = yA + (p.spur ? hA * 0.62 : hA * 0.08);
-			for (const xx of [x, x - z.L * s]) {
-				c.fillStyle = p.f; c.strokeStyle = "#555"; c.lineWidth = 1;
-				c.beginPath(); c.roundRect(xx - la, y, la, ba, 3); c.fill(); c.stroke();
-				c.fillStyle = "rgba(40,40,40,0.55)"; c.fillRect(xx - la * 0.38, y + ba * 0.15, la * 0.14, ba * 0.7);
-			}
+			const x = rand + (((p.b + z.s) % z.L) + z.L) % z.L * s, y = p.spur ? yA + hA / 2 + (hA / 2 - gs - ba) / 2 : yA + gs + (hA / 2 - gs - ba) / 2;
+			for (const xx of [x, x - z.L * s]) auto(c, xx, y, la, ba, p.f);
 		}
 		c.restore();
-		c.fillStyle = "#222"; c.fillRect(xz - 2, yA - 6, 4, hA + 12);
-		KI.text(c, "Zählstelle", xz, yA + hA + 15, 13 * gr, "#222", "center");
-		/* Draht */
-		KI.text(c, schmal ? "Draht (1 Punkt = 1 C)" : "Draht (1 Punkt = 1 C, das sind etwa 6,2 · 10¹⁸ Elektronen)", rand, yD - 15, 14 * gr, "#111", "left", "bold");
-		const gD = c.createLinearGradient(0, yD, 0, yD + hD); gD.addColorStop(0, "#F7D9B5"); gD.addColorStop(0.5, "#FBEBD8"); gD.addColorStop(1, "#E9B57C");
-		c.fillStyle = gD; c.fillRect(rand, yD, laneW, hD);
-		c.strokeStyle = "#B5651D"; c.lineWidth = 1; c.strokeRect(rand, yD, laneW, hD);
+		c.strokeStyle = ROT; c.lineWidth = z.blitzA > 0 ? 5 : 3; c.beginPath(); c.moveTo(xz, yA); c.lineTo(xz, yA + hA); c.stroke();
+		c.fillStyle = ROT; [yA, yA + hA].forEach(y => { c.beginPath(); c.arc(xz, y, 3.5, 0, 2 * Math.PI); c.fill(); });
+		KI.text(c, "Zählstelle", schmal ? B - rand : xz + 6, yA - 16, 13 * gr, ROT, schmal ? "right" : "left");
+		/* Draht als Zylinder (Blick schräg von rechts) */
+		KI.text(c, schmal ? "Draht (1 Punkt = 1 C)" : "Draht (1 Punkt = 1 C, das sind etwa 6,2 · 10¹⁸ Elektronen)", rand, yD - 16, 14 * gr, "#111", "left", "bold");
+		const rx = Math.max(5, hD * 0.18), x0 = rand + rx, x1 = rand + laneW - rx;
+		const gD = c.createLinearGradient(0, yD, 0, yD + hD); gD.addColorStop(0, "#D6A27A"); gD.addColorStop(0.45, KUPFERHELL); gD.addColorStop(1, "#8E5524");
+		c.fillStyle = gD; c.beginPath(); c.moveTo(x0, yD); c.lineTo(x1, yD); c.ellipse(x1, yD + hD / 2, rx, hD / 2, 0, -Math.PI / 2, Math.PI / 2); c.lineTo(x0, yD + hD); c.ellipse(x0, yD + hD / 2, rx, hD / 2, 0, Math.PI / 2, 3 * Math.PI / 2); c.closePath(); c.fill();
+		c.strokeStyle = "#7A4A1E"; c.lineWidth = 1; c.stroke();
+		c.fillStyle = "#D9A274"; c.beginPath(); c.ellipse(x1, yD + hD / 2, rx, hD / 2, 0, 0, 2 * Math.PI); c.fill(); c.stroke();
 		const r = Math.max(3.5, Math.min(7, 0.33 * s / d));
-		c.save(); c.beginPath(); c.rect(rand, yD, laneW, hD); c.clip();
+		c.save(); c.beginPath(); c.rect(x0, yD, x1 - x0, hD); c.clip();
 		for (const p of z.ladungen) {
 			const x = rand + (((p.b + z.s) % z.L) + z.L) % z.L * s, y = yD + hD / 2 + p.y * (hD - 2.6 * r);
 			for (const xx of [x, x - z.L * s]) {
-				c.fillStyle = "#1A237E"; c.beginPath(); c.arc(xx, y, r, 0, 2 * Math.PI); c.fill();
+				c.fillStyle = ELEKTRON; c.beginPath(); c.arc(xx, y, r, 0, 2 * Math.PI); c.fill();
 				c.strokeStyle = "#fff"; c.lineWidth = Math.max(1, r / 4); c.beginPath(); c.moveTo(xx - r * 0.55, y); c.lineTo(xx + r * 0.55, y); c.stroke();
 			}
 		}
 		c.restore();
-		c.strokeStyle = "#BF0000"; c.lineWidth = 2; c.setLineDash([5, 4]); c.beginPath(); c.ellipse(xz, yD + hD / 2, Math.max(5, hD * 0.18), hD / 2 + 3, 0, 0, 2 * Math.PI); c.stroke(); c.setLineDash([]);
-		KI.text(c, "Zählstelle", xz, yD + hD + 15, 13 * gr, "#BF0000", "center");
-		/* Anzeigen */
-		anzeige(c, k.autoBox[0], k.autoBox[1], k.dispW, k.dispH, ["Autos: " + nA, "Zeit: " + tAnz + " min"], gr);
-		anzeige(c, k.ladBox[0], k.ladBox[1], k.dispW, k.dispH, ["Ladung: " + nQ + " C", "Zeit: " + tAnz + " s"], gr);
-		anzeige(c, k.amBox[0], k.amBox[1], k.dispW, k.dispH, ["Strommesser", "I = " + de(d * TEMPI[z.vi], 1) + " A"], gr);
+		/* Zählstelle am Querschnitt: Fläche durchscheinend, hinten gestrichelt, vorne durchgezogen */
+		c.fillStyle = z.blitzQ > 0 ? "rgba(191,0,0,0.38)" : "rgba(191,0,0,0.18)"; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, 0, 2 * Math.PI); c.fill();
+		c.strokeStyle = ROT; c.lineWidth = 2; c.setLineDash([4, 3]); c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, Math.PI / 2, 3 * Math.PI / 2); c.stroke(); c.setLineDash([]);
+		c.lineWidth = z.blitzQ > 0 ? 4 : 2.5; c.beginPath(); c.ellipse(xz, yD + hD / 2, rx, hD / 2, 0, -Math.PI / 2, Math.PI / 2); c.stroke();
+		KI.text(c, schmal ? "Zählstelle" : "Zählstelle (Querschnitt)", schmal ? B - rand : xz + 6, yD - 16, 13 * gr, ROT, schmal ? "right" : "left");
+		/* Anzeigen: Zählerstand, Zeit und nach der Messung das Ergebnis */
+		const t = z.m ? z.m.t : 0, fertig = z.m && z.m.fertig;
+		const zA = !z.m ? ["Autos: …", "Zeit: … min", "Messen antippen"] : ["Autos: " + nA, "Zeit: " + de(t, 1) + " min", fertig ? nA + " : " + TMESS + " min = " + de(nA / TMESS, 1) + " pro min" : ""];
+		const zQ = !z.m ? ["ΔQ = … C", "Δt = … s", "Messen antippen"] : ["ΔQ = " + nQ + " C", "Δt = " + de(t, 1) + " s", fertig ? "I = " + nQ + " C : " + TMESS + " s = " + de(nQ / TMESS, 1) + " A" : ""];
+		anzeige(c, k.autoBox[0], k.autoBox[1], k.dispW, k.dispH, zA, gr, z.blitzA > 0 && z.m && !fertig);
+		anzeige(c, k.ladBox[0], k.ladBox[1], k.dispW, k.dispH, zQ, gr, z.blitzQ > 0 && z.m && !fertig);
 	}
 	window.addEventListener("resize", () => zeichne());
 	neueTeilchen(); markiere(); knopfZustand();
