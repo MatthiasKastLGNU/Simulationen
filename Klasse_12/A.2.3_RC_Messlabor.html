@@ -1322,7 +1322,7 @@ const ECHT_ROH = {"r680":{"R":680,"C":9.6e-05,"U0":7.65,"f":2000,"jeder":1},"r2k
 const ECHT_INFO = {};
 function echtInfo() { return ECHT_INFO[zustand.echt] || { R: NaN, C: NaN, U0: NaN }; }
 for (const [k, r] of Object.entries(ECHT_ROH)) ECHT_INFO[k] = { R: r.R, C: r.C, U0: r.U0, label: "Messung vom 18.11.2024",
-	text: "Echte Messung vom 18.11.2024: <i class='gr'>R</i> = " + formatR(r.R) + ", Elektrolytkondensator " + formatC(r.C) + ", " + P.de(r.f, 0).replace(/(\d)(\d{3})$/, "$1&nbsp;$2") + " Messwerte pro Sekunde" + (r.jeder > 1 ? " (dargestellt jeder " + r.jeder + ". Wert)" : "") + "." + (k === "r10k2200u" ? " Die Messung wurde nach einer Minute beendet." : "") };
+	text: "Echte Messung vom 18.11.2024: <i class='gr'>R</i> = " + formatR(r.R) + ", Elektrolytkondensator " + formatC(r.C) + ", " + P.de(r.f, 0).replace(/(\d)(\d{3})$/, "$1&nbsp;$2") + " Messwerte pro Sekunde" + (r.jeder > 1 ? " (dargestellt jeder " + r.jeder + ". Wert)" : "") + ". Die Zeit beginnt beim Umschalten mit <i class='gr'>t</i> = 0." + (k === "r10k2200u" ? " Die Messung wurde nach einer Minute beendet." : "") };
 
 /* Einheiten im Zustand: R in Ohm, C in F, U in V, t in s */
 const zustand = {
@@ -1737,10 +1737,11 @@ function ladeEcht() {
 		zeichneSchaltung(); zeichneDiagramm();
 		return;
 	}
-	const d = ECHT[zustand.echt], info = ECHT_INFO[zustand.echt];
-	let i0 = 0; d.forEach((p, i) => { if (Math.abs(p[1]) > Math.abs(d[i0][1])) i0 = i; });
-	const vz = d[i0][1] < 0 ? -1 : 1;   /* Entladung positiv anzeigen wie im Schülerexperiment */
-	const m = { R: info.R, C: info.C, U0: info.U0, laden: false, echt: true, tStart: d[i0][0], werte: d.map(p => ({ t: p[0], u: vz * p[1] })), tEnde: d[d.length - 1][0], label: info.label, farbe: FARBEN[0] };
+	const roh = ECHT[zustand.echt], info = ECHT_INFO[zustand.echt];
+	let i0 = 0; roh.forEach((p, i) => { if (Math.abs(p[1]) > Math.abs(roh[i0][1])) i0 = i; });
+	const vz = roh[i0][1] < 0 ? -1 : 1;   /* Entladung positiv anzeigen wie im Schülerexperiment */
+	const d = roh.slice(i0), t0 = roh[i0][0];   /* t = 0 beim Umschalten (größter Messwert), Vorlauf weg */
+	const m = { R: info.R, C: info.C, U0: info.U0, laden: false, echt: true, tStart: 0, werte: d.map(p => ({ t: p[0] - t0, u: vz * p[1] })), tEnde: d[d.length - 1][0] - t0, label: info.label, farbe: FARBEN[0] };
 	zustand.messungen = [m]; zustand.aufnahme = null; zustand.cursor = m.tStart;
 	zustand.phase = "ruhe"; zustand.uC = 0;
 	if (zustand.groesse === "I" && !(isFinite(info.R) && info.R > 0)) { zustand.groesse = "U"; setzeKnopf("groesse-knoepfe", "U"); }
@@ -1879,14 +1880,14 @@ function waehleLauf() {
 	if (!EIGEN) return;
 	const l = EIGEN.laeufe[EIGEN.wahl], pk = l.punkte;
 	let i0 = 0; pk.forEach((p, i) => { if (Math.abs(p[1]) > Math.abs(pk[i0][1])) i0 = i; });
-	const ab = Math.max(0, i0 - Math.round(0.05 * (pk.length - i0))), schritt = Math.max(1, Math.ceil((pk.length - ab) / 3000));
-	const t0 = pk[ab][0], d = [];
-	for (let i = ab; i < pk.length; i += schritt) d.push([pk[i][0] - t0, pk[i][1]]);
+	const schritt = Math.max(1, Math.ceil((pk.length - i0) / 3000));
+	const t0 = pk[i0][0], d = [];   /* t = 0 beim Umschalten (größter Messwert), Vorlauf weg */
+	for (let i = i0; i < pk.length; i += schritt) d.push([pk[i][0] - t0, pk[i][1]]);
 	ECHT.eigen = d;
 	const R = zahlAus(document.getElementById("eigen-r").value), C = zahlAus(document.getElementById("eigen-c").value) * 1e-6;
 	const dauer = pk[pk.length - 1][0] - pk[0][0];
 	ECHT_INFO.eigen = { R, C, U0: Math.abs(pk[i0][1]), label: "Eigene Messung, " + l.name,
-		text: "Datei „" + EIGEN.datei.replace(/[<>&]/g, "") + "“, " + l.name + " (" + formatZeit(dauer) + ", " + pk.length + " Messwerte). Dargestellt ab kurz vor dem größten Messwert (Umschalten)." + (isFinite(R) && R > 0 ? "" : " Tragen Sie <i class='gr'>R</i> ein, um die Stromstärke anzuzeigen.") };
+		text: "Datei „" + EIGEN.datei.replace(/[<>&]/g, "") + "“, " + l.name + " (" + formatZeit(dauer) + ", " + pk.length + " Messwerte). Die Zeit beginnt beim Umschalten (größter Messwert) mit <i class='gr'>t</i> = 0." + (isFinite(R) && R > 0 ? "" : " Tragen Sie <i class='gr'>R</i> ein, um die Stromstärke anzuzeigen.") };
 	ladeEcht();
 }
 const dateiEigen = document.getElementById("datei-eigen");
