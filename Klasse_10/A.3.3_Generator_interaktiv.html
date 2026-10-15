@@ -232,6 +232,16 @@ button.haupt:disabled { opacity: 0.45; cursor: default; }
 .status { display: flex; gap: 0.9rem; align-items: center; font-variant-numeric: tabular-nums; color: #444; font-size: 0.95rem; }
 .sterne { font-size: 1.35rem; letter-spacing: 0.12rem; color: var(--gold); white-space: nowrap; }
 .sterne .leer { color: #D8D8D8; }
+/* Jubel je Stern (2026-10-15) */
+.sterne .voll { display: inline-block; }
+.sterne.feiern .voll { animation: sternrein 0.65s cubic-bezier(.2, 1.6, .4, 1) both; animation-delay: calc(0.35s + var(--i) * 0.7s); }
+@keyframes sternrein { 0% { transform: scale(0) rotate(-140deg); opacity: 0; } 60% { transform: scale(1.9) rotate(12deg); opacity: 1; text-shadow: 0 0 14px #FFD34D; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.jubel { position: fixed; z-index: 1600; pointer-events: none; transform: translate(-50%, -100%); font-weight: bold; color: #8A5A00; background: #FFF6D6; border: 2px solid var(--gold); border-radius: 999px; padding: 0.1rem 0.65rem; font-size: 1rem; white-space: nowrap; box-shadow: 0 3px 10px rgba(200,160,0,0.35); animation: jubel 1.7s ease-out forwards; }
+.jubel.gross { font-size: 1.4rem; padding: 0.2rem 1rem; background: #FFE98A; }
+@keyframes jubel { 0% { opacity: 0; transform: translate(-50%, -60%) scale(0.5); } 14% { opacity: 1; transform: translate(-50%, -140%) scale(1.2); } 70% { opacity: 1; transform: translate(-50%, -175%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -230%) scale(0.95); } }
+@media (prefers-reduced-motion: reduce) { .sterne.feiern .voll { animation: sternruhig 0.5s ease-out both; animation-delay: calc(0.35s + var(--i) * 0.7s); } .jubel { animation: jubelruhig 1.7s ease-out forwards; transform: translate(-50%, -150%); } }
+@keyframes sternruhig { from { opacity: 0; } to { opacity: 1; } }
+@keyframes jubelruhig { 0% { opacity: 0; } 15%, 75% { opacity: 1; } 100% { opacity: 0; } }
 
 /* Rückmeldung */
 .rueck { min-height: 1.4em; font-weight: bold; margin: 0.45rem 0 0; }
@@ -526,11 +536,41 @@ window.KI = (function () {
 		const alt = KI.speicher.lies("sterne_" + id, 0);
 		if (sterne > alt) { KI.speicher.schreib("sterne_" + id, sterne); document.dispatchEvent(new CustomEvent("ki-sterne")); }
 	};
+	/* Sterne: jeder erreichte Stern wird einzeln bejubelt (Kast 2026-10-15: „jeder Stern (Stern 1, 2 und 3) werden ‚bejubelt‘ …
+	   Es muss mehr motivieren! Spiele dürfen ruhig emotionaler sein!“). Die Feier startet von selbst, sobald die Sterne im Dokument
+	   erscheinen (MutationObserver), und nur einmal je Ergebnis (data-jubel), auch wenn dasselbe HTML später erneut eingesetzt wird. */
+	let sternNr = 0;
+	const gefeiert = new Set();
 	KI.sterneHtml = function (n, max = 3) {
 		let s = "";
-		for (let i = 0; i < max; i++) s += i < n ? "★" : '<span class="leer">★</span>';
-		return '<span class="sterne">' + s + "</span>";
+		for (let i = 0; i < max; i++) s += i < n ? '<span class="voll" style="--i:' + i + '">★</span>' : '<span class="leer" style="color:#D8D8D8">★</span>';
+		return '<span class="sterne" data-jubel="' + (++sternNr) + '">' + s + "</span>";
 	};
+	const JUBEL = ["Stern 1!", "Stern 2!", "Stern 3!"], LOB = ["", "Geschafft!", "Stark!", "Perfekt!"];
+	function feiere(sp) {
+		const id = sp.dataset.jubel;
+		if (gefeiert.has(id)) return;
+		const ruhig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;   /* dann ohne Funkenflug, Jubel nur eingeblendet */
+		gefeiert.add(id);
+		sp.classList.add("feiern");
+		const voll = [...sp.querySelectorAll(".voll")];
+		voll.forEach((st, i) => setTimeout(() => {
+			if (!st.isConnected) return;
+			const letzter = i === voll.length - 1;
+			if (!ruhig) KI.funken(st, letzter ? 10 + 8 * voll.length : 8);
+			const r = st.getBoundingClientRect();
+			const j = el("div", "jubel" + (letzter && voll.length === 3 ? " gross" : ""), JUBEL[i] + (letzter ? " " + LOB[voll.length] : ""));
+			j.style.left = (r.left + r.width / 2) + "px"; j.style.top = r.top + "px";
+			document.body.appendChild(j); setTimeout(() => j.remove(), 1700);
+		}, 350 + i * 700));
+	}
+	new MutationObserver(liste => {
+		for (const m of liste) for (const k of m.addedNodes) {
+			if (k.nodeType !== 1) continue;
+			if (k.matches(".sterne[data-jubel]")) feiere(k);
+			k.querySelectorAll(".sterne[data-jubel]").forEach(feiere);
+		}
+	}).observe(document.documentElement, { childList: true, subtree: true });
 
 	let meldungEl = null, meldungTimer = 0;
 	KI.meldung = function (text) {
