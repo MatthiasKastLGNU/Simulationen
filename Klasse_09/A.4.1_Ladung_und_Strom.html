@@ -2395,7 +2395,7 @@ function BAU_RECHNEN(behaelter) {
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
 	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
 
-	let stufeNr = 0, nr = 0, aufgabe = null, fehler = 0, tipps = 0, erledigt = [];
+	let stufeNr = 0, nr = 0, aufgabe = null, fehler = 0, tipps = 0, erledigt = [], geprueftUm = 0;
 	const heft = KI.heftleiste(behaelter, () => {
 		const b = [{ art: "titel", t: STUFEN[stufeNr].titel }];
 		erledigt.forEach((a, i) => {
@@ -2456,9 +2456,10 @@ function BAU_RECHNEN(behaelter) {
 		zeigeStatus();
 		wegEl.innerHTML = aufgabe.weg.map(zl => "<div>" + zl + "</div>").join(""); wegEl.hidden = false;
 		erledigt.push(aufgabe);
-		weiterLeiste.hidden = false; weiterKnopf.focus({ preventScroll: true });
+		weiterLeiste.hidden = false; geprueftUm = performance.now(); weiterKnopf.focus({ preventScroll: true });
 	}
 	function weiter() {
+		if (performance.now() - geprueftUm < 250) return;   /* Schutz: kein "Weiter" im selben Augenblick wie "Prüfen" */
 		nr++;
 		if (nr < STUFEN[stufeNr].anzahl) { neueAufgabe(); return; }
 		karte.hidden = true; zeigeStatus();
@@ -2475,8 +2476,10 @@ function BAU_RECHNEN(behaelter) {
 		KI.funken(p, 20); heft.hidden = false;
 	}
 	pruefKnopf.addEventListener("click", pruefe);
-	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") pruefe(); });
-	expo.addEventListener("keydown", (e) => { if (e.key === "Enter") pruefe(); });
+	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
+	   und Rückmeldung samt Lösungsweg werden übersprungen */
+	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
+	expo.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
 	weiterKnopf.addEventListener("click", weiter);
 	starte(KI.startStufe(STUFEN.length));
 }
