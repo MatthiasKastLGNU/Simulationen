@@ -2195,7 +2195,7 @@ BAU.spiel = function (b) {
 	}
 	function waehle(w) { if (versucht) return; gewaehlt = w; kA.classList.toggle("gewaehlt", w === "a"); kB.classList.toggle("gewaehlt", w === "b"); }
 	kA.addEventListener("click", () => waehle("a")); kB.addEventListener("click", () => waehle("b"));
-	feld.addEventListener("keydown", (e) => { if (e.key === "Enter") starteDuell(); });
+	feld.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); starteDuell(); } });
 	los.addEventListener("click", starteDuell);
 	function starteDuell() {
 		if (versucht || laeuft) return;
@@ -2439,7 +2439,7 @@ BAU.rechnen = function (behaelter) {
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
 	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
 
-	let stufeNr = 0, nr = 0, aufgabe = null, treffer = 0, tipps = 0, erledigt = [];
+	let stufeNr = 0, nr = 0, aufgabe = null, treffer = 0, tipps = 0, erledigt = [], geprueftUm = 0;
 	const heft = KI.heftleiste(behaelter, () => {
 		const bl = [{ art: "titel", t: R_STUFEN[stufeNr].titel }];
 		erledigt.forEach((a, i) => {
@@ -2484,9 +2484,10 @@ BAU.rechnen = function (behaelter) {
 		eingabe.disabled = true; pruefKnopf.disabled = true;
 		wegEl.innerHTML = aufgabe.weg.map(z => "<div>" + z + "</div>").join(""); wegEl.hidden = false;
 		erledigt.push(aufgabe); weiterLeiste.hidden = false; zeigeStatus();
-		setTimeout(() => weiterKnopf.focus({ preventScroll: true }), 400);   /* verzögert: sonst blättert dieselbe Enter-Taste sofort weiter */
+		geprueftUm = performance.now(); setTimeout(() => weiterKnopf.focus({ preventScroll: true }), 400);   /* verzögert: sonst blättert dieselbe Enter-Taste sofort weiter */
 	}
 	function weiter() {
+		if (performance.now() - geprueftUm < 250) return;   /* Schutz: kein "Weiter" im selben Augenblick wie "Prüfen" */
 		nr++;
 		if (nr < R_STUFEN[stufeNr].anzahl) { neueAufgabe(); return; }
 		karte.hidden = true; zeigeStatus();
@@ -2505,7 +2506,9 @@ BAU.rechnen = function (behaelter) {
 		heft.hidden = false;
 	}
 	pruefKnopf.addEventListener("click", pruefe);
-	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") pruefe(); });
+	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
+	   und Rückmeldung samt Lösungsweg werden übersprungen */
+	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
 	weiterKnopf.addEventListener("click", weiter);
 	starte(KI.startStufe(R_STUFEN.length));
 };
