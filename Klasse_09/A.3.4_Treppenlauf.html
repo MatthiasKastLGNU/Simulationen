@@ -2293,6 +2293,7 @@ BAU.duell = function (behaelter) {
 
 	pruefKnopf.addEventListener("click", pruefe);
 	weiterKnopf.addEventListener("click", weiter);
+	weiterKnopf.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.repeat) e.preventDefault(); });   /* gehaltene Eingabetaste blättert nicht weiter */
 	let rz = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(zeichne, 120); });
 	starte(KI.startStufe(D_STUFEN.length));
 };
@@ -2470,8 +2471,9 @@ BAU.rechnen = function (behaelter) {
 	pruefKnopf.addEventListener("click", pruefe);
 	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
 	   und Rückmeldung samt Lösungsweg werden übersprungen */
-	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
+	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!e.repeat) pruefe(); } });
 	weiterKnopf.addEventListener("click", weiter);
+	weiterKnopf.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.repeat) e.preventDefault(); });   /* gehaltene Eingabetaste blättert nicht weiter */
 	starte(KI.startStufe(R_STUFEN.length));
 };
 
