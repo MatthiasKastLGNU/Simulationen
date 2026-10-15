@@ -451,6 +451,25 @@ button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
 	.kino { max-width: 260px; }
 	.kinobild svg { max-height: 200px; }
 }
+
+/* Baustein Fachsprache (KI.fachsprache): jedes Wort einzeln, beim Überfahren gleich markiert */
+.fstext { line-height: 2.05; font-size: 1.05rem; border: 2px solid var(--karte-rand); border-radius: 2mm; padding: 0.6rem 0.9rem; background: #FFFEF8; }
+.fstext .w { cursor: pointer; border-radius: 1mm; padding: 0 1px; }
+.fstext .w:hover { background: #E6E6F8; }
+.fstext .w.daneben { text-decoration: underline wavy var(--falsch); text-decoration-thickness: 1px; }
+.fstext .w.aktiv { background: #FFF3B0; box-shadow: 0 0 0 2px #E0B000; }
+.fstext .w.richtig { color: var(--gut); font-weight: bold; cursor: default; background: var(--gut-hg); }
+.fstext .w.falsch { color: #8A4500; font-weight: bold; cursor: default; background: #FFF0DD; }
+.fstext .w.falsch s { color: var(--falsch); font-weight: normal; }
+.fstext .w.tipp { background: #FFF3B0; transition: background 0.3s; }
+.wahlkasten { border: 2px solid var(--blue-frame); border-radius: 2mm; padding: 0.5rem 0.7rem; margin: 0.6rem 0; background: var(--blue-title); }
+.wahlkasten .wtitel { font-size: 0.95rem; margin-bottom: 0.35rem; }
+.wahlkasten .wtitel s { color: var(--falsch); }
+.wahlreihe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+.wahlkarte { font: inherit; font-size: 0.98rem; text-align: left; padding: 0.45rem 0.6rem; border: 2px solid var(--karte-rand); border-radius: 2mm; background: #fff; cursor: pointer; line-height: 1.3; }
+.wahlkarte:hover { border-color: #7A7AD0; }
+.status span { white-space: nowrap; }
+@media (max-width: 560px) { .wahlreihe { grid-template-columns: 1fr; } .fstext { font-size: 1rem; padding: 0.5rem 0.6rem; } }
 /* ---------- A.3.4 Treppenlauf: Bild mit Symbolleiste ---------- */
 .bildrahmen { position: relative; margin: 0.3rem 0 0.5rem; }
 canvas.sim { display: block; width: 100%; height: auto; border: 1px solid #DDD; border-radius: 1.5mm; background: #fff; }
@@ -1551,6 +1570,132 @@ window.KI = (function () {
 	};
 
 	/* ==========================================================================
+	   Baustein: Fachsprache. Falsches Wort im Text antippen, durch das richtige Kärtchen ersetzen
+	   (Kast 2026-10-13: „Fachsprache Simulation ist echt super!! Gerne noch mehr davon!“).
+	   cfg: { id, merksatz?, texte:[{ name, titel, wer, falsch, teile:[...] }] }
+	     name   = Name der Stufe (Chip), titel = Überschrift im Ergebnisbild, wer = „Cäcilias Bericht“ (im Auftrag)
+	     falsch = wie viele der möglichen Stellen bei jedem Start zufällig falsch erscheinen
+	     teile  = Zeichenkette (fester Text) | { f, r, w:[falsch, falsch], e } (Stelle: falsch f, richtig r,
+	              Ablenkkärtchen w, Erklärung e) | { t, e } (richtig verwendetes Fachwort als Falle)
+	   Schummelschutz: jedes Wort einzeln antippbar und beim Überfahren gleich markiert (keine Blöcke),
+	   bei jedem Start andere falsche Stellen, Fehlgriffe zählen (auch Fallen), ein Versuch pro Stelle,
+	   höchstens zwei Tipps. Stellen kurz halten (ein Wort oder eine Einheit), dann wird kaum gestrichen.
+	   ?modus=id-1 zeigt nur Text 1, ohne Stufenangabe alle Texte mit Chips.
+	   ========================================================================== */
+	KI.fachsprache = function (behaelter, cfg) {
+		const texte = cfg.texte, id = cfg.id;
+		const kopf = kopfzeile(behaelter, texte, id, (i) => starte(i));
+		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
+		const text = el("div", "fstext"); behaelter.appendChild(text);
+		const kasten = el("div", "wahlkasten"); kasten.hidden = true; behaelter.appendChild(kasten);
+		const rueck = el("div", ""); behaelter.appendChild(rueck);
+		const steuer = el("div", "leiste");
+		const tippKnopf = KI.symbolKnopf("tipp", "Tipp: eine falsche Stelle kurz aufleuchten lassen (höchstens zweimal)", tipp);
+		steuer.appendChild(tippKnopf);
+		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen (andere Stellen sind falsch)", () => starte(nr)));
+		behaelter.appendChild(steuer);
+		const ende = el("div", ""); behaelter.appendChild(ende);
+		let nr = 0, tx = null, falschIdx = new Set(), stellen = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0, anzahl = 0;
+		const heft = KI.heftleiste(behaelter, () => {
+			const teile = [];
+			tx.teile.forEach((t, i) => {
+				if (typeof t === "string") teile.push({ t });
+				else if (t.t) teile.push({ t: t.t });
+				else if (falschIdx.has(i)) teile.push({ t: t.r, farbe: "#2E7D32", fett: true });
+				else teile.push({ t: t.r });
+			});
+			const bl = [{ art: "titel", t: tx.titel }, { art: "text", groesse: 24, teile }, { art: "abstand", h: 8 }];
+			bl.push({ art: "text", groesse: 20, teile: [{ t: "Grün: verbesserte Stellen." + (cfg.merksatz ? " " + cfg.merksatz : ""), farbe: "#555", kursiv: true }] });
+			return KI.blattBild(bl);
+		}, id);
+		heft.hidden = true;
+		function status() { kopf.status.innerHTML = "<span>Gefunden: " + erledigt + " / " + anzahl + "</span><span>Richtig ersetzt: " + richtig + "</span><span>Fehlgriffe: " + daneben + "</span>"; }
+		/* ein Wort als antippbare Stelle; Satzzeichen davor und danach sind nicht antippbar */
+		function wort(w, daten) {
+			const m = w.match(/^([(„"']*)(.*?)([.,;:!?)"“']*)$/);
+			if (m[1]) text.appendChild(document.createTextNode(m[1]));
+			const sp = el("span", "w", m[2]); Object.assign(sp, daten || {});
+			sp.addEventListener("click", () => tippe(sp));
+			text.appendChild(sp);
+			if (m[3]) text.appendChild(document.createTextNode(m[3]));
+			return sp;
+		}
+		function starte(i) {
+			nr = i; tx = texte[i];
+			text.innerHTML = ""; stellen = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0;
+			kasten.hidden = true; rueck.innerHTML = ""; ende.innerHTML = ""; heft.hidden = true; tippKnopf.disabled = false;
+			const kandidaten = tx.teile.map((t, j) => (typeof t !== "string" && t.f) ? j : -1).filter(j => j >= 0);
+			falschIdx = new Set(mischen(kandidaten).slice(0, tx.falsch || kandidaten.length));
+			anzahl = falschIdx.size;
+			auftrag.innerHTML = "In " + tx.wer + " sind <b>" + anzahl + " Wörter</b> physikalisch falsch. Tippe ein falsches Wort an und ersetze es durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>. Daneben getippte Wörter zählen als Fehlgriff, auch richtig verwendete Fachwörter.";
+			tx.teile.forEach((t, j) => {
+				if (typeof t !== "string") {
+					if (t.t) wort(t.t, { _erkl: t.e });
+					else if (falschIdx.has(j)) stellen.push(wort(t.f, { _stelle: t, _fertig: false }));
+					else wort(t.r, { _erkl: t.e });
+					return;
+				}
+				t.split(/(\s+)/).forEach(w => {
+					if (w === "") return;
+					if (/^\s+$/.test(w) || /^[.,;:!?()„“"']+$/.test(w)) { text.appendChild(document.createTextNode(w)); return; }
+					wort(w);
+				});
+			});
+			kopf.markiere(nr); status();
+		}
+		function tippe(sp) {
+			if (erledigt === anzahl) return;
+			if (sp._stelle) { oeffne(sp); return; }
+			if (sp.classList.contains("daneben")) return;
+			sp.classList.add("daneben"); daneben++; status();
+			if (aktiv) { aktiv.classList.remove("aktiv"); aktiv = null; kasten.hidden = true; }
+			rueck.innerHTML = '<p class="rueck schlecht">Das ist richtig so. Fehlgriff!</p>' + (sp._erkl ? '<div class="erkl">' + KI.icon("tipp", 15) + " " + sp._erkl + "</div>" : "");
+		}
+		function oeffne(s) {
+			if (s._fertig) return;
+			if (aktiv) aktiv.classList.remove("aktiv");
+			aktiv = s; s.classList.add("aktiv"); rueck.innerHTML = "";
+			const t = s._stelle;
+			kasten.innerHTML = '<div class="wtitel">Ersetze <s>' + t.f + "</s> durch:</div>";
+			const reihe = el("div", "wahlreihe"); kasten.appendChild(reihe);
+			mischen([{ t: t.r, ok: true }].concat(t.w.map(x => ({ t: x, ok: false })))).forEach(k => {
+				const knopf = el("button", "wahlkarte", k.t);
+				knopf.addEventListener("click", () => waehle(s, k.ok));
+				reihe.appendChild(knopf);
+			});
+			kasten.hidden = false;
+			kasten.scrollIntoView({ block: "nearest", behavior: "smooth" });
+		}
+		function waehle(s, ok) {
+			const t = s._stelle;
+			s._fertig = true; s.classList.remove("aktiv"); aktiv = null; erledigt++;
+			const erkl = '<div class="erkl">' + KI.icon("tipp", 15) + " " + t.e + "</div>";
+			if (ok) { richtig++; s.classList.add("richtig"); s.textContent = t.r; KI.funken(s, 6); rueck.innerHTML = '<p class="rueck gut">Richtig!</p>' + erkl; }
+			else { s.classList.add("falsch"); s.innerHTML = "<s>" + t.f + "</s> " + t.r; rueck.innerHTML = '<p class="rueck schlecht">Leider falsch. Richtig ist: ' + t.r + "</p>" + erkl; }
+			kasten.hidden = true; status();
+			if (erledigt === anzahl) fertig();
+		}
+		function tipp() {
+			const s = stellen.find(x => !x._fertig);
+			if (!s || tipps >= 2) return;
+			tipps++; if (tipps >= 2) tippKnopf.disabled = true;
+			s.classList.add("tipp"); setTimeout(() => s.classList.remove("tipp"), 900);
+		}
+		function fertig() {
+			const abzug = daneben + tipps;
+			const s = richtig === anzahl && abzug <= 1 ? 3 : richtig >= anzahl - 1 && abzug <= 3 ? 2 : 1;
+			const p = el("p", "rueck gut", richtig + " von " + anzahl + " Wörtern richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
+			ende.innerHTML = ""; ende.appendChild(p); KI.funken(p, 18);
+			KI.speicher.schreib("sterne_" + id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + nr, 0)));
+			KI.bestwert(id, s); kopf.markiere(nr);
+			const folge = KI.naechsteStufe(nr, texte.length);
+			if (folge >= 0) { const l = el("div", "leiste"), k = KI.hauptKnopf("weiter", "Nächster Text: " + texte[folge].name); k.addEventListener("click", () => starte(folge)); l.appendChild(k); ende.appendChild(l); }
+			heft.hidden = false;
+		}
+		starte(KI.startStufe(texte.length));
+	};
+
+	/* ==========================================================================
 	   Baustein: Filmleiste. Ein Ablauf als Reihe von Einzelbildern.
 	   cfg: { id, stufen:[{ name, titel, auftrag, art, bilder:[{ svg, text }], schluss, takt }] }
 	   art "ordnen": Bilder liegen gemischt unten und kommen in die richtige Reihenfolge
@@ -2260,7 +2405,7 @@ BAU.rechnen = function (behaelter) {
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
 	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
 
-	let stufeNr = 0, nr = 0, aufgabe = null, fehler = 0, tipps = 0, erledigt = [];
+	let stufeNr = 0, nr = 0, aufgabe = null, fehler = 0, tipps = 0, erledigt = [], geprueftUm = 0;
 	const heft = KI.heftleiste(behaelter, () => {
 		const bl = [{ art: "titel", t: "Rechentraining: " + R_STUFEN[stufeNr].titel }];
 		erledigt.forEach((a, i) => {
@@ -2306,9 +2451,10 @@ BAU.rechnen = function (behaelter) {
 		eingabe.disabled = true; pruefKnopf.disabled = true; tippKnopf.disabled = true;
 		wegEl.innerHTML = aufgabe.weg.map(z => "<div>" + z + "</div>").join(""); wegEl.hidden = false;
 		erledigt.push(aufgabe); weiterLeiste.hidden = false;
-		setTimeout(() => weiterKnopf.focus({ preventScroll: true }), 400);   /* verzögert: sonst blättert dieselbe Enter-Taste sofort weiter */
+		geprueftUm = performance.now(); setTimeout(() => weiterKnopf.focus({ preventScroll: true }), 400);   /* verzögert: sonst blättert dieselbe Enter-Taste sofort weiter */
 	}
 	function weiter() {
+		if (performance.now() - geprueftUm < 250) return;   /* Schutz: kein "Weiter" im selben Augenblick wie "Prüfen" */
 		nr++;
 		if (nr < R_STUFEN[stufeNr].anzahl) { neueAufgabe(); return; }
 		karte.hidden = true; zeigeStatus();
@@ -2322,7 +2468,9 @@ BAU.rechnen = function (behaelter) {
 		KI.funken(p, 20); heft.hidden = false;
 	}
 	pruefKnopf.addEventListener("click", pruefe);
-	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") pruefe(); });
+	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
+	   und Rückmeldung samt Lösungsweg werden übersprungen */
+	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
 	weiterKnopf.addEventListener("click", weiter);
 	starte(KI.startStufe(R_STUFEN.length));
 };
