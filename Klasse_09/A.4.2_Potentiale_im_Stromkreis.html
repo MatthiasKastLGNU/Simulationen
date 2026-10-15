@@ -2681,8 +2681,9 @@ function BAU_TRAINING(behaelter) {
 	pruefKnopf.addEventListener("click", pruefe);
 	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
 	   und Rückmeldung samt Lösungsweg werden übersprungen */
-	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); pruefe(); } });
+	eingabe.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); if (!e.repeat) pruefe(); } });
 	weiterKnopf.addEventListener("click", weiter);
+	weiterKnopf.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.repeat) e.preventDefault(); });   /* gehaltene Eingabetaste blättert nicht weiter */
 	window.addEventListener("resize", () => { if (aufgabe && !karte.hidden) zeichne(cv, geloest); });
 	starte(KI.startStufe(STUFEN.length));
 }
