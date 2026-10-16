@@ -1119,38 +1119,41 @@ window.SimUI = (function () {
 			() => typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn,
 			() => typeof dateiname === "function" ? dateiname() : dateiname, was);
 	}
-	/* Zelleninhalt als Text, Indizes/Hochzahlen als Unicode */
-	const TIEF = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "a": "ₐ", "e": "ₑ", "o": "ₒ", "x": "ₓ", "h": "ₕ", "k": "ₖ", "l": "ₗ", "m": "ₘ", "n": "ₙ", "p": "ₚ", "s": "ₛ", "t": "ₜ", "r": "ᵣ", "i": "ᵢ", "u": "ᵤ", "v": "ᵥ" };
-	const HOCH = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "-": "⁻", "−": "⁻", "+": "⁺" };
-	function zellText(el) {
-		const k = el.cloneNode(true);
-		k.querySelectorAll("button, input, select").forEach(x => x.remove());
-		k.querySelectorAll("sub").forEach(s => {
-			const t = s.textContent;
-			s.replaceWith(t.split("").every(c => TIEF[c]) ? t.split("").map(c => TIEF[c]).join("") : "_" + t);
-		});
-		k.querySelectorAll("sup").forEach(s => {
-			const t = s.textContent;
-			s.replaceWith(t.split("").every(c => HOCH[c]) ? t.split("").map(c => HOCH[c]).join("") : "^" + t);
-		});
-		return k.textContent.replace(/\s+/g, " ").trim();
+	/* Zelleninhalt als Abschnitte: Text, kursiv (i.gr), tief/hoch (sub/sup), Farbpunkt (.legende-punkt) */
+	function zellTeile(el) {
+		const teile = [];
+		(function lauf(n, art, kursiv) {
+			if (n.nodeType === 3) { if (n.textContent) teile.push({ t: n.textContent, art, kursiv }); return; }
+			if (n.nodeType !== 1 || /^(BUTTON|INPUT|SELECT)$/.test(n.tagName)) return;
+			if (n.classList.contains("legende-punkt")) { teile.push({ punkt: n.style.background || getComputedStyle(n).backgroundColor }); return; }
+			const a = n.tagName === "SUB" ? "sub" : n.tagName === "SUP" ? "sup" : art;
+			const k = kursiv || n.tagName === "I" || n.tagName === "EM";
+			n.childNodes.forEach(c => lauf(c, a, k));
+		})(el, "", false);
+		/* Leerraum zusammenfassen, außen abschneiden */
+		teile.forEach(x => { if (x.t !== undefined) x.t = x.t.replace(/\s+/g, " "); });
+		while (teile.length && teile[0].t !== undefined && !(teile[0].t = teile[0].t.replace(/^\s+/, ""))) teile.shift();
+		while (teile.length && teile[teile.length - 1].t !== undefined && !(teile[teile.length - 1].t = teile[teile.length - 1].t.replace(/\s+$/, ""))) teile.pop();
+		return teile;
 	}
 	/* Messtabelle als PNG speichern (Kopf fett, Linien wie booktabs, darunter Beschriftung) */
 	function tabellenCanvas(tabelle, titel, zeilen) {
 		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
+		if (typeof titel === "function") titel = titel();
 		if (typeof zeilen === "function") zeilen = zeilen();
 		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
-			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => z.offsetParent !== null || !tabelle.offsetParent).map(zellText) }))
+			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => z.offsetParent !== null || !tabelle.offsetParent).map(zellTeile) }))
 			.filter(r => r.zellen.length);
 		const f = 2, schrift = "'Libertinus Sans', 'Segoe UI', sans-serif";
+		const font = (kopf, x) => (x.kursiv ? "italic " : "") + (kopf ? "bold " : "") + (x.art ? 11 : 15) + "px " + schrift;
 		const m = document.createElement("canvas").getContext("2d");
+		const breite = (kopf, teile) => teile.reduce((w, x) => { if (x.punkt) return w + 15; m.font = font(kopf, x); return w + m.measureText(x.t).width; }, 0);
 		const spalten = Math.max(...reihen.map(r => r.zellen.length));
-		const breiten = new Array(spalten).fill(30);
-		reihen.forEach(r => r.zellen.forEach((z, i) => {
-			m.font = (r.kopf ? "bold " : "") + "15px " + schrift;
-			breiten[i] = Math.max(breiten[i], m.measureText(z).width + 24);
-		}));
+		const breiten = new Array(spalten).fill(20);
+		reihen.forEach(r => r.zellen.forEach((z, i) => { breiten[i] = Math.max(breiten[i], breite(r.kopf, z) + 24); }));
 		const rand = 16, zh = 26, kopfH = titel ? 30 : 0;
+		/* Titel breiter als die Tabelle: Spalten gleichmäßig verbreitern, damit nichts abgeschnitten wird */
+		if (titel) { m.font = "bold 16px " + schrift; const mehr = m.measureText(titel).width + 8 - breiten.reduce((a, b) => a + b, 0); if (mehr > 0) breiten.forEach((_, i) => breiten[i] += mehr / spalten); }
 		const W = breiten.reduce((a, b) => a + b, 0) + 2 * rand;
 		const extra = (zeilen || []).length * 19;
 		const H = kopfH + reihen.length * zh + 2 * rand + (extra ? extra + 10 : 0);
@@ -1159,16 +1162,24 @@ window.SimUI = (function () {
 		const g = c.getContext("2d");
 		g.scale(f, f);
 		g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-		g.fillStyle = "#111"; g.textBaseline = "middle";
+		g.fillStyle = "#111"; g.textBaseline = "middle"; g.textAlign = "left";
 		if (titel) { g.font = "bold 16px " + schrift; g.fillText(titel, rand, rand + 10); }
 		let y = rand + kopfH;
 		const linie = (yy, d) => { g.strokeStyle = "#111"; g.lineWidth = d; g.beginPath(); g.moveTo(rand, yy); g.lineTo(W - rand, yy); g.stroke(); };
 		linie(y, 1.4);
 		reihen.forEach((r, ri) => {
-			let x = rand;
-			g.font = (r.kopf ? "bold " : "") + "15px " + schrift;
-			g.textAlign = "center";
-			r.zellen.forEach((z, i) => { g.fillText(z, x + breiten[i] / 2, y + zh / 2); x += breiten[i]; });
+			let x0 = rand;
+			r.zellen.forEach((z, i) => {
+				let x = x0 + (breiten[i] - breite(r.kopf, z)) / 2;
+				const ym = y + zh / 2;
+				z.forEach(t => {
+					if (t.punkt) { g.fillStyle = t.punkt; g.beginPath(); g.arc(x + 6, ym, 5.5, 0, 2 * Math.PI); g.fill(); x += 15; return; }
+					g.font = font(r.kopf, t); g.fillStyle = "#111";
+					g.fillText(t.t, x, ym + (t.art === "sub" ? 5 : t.art === "sup" ? -6 : 0));
+					x += g.measureText(t.t).width;
+				});
+				x0 += breiten[i];
+			});
 			y += zh;
 			if (r.kopf && (!reihen[ri + 1] || !reihen[ri + 1].kopf)) linie(y, 0.8);
 		});
