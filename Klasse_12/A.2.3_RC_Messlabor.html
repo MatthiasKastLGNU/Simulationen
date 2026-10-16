@@ -1214,13 +1214,14 @@ window.SimUI = (function () {
 .reihe .kopfzeile { display: flex; align-items: center; gap: 0.5rem; }
 .reihe .farbe { flex: none; width: 0.95rem; height: 0.95rem; border-radius: 50%; }
 .reihe .name { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.reihe .name .bsp { font-weight: normal; color: #777; }
+.reihe .name.datei { font-weight: normal; font-size: 0.85rem; color: #777; }
 .reihe .bauteile { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; align-items: center; margin-top: 0.35rem; }
 .reihe .bauteil { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
 .reihe .bauteil > b { font-weight: normal; min-width: 1.2em; }
 .reihe .knopfleiste button { min-height: 1.85rem; padding: 0.12rem 0.5rem; font-size: 0.88rem; }
 .reihe input.anders { width: 5.6em; font: inherit; font-size: 0.88rem; padding: 0.15rem 0.3rem; border: 1px solid #BBB; border-radius: 4px; }
 .reihe input.anders.aktiv { border-color: var(--blue-frame); box-shadow: 0 0 0 1px var(--blue-frame) inset; }
+.reihe .anders-feld { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
 .reihe .fehlt { color: var(--red-frame); font-size: 0.85rem; }
 .leer-hinweis { color: #555; font-size: 0.92rem; margin: 0.7rem 0 0; }
 .beispiel-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; margin-top: 0.7rem; font-size: 0.85rem; color: #666; }
@@ -1236,7 +1237,6 @@ window.SimUI = (function () {
 .karte.blau .zahl { color: var(--blue-frame); font-size: 1.15rem; }
 .karte .klein { font-size: 0.85rem; color: #444; }
 .cursor-zeile { font-size: 0.9rem; color: #333; margin-top: 0.35rem; }
-#ergebnis-tab td:nth-child(2), #ergebnis-tab th:nth-child(2) { text-align: left; white-space: normal; overflow-wrap: anywhere; }
 #ergebnis-tab td, #ergebnis-tab th { padding-left: 0.3rem; padding-right: 0.3rem; }
 .legende-punkt { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.3em; vertical-align: -0.05em; }
 @media (max-width: 560px) { .karte .zahl { font-size: 1.45rem; } }
@@ -1559,7 +1559,7 @@ function karten() {
 	} else if (modus === "vergleich" && rs.length) z.innerHTML = "Ziehen Sie im Diagramm, um den Cursor zu setzen.";
 	if (!r || modus === "vergleich") return;
 	const karte = (was, zahl, klein, blau) => k.insertAdjacentHTML("beforeend", "<div class='karte" + (blau ? " blau" : "") + "'><div class='was'>" + was + "</div><div class='zahl'>" + zahl + "</div>" + (klein ? "<div class='klein'>" + klein + "</div>" : "") + "</div>");
-	const name = "<span class='legende-punkt' style='background:" + r.farbe + "'></span>" + esc(r.name + (r.laufName ? ", " + r.laufName : "")) + " (" + bauteile(r) + ")";
+	const name = "<span class='legende-punkt' style='background:" + r.farbe + "'></span>" + bauteile(r);
 	if (modus === "halbwertszeit") {
 		const h = cursor !== null ? halbwert(r, cursor) : null;
 		if (!h) karte("Halbwertszeit", "?", "Setzen Sie den Cursor an eine Stelle, an der die Spannung noch deutlich von null verschieden ist.");
@@ -1578,14 +1578,14 @@ function karten() {
 	k.insertAdjacentHTML("beforeend", "<div class='karte blau'><div class='was'>Messreihe</div><div class='zahl'>" + name + "</div></div>");
 }
 function tabelle() {
-	const kopf = { vergleich: ["", "Messreihe", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "<i class='gr'>I</i><sub>0</sub>"],
-		halbwertszeit: ["", "Messreihe", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>T</i><sub>1/2</sub>"],
-		anpassung: ["", "Messreihe", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "Faktor <i class='gr'>B</i>"],
-		flaeche: ["", "Messreihe", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "Fläche (<i class='gr'>t</i>-<i class='gr'>U</i><sub>R</sub>)"] }[modus];
+	const kopf = { vergleich: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "<i class='gr'>I</i><sub>0</sub>"],
+		halbwertszeit: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>T</i><sub>1/2</sub>"],
+		anpassung: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "Faktor <i class='gr'>B</i>"],
+		flaeche: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "Fläche (<i class='gr'>t</i>-<i class='gr'>U</i><sub>R</sub>)"] }[modus];
 	$("tab-kopf").innerHTML = "<tr>" + kopf.map(h => "<th>" + h + "</th>").join("") + "</tr>";
 	$("tabelle-titel").textContent = { vergleich: "Alle Messreihen: Anfangswerte", halbwertszeit: "Alle Messreihen: Halbwertszeit", anpassung: "Alle Messreihen: Faktor im Exponenten", flaeche: "Alle Messreihen: Fläche unter dem Graphen" }[modus];
 	$("tab-koerper").innerHTML = reihen.map(r => {
-		const z = ["<span class='legende-punkt' style='background:" + r.farbe + "'></span>", esc(r.name + (r.laufName ? ", " + r.laufName : "")) + (r.beispiel ? " (Beispiel)" : ""), formatR(r.R), formatC(r.C)];
+		const z = ["<span class='legende-punkt' style='background:" + r.farbe + "'></span>", formatR(r.R), formatC(r.C)];
 		if (modus === "vergleich") { const u0 = r.punkte[0][1]; z.push(P.sig(u0, 3) + "&nbsp;V", r.R > 0 ? P.sig(u0 / r.R * 1000, 3) + "&nbsp;mA" : "?"); }
 		if (modus === "halbwertszeit") { const h = halbwert(r, 0); z.push(h ? formatZeit(h.mittel) : "?"); }
 		if (modus === "anpassung") { const f = anpassung(r); z.push(f ? P.sig(f.B, 3) + "&nbsp;1/s" : "?"); }
@@ -1599,14 +1599,14 @@ function chipsHtml(art, wert) {
 	const wahl = art === "R" ? R_WAHL : C_WAHL, fmt = art === "R" ? formatR : formatC;
 	const anders = wert > 0 && !wahl.some(w => Math.abs(w - wert) < 1e-12);
 	return "<span class='bauteil'><b><i class='gr'>" + art + "</i> =</b><span class='knopfleiste'>" + wahl.map(w => "<button data-art='" + art + "' data-wert='" + w + "'" + (wert > 0 && Math.abs(w - wert) < 1e-12 ? " class='aktiv'" : "") + ">" + fmt(w).replace(" ", "&nbsp;") + "</button>").join("") + "</span>"
-		+ "<input type='number' class='anders" + (anders ? " aktiv" : "") + "' data-art='" + art + "' min='0' step='any' inputmode='decimal' placeholder='anderer' title='anderer Wert in " + (art === "R" ? "Ω" : "µF") + "' value='" + (anders ? (art === "R" ? wert : +(wert * 1e6).toPrecision(4)) : "") + "'><span>" + (art === "R" ? "Ω" : "µF") + "</span></span>";
+		+ "<span class='anders-feld'><input type='number' class='anders" + (anders ? " aktiv" : "") + "' data-art='" + art + "' min='0' step='any' inputmode='decimal' placeholder='anderer' title='anderer Wert in " + (art === "R" ? "Ω" : "µF") + "' value='" + (anders ? (art === "R" ? wert : +(wert * 1e6).toPrecision(4)) : "") + "'><span>" + (art === "R" ? "Ω" : "µF") + "</span></span></span>";
 }
 function zeichneListe() {
 	const L = $("reihen");
 	L.innerHTML = reihen.map(r => {
 		const fehlt = [!(r.R > 0) ? "<i class='gr'>R</i>" : "", !(r.C > 0) ? "<i class='gr'>C</i>" : ""].filter(Boolean);
 		return "<div class='reihe" + (modus !== "vergleich" && r.id === (gewaehlt() || {}).id ? " gewaehlt" : "") + "' data-id='" + r.id + "'>"
-			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span><span class='name'>" + esc(r.name + (r.laufName ? ", " + r.laufName : "")) + (r.beispiel ? " <span class='bsp'>(Beispiel)</span>" : "") + "</span>"
+			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span><span class='name datei'>" + (r.beispiel ? "" : esc(r.name)) + "</span>"
 			+ (modus === "vergleich" ? "<span class='knopfleiste'><label class='chip' title='im Diagramm zeigen'><input type='checkbox' data-zeigen" + (r.zeigen !== false ? " checked" : "") + "><span data-chipicon='auge'></span>zeigen</label></span>" : "")
 			+ "<span class='knopfleiste'><button class='neben' data-weg title='Messreihe entfernen'>" + SimUI.svg("muell") + "</button></span></div>"
 			+ "<div class='bauteile'>" + (LAEUFE.has(r.id) ? "<span class='bauteil'><b>Lauf</b><span class='knopfleiste'>" + LAEUFE.get(r.id).map((l, i) => "<button data-lauf='" + i + "' title='Die Datei enthält mehrere Läufe. Wählen Sie die richtige Messung.'" + (l.name === r.laufName ? " class='aktiv'" : "") + ">" + esc(l.name.replace(/^Lauf\s*/, "")) + "</button>").join("") + "</span></span>" : "") + chipsHtml("R", r.R) + chipsHtml("C", r.C) + (fehlt.length ? "<span class='fehlt'>Bitte " + fehlt.join(" und ") + " angeben.</span>" : "") + "</div></div>";
@@ -1770,7 +1770,7 @@ async function oeffneDateien(dateien) {
 $("btn-oeffnen").addEventListener("click", () => $("datei").click());
 $("datei").addEventListener("change", () => { const f = [...$("datei").files]; $("datei").value = ""; if (f.length) oeffneDateien(f); });
 $("btn-beispiele").addEventListener("click", () => {
-	for (const [k, info] of Object.entries(ECHT_ROH)) gewaehltId = neueReihe("Messung vom 18.11.2024", ECHT[k], info.R, info.C, true).id;
+	for (const [k, info] of Object.entries(ECHT_ROH)) gewaehltId = neueReihe("", ECHT[k], info.R, info.C, true).id;
 	sichern(); cursor = cursorStandard(); alles();
 });
 $("btn-beispiele-weg").addEventListener("click", () => { reihen = reihen.filter(r => !r.beispiel); sichern(); gewaehltId = null; cursor = cursorStandard(); alles(); });
