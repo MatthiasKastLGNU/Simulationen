@@ -2194,11 +2194,11 @@ const BAU = {};
 const GERAETE = ["A: Frostline", "B: Eisbär Eco", "C: Kühlwerk 3000"];
 const KURZ = ["A", "B", "C"];
 const KRIT = [
-	{ name: "Kosten in 10 Jahren", werte: [1086, 1146, 1026], text: ["1086 €", "1146 €", "1026 €"], besser: "klein" },
-	{ name: "Energiebedarf (Umwelt)", werte: [229, 99, 159], text: ["229 kWh", "99 kWh", "159 kWh"], besser: "klein" },
-	{ name: "Gefrierteil", werte: [120, 70, 90], text: ["120 L", "70 L", "90 L"], besser: "gross" },
-	{ name: "Geräusch", werte: [36, 38, 41], text: ["36 dB", "38 dB", "41 dB"], besser: "klein" },
-	{ name: "Garantie", werte: [2, 5, 3], text: ["2 Jahre", "5 Jahre", "3 Jahre"], besser: "gross" }
+	{ name: "Kosten in 10 Jahren", kurz: "Kosten", werte: [1086, 1146, 1026], text: ["1086 €", "1146 €", "1026 €"], besser: "klein" },
+	{ name: "Energiebedarf (Umwelt)", kurz: "Energie", werte: [229, 99, 159], text: ["229 kWh", "99 kWh", "159 kWh"], besser: "klein" },
+	{ name: "Gefrierteil", kurz: "Gefrierteil", werte: [120, 70, 90], text: ["120 L", "70 L", "90 L"], besser: "gross" },
+	{ name: "Geräusch", kurz: "Geräusch", werte: [36, 38, 41], text: ["36 dB", "38 dB", "41 dB"], besser: "klein" },
+	{ name: "Garantie", kurz: "Garantie", werte: [2, 5, 3], text: ["2 Jahre", "5 Jahre", "3 Jahre"], besser: "gross" }
 ];
 const PERSONEN = [
 	{ name: "Felicitas", wer: "denkt an die Umwelt", g: [1, 3, 1, 1, 2] },
@@ -2211,15 +2211,16 @@ function punkteVon(k) {
 	return k.werte.map(w => 3 - sortiert.indexOf(w));
 }
 BAU.gewichtung = function (b) {
-	b.appendChild(KI.el("p", "auftrag", "Modell D passt nicht in die Nische (Ausschlusskriterium), es bleiben A, B und C. Stelle für jedes Kriterium ein, wie wichtig es dir ist (1: weniger wichtig, 3: sehr wichtig). Die Punkte der Modelle (3 für das beste, 1 für das schlechteste) werden mit deiner Gewichtung malgenommen und zum Nutzwert addiert. Probiere danach die Gewichtungen der Familie aus: Wer gewinnt jeweils?"));
+	b.appendChild(KI.el("p", "auftrag", "Modell D passt nicht in die Nische (Ausschlusskriterium), es bleiben A, B und C. Stelle für jedes Kriterium ein, wie wichtig es dir ist (1: weniger wichtig, 3: sehr wichtig). Die Punkte der Modelle (3 für das beste, 1 für das schlechteste) werden mit deiner Gewichtung malgenommen und zum Nutzwert addiert. Probiere danach die Gewichtungen der Familie aus: Wer gewinnt jeweils? Deine eigene Gewichtung bleibt unter „meine“ erhalten."));
 	const pers = KI.el("div", "bedienleiste"); b.appendChild(pers);
 	const pg = KI.el("div", "bgruppe"); pg.appendChild(KI.el("div", "gtitel", "Gewichtung von …")); const pr = KI.el("div", "knopfreihe"); pg.appendChild(pr); pers.appendChild(pg);
 	const tab = KI.el("div", "nwtabelle"); b.appendChild(tab);
 	const balken = KI.el("div", "nwbalken"); b.appendChild(balken);
 	const fazit = KI.el("p", "rueck"); b.appendChild(fazit);
-	let g = KRIT.map(() => 1), person = null;
-	const pKn = PERSONEN.map((p, i) => { const k = KI.el("button", "wahl", p.name); k.title = p.wer; k.addEventListener("click", () => { g = p.g.slice(); person = i; zeige(); }); pr.appendChild(k); return k; });
-	const eigen = KI.el("button", "wahl", "meine"); eigen.addEventListener("click", () => { g = KRIT.map(() => 1); person = null; zeige(); }); pr.appendChild(eigen);
+	const eig = KRIT.map(() => 1);   /* eigene Gewichtung bleibt erhalten, auch wenn man Personen anschaut */
+	let g = eig, person = null;
+	const pKn = PERSONEN.map((p, i) => { const k = KI.el("button", "wahl", p.name); k.title = p.wer; k.addEventListener("click", () => { g = p.g; person = i; zeige(); }); pr.appendChild(k); return k; });
+	const eigen = KI.el("button", "wahl", "meine"); eigen.addEventListener("click", () => { g = eig; person = null; zeige(); }); pr.appendChild(eigen);
 	const P = KRIT.map(punkteVon);
 	const nutzwerte = () => GERAETE.map((_, j) => KRIT.reduce((s, k, i) => s + P[i][j] * g[i], 0));
 	function zeige() {
@@ -2238,7 +2239,8 @@ BAU.gewichtung = function (b) {
 			h += '</tbody><tfoot><tr><td colspan="2"><b>Nutzwert</b></td>' + summe.map(s => "<td><b>" + s + "</b></td>").join("") + "</tr></tfoot></table>";
 		}
 		tab.innerHTML = h;
-		tab.querySelectorAll("button.gw").forEach(k => k.addEventListener("click", () => { g[+k.dataset.i] = +k.dataset.w; person = null; zeige(); }));
+		/* Klick auf eine Gewichtung ändert immer die eigene Gewichtung (bei angezeigter Person zurück zu "meine") */
+		tab.querySelectorAll("button.gw").forEach(k => k.addEventListener("click", () => { eig[+k.dataset.i] = +k.dataset.w; g = eig; person = null; zeige(); }));
 		const max = Math.max(1, ...summe), sieger = summe.indexOf(Math.max(...summe));
 		balken.innerHTML = GERAETE.map((n, j) => '<div class="bz"><span class="bn">' + n + '</span><span class="bb"><span style="width:' + (100 * summe[j] / max) + '%;background:' + (summe[j] === summe[sieger] ? "#2E7D32" : "#9AA3AD") + '"></span></span><span class="bw">' + summe[j] + "</span></div>").join("");
 		const gleich = summe.filter(s => s === summe[sieger]).length;
@@ -2248,10 +2250,14 @@ BAU.gewichtung = function (b) {
 	}
 	KI.heftleiste(b, () => {
 		const summe = nutzwerte();
+		const max = Math.max(...summe);
 		const bl = [{ art: "titel", t: "Nutzwertanalyse Kühlschrank" + (person === null ? "" : " (Gewichtung von " + PERSONEN[person].name + ")") }];
-		bl.push({ art: "text", groesse: 21, teile: [{ t: "Gewichtung: " + KRIT.map((k, i) => k.name + " " + g[i]).join(", ") }] });
-		GERAETE.forEach((n, j) => bl.push({ art: "kasten", groesse: 22, rand: "#0000BF", hg: "#fff", teile: [{ t: n + ": ", fett: true }, { t: "Nutzwert " + summe[j] }] }));
-		bl.push({ art: "text", groesse: 21, teile: [{ t: ohneHtml(fazit.innerHTML), farbe: "#0000BF" }] });
+		bl.push({ art: "text", groesse: 21, teile: [{ t: "Ausschlusskriterium: ", fett: true }, { t: "Modell D (201 cm) passt nicht in die Nische (186 cm)." }] });
+		bl.push({ art: "text", groesse: 21, teile: [{ t: "Gewichtung: ", fett: true }, { t: KRIT.map((k, i) => k.name + " " + g[i]).join(" · ") }] });
+		bl.push({ art: "text", groesse: 21, teile: [{ t: "Punkte (bestes Modell 3, mittleres 2, schlechtestes 1) · Gewichtung, addiert = Nutzwert" }] });
+		bl.push({ art: "spalten", spalten: GERAETE.map((n, j) => ({ titel: n, farbe: summe[j] === max ? "#2E7D32" : "#0000BF",
+			zeilen: KRIT.map((k, i) => k.kurz + " " + k.text[j] + ": " + P[i][j] + " · " + g[i] + " = " + P[i][j] * g[i]).concat(["Nutzwert: " + summe[j]]) })) });
+		bl.push({ art: "kasten", groesse: 22, rand: "#0000BF", hg: "#fff", teile: [{ t: ohneHtml(fazit.innerHTML), fett: true }] });
 		return KI.blattBild(bl);
 	}, "Nutzwertanalyse");
 	let schmalAlt = null;
