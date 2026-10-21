@@ -2001,7 +2001,7 @@ window.KI = (function () {
 <script>
 /* ==========================================================================
    A.3.1 Wellenfunktionen und Nachweiswahrscheinlichkeit: interaktive Übungen (Kast, Klasse 13, Anrede Sie)
-   Reiter: doppelspalt (Detektor zählt Treffer), kasten (|psi|^2 zeichnen, Fläche, normieren, nachweisen), fachsprache
+   Reiter: doppelspalt (Detektor zählt Treffer), fachsprache
    Nutzt die Bibliothek KI (kast_interaktiv.js). Quellen nie auf GitHub, nur die gebaute HTML.
    ========================================================================== */
 "use strict";
@@ -2161,122 +2161,7 @@ BAU.doppelspalt = function (b) {
 };
 
 /* ==========================================================================
-   Reiter 2: Elektron im Kasten. Die Schüler zeichnen einen Verlauf |psi(x)|^2 (Hochachse in 1/L),
-   lassen die Fläche berechnen (Mittelwert der Funktionswerte, da Fläche = Integral über 0..L in Einheiten 1/L · L),
-   normieren und weisen danach einzelne Elektronen nach: Das Histogramm nähert sich dem Verlauf (Ensemble).
-   Es gibt bewusst keine fertigen Beispielverläufe (sonst wäre Teilaufgabe 2 des Blatts vorweggenommen).
-   ========================================================================== */
-const KN = 160, KYMAX = 3.2;
-BAU.kasten = function (b) {
-	b.appendChild(KI.el("p", "hinweis", "Ein Elektron befindet sich sicher im Kasten der Länge " + gr("L") + ". Zeichnen Sie mit Finger oder Maus einen Verlauf " + PSI2 + " in das Diagramm. Prüfen Sie die Fläche unter dem Graphen, normieren Sie sie, falls nötig, und weisen Sie dann viele Elektronen nach."));
-	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
-	const canvas = KI.el("canvas", "sim"); canvas.setAttribute("aria-label", "Diagramm zum Zeichnen der Wahrscheinlichkeitsdichte im Kasten"); rahmen.appendChild(canvas);
-	const gruppe = bedienleiste(b);
-	const rF = gruppe("Fläche"), rS = gruppe("Elektronen nachweisen");
-	const knNorm = KI.hauptKnopf("pruefen", "Normieren"); rF.appendChild(knNorm);
-	const knS = [100, 10000].map(n => { const k = KI.el("button", n === 10000 ? "haupt" : "wahl", (n === 10000 ? KI.icon("play", 18) : "") + "<span>" + zahl(n, 0) + "</span>"); k.title = n + " Elektronen nachweisen"; k.addEventListener("click", () => nachweisen(n)); rS.appendChild(k); return k; });
-	const karten = KI.el("div", "wertkarten"); b.appendChild(karten);
-	const wA = wertkarte(karten, "Fläche unter dem Graphen"), wN = wertkarte(karten, "nachgewiesen " + gr("N"));
-	const rueck = KI.el("p", "hinweis mittig"); b.appendChild(rueck);
-	let y = new Float32Array(KN), bins = null, nGes = 0, gezeichnet = false;
-
-	const flaeche = () => { let s = 0; for (let i = 0; i < KN; i++) s += y[i]; return s / KN; };
-	function werte() {
-		const A = flaeche();
-		wA.textContent = gezeichnet ? zahl(A, 2) : "";
-		wA.parentNode.classList.toggle("gut", gezeichnet && Math.abs(A - 1) < 0.02);
-		wN.textContent = zahl(nGes, 0);
-		knNorm.disabled = !gezeichnet || A < 1e-3 || Math.abs(A - 1) < 0.005;
-		knS.forEach(k => k.disabled = !gezeichnet || Math.abs(A - 1) > 0.02);
-	}
-	function normieren() {
-		const A = flaeche(); if (A < 1e-3) return;
-		const f = 1 / A, alt = Float32Array.from(y), t0 = performance.now();
-		bins = null; nGes = 0;
-		rueck.innerHTML = "Alle Werte von " + PSI2 + " werden mit " + zahl(f, 2) + " multipliziert. Dann ist die Fläche 1: Das Elektron wird mit Sicherheit irgendwo im Kasten nachgewiesen.";
-		function schritt(t) {
-			const p = Math.min(1, (t - t0) / 700), g = 1 + (f - 1) * (1 - Math.cos(Math.PI * p)) / 2;
-			for (let i = 0; i < KN; i++) y[i] = alt[i] * g;
-			zeichne(); if (p < 1) requestAnimationFrame(schritt); else { for (let i = 0; i < KN; i++) y[i] = alt[i] * f; zeichne(); }
-		}
-		requestAnimationFrame(schritt);
-	}
-	knNorm.addEventListener("click", normieren);
-	function nachweisen(n) {
-		if (Math.abs(flaeche() - 1) > 0.02) { KI.meldung("Erst normieren: Die Fläche muss 1 sein"); return; }
-		const kum = new Float64Array(KN + 1); for (let i = 0; i < KN; i++) kum[i + 1] = kum[i] + y[i];
-		if (!bins) bins = new Float64Array(20);
-		for (let j = 0; j < n; j++) {
-			const u = Math.random() * kum[KN]; let lo = 0, hi = KN;
-			while (hi - lo > 1) { const m = (lo + hi) >> 1; if (kum[m] <= u) lo = m; else hi = m; }
-			const x = (lo + Math.random()) / KN;
-			bins[Math.min(19, Math.floor(x * 20))]++;
-		}
-		nGes += n;
-		rueck.innerHTML = "Die blauen Säulen zeigen die relative Häufigkeit pro Länge. Je mehr Elektronen, desto genauer folgen sie Ihrem Verlauf " + PSI2 + ".";
-		zeichne();
-	}
-
-	let c, B, H, schmal, x0, x1, y0, y1;
-	const px = (i) => x0 + (i + 0.5) / KN * (x1 - x0);
-	const py = (v) => y1 - v / KYMAX * (y1 - y0);
-	function masse() {
-		const lw = KI.leinwand(canvas, (w) => w < 560 ? w * 0.95 : w * 0.5); c = lw.ctx; B = lw.B; H = lw.H; schmal = B < 560;
-		x0 = schmal ? 46 : 64; x1 = B - (schmal ? 24 : 40); y0 = schmal ? 58 : 62; y1 = H - (schmal ? 34 : 36);
-	}
-	function zeichne() {
-		const fs = schmal ? 13 : 14;
-		c.clearRect(0, 0, B, H);
-		/* Kasten mit Wänden */
-		const kw = 10, kt = 14, kh = y0 - 32;
-		c.save(); c.fillStyle = "#C8C8C8"; c.fillRect(x0 - kw, kt, kw, kh); c.fillRect(x1, kt, kw, kh); c.restore();
-		c.strokeStyle = "#222"; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x0, kt); c.lineTo(x0, kt + kh); c.lineTo(x1, kt + kh); c.lineTo(x1, kt); c.stroke();
-		const gk = c.createRadialGradient((x0 + x1) * 0.33 - 2, kt + kh / 2 - 2, 1, (x0 + x1) * 0.33, kt + kh / 2, 7);
-		gk.addColorStop(0, "#fff"); gk.addColorStop(0.4, "#D0D8F8"); gk.addColorStop(1, "#3050E0");
-		c.fillStyle = gk; c.beginPath(); c.arc((x0 + x1) * 0.33, kt + kh / 2, 7, 0, 7); c.fill();
-		c.strokeStyle = "#fff"; c.lineWidth = 1.6; c.beginPath(); c.moveTo((x0 + x1) * 0.33 - 3.5, kt + kh / 2); c.lineTo((x0 + x1) * 0.33 + 3.5, kt + kh / 2); c.stroke();
-		/* Gitter und Achsen */
-		c.strokeStyle = "#E6E6E6"; c.lineWidth = 1;
-		for (let k = 1; k < 20; k++) { const X = x0 + k / 20 * (x1 - x0); c.beginPath(); c.moveTo(X, y0); c.lineTo(X, y1); c.stroke(); }
-		for (let v = 0.25; v <= KYMAX + 1e-6; v += 0.25) { c.strokeStyle = Math.abs(v % 1) < 1e-6 ? "#BDBDBD" : "#E6E6E6"; c.beginPath(); c.moveTo(x0, py(v)); c.lineTo(x1, py(v)); c.stroke(); }
-		c.strokeStyle = "#222"; c.lineWidth = 1.2;
-		c.beginPath(); c.moveTo(x0, y1); c.lineTo(x1 + 12, y1); c.stroke();
-		c.beginPath(); c.moveTo(x0, y1); c.lineTo(x0, y0 - 6); c.stroke();
-		for (let v = 1; v <= 3; v++) { KI.text(c, v + "/L", x0 - 6, py(v), fs, "#222", "right", "italic"); }
-		KI.text(c, "0", x0, y1 + 14, fs, "#222"); KI.text(c, "L", x1, y1 + 14, fs, "#222", "center", "italic");
-		KI.text(c, "x", x1 + 16, y1, fs, "#222", "left", "italic");
-		KI.text(c, "|ψ(x)|²", x0 + 6, y0 - 4, fs, "#222", "left", "italic");
-		/* Histogramm der Nachweise */
-		if (bins && nGes) {
-			c.fillStyle = "rgba(48,80,224,0.28)"; c.strokeStyle = "rgba(48,80,224,0.75)"; c.lineWidth = 1;
-			for (let k = 0; k < 20; k++) { const d = bins[k] / nGes * 20, X = x0 + k / 20 * (x1 - x0), Wd = (x1 - x0) / 20, Y = py(Math.min(d, KYMAX)); c.fillRect(X + 1, Y, Wd - 2, y1 - Y); c.strokeRect(X + 1, Y, Wd - 2, y1 - Y); }
-		}
-		/* gezeichneter Verlauf */
-		if (gezeichnet) {
-			c.strokeStyle = "#111"; c.lineWidth = 2.6; c.lineJoin = "round"; c.beginPath();
-			for (let i = 0; i < KN; i++) i ? c.lineTo(px(i), py(Math.min(y[i], KYMAX))) : c.moveTo(px(i), py(Math.min(y[i], KYMAX)));
-			c.stroke();
-		} else KI.text(c, "Hier zeichnen", (x0 + x1) / 2, (y0 + y1) / 2, fs + 4, "#AAA", "center", "italic");
-		werte();
-	}
-	/* Zeichnen: Werte zwischen zwei Zeigerpositionen linear auffüllen */
-	let malt = false, letzt = null;
-	const lies = (e) => { const r = canvas.getBoundingClientRect(); const X = e.clientX - r.left, Y = e.clientY - r.top; return { i: Math.round((X - x0) / (x1 - x0) * KN - 0.5), v: Math.max(0, Math.min(KYMAX, (y1 - Y) / (y1 - y0) * KYMAX)) }; };
-	function setze(p) {
-		const a = letzt || p, n = Math.max(1, Math.abs(p.i - a.i));
-		for (let k = 0; k <= n; k++) { const i = Math.round(a.i + (p.i - a.i) * k / n), v = a.v + (p.v - a.v) * k / n; if (i >= 0 && i < KN) y[i] = v; }
-		letzt = p;
-	}
-	canvas.addEventListener("pointerdown", (e) => { const p = lies(e); if (p.i < -3 || p.i > KN + 2) return; malt = true; letzt = null; bins = null; nGes = 0; rueck.innerHTML = ""; if (!gezeichnet) { y.fill(0); gezeichnet = true; } canvas.setPointerCapture(e.pointerId); setze(p); zeichne(); e.preventDefault(); });
-	canvas.addEventListener("pointermove", (e) => { if (!malt) return; setze(lies(e)); zeichne(); });
-	canvas.addEventListener("pointerup", () => { malt = false; letzt = null; });
-	bildleiste(rahmen, canvas, () => "Kasten_Flaeche_" + zahl(flaeche(), 2) + "_N_" + nGes, () => { y.fill(0); gezeichnet = false; bins = null; nGes = 0; rueck.innerHTML = ""; zeichne(); }, "Zeichnung löschen");
-	window.addEventListener("resize", () => { masse(); zeichne(); });
-	masse(); zeichne();
-};
-
-/* ==========================================================================
-   Reiter 3: Fachsprache (KI.fachsprache). Anrede Sie: Die Bibliothek formuliert in der Du-Form,
+   Reiter 2: Fachsprache (KI.fachsprache). Anrede Sie: Die Bibliothek formuliert in der Du-Form,
    deshalb werden ihre beiden Arbeitsanweisungen hier beim Erscheinen umgestellt.
    ========================================================================== */
 const FS_TEXTE = [
@@ -2345,8 +2230,6 @@ KI.seite({
 	modi: [
 		{ id: "doppelspalt", name: "Detektor", titel: "Detektor am Doppelspalt: Treffer zählen", bau: BAU.doppelspalt,
 			icon: '<rect x="2" y="3" width="20" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="5.5" r="1" fill="currentColor"/><circle cx="12" cy="5.5" r="1" fill="currentColor"/><circle cx="16" cy="5.5" r="1" fill="currentColor"/><path d="M2 21c2 0 3-8 5-8s2 8 5 8 3-12 5-12 3 12 5 12" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10.5" y="2" width="3" height="20" fill="currentColor" opacity="0.35"/>' },
-		{ id: "kasten", name: "Kasten", titel: "Elektron im Kasten: zeichnen, normieren, nachweisen", bau: BAU.kasten,
-			icon: '<path d="M3 3v17h18V3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 19c4 0 4-12 8-12s4 12 8 12" fill="none" stroke="currentColor" stroke-width="1.8"/>' },
 		{ id: "fachsprache", name: "Fachsprache", titel: "Fachsprache: Fehler finden und ersetzen", bau: BAU.fachsprache, icon: KI.MODUS_ICON.fehler }
 	]
 });
