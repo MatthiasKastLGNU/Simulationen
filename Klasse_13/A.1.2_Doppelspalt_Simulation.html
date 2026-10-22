@@ -644,6 +644,7 @@ function beschreibung() {
 		zustand.spalt1 ? "nur Spalt 1" : zustand.spalt2 ? "nur Spalt 2" : "kein Spalt";
 	let t = (istEl() ? "Elektronen" : "Kugeln") + ", " + spalte;
 	if (istEl() && zustand.lampe && zustand.spalt1 + zustand.spalt2 > 0) t += ", Lampe " + zustand.anteil + NBSP + "%";
+	if (istEl() && zustand.lampe && (WELLENLAENGE || zustand.station === 0)) t += ", λ" + NBSP + "=" + NBSP + de(zustand.lamL, 2) + NBSP + "µm";
 	return t;
 }
 function trageTrefferEin(res) {
@@ -682,6 +683,7 @@ function sendeSofort(anzahl) {
 
 /* ---------------- Fotos ---------------- */
 const fotos = [null, null, null];
+let WELLENLAENGE = false;   /* Regler fuer lamL auch in Station 4 (Adresse #wellenlaenge=1) */
 function versuchsText() {
 	return (versuche.length ? versuche.join(", danach ") : beschreibung()) + "; " + tausender(gesendet) + " gesendet";
 }
@@ -1396,6 +1398,13 @@ window.addEventListener("resize", layout);
 /* Start: Station aus der Adresse, z. B. ...html#station=4 oder #station=4&senden=5000 */
 (function () {
 	const h = new URLSearchParams(location.hash.slice(1));
+	/* #station=4&wellenlaenge=1 (A.3.3 Komplementaritaet): Regler fuer die Wellenlaenge des Lichts auch in Station 4 */
+	if (h.get("wellenlaenge") === "1") {
+		WELLENLAENGE = true;
+		regler.lamL.closest(".zeile").dataset.st = "4";
+		HINWEISE[4] = ["Station 4: Welcher Weg? (Wellenl&auml;nge des Lichts)",
+			"Die Lampe beleuchtet jedes Elektron (Anteil 100&nbsp;%). Senden Sie jeweils +5&#8239;000 bei der Wellenl&auml;nge &lambda;<sub>L</sub> = 0,4&nbsp;&micro;m (Foto 1), 2&nbsp;&micro;m (Foto 2) und 4&nbsp;&micro;m (Foto 3). Achten Sie auf die Lichtblitze an den Spalten und blenden Sie bei 2&nbsp;&micro;m die Farbgruppen einzeln aus."];
+	}
 	const st = parseInt(h.get("station"), 10);
 	wendeStationAn([0, 1, 2, 3, 4, 5].includes(st) ? st : 1);
 	layout();
