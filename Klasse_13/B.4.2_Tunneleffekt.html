@@ -272,22 +272,56 @@ function schraffur(x, y, w, h) {
 	for (let s = -h; s < w + h; s += 6) { ctx.beginPath(); ctx.moveTo(x + s, y + h); ctx.lineTo(x + s + h, y); ctx.stroke(); }
 	ctx.restore();
 }
+/* Beschriftungsregister: jede Schrift wird als Rechteck gemerkt (ctx._belegt), beim vollständigen Löschen geleert.
+   Beschriftungen wählen damit einen freien Platz; die Prüfung findet so jede Überdeckung. */
+function textRahmen(ctx, t, x, y) {
+	const m = ctx.measureText(t), w = m.width, a = ctx.textAlign;
+	const x0 = a === "right" || a === "end" ? x - w : a === "center" ? x - w / 2 : x;
+	return { x0, x1: x0 + w, y0: y - m.actualBoundingBoxAscent, y1: y + m.actualBoundingBoxDescent, t };
+}
+(function () {
+	const P = CanvasRenderingContext2D.prototype, ft = P.fillText, cr = P.clearRect;
+	P.fillText = function (t, x, y, m) { ft.call(this, t, x, y, m); if (!this._still) (this._belegt || (this._belegt = [])).push(textRahmen(this, String(t), x, y)); };
+	P.clearRect = function (x, y, w, h) { cr.call(this, x, y, w, h); if (x === 0 && y === 0) this._belegt = []; };
+})();
+const ueberlappt = (r, q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1;
+function frei(ctx, r, rand = 2) { const q = { x0: r.x0 - rand, x1: r.x1 + rand, y0: r.y0 - rand, y1: r.y1 + rand }; return !(ctx._belegt || []).some(b => ueberlappt(q, b)); }
+function merken(ctx, r, t = "") { (ctx._belegt || (ctx._belegt = [])).push(Object.assign({}, r, { t })); }
 /* Barriere wie auf dem Arbeitsblatt: Metallverlauf, an beiden Kanten dunkler */
 function barriere(x, y, w, h) {
 	if (h <= 0) return;
 	const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, "#A8A8A8"); g.addColorStop(0.5, "#F2F2F2"); g.addColorStop(1, "#A8A8A8");
 	ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
 }
+/* Kurve als belegt eintragen: kleine Rechtecke alle 3 px entlang der Punkte [x, y]; nur innerhalb des sichtbaren Bereichs b */
+function kurveMerken(ctx, pkt, b, t = "[Kurve]") {
+	let lx = -1e9, ly = -1e9;
+	for (const [x, y] of pkt) {
+		if (x < b.x0 || x > b.x1 || y < b.y0 || y > b.y1) { lx = -1e9; continue; }
+		if (Math.hypot(x - lx, y - ly) < 3) continue;
+		merken(ctx, { x0: x - 1.5, x1: x + 1.5, y0: y - 1.5, y1: y + 1.5 }, t); lx = x; ly = y;
+		// steile Stücke dazwischen auffüllen
+	}
+}
+function imBild(r) { return r.x0 >= 0 && r.y0 >= 0 && r.x1 <= W && r.y1 <= H; }
+function plakettenRahmen(text, x, y, ausr, g = 12) { const f = ctx.font; ctx.font = schrift(g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9; ctx.font = f; const xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x; return { x0: xa - 2, x1: xa + b + 2, y0: y - h / 2 - 2, y1: y + h / 2 + 2 }; }
+function platziere(text, lagen, farbe, fuell) {
+	for (const [x, y, au] of lagen) { const r = plakettenRahmen(text, x, y, au); if (imBild(r) && frei(ctx, r, 0)) { plakette(text, x, y, farbe, fuell, au); return; } }
+	plakette(text, lagen[0][0], lagen[0][1], farbe, fuell, lagen[0][2]);
+}
 function plakette(text, x, y, farbe, fuell, ausr = "left", g = 12) {
 	ctx.font = schrift(g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9, xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
 	const r = 4; ctx.beginPath(); ctx.moveTo(xa + r, y - h / 2); ctx.arcTo(xa + b, y - h / 2, xa + b, y + h / 2, r); ctx.arcTo(xa + b, y + h / 2, xa, y + h / 2, r); ctx.arcTo(xa, y + h / 2, xa, y - h / 2, r); ctx.arcTo(xa, y - h / 2, xa + b, y - h / 2, r); ctx.closePath();
 	ctx.fillStyle = fuell; ctx.fill(); ctx.strokeStyle = farbe; ctx.lineWidth = 1.2; ctx.stroke();
-	ctx.fillStyle = farbe; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(text, xa + 6, y + 0.5);
+	ctx.fillStyle = farbe; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx._still = true; ctx.fillText(text, xa + 6, y + 0.5); ctx._still = false;
+	merken(ctx, { x0: xa, x1: xa + b, y0: y - h / 2, y1: y + h / 2 }, text);
 }
 const XMIN = RAND, XMAX = XL - RAND, EMAX = 13;
 function zeichne() {
 	const schmal = W < 560;
 	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	{ const l = cv.parentElement.querySelector(".bildleiste"); // Knöpfe über dem Bild (Desktop) freihalten
+	  if (l && getComputedStyle(l).position === "absolute") { const rc = cv.getBoundingClientRect(), rl = l.getBoundingClientRect(); if (rl.width) merken(ctx, { x0: rl.left - rc.left - 4, x1: rl.right - rc.left, y0: rl.top - rc.top, y1: rl.bottom - rc.top + 4 }, "[Bildleiste]"); } }
 	const x0 = schmal ? 40 : 54, x1 = W - 20, y0 = 34, y1 = H - 40;
 	const px = x => x0 + (x - XMIN) / (XMAX - XMIN) * (x1 - x0), py = e => y1 - e / EMAX * (y1 - y0);
 	// Gitter und Energieachse
@@ -302,35 +336,38 @@ function zeichne() {
 	const bx = px(XB), bw = Math.max(2, px(XB + zustand.a) - bx);
 	barriere(bx, py(zustand.V0), bw, y1 - py(zustand.V0));
 	ctx.strokeStyle = "#111"; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(bx, y1); ctx.lineTo(bx, py(zustand.V0)); ctx.lineTo(bx + bw, py(zustand.V0)); ctx.lineTo(bx + bw, y1); ctx.lineTo(x1, y1); ctx.stroke();
-	ctx.fillStyle = "#444"; ctx.font = schrift(12, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-	if (zustand.V0 > 0) ctx.fillText("V₀", bx + bw + 5, py(zustand.V0) + 2);
 	// Energie des Elektrons
 	const yE = py(zustand.E);
 	ctx.strokeStyle = BERNSTEIN; ctx.lineWidth = 1.4; ctx.setLineDash([7, 4]); ctx.beginPath(); ctx.moveTo(x0, yE); ctx.lineTo(x1, yE); ctx.stroke(); ctx.setLineDash([]);
-	plakette("E = " + de(zustand.E, 1) + " eV", x1, yE - 14, "#7A4A00", "#FFF4D6", "right");
 	// |psi|^2 auf der Energiehöhe; fester Maßstab: Anfangsmaximum = 20 % der Höhe (Interferenz beim Reflektieren bis zum Vierfachen)
 	const pmax0 = 1 / (Math.sqrt(2 * Math.PI) * 1.2), skal = 0.20 * (y1 - y0) / pmax0, lupe = document.getElementById("h-lupe").checked;
 	const fak = i => (lupe && i * DX > XB + zustand.a ? 10 : 1);
-	ctx.save(); ctx.beginPath(); ctx.rect(x0 + 1, y0 - 20, x1 - x0, y1 - y0 + 20); ctx.clip();
+	ctx.save(); ctx.beginPath(); ctx.rect(x0 + 1, y0 - 1, x1 - x0, y1 - y0 + 1); ctx.clip();
 	ctx.beginPath(); ctx.moveTo(px(XMIN), yE);
 	const i0 = Math.floor(XMIN / DX), i1 = Math.ceil(XMAX / DX);
 	for (let i = i0; i <= i1; i++) ctx.lineTo(px(i * DX), yE - (re[i] ** 2 + im[i] ** 2) * skal * fak(i));
 	ctx.lineTo(px(XMAX), yE); ctx.closePath(); const gf = ctx.createLinearGradient(0, yE - 0.25 * (y1 - y0), 0, yE); gf.addColorStop(0, "rgba(48,80,224,0.42)"); gf.addColorStop(1, "rgba(48,80,224,0.08)"); ctx.fillStyle = gf; ctx.fill();
 	ctx.beginPath(); for (let i = i0; i <= i1; i++) { const yy = yE - (re[i] ** 2 + im[i] ** 2) * skal * fak(i); i === i0 ? ctx.moveTo(px(i * DX), yy) : ctx.lineTo(px(i * DX), yy); }
 	ctx.strokeStyle = BLAUDUNKEL; ctx.lineWidth = 2.2; ctx.stroke();
+	{ const pkt = []; for (let i = i0; i <= i1; i++) pkt.push([px(i * DX), yE - (re[i] ** 2 + im[i] ** 2) * skal * fak(i)]); kurveMerken(ctx, pkt, { x0: x0, x1: x1, y0: y0 - 1, y1: y1 }, "[Paket]"); }
 	if (document.getElementById("h-re").checked) {
 		const ampRe = 0.2 * (y1 - y0) / Math.sqrt(pmax0); // Realteil: Anfangsmaximum 20 % der Höhe
 		ctx.beginPath(); for (let i = i0; i <= i1; i++) { const yy = yE - re[i] * ampRe * Math.sqrt(fak(i)); i === i0 ? ctx.moveTo(px(i * DX), yy) : ctx.lineTo(px(i * DX), yy); }
 		ctx.strokeStyle = "rgba(48,80,224,0.55)"; ctx.lineWidth = 1; ctx.stroke();
 	}
 	ctx.restore();
-	if (lupe) { ctx.fillStyle = BLAUDUNKEL; ctx.font = schrift(11, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("× 10", px(XB + zustand.a) + 8, y0 - 6); }
+	// V0 und Lupenfaktor nach dem Wellenpaket beschriften, jeweils an einer freien Stelle
+	const textFrei = (t, lagen) => { for (const [x, y, au] of lagen) { ctx.textAlign = au; const r = textRahmen(ctx, t, x, y); if (imBild(r) && frei(ctx, r, 1)) { ctx.fillText(t, x, y); return; } } };
+	if (zustand.V0 > 0) { ctx.fillStyle = "#444"; ctx.font = schrift(12, "italic"); ctx.textBaseline = "bottom"; const yv = py(zustand.V0) + 2; textFrei("V₀", [[bx + bw + 5, yv, "left"], [bx - 5, yv, "right"], [bx + bw + 5, yv - 16, "left"], [bx - 5, yv - 16, "right"], [bx + bw + 30, yv, "left"], [bx - 30, yv, "right"]]); }
+	if (lupe) { ctx.fillStyle = BLAUDUNKEL; ctx.font = schrift(11, "bold"); ctx.textBaseline = "top"; const xl = px(XB + zustand.a); textFrei("× 10", [[xl + 8, y0 - 6, "left"], [xl + 8, y0 + 8, "left"], [xl + 40, y0 - 6, "left"], [xl + 80, y0 - 6, "left"], [x1 - 4, y0 + 8, "right"]]); }
 	// Ortsachse
 	pfeil(x0, y1, x1 + 10, y1);
 	ctx.fillStyle = "#555"; ctx.font = schrift(11); ctx.textAlign = "center"; ctx.textBaseline = "top";
 	for (let x = 5; x <= 35; x += 5) { ctx.fillRect(px(x) - 0.5, y1, 1, 4); ctx.fillText(String(x - XB), px(x), y1 + 6); }
 	ctx.fillStyle = "#111"; ctx.font = schrift(13, "italic"); ctx.textAlign = "right"; ctx.fillText("x", x1 + 8, y1 + 6);
 	ctx.font = schrift(11); ctx.fillStyle = "#555"; ctx.fillText("in nm", x1 + 8, y1 + 22);
+	// Energie als Plakette an einer freien Stelle (nicht auf dem Wellenpaket)
+	{ const t = "E = " + de(zustand.E, 1) + " eV", lagen = []; for (const dy of [-14, 15, -38, 39]) lagen.push([x1, yE + dy, "right"], [x0 + 8, yE + dy, "left"], [(x0 + x1) / 2, yE + dy, "center"]); platziere(t, lagen, "#7A4A00", "#FFF4D6"); }
 	// Zeit und Legende
 	ctx.fillStyle = "#333"; ctx.font = schrift(12); ctx.textAlign = "left"; ctx.textBaseline = "top";
 	ctx.fillText("t = " + de(zustand.t, 1) + " fs", x0 + 60, y0 - 26);
