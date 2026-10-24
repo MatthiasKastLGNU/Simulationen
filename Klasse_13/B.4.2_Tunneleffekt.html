@@ -115,8 +115,8 @@ button.symbol:hover { background: #f2f2f2; color: #222; }
 				</div></div>
 			</div>
 			<div class="wertkarten">
-				<div class="wertkarte refl"><div class="wk-titel">reflektiert (links)</div><div class="wk-wert" id="k-R"></div></div>
-				<div class="wertkarte trans"><div class="wk-titel">durchgetunnelt (rechts)</div><div class="wk-wert" id="k-T"></div></div>
+				<div class="wertkarte refl"><div class="wk-titel"><svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true" style="vertical-align:-2px;margin-right:0.3rem"><rect x="20" y="1" width="4" height="12" fill="#A8A8A8"/><path d="M17 4H5" stroke="#555" stroke-width="1.6"/><path d="M8 1L4 4l4 3" fill="none" stroke="#555" stroke-width="1.6"/><path d="M4 10h13" stroke="#555" stroke-width="1.6" stroke-dasharray="2 1.6"/></svg>reflektiert (links)</div><div class="wk-wert" id="k-R"></div></div>
+				<div class="wertkarte trans"><div class="wk-titel"><svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true" style="vertical-align:-2px;margin-right:0.3rem"><rect x="10" y="1" width="4" height="12" fill="#A8A8A8"/><path d="M1 7h22" stroke="#1F3AA8" stroke-width="1.6"/><path d="M20 4l4 3-4 3" fill="none" stroke="#1F3AA8" stroke-width="1.6"/></svg>durchgelassen (rechts)</div><div class="wk-wert" id="k-T"></div></div>
 				<div class="wertkarte vergleich"><div class="wk-titel">Vergleich</div><div class="wk-wert" id="k-V"></div></div>
 			</div>
 		</div>
@@ -217,8 +217,8 @@ function vorbereiten() {
 	for (let i = 0; i < N; i++) {
 		const k = 2 * Math.PI * (i < N / 2 ? i : i - N) / XL, ph = -C * k * k * DT / HQ;
 		kin_c[i] = Math.cos(ph); kin_s[i] = Math.sin(ph);
-		// Potential über die Zelle gemittelt (schmale Barrieren werden richtig erfasst)
-		const x = i * DX; let m = 0; for (let j = -2; j <= 2; j++) m += V(x + j * DX / 5); m /= 5;
+		// Potential exakt über die Zelle gemittelt (Anteil der Zelle, der in der Barriere liegt; schmale Barrieren werden richtig erfasst)
+		const x = i * DX, m = zustand.V0 * Math.max(0, Math.min(x + DX / 2, XB + zustand.a) - Math.max(x - DX / 2, XB)) / DX;
 		const pp = -m * DT / (2 * HQ); pot_c[i] = Math.cos(pp); pot_s[i] = Math.sin(pp);
 		const r = Math.min(x, XL - x); maske[i] = r < RAND ? Math.pow(Math.sin(0.5 * Math.PI * r / RAND), 0.08) : 1;
 	}
@@ -272,6 +272,18 @@ function schraffur(x, y, w, h) {
 	for (let s = -h; s < w + h; s += 6) { ctx.beginPath(); ctx.moveTo(x + s, y + h); ctx.lineTo(x + s + h, y); ctx.stroke(); }
 	ctx.restore();
 }
+/* Barriere wie auf dem Arbeitsblatt: Metallverlauf, an beiden Kanten dunkler */
+function barriere(x, y, w, h) {
+	if (h <= 0) return;
+	const g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, "#A8A8A8"); g.addColorStop(0.5, "#F2F2F2"); g.addColorStop(1, "#A8A8A8");
+	ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+}
+function plakette(text, x, y, farbe, fuell, ausr = "left", g = 12) {
+	ctx.font = schrift(g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9, xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
+	const r = 4; ctx.beginPath(); ctx.moveTo(xa + r, y - h / 2); ctx.arcTo(xa + b, y - h / 2, xa + b, y + h / 2, r); ctx.arcTo(xa + b, y + h / 2, xa, y + h / 2, r); ctx.arcTo(xa, y + h / 2, xa, y - h / 2, r); ctx.arcTo(xa, y - h / 2, xa + b, y - h / 2, r); ctx.closePath();
+	ctx.fillStyle = fuell; ctx.fill(); ctx.strokeStyle = farbe; ctx.lineWidth = 1.2; ctx.stroke();
+	ctx.fillStyle = farbe; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(text, xa + 6, y + 0.5);
+}
 const XMIN = RAND, XMAX = XL - RAND, EMAX = 13;
 function zeichne() {
 	const schmal = W < 560;
@@ -288,14 +300,14 @@ function zeichne() {
 	ctx.font = schrift(12); ctx.fillText("in eV", x0 + 17, y0 - 4);
 	// Barriere
 	const bx = px(XB), bw = Math.max(2, px(XB + zustand.a) - bx);
-	schraffur(bx, py(zustand.V0), bw, y1 - py(zustand.V0));
+	barriere(bx, py(zustand.V0), bw, y1 - py(zustand.V0));
 	ctx.strokeStyle = "#111"; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(bx, y1); ctx.lineTo(bx, py(zustand.V0)); ctx.lineTo(bx + bw, py(zustand.V0)); ctx.lineTo(bx + bw, y1); ctx.lineTo(x1, y1); ctx.stroke();
 	ctx.fillStyle = "#444"; ctx.font = schrift(12, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
 	if (zustand.V0 > 0) ctx.fillText("V₀", bx + bw + 5, py(zustand.V0) + 2);
 	// Energie des Elektrons
 	const yE = py(zustand.E);
 	ctx.strokeStyle = BERNSTEIN; ctx.lineWidth = 1.4; ctx.setLineDash([7, 4]); ctx.beginPath(); ctx.moveTo(x0, yE); ctx.lineTo(x1, yE); ctx.stroke(); ctx.setLineDash([]);
-	ctx.fillStyle = "#7A4A00"; ctx.font = schrift(12, "bold"); ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("E = " + de(zustand.E, 1) + " eV", x1, yE - 3);
+	plakette("E = " + de(zustand.E, 1) + " eV", x1, yE - 14, "#7A4A00", "#FFF4D6", "right");
 	// |psi|^2 auf der Energiehöhe; fester Maßstab: Anfangsmaximum = 20 % der Höhe (Interferenz beim Reflektieren bis zum Vierfachen)
 	const pmax0 = 1 / (Math.sqrt(2 * Math.PI) * 1.2), skal = 0.20 * (y1 - y0) / pmax0, lupe = document.getElementById("h-lupe").checked;
 	const fak = i => (lupe && i * DX > XB + zustand.a ? 10 : 1);
@@ -303,7 +315,7 @@ function zeichne() {
 	ctx.beginPath(); ctx.moveTo(px(XMIN), yE);
 	const i0 = Math.floor(XMIN / DX), i1 = Math.ceil(XMAX / DX);
 	for (let i = i0; i <= i1; i++) ctx.lineTo(px(i * DX), yE - (re[i] ** 2 + im[i] ** 2) * skal * fak(i));
-	ctx.lineTo(px(XMAX), yE); ctx.closePath(); ctx.fillStyle = BLAUFUELL; ctx.fill();
+	ctx.lineTo(px(XMAX), yE); ctx.closePath(); const gf = ctx.createLinearGradient(0, yE - 0.25 * (y1 - y0), 0, yE); gf.addColorStop(0, "rgba(48,80,224,0.42)"); gf.addColorStop(1, "rgba(48,80,224,0.08)"); ctx.fillStyle = gf; ctx.fill();
 	ctx.beginPath(); for (let i = i0; i <= i1; i++) { const yy = yE - (re[i] ** 2 + im[i] ** 2) * skal * fak(i); i === i0 ? ctx.moveTo(px(i * DX), yy) : ctx.lineTo(px(i * DX), yy); }
 	ctx.strokeStyle = BLAUDUNKEL; ctx.lineWidth = 2.2; ctx.stroke();
 	if (document.getElementById("h-re").checked) {
