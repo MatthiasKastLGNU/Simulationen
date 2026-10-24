@@ -489,17 +489,17 @@ function rundRechteck(ctx, x, y, w, h, r) {
 	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
 }
 /* Plakette: Text auf hellem, farbig umrandetem Schildchen; ausr "left", "right" oder "center", y ist die Mitte */
-function plakettenRahmen(ctx, W, text, x, y, ausr = "left", g = 12) { // Rechteck, das plakette() belegen würde
-	ctx.font = schrift(W, g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9;
+function plakettenRahmen(ctx, W, text, x, y, ausr = "left", g = 12) { // Rechteck, das plakette() belegen würde (mit 2 px Rand)
+	const f = ctx.font; ctx.font = schrift(W, g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9; ctx.font = f;
 	const xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
-	return { x0: xa - 3, x1: xa + b + 3, y0: y - h / 2 - 3, y1: y + h / 2 + 3 };
+	return { x0: xa - 2, x1: xa + b + 2, y0: y - h / 2 - 2, y1: y + h / 2 + 2 };
 }
-const ueberlappt = (r, q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1;
 function plakette(ctx, W, text, x, y, farbe, fuell, ausr = "left", g = 12) {
 	ctx.font = schrift(W, g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9;
 	const xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
 	rundRechteck(ctx, xa, y - h / 2, b, h, 4); ctx.fillStyle = fuell; ctx.fill(); ctx.strokeStyle = farbe; ctx.lineWidth = 1.2; ctx.stroke();
-	ctx.fillStyle = farbe; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(text, xa + 6, y + 0.5);
+	ctx.fillStyle = farbe; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx._still = true; ctx.fillText(text, xa + 6, y + 0.5); ctx._still = false;
+	merken(ctx, { x0: xa, x1: xa + b, y0: y - h / 2, y1: y + h / 2 }, text);
 	return b;
 }
 /* positive Ladung als glänzende rote Kugel mit Plus (wie \bkLadung auf dem Blatt) */
@@ -508,6 +508,49 @@ function kern(ctx, x, y, r = 7) {
 	g.addColorStop(0, "#FFD6D6"); g.addColorStop(0.55, "#F06060"); g.addColorStop(1, "#B01818");
 	ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill();
 	ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(1.4, r / 4); ctx.beginPath(); ctx.moveTo(x - r * 0.5, y); ctx.lineTo(x + r * 0.5, y); ctx.moveTo(x, y - r * 0.5); ctx.lineTo(x, y + r * 0.5); ctx.stroke();
+}
+/* Beschriftungsregister: jede Schrift wird als Rechteck gemerkt (ctx._belegt), beim vollständigen Löschen geleert.
+   Beschriftungen wählen damit einen freien Platz; die Prüfung findet so jede Überdeckung. */
+function textRahmen(ctx, t, x, y) {
+	const m = ctx.measureText(t), w = m.width, a = ctx.textAlign;
+	const x0 = a === "right" || a === "end" ? x - w : a === "center" ? x - w / 2 : x;
+	return { x0, x1: x0 + w, y0: y - m.actualBoundingBoxAscent, y1: y + m.actualBoundingBoxDescent, t };
+}
+(function () {
+	const P = CanvasRenderingContext2D.prototype, ft = P.fillText, cr = P.clearRect;
+	P.fillText = function (t, x, y, m) { ft.call(this, t, x, y, m); if (!this._still) (this._belegt || (this._belegt = [])).push(textRahmen(this, String(t), x, y)); };
+	P.clearRect = function (x, y, w, h) { cr.call(this, x, y, w, h); if (x === 0 && y === 0) this._belegt = []; };
+})();
+const ueberlappt = (r, q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1;
+function frei(ctx, r, rand = 2, ohne = null) { const q = { x0: r.x0 - rand, x1: r.x1 + rand, y0: r.y0 - rand, y1: r.y1 + rand }; return !(ctx._belegt || []).some(b => b.t !== ohne && ueberlappt(q, b)); }
+function merken(ctx, r, t = "") { (ctx._belegt || (ctx._belegt = [])).push(Object.assign({}, r, { t })); }
+/* Kurve als belegt eintragen: kleine Rechtecke alle 3 px entlang der Punkte [x, y]; nur innerhalb des sichtbaren Bereichs b */
+function kurveMerken(ctx, pkt, b, t = "[Kurve]") {
+	let lx = -1e9, ly = -1e9;
+	for (const [x, y] of pkt) {
+		if (x < b.x0 || x > b.x1 || y < b.y0 || y > b.y1) { lx = -1e9; continue; }
+		if (Math.hypot(x - lx, y - ly) < 3) continue;
+		merken(ctx, { x0: x - 1.5, x1: x + 1.5, y0: y - 1.5, y1: y + 1.5 }, t); lx = x; ly = y;
+		// steile Stücke dazwischen auffüllen
+	}
+}
+function imBild(ctx, r) { const c = ctx.canvas; return r.x0 >= 0 && r.y0 >= 0 && r.x1 <= c.clientWidth && r.y1 <= c.clientHeight; }
+/* Schrift nur zeichnen, wenn ihr Platz frei ist und sie ganz im Bild liegt (für Nebenbeschriftungen) */
+function textWennFrei(ctx, t, x, y) { const r = textRahmen(ctx, t, x, y); if (!imBild(ctx, r) || !frei(ctx, r, 1)) return false; ctx.fillText(t, x, y); return true; }
+/* Plakette an der ersten freien Lage [x, y, Ausrichtung]; muss = true: notfalls an der ersten Lage */
+function platziere(ctx, W, text, lagen, farbe, fuell, g = 12, muss = true, ausnahmen = [null, "[Potential]"]) {
+	// sehr schmale Bilder (Handy mit 360 px): kleinere Schrift; erst ganz frei, dann notfalls über einer Potentiallinie, nie über psi oder Schrift
+	const gg = ctx.canvas.clientWidth < 320 ? g - 1 : g;
+	for (const ohne of ausnahmen) for (const [x, y, au] of lagen) { const r = plakettenRahmen(ctx, W, text, x, y, au, gg); if (imBild(ctx, r) && frei(ctx, r, 0, ohne)) { plakette(ctx, W, text, x, y, farbe, fuell, au, gg); return [x, y, au]; } }
+	if (muss && lagen.length) { const [x, y, au] = lagen[0]; plakette(ctx, W, text, x, y, farbe, fuell, au, g); return lagen[0]; }
+	return null;
+}
+/* Knöpfe der Bildleiste, die über dem Bild liegen (Desktop), als belegt eintragen */
+function bildleisteFreihalten(ctx) {
+	const c = ctx.canvas, l = c.parentElement && c.parentElement.querySelector(".bildleiste");
+	if (!l || getComputedStyle(l).position !== "absolute") return;
+	const rc = c.getBoundingClientRect(), rl = l.getBoundingClientRect();
+	if (rl.width) merken(ctx, { x0: rl.left - rc.left - 4, x1: rl.right - rc.left, y0: rl.top - rc.top, y1: rl.bottom - rc.top + 4 }, "[Bildleiste]");
 }
 /* Achsen: Energie links (eV), Ort unten (nm) */
 function achsenZeichnen(ctx, A, opt) {
@@ -523,10 +566,10 @@ function achsenZeichnen(ctx, A, opt) {
 	ctx.fillText("E", x0 + 6, y0 - 2); ctx.font = schrift(A.W, 12); ctx.fillText("in eV", x0 + 17, y0 - 2);
 	const yAchse = opt.yAchse !== undefined ? opt.yAchse : y1;
 	pfeil(ctx, x0, yAchse, x1 + 10, yAchse);
-	ctx.fillStyle = "#555"; ctx.font = schrift(A.W, 11); ctx.textAlign = "center"; ctx.textBaseline = "top";
-	opt.xTicks.forEach(t => { const x = A.px(t.x); ctx.fillRect(x - 0.5, y1, 1, 4); ctx.fillText(t.text, x, y1 + 6); });
-	ctx.fillStyle = "#111"; ctx.font = schrift(A.W, 13, "italic"); ctx.textAlign = "right"; ctx.fillText(opt.xName, x1 + 8, y1 + 6);
+	ctx.fillStyle = "#111"; ctx.font = schrift(A.W, 13, "italic"); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText(opt.xName, x1 + 8, y1 + 6);
 	if (opt.xEinheit) { ctx.font = schrift(A.W, 11); ctx.fillStyle = "#555"; ctx.fillText(opt.xEinheit, x1 + 8, y1 + 22); }
+	ctx.fillStyle = "#555"; ctx.font = schrift(A.W, 11); ctx.textAlign = "center"; ctx.textBaseline = "top";
+	opt.xTicks.forEach(t => { const x = A.px(t.x); ctx.fillRect(x - 0.5, y1, 1, 4); textWennFrei(ctx, t.text, x, y1 + 6); });
 }
 function bereich(W, H, links, rechts, oben, unten, xmin, xmax, Emin, Emax) {
 	const x0 = links, x1 = W - rechts, y0 = oben, y1 = H - unten;
@@ -537,11 +580,16 @@ function bereich(W, H, links, rechts, oben, unten, xmin, xmax, Emin, Emax) {
 /* Wellenfunktion auf ihrer Energiehöhe zeichnen; werte: psi-Werte, normiert auf 1; amp in px */
 function welleZeichnen(ctx, A, xs, werte, E, amp, quadrat, farbe = BLAUDUNKEL, fuell = BLAUFUELL, x0Clip, x1Clip, fuellen = quadrat) {
 	const y = A.py(E), grenze = A.y1 - A.y0;
-	ctx.save(); ctx.beginPath(); ctx.rect(x0Clip ?? A.x0, A.y0 - 14, (x1Clip ?? A.x1) - (x0Clip ?? A.x0), grenze + 34); ctx.clip();
+	ctx.save(); ctx.beginPath(); ctx.rect(x0Clip ?? A.x0, A.y0 - 1, (x1Clip ?? A.x1) - (x0Clip ?? A.x0), grenze + 3); ctx.clip();
 	const pfad = () => { ctx.beginPath(); for (let i = 0; i < xs.length; i++) { const w = quadrat ? werte[i] * werte[i] : werte[i]; const yy = y - Math.max(-40, Math.min(40, w)) * amp; i ? ctx.lineTo(A.px(xs[i]), yy) : ctx.moveTo(A.px(xs[i]), yy); } };
 	if (fuellen) { pfad(); ctx.lineTo(A.px(xs[xs.length - 1]), y); ctx.lineTo(A.px(xs[0]), y); ctx.closePath(); ctx.globalAlpha = quadrat ? 1 : 0.8; ctx.fillStyle = fuell; ctx.fill(); ctx.globalAlpha = 1; }
 	pfad(); ctx.strokeStyle = farbe; ctx.lineWidth = 2.4; ctx.lineJoin = "round"; ctx.stroke();
 	ctx.restore();
+	const pkt = []; // Kurve fein abgetastet als belegt eintragen
+	for (let i = 0; i < xs.length; i++) { const w = quadrat ? werte[i] * werte[i] : werte[i], yy = y - Math.max(-40, Math.min(40, w)) * amp;
+		if (i) { const [xa, ya] = pkt[pkt.length - 1], xb = A.px(xs[i]), n = Math.ceil(Math.abs(yy - ya) / 3); for (let j = 1; j < n; j++) pkt.push([xa + (xb - xa) * j / n, ya + (yy - ya) * j / n]); }
+		pkt.push([A.px(xs[i]), yy]); }
+	kurveMerken(ctx, pkt, { x0: x0Clip ?? A.x0, x1: x1Clip ?? A.x1, y0: A.y0 - 1, y1: A.y1 + 2 });
 }
 
 /* ==========================================================================
@@ -554,7 +602,7 @@ const En = (n, L) => Math.PI * Math.PI * C * n * n / (L * L);
 
 function zeichneTopf() {
 	const W = WT, H = HT, ctx = ctxT, schmal = W < 560;
-	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); bildleisteFreihalten(ctx);
 	const L = topf.L, n = topf.n, E = En(n, L);
 	// zwei Teilbilder: links Energie und psi, rechts |psi|^2
 	const teil = schmal ? { aW: W, aH: H * 0.6, bY: H * 0.6, bH: H * 0.4 } : { aW: W * 0.6, aH: H, bY: 0, bH: H };
@@ -566,14 +614,15 @@ function zeichneTopf() {
 	achsenZeichnen(ctx, A, { Emin: 0, Emax: topf.EMAX, eStep: schmal ? 5 : 3, xTicks: [{ x: 0, text: "0" }, { x: L, text: "L" }], xName: "x" });
 	ctx.strokeStyle = "#111"; ctx.lineWidth = 2.6;
 	ctx.beginPath(); ctx.moveTo(A.px(0), A.y0 - 10); ctx.lineTo(A.px(0), A.y1); ctx.lineTo(A.px(L), A.y1); ctx.lineTo(A.px(L), A.y0 - 10); ctx.stroke();
-	// alle Niveaus dünn
+	// alle Niveaus dünn; beschriftet wird zuerst der gewählte Zustand, die anderen nur, wo Platz ist
 	for (let k = 1; k <= 6; k++) {
 		const e = En(k, L); if (e > topf.EMAX) break;
 		ctx.strokeStyle = k === n ? BERNSTEIN : "#b9b9b9"; ctx.lineWidth = k === n ? 1.6 : 1; ctx.setLineDash(k === n ? [] : [5, 4]);
 		ctx.beginPath(); ctx.moveTo(A.px(0), A.py(e)); ctx.lineTo(A.px(L), A.py(e)); ctx.stroke(); ctx.setLineDash([]);
-		if (k === n) plakette(ctx, W, "n = " + k, A.px(L) + 6, A.py(e), "#7A4A00", "#FFF4D6");
-		else { ctx.fillStyle = "#6a6a6a"; ctx.font = schrift(W, 12); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText("n = " + k, A.px(L) + 8, A.py(e)); }
 	}
+	if (E <= topf.EMAX) plakette(ctx, W, "n = " + n, A.px(L) + 6, A.py(E), "#7A4A00", "#FFF4D6");
+	const nebenNiveaus = () => { ctx.fillStyle = "#6a6a6a"; ctx.font = schrift(W, 12); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+		for (let k = 1; k <= 6; k++) { const e = En(k, L); if (e > topf.EMAX) break; if (k !== n) textWennFrei(ctx, "n = " + k, A.px(L) + 8, A.py(e)); } };
 	// psi auf der Energiehöhe, Realteil schwingt mit cos(phase)
 	const N = 240, xs = [], werte = [];
 	for (let i = 0; i <= N; i++) { const x = L * i / N; xs.push(x); werte.push(Math.sin(n * Math.PI * x / L) * Math.cos(topf.phase)); }
@@ -583,19 +632,23 @@ function zeichneTopf() {
 		ctx.beginPath(); for (let i = 0; i <= N; i++) { const yy = A.py(E) - Math.sin(n * Math.PI * xs[i] / L) * amp; i ? ctx.lineTo(A.px(xs[i]), yy) : ctx.moveTo(A.px(xs[i]), yy); } ctx.stroke();
 		ctx.beginPath(); for (let i = 0; i <= N; i++) { const yy = A.py(E) + Math.sin(n * Math.PI * xs[i] / L) * amp; i ? ctx.lineTo(A.px(xs[i]), yy) : ctx.moveTo(A.px(xs[i]), yy); } ctx.stroke(); ctx.setLineDash([]);
 		welleZeichnen(ctx, A, xs, werte, E, amp, false);
-		ctx.fillStyle = BLAUDUNKEL; ctx.font = schrift(W, 13, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-		ctx.fillText("ψ", A.px(0) + 6, A.py(E) - amp - 2);
-		// Wellenlänge als Klammer über eine volle Welle
+		// Wellenlänge als Klammer über eine volle Welle (vor den Nebenbeschriftungen, damit sie Vorrang hat)
 		if (document.getElementById("topf-lambda").checked) {
-			const lam = 2 * L / n, xa = 0, xb = Math.min(L, lam), yk = A.py(E) - amp - 14;
+			const lam = 2 * L / n, xa = 0, xb = Math.min(L, lam), yk = Math.max(A.y0 + 22, A.py(E) - amp - 14);
 			ctx.strokeStyle = "#444"; ctx.lineWidth = 1.2;
 			ctx.beginPath(); ctx.moveTo(A.px(xa), yk + 5); ctx.lineTo(A.px(xa), yk); ctx.lineTo(A.px(xb), yk); ctx.lineTo(A.px(xb), yk + 5); ctx.stroke();
 			ctx.fillStyle = "#222"; ctx.font = schrift(W, 13, "italic"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-			ctx.fillText(lam > L + 1e-9 ? "λ = 2L (halbe Welle passt hinein)" : "λ", (A.px(xa) + A.px(xb)) / 2, yk - 2);
+			const xm = (A.px(xa) + A.px(xb)) / 2;
+			const tl = lam > L + 1e-9 ? ["λ = 2L (halbe Welle passt hinein)", "λ = 2L"] : ["λ"];
+			let ok = false; for (const t of tl) for (const dy of [0, -14, 14, -28, 28, -42]) if (!ok && textWennFrei(ctx, t, xm, yk - 2 + dy)) ok = true;
+			if (!ok) ctx.fillText(tl[tl.length - 1], xm, yk - 2);
 		}
+		ctx.fillStyle = BLAUDUNKEL; ctx.font = schrift(W, 13, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+		textWennFrei(ctx, "ψ", A.px(0) + 6, Math.max(A.y0 + 16, A.py(E) - amp - 2));
+		nebenNiveaus();
 	} else {
-		ctx.fillStyle = "#7A4A00"; ctx.font = schrift(W, 12, "bold"); ctx.textAlign = "center"; ctx.textBaseline = "top";
-		ctx.fillText("↑ E" + "ₙ" + " liegt über " + topf.EMAX + " eV", (A.px(0) + A.px(L)) / 2, A.y0 - 6);
+		platziere(ctx, W, "↑ E" + "ₙ" + " liegt über " + topf.EMAX + " eV", [[(A.px(0) + A.px(L)) / 2, A.y0 + 14, "center"], [A.px(L) + 6, A.y0 + 14, "left"], [A.px(0) + 4, A.y0 + 40, "left"]], "#7A4A00", "#FFF4D6");
+		nebenNiveaus();
 	}
 	// Teilbild |psi|^2
 	const bx0 = schmal ? (schmal ? 40 : 54) : teil.aW + 30;
@@ -806,7 +859,7 @@ function naechsterEigenwert(E) {
 }
 function zeichneSuchen() {
 	const W = WS, H = HS, ctx = ctxS, schmal = W < 560, k = konfig();
-	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); bildleisteFreihalten(ctx);
 	const A = bereich(W, H, schmal ? 44 : 56, 24, 28, 38, k.xmin, k.xmax, k.Emin, k.Emax);
 	// verbotener Bereich (über der Potentialkurve) schraffiert, Potentialkurve kräftig
 	const M = 400;
@@ -843,24 +896,22 @@ function zeichneSuchen() {
 	if (such.pot === "unendlich") { ctx.moveTo(A.px(-such.L / 2), A.y0 - 12); ctx.lineTo(A.px(-such.L / 2), A.py(0)); ctx.lineTo(A.px(such.L / 2), A.py(0)); ctx.lineTo(A.px(such.L / 2), A.y0 - 12); }
 	else for (let i = 0; i <= 800; i++) { const x = k.xmin + (k.xmax - k.xmin) * i / 800, v = Vz(k, x); const yy = Math.min(A.y1 + 40, Math.max(A.y0 - 12, A.py(v))); i ? ctx.lineTo(A.px(x), yy) : ctx.moveTo(A.px(x), yy); }
 	ctx.stroke(); ctx.restore();
-	if (such.pot === "coulomb") { const yk = A.py(0); kern(ctx, A.px(0), yk, 7); plakette(ctx, W, "Kern", A.px(0) + 11, yk + 14, "#9A0000", "#FFF2F2", "left", 11); }
-	if (such.pot === "endlich") { // V0 und L beschriften
-		ctx.fillStyle = "#555"; ctx.font = schrift(W, 12, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("V₀", A.px(such.L / 2) + 8, A.py(such.V0) - 3);
-	}
+	{ const pkt = [], b = { x0: A.x0, x1: A.x1, y0: A.y0 - 12, y1: A.y1 }; let vor = null;
+	  if (such.pot === "unendlich") { const yb = A.py(0); for (let yy = A.y0 - 12; yy <= yb; yy += 3) pkt.push([xl, yy], [xr, yy]); for (let xx = xl; xx <= xr; xx += 3) pkt.push([xx, yb]); }
+	  else { const pV = x => [A.px(x), Math.min(A.y1 + 40, Math.max(A.y0 - 12, A.py(Vz(k, x))))];
+	  for (let i = 0; i <= 800; i++) { const q = pV(k.xmin + (k.xmax - k.xmin) * i / 800); if (vor) { const n = Math.ceil(Math.abs(q[1] - vor[1]) / 3); for (let j = 1; j < n; j++) pkt.push([q[0], vor[1] + (q[1] - vor[1]) * j / n]); } pkt.push(q); vor = q; } }
+	  kurveMerken(ctx, pkt, b, "[Potential]"); }
+	if (such.pot === "coulomb") { const yk = A.py(0), xk = A.px(0) + 2; kern(ctx, xk, yk, 6); merken(ctx, { x0: xk - 6, x1: xk + 6, y0: yk - 6, y1: yk + 6 }, "[Kern]"); }
+
 	// unendlicher Topf zum Vergleich (gleiche Breite)
 	if (such.pot === "endlich" && document.getElementById("s-vergleich").checked) {
 		ctx.setLineDash([6, 4]); ctx.strokeStyle = "#8a8a8a"; ctx.lineWidth = 1.3; ctx.font = schrift(W, 11); ctx.fillStyle = "#777"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
-		for (let n = 1; n < 12; n++) { const e = En(n, such.L); if (e > k.Emax) break; ctx.beginPath(); ctx.moveTo(A.px(-such.L / 2) - 26, A.py(e)); ctx.lineTo(A.px(such.L / 2) + 26, A.py(e)); ctx.stroke(); ctx.fillText("∞: " + de(e, 2), A.px(-such.L / 2) - 30, A.py(e)); }
+		for (let n = 1; n < 12; n++) { const e = En(n, such.L); if (e > k.Emax) break; ctx.beginPath(); ctx.moveTo(A.px(-such.L / 2) - 26, A.py(e)); ctx.lineTo(A.px(such.L / 2) + 26, A.py(e)); ctx.stroke(); }
 		ctx.setLineDash([]);
 	}
 	// gemerkte Niveaus, die zum aktuellen Potential (gleiche Breite und Wandhöhe) gehören
-	let yLetzt = -1e9; // Beschriftungen, die sich überdecken würden, weglassen
-	passendeNiveaus().slice().sort((a, b) => a.E - b.E).forEach(n => {
-		const e = n.E;
-		ctx.strokeStyle = GRUEN; ctx.lineWidth = 1.6; const xa = such.pot === "coulomb" ? A.px(0) : A.px(-Math.min(such.L / 2 + 0.25, 1.55)), xb = such.pot === "coulomb" ? A.x1 : A.px(Math.min(such.L / 2 + 0.25, 1.55));
-		ctx.beginPath(); ctx.moveTo(xa, A.py(e)); ctx.lineTo(xb, A.py(e)); ctx.stroke();
-		if (e >= k.Emin && e <= k.Emax && Math.abs(A.py(e) - yLetzt) > 13) { yLetzt = A.py(e); ctx.fillStyle = GRUEN; ctx.font = schrift(W, 11, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("✓ " + de(e, 3), such.pot === "coulomb" ? (A.x0 + A.x1) / 2 : Math.max(A.x0 + 4, xa - 2), A.py(e) - 2); }
-	});
+	const gXa = such.pot === "coulomb" ? A.px(0) : A.px(-Math.min(such.L / 2 + 0.25, 1.55)), gXb = such.pot === "coulomb" ? A.x1 : A.px(Math.min(such.L / 2 + 0.25, 1.55));
+	passendeNiveaus().forEach(n => { ctx.strokeStyle = GRUEN; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(gXa, A.py(n.E)); ctx.lineTo(gXb, A.py(n.E)); ctx.stroke(); });
 	// Energie-Linie und Wellenfunktion
 	const E = such.E;
 	const treffer = such.einrast !== null;
@@ -879,31 +930,62 @@ function zeichneSuchen() {
 	const amp = Math.min(46, (A.y1 - A.y0) * 0.12);
 	const sichtbar = Er >= k.Emin && Er <= k.Emax;
 	if (sichtbar) welleZeichnen(ctx, A, xsAnz, wAnz, Er, amp, quadrat, treffer ? "#1E6B29" : BLAUDUNKEL, treffer ? "rgba(46,139,58,0.20)" : BLAUFUELL, undefined, undefined, quadrat || treffer);
-	else plakette(ctx, W, (Er < k.Emin ? "↓ E = " : "↑ E = ") + de(Er, 3) + " eV liegt außerhalb dieses Ausschnitts", (A.x0 + A.x1) / 2, Er < k.Emin ? A.y1 - 16 : A.y0 + 4, "#7A4A00", "#FFF4D6", "center");
-	// Hinweise im Bild, die einander nicht überdecken: grünes Schild oben, roter Pfeil, Energie-Plakette
-	const belegt = [];
-	if (such.pot === "endlich") belegt.push({ x0: A.px(such.L / 2) + 4, x1: A.px(such.L / 2) + 30, y0: A.py(such.V0) - 20, y1: A.py(such.V0) + 2 }); // Beschriftung V0
-	if (treffer) { const x = (A.x0 + A.x1) / 2 - (schmal ? 0 : 40); plakette(ctx, W, "✓ erlaubter Zustand", x, A.y0 - 4, "#1E6B29", "#EEF8EF", "center", 13); belegt.push(plakettenRahmen(ctx, W, "✓ erlaubter Zustand", x, A.y0 - 4, "center", 13)); }
+	else { const t = (Er < k.Emin ? "↓ E = " : "↑ E = ") + de(Er, 3) + " eV (" + (Er < k.Emin ? "tiefer" : "höher") + ")", ym = Er < k.Emin ? A.y1 - 16 : A.y0 + 14;
+		platziere(ctx, W, t, [[(A.x0 + A.x1) / 2, ym, "center"], [A.x1 - 2, ym, "right"], [A.x0 + 6, ym, "left"]], "#7A4A00", "#FFF4D6"); }
+	// Hinweise im Bild in der Reihenfolge ihrer Wichtigkeit, jeweils an der ersten freien Stelle:
+	// grünes Schild, roter Pfeil, Energie-Plakette; danach gemerkte Niveaus und Vergleichswerte nur, wo Platz bleibt
+	if (treffer) {
+		const t = W < 400 ? "✓ erlaubt" : "✓ erlaubter Zustand", xm = (A.x0 + A.x1) / 2 - (schmal ? 0 : 40);
+		const lagen = [];
+		for (let yy = A.y0 - 4; yy <= A.y1 - 14; yy += 22) lagen.push([xm, yy, "center"], [A.x1 - 4, yy, "right"], [A.x0 + 8, yy, "left"]);
+		platziere(ctx, W, t, lagen, "#1E6B29", "#EEF8EF", 13);
+	}
 	else if (sichtbar && such.pot !== "unendlich") { // psi läuft außen weg: roter Pfeil am Bildrand
 		const e0 = wAnz[wAnz.length - 1], auf = e0 > 0, yo = A.y0 + 4, yu = A.y1 - 4;
 		let ia = -1; // erster Punkt rechts vom Umkehrpunkt, an dem die Kurve den Bildbereich verlässt
 		for (let i = 0; i < xsAnz.length; i++) { const w = quadrat ? wAnz[i] * wAnz[i] : wAnz[i], yy = A.py(Er) - w * amp; if (Vz(k, xsAnz[i]) > Er && (yy < yo || yy > yu)) { ia = i; break; } }
 		if (ia >= 0 || Math.abs(e0) > 1.5) {
-			const text = "ψ → " + (auf ? "+∞" : "−∞"), yz = auf ? yo + 6 : yu - 6, ys = yz + (auf ? 44 : -44);
+			const text = "ψ → " + (auf ? "+∞" : "−∞");
+			let yz = auf ? yo + 6 : yu - 6, ys = yz + (auf ? 44 : -44);
 			const xs0 = ia >= 0 ? A.px(xsAnz[ia]) + 16 : A.x1 - 70, r0 = plakettenRahmen(ctx, W, text, 0, 0), bt = r0.x1 - r0.x0;
-			const xp = Math.min(A.x1 - bt - 12, xs0);
-			const ym = (ys + yz) / 2, rechts = !belegt.some(q => ueberlappt(plakettenRahmen(ctx, W, text, xp + 8, ym), q)) || xp - 8 - bt < A.x0;
+			const x00 = Math.max(A.x0 + 10, Math.min(A.x1 - bt - 12, xs0));
+			const pfeilFrei = x => frei(ctx, { x0: x - 6, x1: x + 6, y0: Math.min(ys, yz) - 2, y1: Math.max(ys, yz) + 2 }, 1)
+				&& [[x + 8, "left"], [x - 8, "right"]].some(([xx, au]) => { const r = plakettenRahmen(ctx, W, text, xx, ym, au); return imBild(ctx, r) && frei(ctx, r, 0); });
+			let xp = x00, ym = (ys + yz) / 2; const yz0 = yz;
+			suche: for (const dv of [0, 24, 48, 72]) {
+				yz = yz0 + (auf ? dv : -dv); ys = yz + (auf ? 44 : -44); ym = (ys + yz) / 2;
+				for (let d = 0; d < W; d += 8) { if (x00 + d < A.x1 - 8 && pfeilFrei(x00 + d)) { xp = x00 + d; break suche; } if (x00 - d > A.x0 + 8 && pfeilFrei(x00 - d)) { xp = x00 - d; break suche; } }
+				if (dv === 72) { yz = yz0; ys = yz + (auf ? 44 : -44); ym = (ys + yz) / 2; }
+			}
 			pfeil(ctx, xp, ys, xp, yz, ROT, 2.6);
-			plakette(ctx, W, text, rechts ? xp + 8 : xp - 8, ym, ROT, "#FFF2F2", rechts ? "left" : "right");
-			belegt.push(rechts ? { x0: xp - 6, x1: xp + 8 + bt, y0: Math.min(ys, yz) - 4, y1: Math.max(ys, yz) + 4 } : { x0: xp - 8 - bt, x1: xp + 6, y0: Math.min(ys, yz) - 4, y1: Math.max(ys, yz) + 4 });
+			merken(ctx, { x0: xp - 6, x1: xp + 6, y0: Math.min(ys, yz) - 2, y1: Math.max(ys, yz) + 2 }, "[Pfeil]");
+			platziere(ctx, W, text, [[xp + 8, ym, "left"], [xp - 8, ym, "right"], [xp + 8, ym + (auf ? 26 : -26), "left"], [xp - 8, ym + (auf ? 26 : -26), "right"]], ROT, "#FFF2F2");
 		}
 	}
-	if (sichtbar) { // Energie-Plakette: rechts oberhalb der Linie, sonst rechts unterhalb, sonst links
-		const text = "E = " + de(Er, 3) + " eV", y = A.py(Er);
-		const lagen = [[A.x1 - 2, y - 13, "right"], [A.x1 - 2, y + 14, "right"], [A.x0 + 6, y - 13, "left"], [A.x0 + 6, y + 14, "left"]]
-			.filter(([x, yy]) => yy > A.y0 - 6 && yy < A.y1 + 4);
-		const frei = lagen.find(([x, yy, au]) => !belegt.some(q => ueberlappt(plakettenRahmen(ctx, W, text, x, yy, au), q))) || lagen[0];
-		if (frei) plakette(ctx, W, text, frei[0], frei[1], treffer ? "#1E6B29" : "#7A4A00", treffer ? "#EEF8EF" : "#FFF4D6", frei[2]);
+	if (sichtbar) { // Energie-Plakette: rechts oberhalb der Linie, sonst rechts unterhalb, sonst links, sonst in der Mitte
+		const text = (W < 320 ? "" : "E = ") + de(Er, 3) + " eV", y = A.py(Er), xm = (A.x0 + A.x1) / 2; // sehr schmal: ohne "E ="
+		const lagen = [];
+		for (const dy of [-16, 17, -38, 39, -60, 61, -84, 85, -108, 109, -132, 133]) for (const x of [A.x1 - 2, A.x0 + 6, xm, (A.x0 + xm) / 2, (xm + A.x1) / 2]) lagen.push([x, y + dy, x === A.x1 - 2 ? "right" : x === A.x0 + 6 ? "left" : "center"]);
+		platziere(ctx, W, text, lagen, treffer ? "#1E6B29" : "#7A4A00", treffer ? "#EEF8EF" : "#FFF4D6");
+	}
+	if (such.pot === "coulomb") { const xk = A.px(0), yk = A.py(0); platziere(ctx, W, "Kern", [[xk + 11, yk + 14, "left"], [xk + 11, yk + 34, "left"], [xk + 40, yk + 14, "left"], [xk + 11, yk + 56, "left"], [xk + 70, yk + 14, "left"]], "#9A0000", "#FFF2F2", 11, false, [null]); }
+	if (such.pot === "endlich") { // V0 beschriften: über einer der Wände, wo Platz ist
+		ctx.fillStyle = "#555"; ctx.font = schrift(W, 12, "italic"); ctx.textBaseline = "bottom"; const yV = A.py(such.V0) - 3;
+		const lagen = [[A.px(such.L / 2) + 8, "left"], [A.px(-such.L / 2) - 8, "right"], [A.x1 - 6, "right"], [A.x0 + 8, "left"], [A.px(such.L / 2) + 40, "left"]];
+		for (const [x, au] of lagen) { ctx.textAlign = au; if (textWennFrei(ctx, "V₀", x, yV)) break; }
+	}
+	// gemerkte Niveaus beschriften (rechts neben ihrer Linie, sonst links), nur wo Platz ist
+	ctx.font = schrift(W, 11, "bold"); ctx.fillStyle = GRUEN; ctx.textBaseline = "middle";
+	passendeNiveaus().slice().sort((a, b) => a.E - b.E).forEach(n => {
+		if (n.E < k.Emin || n.E > k.Emax) return; const t = "✓ " + de(n.E, 3), y = A.py(n.E);
+		ctx.textAlign = "left"; if (textWennFrei(ctx, t, gXb + 4, y)) return;
+		ctx.textAlign = "right"; if (textWennFrei(ctx, t, gXa - 4, y)) return;
+		ctx.textAlign = "left"; textWennFrei(ctx, t, such.pot === "coulomb" ? (A.x0 + A.x1) / 2 : gXa + 4, y - 7);
+	});
+	// unendlicher Topf zum Vergleich: Werte links neben den gestrichelten Linien, nur wo Platz ist
+	if (such.pot === "endlich" && document.getElementById("s-vergleich").checked) {
+		ctx.font = schrift(W, 11); ctx.fillStyle = "#777"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+		for (let n = 1; n < 12; n++) { const e = En(n, such.L); if (e > k.Emax) break; textWennFrei(ctx, "∞: " + de(e, 2), A.px(-such.L / 2) - 30, A.py(e)); }
 	}
 	// Randverhalten anzeigen
 	const ende = lsg.ps[kr.N] / mx;
@@ -1036,7 +1118,7 @@ function bindungVorbereiten() {
 }
 function zeichneBindung() {
 	const W = WB, H = HB, ctx = ctxB, schmal = W < 560;
-	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); bildleisteFreihalten(ctx);
 	const A = bereich(W, H, schmal ? 40 : 54, 22, 26, 38, -1.2, 1.2, 0, 8);
 	const V = Vdoppel(bind.d), a = bind.d / 2, b = a + bind.W0;
 	// Wände schraffiert (verbotener Bereich über den Töpfen bis 10 eV)
@@ -1054,7 +1136,6 @@ function zeichneBindung() {
 	// Einzelatom-Niveau
 	ctx.strokeStyle = "#8a8a8a"; ctx.lineWidth = 1.3; ctx.setLineDash([6, 4]);
 	ctx.beginPath(); ctx.moveTo(A.x0, A.py(bind.einzel)); ctx.lineTo(A.x1, A.py(bind.einzel)); ctx.stroke(); ctx.setLineDash([]);
-	ctx.fillStyle = "#666"; ctx.font = schrift(W, 11); ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("einzelnes Atom", A.x1 - 2, A.py(bind.einzel) - 2);
 	// Zustand
 	const ew = zweiZustaende(bind.d), E = ew[bind.zustand - 1];
 	const lsg = gespiegelt(V, E, BX, NB, bind.zustand === 1);
@@ -1062,7 +1143,11 @@ function zeichneBindung() {
 	const xs = [], w = []; for (let i = 0; i < lsg.ps.length; i++) if (lsg.xs[i] >= -1.2 && lsg.xs[i] <= 1.2) { xs.push(lsg.xs[i]); w.push(lsg.ps[i] / mx); }
 	ctx.strokeStyle = BERNSTEIN; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(A.px(-b) - 10, A.py(E)); ctx.lineTo(A.px(b) + 10, A.py(E)); ctx.stroke();
 	welleZeichnen(ctx, A, xs, w, E, Math.min(50, (A.y1 - A.y0) * 0.15), document.getElementById("b-quadrat").checked);
-	plakette(ctx, W, "E = " + de(E, 2) + " eV", A.px(b) + 12, A.py(E) + 12, "#7A4A00", "#FFF4D6");
+	{ const lagen = [], y = A.py(E);
+	  for (const dy of [12, 34, -40, 56]) lagen.push([A.px(b) + 12, y + dy, "left"], [A.px(-b) - 12, y + dy, "right"], [A.x1 - 2, y + dy, "right"], [A.x0 + 4, y + dy, "left"]);
+	  platziere(ctx, W, "E = " + de(E, 2) + " eV", lagen, "#7A4A00", "#FFF4D6"); }
+	{ ctx.fillStyle = "#666"; ctx.font = schrift(W, 11); const ye = A.py(bind.einzel);
+	  for (const [x, yy, au, bl] of [[A.x1 - 2, ye - 2, "right", "bottom"], [A.x0 + 4, ye - 2, "left", "bottom"], [A.x1 - 2, ye + 2, "right", "top"], [A.x0 + 4, ye + 2, "left", "top"]]) { ctx.textAlign = au; ctx.textBaseline = bl; if (textWennFrei(ctx, "einzelnes Atom", x, yy)) break; } }
 	document.getElementById("b-E0").textContent = de(bind.einzel, 2) + " eV";
 	document.getElementById("b-E").textContent = de(E, 2) + " eV";
 	document.getElementById("b-dE").textContent = (E < bind.einzel ? "−" : "+") + de(Math.abs(E - bind.einzel), 2) + " eV";
@@ -1071,7 +1156,7 @@ function zeichneBindung() {
 }
 function zeichneKurve() {
 	const W = WK, H = HK, ctx = ctxK, schmal = W < 560;
-	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+	ctx.clearRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); bildleisteFreihalten(ctx);
 	const lo = Math.floor(Math.min(...bind.kurve.map(p => p.e1)) * 2) / 2 - 0.5, hi = Math.ceil(Math.max(...bind.kurve.map(p => p.e2)) * 2) / 2 + 0.5;
 	const x0 = schmal ? 44 : 56, x1 = W - 24, y0 = 30, y1 = H - 36;
 	const px = d => x0 + d / 0.8 * (x1 - x0), py = e => y1 - (e - lo) / (hi - lo) * (y1 - y0);
@@ -1083,8 +1168,9 @@ function zeichneKurve() {
 	ctx.fillStyle = "#111"; ctx.font = schrift(W, 13, "italic"); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("E", x0 + 6, y0 - 2);
 	ctx.font = schrift(W, 12); ctx.fillText("in eV", x0 + 17, y0 - 2);
 	ctx.fillStyle = "#555"; ctx.font = schrift(W, 11); ctx.textAlign = "center"; ctx.textBaseline = "top";
-	for (let d = 0; d <= 0.8001; d += 0.1) ctx.fillText(de(d, 1), px(d), y1 + 6);
 	ctx.fillStyle = "#111"; ctx.font = schrift(W, 13, "italic"); ctx.textAlign = "right"; ctx.fillText("d", x1 + 8, y1 + 6); ctx.font = schrift(W, 11); ctx.fillStyle = "#555"; ctx.fillText("in nm", x1 + 8, y1 + 22);
+	ctx.fillStyle = "#555"; ctx.font = schrift(W, 11); ctx.textAlign = "center";
+	for (let d = 0; d <= 0.8001; d += 0.1) textWennFrei(ctx, de(d, 1), px(d), y1 + 6);
 	ctx.setLineDash([6, 4]); ctx.strokeStyle = "#8a8a8a"; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x0, py(bind.einzel)); ctx.lineTo(x1, py(bind.einzel)); ctx.stroke(); ctx.setLineDash([]);
 	[["e1", BLAUDUNKEL], ["e2", "#9AA6D6"]].forEach(([s, f]) => {
 		ctx.strokeStyle = f; ctx.lineWidth = 2.2; ctx.beginPath();
@@ -1096,7 +1182,9 @@ function zeichneKurve() {
 	ctx.fillStyle = "#666"; ctx.font = schrift(W, 11); ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("einzelnes Atom", x1, py(bind.einzel) - 2);
 	const ew = zweiZustaende(bind.d), e = ew[bind.zustand - 1];
 	ctx.fillStyle = BERNSTEIN; ctx.strokeStyle = "#7A4A00"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(px(bind.d), py(e), 6, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-	ctx.fillStyle = "#111"; ctx.font = schrift(W, 12, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(schmal ? "Energie des Elektrons" : "Energie des Elektrons abhängig vom Abstand d", x0 + 40, 6);
+	ctx.fillStyle = "#111"; ctx.font = schrift(W, 12, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "top";
+	const titel = schmal ? "Energie des Elektrons" : "Energie des Elektrons abhängig vom Abstand d";
+	textWennFrei(ctx, titel, x0 + 70, 4) || textWennFrei(ctx, titel, x0 + 70, y0 - 2) || ctx.fillText(titel, x0 + 70, 4);
 }
 document.getElementById("b-d").addEventListener("input", e => { bind.d = parseFloat(e.target.value); zeichneBindung(); });
 ["b-z1", "b-z2"].forEach((id, i) => document.getElementById(id).addEventListener("click", () => {
@@ -1139,8 +1227,8 @@ bildLeiste(document.getElementById("b-leinwand"), () => mitKast(cB, kartenStreif
 bildLeiste(document.getElementById("b-kurve-leinwand"), () => mitKast(cK), () => "B.4 Energie abhaengig vom Abstand");
 
 function layout() {
-	if (modus === "topf") { ({ W: WT, H: HT } = skaliere(cT, ctxT, w => w < 560 ? 1.25 : 0.5)); zeichneTopf(); }
-	if (modus === "suchen") { ({ W: WS, H: HS } = skaliere(cS, ctxS, w => w < 560 ? 0.95 : 0.55)); zeichneSuchen(); }
+	if (modus === "topf") { ({ W: WT, H: HT } = skaliere(cT, ctxT, w => w < 330 ? 1.4 : w < 560 ? 1.25 : 0.5)); zeichneTopf(); }
+	if (modus === "suchen") { ({ W: WS, H: HS } = skaliere(cS, ctxS, w => w < 330 ? 1.15 : w < 560 ? 0.95 : 0.55)); zeichneSuchen(); }
 	if (modus === "bindung") { bindungVorbereiten(); ({ W: WB, H: HB } = skaliere(cB, ctxB, w => w < 560 ? 0.9 : 0.48)); ({ W: WK, H: HK } = skaliere(cK, ctxK, w => w < 560 ? 0.75 : 0.32)); zeichneBindung(); }
 }
 window.addEventListener("resize", layout);
