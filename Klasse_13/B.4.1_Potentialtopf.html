@@ -167,7 +167,7 @@ table.niveaus tbody tr:last-child { border-bottom: 2px solid #111; }
 					<div class="regler"><input type="range" id="s-V" min="1" max="15" step="0.1" value="10"><span class="wert" id="s-V-wert"></span></div></div>
 				<div class="gr" id="gr-zoom"><div class="gt">Ausschnitt</div><div class="kn">
 					<button data-zoom="1" title="nah am Kern: r bis 0,5 nm" aria-label="nah am Kern">0,5 nm</button>
-					<button data-zoom="0" title="weit: r bis 3 nm" aria-label="weit">3 nm</button>
+					<button data-zoom="0" title="weit: r bis 5 nm" aria-label="weit">5 nm</button>
 				</div></div>
 			</div>
 			<div class="leinwand" id="s-leinwand" style="margin-top:0.6rem"><canvas id="s-canvas" class="sim"></canvas></div>
@@ -351,13 +351,20 @@ const de = (z, n = 2) => (Math.abs(z) < 0.5 * Math.pow(10, -n) ? 0 : z).toFixed(
 /* Numerov-Integration von x0 nach x1 mit psi(x0) = 0; liefert Ortswerte und psi */
 /* Potential an den Rechenpunkten, über die Zelle gemittelt (Wände zwischen zwei Punkten werden so richtig erfasst);
    einmal pro Potential und Gitter berechnet und am Potential zwischengespeichert */
+/* Rechteckpotential: V = 0 auf den Intervallen innen (Liste [a, b]), sonst V0; Mittelwert über eine Zelle exakt */
+function rechteckPotential(innen, V0) {
+	const V = x => (innen.some(([a, b]) => x > a && x < b) ? 0 : V0);
+	V.mittel = (x, h) => { const lo = x - h / 2, hi = x + h / 2; let drin = 0; innen.forEach(([a, b]) => { drin += Math.max(0, Math.min(hi, b) - Math.max(lo, a)); }); return V0 * (1 - drin / h); };
+	return V;
+}
 function vWerte(V, x0, h, N, glatt) {
 	const s = x0 + "|" + h + "|" + N + "|" + glatt;
 	if (V._s === s) return V._a;
 	const a = new Float64Array(N + 1);
 	for (let i = 0; i <= N; i++) {
 		const x = x0 + i * h;
-		if (glatt) { let m = 0; for (let j = -2; j <= 2; j++) m += V(x + j * h / 5); a[i] = m / 5; } else a[i] = V(x);
+		if (glatt && V.mittel) a[i] = V.mittel(x, h);
+		else if (glatt) { let m = 0; for (let j = -2; j <= 2; j++) m += V(x + j * h / 5); a[i] = m / 5; } else a[i] = V(x);
 	}
 	V._s = s; V._a = a; return a;
 }
@@ -584,31 +591,38 @@ const such = { pot: "endlich", L: 1, V0: 10, E: 1, zoom: 0, gemerkt: [], ew: [],
 const cS = document.getElementById("s-canvas"), ctxS = cS.getContext("2d");
 let WS = 760, HS = 420;
 function konfig() { return konfigFuer(such.L, such.V0); }
-function konfigFuer(L, V0) {
+function coulombEnde(E) { // r in nm: klassischer Umkehrpunkt plus 14 Abklinglängen, höchstens 16 nm
+	const e = Math.max(1e-3, -E);
+	return Math.min(16, KE2 / e + 14 / Math.sqrt(e / C));
+}
+function konfigFuer(L, V0, E) {
 	if (such.pot === "unendlich") return { V: () => 0, x0: -L / 2, x1: L / 2, N: 1200, Emin: -2, Emax: 15, eStep: 2, xmin: -1.6, xmax: 1.6, schritt: 0.01, aufgabe: "L" };
-	if (such.pot === "endlich") return { V: x => (Math.abs(x) < L / 2 ? 0 : V0), x0: -1.6, x1: 1.6, N: 2400, Emin: -2, Emax: 16, eStep: 2, xmin: -1.6, xmax: 1.6, schritt: 0.01, aufgabe: "LV" };
-	const rmax = such.zoom ? 0.5 : 3;
-	return { V: r => -KE2 / r, x0: 0, x1: 16, N: 16000, Emin: -15, Emax: 1, eStep: 2.5, xmin: 0, xmax: rmax, schritt: 0.004, aufgabe: "", glatt: false };
+	if (such.pot === "endlich") return { V: rechteckPotential([[-L / 2, L / 2]], V0), x0: -1.6, x1: 1.6, N: 2400, Emin: -2, Emax: 16, eStep: 2, xmin: -1.6, xmax: 1.6, schritt: 0.01, aufgabe: "LV" };
+	const rmax = such.zoom ? 0.5 : 5;
+	const x1 = E === undefined ? 16 : coulombEnde(E);
+	return { V: r => -KE2 / r, x0: 0, x1, N: Math.max(1500, Math.round(x1 / 0.001)), Emin: -15, Emax: 1, eStep: 2.5, xmin: 0, xmax: rmax, schritt: 0.004, aufgabe: "", glatt: false };
 }
 function Vz(k, x) { return such.pot === "coulomb" ? k.V(Math.max(x, 1e-4)) : k.V(x); } // Potential zum Zeichnen (Coulomb: nicht bei r = 0)
 function schluessel() { return such.pot + "|" + (such.pot === "coulomb" ? "" : such.L) + "|" + (such.pot === "endlich" ? such.V0 : ""); }
 function eigenwerteAktualisieren() {
 	const k = konfig(), s = schluessel();
 	if (s === such.schluessel) return;
-	such.schluessel = s; such.gemerkt = [];
+	such.schluessel = s;
 	if (such.pot === "coulomb") {
 		// Wasserstoff: Suche auf feinem Raster nahe 0 (dichte Niveaus), außen bis r = 6 nm
 		const roh = []; for (let n = 1; n <= 10; n++) roh.push(-13.606 / (n * n));
-		such.ew = roh.map(e0 => { const l = eigenwerte(k.V, k.x0, k.x1, k.N, e0 * 1.02, e0 * 0.98, Math.abs(e0) * 0.002, 1, false); return l.length ? l[0] : e0; });
+		such.ew = roh.map(e0 => { const kk = konfigFuer(such.L, such.V0, e0 * 0.98); const l = eigenwerte(kk.V, kk.x0, kk.x1, kk.N, e0 * 1.02, e0 * 0.98, Math.abs(e0) * 0.002, 1, false); return l.length ? l[0] : e0; });
 	} else such.ew = eigenwerte(k.V, k.x0, k.x1, k.N, 1e-4, (such.pot === "endlich" ? such.V0 : k.Emax) - 1e-4, k.schritt, 20);
 }
 /* psi am rechten Rand, bezogen auf das größte |psi| im klassisch erlaubten Bereich */
 function randWert(L, V0, E) {
-	const k = konfigFuer(L, V0), l = numerov(k.V, E, k.x0, k.x1, k.N, k.glatt !== false);
+	const k = konfigFuer(L, V0, E), l = numerov(k.V, E, k.x0, k.x1, k.N, k.glatt !== false);
 	let mx = 0; for (let i = 0; i <= k.N; i++) if (Vz(k, l.xs[i]) <= E) mx = Math.max(mx, Math.abs(l.ps[i]));
 	if (mx === 0) for (let i = 0; i <= k.N; i++) mx = Math.max(mx, Math.abs(l.ps[i]));
 	return l.ps[k.N] / mx;
 }
+/* Klingt psi im angezeigten Bereich wirklich ab? |psi| am Bildrand, bezogen auf das größte |psi| innen */
+function klingtAb(L, V0, E) { return Math.abs(randWert(L, V0, E)) < 0.05; }
 /* Ein Regler (p = "L", "V0" oder "E") wird von der vorigen Stellung auf v gezogen.
    Wechselt psi am Rand dazwischen das Vorzeichen, liegt dazwischen ein erlaubter Zustand:
    dann wird der exakte Wert halbiert gesucht und dort eingerastet. So geht kein Zustand verloren,
@@ -639,6 +653,8 @@ function parameterSetzen(p, v) {
 			for (let k = 0; k < 44; k++) { const m = 0.5 * (a + b), gm = f(m); if (ga * gm <= 0) b = m; else { a = m; ga = gm; } }
 			ziel = 0.5 * (a + b); einrast = true;
 		}
+		// Sicherung: eingerastet wird nur, wenn psi im Bild wirklich abklingt (echte Lösung, kein Rechensprung)
+		if (einrast) { const w = Object.assign({}, werte); w[p] = ziel; if (!klingtAb(w.L, w.V0, w.E)) { ziel = v; einrast = false; } }
 	}
 	such[p] = ziel; such.einrast = einrast ? p : null;
 }
@@ -672,7 +688,7 @@ function zeichneSuchen() {
 	}
 	ctx.restore();
 	const xTicks = [];
-	if (such.pot === "coulomb") { const st = such.zoom ? 0.1 : 0.5; for (let r = 0; r <= k.xmax + 1e-9; r += st) xTicks.push({ x: r, text: de(r, such.zoom ? 1 : 1) }); }
+	if (such.pot === "coulomb") { const st = such.zoom ? 0.1 : 1; for (let r = 0; r <= k.xmax + 1e-9; r += st) xTicks.push({ x: r, text: de(r, such.zoom ? 1 : 1) }); }
 	else for (let x = -1.5; x <= 1.5 + 1e-9; x += 0.5) xTicks.push({ x, text: de(x, 1) });
 	achsenZeichnen(ctx, A, { Emin: k.Emin, Emax: k.Emax, eStep: k.eStep, xTicks, xName: such.pot === "coulomb" ? "r" : "x", xEinheit: "in nm", yAchse: A.py(0) });
 	// Potentialkurve
@@ -691,31 +707,34 @@ function zeichneSuchen() {
 		for (let n = 1; n < 12; n++) { const e = En(n, such.L); if (e > k.Emax) break; ctx.beginPath(); ctx.moveTo(A.px(-such.L / 2) - 26, A.py(e)); ctx.lineTo(A.px(such.L / 2) + 26, A.py(e)); ctx.stroke(); ctx.fillText("∞: " + de(e, 2), A.px(-such.L / 2) - 30, A.py(e)); }
 		ctx.setLineDash([]);
 	}
-	// gemerkte Niveaus
-	such.gemerkt.forEach((e, i) => {
+	// gemerkte Niveaus, die zum aktuellen Potential (gleiche Breite und Wandhöhe) gehören
+	passendeNiveaus().forEach((n, i) => {
+		const e = n.E;
 		ctx.strokeStyle = GRUEN; ctx.lineWidth = 1.6; const xa = such.pot === "coulomb" ? A.px(0) : A.px(-Math.min(such.L / 2 + 0.25, 1.55)), xb = such.pot === "coulomb" ? A.x1 : A.px(Math.min(such.L / 2 + 0.25, 1.55));
 		ctx.beginPath(); ctx.moveTo(xa, A.py(e)); ctx.lineTo(xb, A.py(e)); ctx.stroke();
 		ctx.fillStyle = GRUEN; ctx.font = schrift(W, 12, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-		ctx.fillText("E" + tiefgestellt(i + 1) + " = " + de(e, 3) + " eV", xb + 4 > A.x1 - 110 ? A.x1 - 120 : xb + 4, A.py(e) - 1);
+		ctx.fillText(de(e, 3) + " eV", xb + 4 > A.x1 - 80 ? A.x1 - 80 : xb + 4, A.py(e) - 1);
 	});
 	// Energie-Linie und Wellenfunktion
-	const E = such.E, Ek = naechsterEigenwert(E);
-	const treffer = such.einrast !== null || (Ek !== null && Math.abs(Ek - E) < toleranz());
-	const Er = such.einrast !== null ? E : (treffer ? Ek : E);
-	const lsg = numerov(k.V, Er, k.x0, k.x1, k.N, k.glatt !== false);
+	const E = such.E;
+	const treffer = such.einrast !== null;
+	const Er = E;
+	const kr = (such.pot === "coulomb" && treffer) ? konfigFuer(such.L, such.V0, Er) : k;
+	const lsg = numerov(kr.V, Er, kr.x0, kr.x1, kr.N, kr.glatt !== false);
 	// Normierung: größter Betrag im klassisch erlaubten Bereich (dort, wo V < E)
-	let mx = 0; for (let i = 0; i <= k.N; i++) if (Vz(k, lsg.xs[i]) <= Er) mx = Math.max(mx, Math.abs(lsg.ps[i]));
-	if (mx === 0) for (let i = 0; i <= k.N; i++) mx = Math.max(mx, Math.abs(lsg.ps[i]));
+	let mx = 0; for (let i = 0; i <= kr.N; i++) if (Vz(kr, lsg.xs[i]) <= Er) mx = Math.max(mx, Math.abs(lsg.ps[i]));
+	if (mx === 0) for (let i = 0; i <= kr.N; i++) mx = Math.max(mx, Math.abs(lsg.ps[i]));
 	const xsAnz = [], wAnz = [];
-	const schrittAnz = Math.max(1, Math.floor(k.N / 900));
-	for (let i = 0; i <= k.N; i += schrittAnz) if (lsg.xs[i] >= k.xmin - 1e-9 && lsg.xs[i] <= k.xmax + 1e-9) { xsAnz.push(lsg.xs[i]); wAnz.push(lsg.ps[i] / mx); }
+	const schrittAnz = Math.max(1, Math.floor(kr.N * (k.xmax - k.xmin) / (kr.x1 - kr.x0) / 900));
+	for (let i = 0; i <= kr.N; i += schrittAnz) if (lsg.xs[i] >= k.xmin - 1e-9 && lsg.xs[i] <= k.xmax + 1e-9) { xsAnz.push(lsg.xs[i]); wAnz.push(lsg.ps[i] / mx); }
+	if (kr.x1 < k.xmax) { xsAnz.push(kr.x1 + 1e-6, k.xmax); wAnz.push(0, 0); } // dahinter ist psi praktisch null
 	ctx.strokeStyle = treffer ? GRUEN : BERNSTEIN; ctx.lineWidth = 1.4; ctx.setLineDash([7, 4]);
 	ctx.beginPath(); ctx.moveTo(A.x0, A.py(Er)); ctx.lineTo(A.x1, A.py(Er)); ctx.stroke(); ctx.setLineDash([]);
 	const quadrat = document.getElementById("s-quadrat").checked;
 	const amp = Math.min(46, (A.y1 - A.y0) * 0.12);
 	welleZeichnen(ctx, A, xsAnz, wAnz, Er, amp, quadrat, treffer ? "#1E6B29" : BLAUDUNKEL, treffer ? "rgba(46,139,58,0.18)" : BLAUFUELL);
 	// Randverhalten anzeigen
-	const ende = lsg.ps[k.N] / mx;
+	const ende = lsg.ps[kr.N] / mx;
 	const status = document.getElementById("s-status"), text = document.getElementById("s-status-text");
 	status.classList.toggle("gut", treffer); status.classList.toggle("schlecht", !treffer);
 	if (treffer) text.innerHTML = "Erlaubter Zustand: <i class=\"gr\">ψ</i> " + (such.pot === "unendlich" ? "ist an beiden Wänden null." : "klingt außen ab.") + " <span class=\"nowrap\">E = " + de(Er, 3) + " eV</span>";
@@ -723,21 +742,42 @@ function zeichneSuchen() {
 	else text.innerHTML = "<i class=\"gr\">ψ</i> wächst außen über alle Grenzen (nach " + (ende > 0 ? "oben" : "unten") + "): kein erlaubter Zustand.";
 	if (!treffer && such.pot === "unendlich") { ctx.fillStyle = ROT; ctx.beginPath(); ctx.arc(A.px(such.L / 2), A.py(Er) - Math.max(-1.25, Math.min(1.25, quadrat ? ende * ende : ende)) * amp, 5, 0, 2 * Math.PI); ctx.fill(); }
 	const merk = document.getElementById("s-merken");
-	merk.disabled = !treffer || such.gemerkt.some(e => Math.abs(e - Er) < 1e-5);
+	merk.disabled = !treffer || passendeNiveaus().some(n => Math.abs(n.E - Er) < 1e-5);
 	such.treffer = treffer ? Er : null;
 }
 function tiefgestellt(n) { return String(n).split("").map(z => "₀₁₂₃₄₅₆₇₈₉"[+z]).join(""); }
+const gleich = (a, b) => Math.abs(a - b) < 1e-9;
+function passendeNiveaus() { // gemerkte Niveaus zum aktuellen Potential
+	return such.gemerkt.filter(n => n.pot === such.pot && (such.pot === "coulomb" || gleich(n.L, such.L)) && (such.pot !== "endlich" || gleich(n.V0, such.V0)));
+}
+function tabellenKopf() {
+	if (such.pot === "coulomb") return ["Niveau", "Energie", "Abstand zum vorigen"];
+	if (such.pot === "endlich") return ["Breite L", "Wandhöhe V0", "Energie", "Abstand zum vorigen"];
+	return ["Breite L", "Energie", "Abstand zum vorigen"];
+}
+/* Alle gemerkten Niveaus dieses Potentialtyps, nach Breite, Wandhöhe und Energie geordnet;
+   Abstand nur zwischen Niveaus desselben Topfs */
+function tabellenZeilen() {
+	const s = such.gemerkt.filter(n => n.pot === such.pot).sort((a, b) => (a.L - b.L) || (a.V0 - b.V0) || (a.E - b.E));
+	let nr = 0;
+	return s.map((n, i) => {
+		const vor = s[i - 1], selberTopf = vor && (such.pot === "coulomb" || (gleich(vor.L, n.L) && gleich(vor.V0, n.V0)));
+		nr = selberTopf ? nr + 1 : 1;
+		const abstand = selberTopf ? de(n.E - vor.E, 3) + " eV" : "";
+		const energie = de(n.E, 3) + " eV";
+		if (such.pot === "coulomb") return ["E" + tiefgestellt(nr), energie, abstand];
+		const breite = de(n.L, 3) + " nm";
+		if (such.pot === "endlich") return [breite, de(n.V0, 2) + " eV", energie, abstand];
+		return [breite, energie, abstand];
+	});
+}
 function tabelleZeichnen() {
 	const t = document.getElementById("s-tabelle"), leer = document.getElementById("s-leer");
-	const zeilen = tabellenZeilen();
+	const zeilen = tabellenZeilen(), kopf = tabellenKopf().map(k => k.replace("V0", "V₀"));
 	leer.style.display = zeilen.length ? "none" : "";
 	t.style.display = zeilen.length ? "" : "none";
-	t.innerHTML = "<thead><tr><th>Niveau</th><th>Energie</th>" + "<th>Abstand zum vorigen</th>" + "</tr></thead><tbody>" +
-		zeilen.map(z => "<tr><td>" + z[0] + "</td><td>" + z[1] + "</td><td>" + z[2] + "</td></tr>").join("") + "</tbody>";
-}
-function tabellenZeilen() {
-	const s = such.gemerkt.slice().sort((a, b) => a - b);
-	return s.map((e, i) => ["E" + tiefgestellt(i + 1), de(e, 3) + " eV", i ? de(e - s[i - 1], 3) + " eV" : ""]);
+	t.innerHTML = "<thead><tr>" + kopf.map(k => "<th>" + k + "</th>").join("") + "</tr></thead><tbody>" +
+		zeilen.map(z => "<tr>" + z.map(w => "<td>" + w + "</td>").join("") + "</tr>").join("") + "</tbody>";
 }
 function konfigText() {
 	if (such.pot === "unendlich") return "unendlich hoher Topf, L = " + de(such.L, 2) + " nm";
@@ -768,7 +808,12 @@ const reglerAusE = E => (such.pot === "coulomb" ? Math.sqrt(RY / Math.max(0.05, 
 function setzeE(E, ziehen = false) { // ziehen: mit Einrasten beim Überqueren eines Zustands
 	const rE = document.getElementById("s-E"), emin = eAusRegler(+rE.min), emax = eAusRegler(+rE.max), v = Math.min(emax, Math.max(emin, E));
 	if (ziehen) parameterSetzen("E", v);
-	else { such.E = Math.round(v * 1000) / 1000; rohZuruecksetzen(); rE.value = reglerAusE(such.E); }
+	else { // eingetippt: liegt der Wert auf 0,002 eV genau an einer erlaubten Energie, wird der exakte Wert gesetzt
+		such.E = Math.round(v * 1000) / 1000; rohZuruecksetzen();
+		const Ek = naechsterEigenwert(such.E);
+		if (Ek !== null && Math.abs(Ek - such.E) <= 0.002 && klingtAb(such.L, such.V0, Ek)) { such.E = Ek; such.einrast = "E"; }
+		rE.value = reglerAusE(such.E);
+	}
 	document.getElementById("s-Ezahl").value = such.E.toFixed(3);
 	document.getElementById("s-L-wert").textContent = de(such.L, 2) + " nm";
 	document.getElementById("s-V-wert").textContent = de(such.V0, 1) + " eV";
@@ -788,7 +833,7 @@ document.getElementById("s-quadrat").addEventListener("change", zeichneSuchen);
 document.getElementById("s-vergleich").addEventListener("change", zeichneSuchen);
 document.getElementById("s-merken").addEventListener("click", () => {
 	if (such.treffer === null) return;
-	such.gemerkt.push(such.treffer); such.gemerkt.sort((a, b) => a - b);
+	such.gemerkt.push({ pot: such.pot, L: such.L, V0: such.V0, E: such.treffer });
 	meldung("Niveau gemerkt: E = " + de(such.treffer, 3) + " eV");
 	tabelleZeichnen(); zeichneSuchen();
 });
@@ -802,7 +847,7 @@ const cB = document.getElementById("b-canvas"), ctxB = cB.getContext("2d");
 const cK = document.getElementById("b-kurve"), ctxK = cK.getContext("2d");
 let WB = 760, HB = 360, WK = 760, HK = 240;
 const BX = 1.6; // Rechenbereich -1,6 nm bis 1,6 nm
-function Vdoppel(d) { const a = d / 2, b = d / 2 + bind.W0; return x => { const u = Math.abs(x); return (u > a && u < b) ? 0 : bind.V0; }; }
+function Vdoppel(d) { const a = d / 2, b = d / 2 + bind.W0; return rechteckPotential([[-b, -a], [a, b]], bind.V0); }
 const NB = 1600; // Rechenpunkte auf der halben Strecke 0 bis 1,6 nm
 function zweiZustaende(d) { // Zustand 1: gerade Lösung, Zustand 2: ungerade Lösung
 	const V = Vdoppel(d);
@@ -810,7 +855,7 @@ function zweiZustaende(d) { // Zustand 1: gerade Lösung, Zustand 2: ungerade L�
 }
 function bindungVorbereiten() {
 	if (bind.kurve) return;
-	bind.einzel = eigenwertParitaet(x => (Math.abs(x) < bind.W0 / 2 ? 0 : bind.V0), BX, NB, 0.01, bind.V0 - 0.01, 0.05, true);
+	bind.einzel = eigenwertParitaet(rechteckPotential([[-bind.W0 / 2, bind.W0 / 2]], bind.V0), BX, NB, 0.01, bind.V0 - 0.01, 0.05, true);
 	const liste = [];
 	for (let d = 0.02; d <= 0.8001; d += 0.02) { const e = zweiZustaende(d); liste.push({ d, e1: e[0], e2: e[1] }); }
 	bind.kurve = liste;
@@ -914,7 +959,7 @@ bildLeiste(document.getElementById("topf-leinwand"), () => mitKast(cT, kartenStr
 	() => "B.4 Potentialtopf, n = " + topf.n + ", L = " + de(topf.L, 2) + " nm");
 bildLeiste(document.getElementById("s-leinwand"), () => mitKast(cS), () => "B.4 Zustaende, " + konfigText() + ", E = " + de(such.E, 3) + " eV");
 const loeschenS = symbolKnopf("loeschen", "Gemerkte Niveaus löschen", () => { such.gemerkt = []; tabelleZeichnen(); zeichneSuchen(); });
-bildLeiste(document.getElementById("s-tabelle-leinwand"), () => { const t = tabellenBild(["Niveau", "Energie", "Abstand zum vorigen"], tabellenZeilen()); return t; }, () => "B.4 Energieniveaus, " + konfigText(), [loeschenS], "unten");
+bildLeiste(document.getElementById("s-tabelle-leinwand"), () => tabellenBild(tabellenKopf().map(k => k.replace("V0", "V₀")), tabellenZeilen()), () => "B.4 Energieniveaus, " + konfigText(), [loeschenS], "unten");
 bildLeiste(document.getElementById("b-leinwand"), () => mitKast(cB, kartenStreifen([
 	{ titel: "einzelnes Atom", wert: document.getElementById("b-E0").textContent, rand: "#ccc", farbe: "#444" },
 	{ titel: "Doppeltopf", wert: document.getElementById("b-E").textContent, rand: BERNSTEIN, fuell: "#FFF9E8", farbe: "#7A4A00" },
