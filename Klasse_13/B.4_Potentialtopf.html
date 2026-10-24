@@ -899,7 +899,11 @@ function schleife(t) {
 		document.querySelectorAll("#modi button").forEach(b => { if (!gew.includes(b.dataset.modus)) b.style.display = "none"; });
 		if (gew.length === 1) document.getElementById("modi").style.display = "none";
 	}
-	const pot = p.get("pot"); if (["unendlich", "endlich", "coulomb"].includes(pot)) { such.pot = pot; if (pot === "coulomb") such.E = -10; }
+	const pot = p.get("pot");
+	if (["unendlich", "endlich", "coulomb"].includes(pot)) { // QR-Code zeigt nur das angesagte Potential
+		such.pot = pot; if (pot === "coulomb") such.E = -10;
+		document.querySelectorAll("#pot-knoepfe button").forEach(b => { if (b.dataset.pot !== pot) b.style.display = "none"; });
+	}
 	knopfTopfPlay();
 	document.getElementById("topf-L-wert").textContent = de(topf.L, 2) + " nm";
 	setzeModus(gew[0] || "topf");
