@@ -489,6 +489,12 @@ function rundRechteck(ctx, x, y, w, h, r) {
 	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
 }
 /* Plakette: Text auf hellem, farbig umrandetem Schildchen; ausr "left", "right" oder "center", y ist die Mitte */
+function plakettenRahmen(ctx, W, text, x, y, ausr = "left", g = 12) { // Rechteck, das plakette() belegen würde
+	ctx.font = schrift(W, g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9;
+	const xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
+	return { x0: xa - 3, x1: xa + b + 3, y0: y - h / 2 - 3, y1: y + h / 2 + 3 };
+}
+const ueberlappt = (r, q) => r.x0 < q.x1 && q.x0 < r.x1 && r.y0 < q.y1 && q.y0 < r.y1;
 function plakette(ctx, W, text, x, y, farbe, fuell, ausr = "left", g = 12) {
 	ctx.font = schrift(W, g, "bold"); const b = ctx.measureText(text).width + 12, h = g + 9;
 	const xa = ausr === "right" ? x - b : ausr === "center" ? x - b / 2 : x;
@@ -728,30 +734,46 @@ function klingtAb(L, V0, E) {
 	for (let i = it; i <= k.N; i += d) { const a = Math.abs(ps[i]) / mx; if (a > vor * 1.0001 && a > 1e-4) return false; vor = a; }
 	return true;
 }
-/* Ein Regler (p = "L", "V0" oder "E") wird von der vorigen Stellung auf v gezogen.
-   Wechselt die Vorzeichenfunktion dazwischen das Vorzeichen, liegt dazwischen ein erlaubter Zustand:
-   dann wird der exakte Wert halbiert gesucht und dort eingerastet. So geht kein Zustand verloren,
-   egal wie grob der Regler auflöst (Kast 2026-10-24). */
+/* Fenster einer Reglerstellung v: der halbe Reglerschritt links und rechts davon (in den Einheiten von p).
+   Liegt darin ein Zustand, zeigt genau diese Stellung ihn an; so gibt es zu jedem Zustand genau eine erlaubte Stellung,
+   und die angezeigte Zahl ist die des Zustands (Kast 2026-10-24). */
+const REGLERSCHRITT = { L: 0.01, V0: 0.1, E: 0.001 };
+function fenster(p, v) {
+	const h = REGLERSCHRITT[p] / 2;
+	if (p === "E" && such.pot === "coulomb") { const s0 = reglerAusE(v), a = eAusRegler(s0 - h), b = eAusRegler(s0 + h); return [Math.min(a, b), Math.max(a, b)]; }
+	return [v - h, v + h];
+}
+/* Ein Regler (p = "L", "V0" oder "E") wird von der vorigen Stellung alt auf v gezogen.
+   1. Liegt im Fenster von v ein Zustand, rastet er ein.
+   2. Sonst: Wechselt die Vorzeichenfunktion zwischen den Fenstern von alt und v das Vorzeichen, wurde ein Zustand
+      übersprungen (großer Sprung); dann rastet der zuletzt übersprungene ein. So geht kein Zustand verloren. */
+function entrasten() { // eingerasteten Wert auf seine Reglerstellung zurücksetzen
+	if (such.einrast && such.roh[such.einrast] !== undefined) such[such.einrast] = such.roh[such.einrast];
+	such.einrast = null;
+}
 function parameterSetzen(p, v) {
+	if (such.einrast && such.einrast !== p) entrasten(); // anderer Regler bewegt: dessen Wert gilt wieder wie angezeigt
 	const alt = such.roh[p]; such.roh[p] = v;
 	const werte = { L: such.L, V0: such.V0, E: such.E };
 	const f = x => { const w = Object.assign({}, werte); w[p] = x; return randWert(w.L, w.V0, w.E); };
-	let ziel = v, einrast = false;
-	if (alt !== undefined && Math.abs(alt - v) > 1e-12) {
-		const T = 8, pkt = [];
-		for (let i = 0; i <= T; i++) { const x = alt + (v - alt) * i / T; pkt.push([x, f(x)]); }
-		// ein Zustand genau an der Startstellung (gerade eingerastet) zählt nicht, sonst klebt der Regler
-		const amStart = such.einrast === p && Math.abs(such[p] - alt) < 1e-12;
-		let fund = null, vorige = (isFinite(pkt[0][1]) && pkt[0][1] !== 0 && !amStart) ? pkt[0] : null;
-		for (let i = 1; i <= T; i++) {
-			if (!isFinite(pkt[i][1])) { vorige = null; continue; }
-			if (vorige && vorige[1] * pkt[i][1] < 0) fund = [vorige[0], pkt[i][0]]; // letzter Wechsel in Zugrichtung
-			vorige = pkt[i];
+	const suche = (a, b) => { // Zustand zwischen a und b (Vorzeichenwechsel), auf 8 Teilstücke genau abgetastet; liefert den letzten in Richtung a nach b
+		const T = 8; let fund = null, vorige = null;
+		for (let i = 0; i <= T; i++) {
+			const x = a + (b - a) * i / T, fx = f(x);
+			if (!isFinite(fx)) { vorige = null; continue; }
+			if (vorige && vorige[1] * fx < 0) fund = [vorige[0], x];
+			vorige = [x, fx];
 		}
-		if (fund) { const z = halbieren(f, fund[0], fund[1]); if (z !== null) { ziel = z; einrast = true; } }
-		// Sicherung: eingerastet wird nur bei einem nachweislich gebundenen Zustand
-		if (einrast) { const w = Object.assign({}, werte); w[p] = ziel; if (!klingtAb(w.L, w.V0, w.E)) { ziel = v; einrast = false; } }
+		return fund ? halbieren(f, fund[0], fund[1]) : null;
+	};
+	let ziel = v, einrast = false;
+	const [a, b] = fenster(p, v);
+	let z = suche(a, b); // 1. im eigenen Fenster
+	if (z === null && alt !== undefined && Math.abs(alt - v) > 1e-12) { // 2. übersprungen
+		const fa = fenster(p, alt), von = v > alt ? fa[1] : fa[0], bis = v > alt ? a : b;
+		if ((v > alt && bis > von) || (v < alt && bis < von)) z = suche(von, bis);
 	}
+	if (z !== null) { const w = Object.assign({}, werte); w[p] = z; if (klingtAb(w.L, w.V0, w.E)) { ziel = z; einrast = true; } } // nur nachweislich gebundene Zustände
 	such[p] = ziel; such.einrast = einrast ? p : null;
 }
 function Vz(k, x) { return such.pot === "coulomb" ? k.V(Math.max(x, 1e-4)) : k.V(x); } // Potential zum Zeichnen (Coulomb: nicht bei r = 0)
@@ -858,18 +880,30 @@ function zeichneSuchen() {
 	const sichtbar = Er >= k.Emin && Er <= k.Emax;
 	if (sichtbar) welleZeichnen(ctx, A, xsAnz, wAnz, Er, amp, quadrat, treffer ? "#1E6B29" : BLAUDUNKEL, treffer ? "rgba(46,139,58,0.20)" : BLAUFUELL, undefined, undefined, quadrat || treffer);
 	else plakette(ctx, W, (Er < k.Emin ? "↓ E = " : "↑ E = ") + de(Er, 3) + " eV liegt außerhalb dieses Ausschnitts", (A.x0 + A.x1) / 2, Er < k.Emin ? A.y1 - 16 : A.y0 + 4, "#7A4A00", "#FFF4D6", "center");
-	// Energie als Plakette am rechten Rand; erlaubter Zustand zusätzlich als grünes Schild oben
-	if (sichtbar) plakette(ctx, W, "E = " + de(Er, 3) + " eV", A.x1 - 2, A.py(Er) + (A.py(Er) - A.y0 < 30 ? 14 : -13), treffer ? "#1E6B29" : "#7A4A00", treffer ? "#EEF8EF" : "#FFF4D6", "right");
-	if (treffer) plakette(ctx, W, "✓ erlaubter Zustand", (A.x0 + A.x1) / 2 - (schmal ? 0 : 40), A.y0 - 4, "#1E6B29", "#EEF8EF", "center", 13);
+	// Hinweise im Bild, die einander nicht überdecken: grünes Schild oben, roter Pfeil, Energie-Plakette
+	const belegt = [];
+	if (such.pot === "endlich") belegt.push({ x0: A.px(such.L / 2) + 4, x1: A.px(such.L / 2) + 30, y0: A.py(such.V0) - 20, y1: A.py(such.V0) + 2 }); // Beschriftung V0
+	if (treffer) { const x = (A.x0 + A.x1) / 2 - (schmal ? 0 : 40); plakette(ctx, W, "✓ erlaubter Zustand", x, A.y0 - 4, "#1E6B29", "#EEF8EF", "center", 13); belegt.push(plakettenRahmen(ctx, W, "✓ erlaubter Zustand", x, A.y0 - 4, "center", 13)); }
 	else if (sichtbar && such.pot !== "unendlich") { // psi läuft außen weg: roter Pfeil am Bildrand
 		const e0 = wAnz[wAnz.length - 1], auf = e0 > 0, yo = A.y0 + 4, yu = A.y1 - 4;
 		let ia = -1; // erster Punkt rechts vom Umkehrpunkt, an dem die Kurve den Bildbereich verlässt
 		for (let i = 0; i < xsAnz.length; i++) { const w = quadrat ? wAnz[i] * wAnz[i] : wAnz[i], yy = A.py(Er) - w * amp; if (Vz(k, xsAnz[i]) > Er && (yy < yo || yy > yu)) { ia = i; break; } }
 		if (ia >= 0 || Math.abs(e0) > 1.5) {
-			const xp = ia >= 0 ? Math.min(A.x1 - 70, A.px(xsAnz[ia]) + 16) : A.x1 - 70, yz = auf ? yo + 6 : yu - 6, ys = yz + (auf ? 44 : -44);
+			const text = "ψ → " + (auf ? "+∞" : "−∞"), yz = auf ? yo + 6 : yu - 6, ys = yz + (auf ? 44 : -44);
+			const xs0 = ia >= 0 ? A.px(xsAnz[ia]) + 16 : A.x1 - 70, r0 = plakettenRahmen(ctx, W, text, 0, 0), bt = r0.x1 - r0.x0;
+			const xp = Math.min(A.x1 - bt - 12, xs0);
+			const ym = (ys + yz) / 2, rechts = !belegt.some(q => ueberlappt(plakettenRahmen(ctx, W, text, xp + 8, ym), q)) || xp - 8 - bt < A.x0;
 			pfeil(ctx, xp, ys, xp, yz, ROT, 2.6);
-			plakette(ctx, W, "ψ → " + (auf ? "+∞" : "−∞"), xp + 8, (ys + yz) / 2, ROT, "#FFF2F2");
+			plakette(ctx, W, text, rechts ? xp + 8 : xp - 8, ym, ROT, "#FFF2F2", rechts ? "left" : "right");
+			belegt.push(rechts ? { x0: xp - 6, x1: xp + 8 + bt, y0: Math.min(ys, yz) - 4, y1: Math.max(ys, yz) + 4 } : { x0: xp - 8 - bt, x1: xp + 6, y0: Math.min(ys, yz) - 4, y1: Math.max(ys, yz) + 4 });
 		}
+	}
+	if (sichtbar) { // Energie-Plakette: rechts oberhalb der Linie, sonst rechts unterhalb, sonst links
+		const text = "E = " + de(Er, 3) + " eV", y = A.py(Er);
+		const lagen = [[A.x1 - 2, y - 13, "right"], [A.x1 - 2, y + 14, "right"], [A.x0 + 6, y - 13, "left"], [A.x0 + 6, y + 14, "left"]]
+			.filter(([x, yy]) => yy > A.y0 - 6 && yy < A.y1 + 4);
+		const frei = lagen.find(([x, yy, au]) => !belegt.some(q => ueberlappt(plakettenRahmen(ctx, W, text, x, yy, au), q))) || lagen[0];
+		if (frei) plakette(ctx, W, text, frei[0], frei[1], treffer ? "#1E6B29" : "#7A4A00", treffer ? "#EEF8EF" : "#FFF4D6", frei[2]);
 	}
 	// Randverhalten anzeigen
 	const ende = lsg.ps[kr.N] / mx;
@@ -949,10 +983,9 @@ const reglerAusE = E => (such.pot === "coulomb" ? Math.sqrt(RY / Math.max(0.05, 
 function setzeE(E, ziehen = false) { // ziehen: mit Einrasten beim Überqueren eines Zustands
 	const rE = document.getElementById("s-E"), emin = eAusRegler(+rE.min), emax = eAusRegler(+rE.max), v = Math.min(emax, Math.max(emin, E));
 	if (ziehen) parameterSetzen("E", v);
-	else { // eingetippt: liegt der Wert auf 0,002 eV genau an einer erlaubten Energie, wird der exakte Wert gesetzt
-		such.E = Math.round(v * 1000) / 1000; rohZuruecksetzen();
-		const Ek = naechsterEigenwert(such.E);
-		if (Ek !== null && Math.abs(Ek - such.E) <= 0.002 && klingtAb(such.L, such.V0, Ek)) { such.E = Ek; such.einrast = "E"; }
+	else { // eingetippt: liegt im Fenster der Zahl (halbe Stelle) eine erlaubte Energie, wird der exakte Wert gesetzt
+		entrasten(); such.E = Math.round(v * 1000) / 1000; rohZuruecksetzen();
+		parameterSetzen("E", such.E);
 		rE.value = reglerAusE(such.E);
 	}
 	document.getElementById("s-Ezahl").value = such.E.toFixed(3);
@@ -961,7 +994,7 @@ function setzeE(E, ziehen = false) { // ziehen: mit Einrasten beim Überqueren e
 	zeichneSuchen();
 }
 document.querySelectorAll("#pot-knoepfe button").forEach(b => b.addEventListener("click", () => {
-	such.pot = b.dataset.pot; such.E = such.pot === "coulomb" ? -10 : 1; rohZuruecksetzen(); sucheAnpassen();
+	entrasten(); such.pot = b.dataset.pot; such.E = such.pot === "coulomb" ? -10 : 1; rohZuruecksetzen(); sucheAnpassen();
 }));
 document.querySelectorAll("#gr-zoom button").forEach(b => b.addEventListener("click", () => { such.zoom = +b.dataset.zoom; sucheAnpassen(); }));
 document.getElementById("s-L").addEventListener("input", e => { parameterSetzen("L", parseFloat(e.target.value)); sucheAnpassen(); });
