@@ -227,7 +227,7 @@ function neuesPaket() {
 	const k0 = Math.sqrt(zustand.E / C), x0 = 11, s = 1.2; let n = 0;
 	for (let i = 0; i < N; i++) { const x = i * DX, g = Math.exp(-((x - x0) ** 2) / (4 * s * s)); re[i] = g * Math.cos(k0 * x); im[i] = g * Math.sin(k0 * x); n += (re[i] ** 2 + im[i] ** 2) * DX; }
 	const f = 1 / Math.sqrt(n); for (let i = 0; i < N; i++) { re[i] *= f; im[i] *= f; }
-	zustand.t = 0; zustand.wegLinks = 0; zustand.wegRechts = 0;
+	zustand.t = 0; zustand.wegLinks = 0; zustand.wegRechts = 0; zustand.angekommen = false; zustand.fertig = false; zustand.ende = false;
 }
 function mulPot() { for (let i = 0; i < N; i++) { const r = re[i], m = im[i]; re[i] = r * pot_c[i] - m * pot_s[i]; im[i] = r * pot_s[i] + m * pot_c[i]; } }
 function schritt() {
@@ -245,6 +245,28 @@ function anteile() {
 	let L = zustand.wegLinks, R = zustand.wegRechts, B = 0;
 	for (let i = 0; i < N; i++) { const x = i * DX, p = (re[i] ** 2 + im[i] ** 2) * DX; if (x < XB) L += p; else if (x > XB + zustand.a) R += p; else B += p; }
 	return { L, R, B };
+}
+/* Ende des Durchlaufs: Das Paket hat die Barriere erreicht und beide Teile haben den Bereich ZONE vor und hinter ihr verlassen.
+   Dann stehen reflektiertes und durchgelassenes Paket gut sichtbar links und rechts im Bild (früher: fester Stopp bei 18 fs,
+   da war ein schnelles durchgelassenes Paket schon rechts aus dem Bild gelaufen und ein langsames noch gar nicht angekommen).
+   Notbremse: Erreicht ein Teil den Bildrand, bevor die Barriere frei ist (sehr langsame Reste), wird ebenfalls angehalten. */
+const ZONE = 4; // nm
+function pruefeEnde() {
+	let pz = 0, rand = zustand.wegLinks + zustand.wegRechts;
+	for (let i = 0; i < N; i++) {
+		const x = i * DX, p = (re[i] ** 2 + im[i] ** 2) * DX;
+		if (x > XB - ZONE && x < XB + zustand.a + ZONE) pz += p;
+		if (x < RAND + 1.5 || x > XL - RAND - 1.5) rand += p;
+	}
+	if (pz > 0.05) zustand.angekommen = true;
+	if (!zustand.angekommen) return false;
+	zustand.fertig = pz < 0.003;
+	return zustand.fertig || rand > 0.01;
+}
+/* Für die Prüfung ohne Anzeige: rechnet bis zum Ende des Durchlaufs, gibt [t, reflektiert, durchgelassen, in der Barriere] zurück */
+function laufBisFertig() {
+	for (let k = 1; zustand.t < 400; k++) { schritt(); if (k % 5 === 0 && pruefeEnde()) break; }
+	const a = anteile(); return [zustand.t, a.L, a.R, a.B];
 }
 
 /* ==========================================================================
@@ -375,7 +397,7 @@ function zeichne() {
 	werte();
 }
 function werte() {
-	const a = anteile(), fertig = a.B < 0.002 && zustand.t > 1;
+	const a = anteile(), fertig = zustand.fertig;
 	const R = document.getElementById("k-R"), T = document.getElementById("k-T");
 	const ueber = zustand.t > 0.5 && (a.R > 0.0005 || fertig || a.B > 0.01);
 	R.textContent = ueber ? de(100 * a.L, a.L < 0.1 ? 1 : 0) + " %" : "…";
@@ -396,8 +418,7 @@ function regler(id, schluessel, einheit, stellen) {
 }
 regler("r-a", "a", "nm", 2); regler("r-V", "V0", "eV", 1); regler("r-E", "E", "eV", 1);
 document.getElementById("btn-start").addEventListener("click", () => {
-	const a = anteile();
-	if (!zustand.laeuft && a.B < 0.002 && zustand.t > 12) neuesPaket(); // fertig gelaufen: von vorn
+	if (!zustand.laeuft && zustand.ende) { neuesPaket(); zustand.ende = false; } // fertig gelaufen: von vorn
 	zustand.laeuft = !zustand.laeuft; startKnopf();
 });
 ["btn-tempo1", "btn-tempo2"].forEach((id, i) => document.getElementById(id).addEventListener("click", () => {
@@ -430,9 +451,7 @@ function schleife(t) {
 		const dt = letzte === null ? 0.016 : Math.min(0.05, (t - letzte) / 1000);
 		// Anzeige: 1 s Echtzeit entspricht 1,2 fs (langsam) bzw. 3,6 fs (schnell)
 		const n = Math.max(1, Math.round(dt * 1.2 * zustand.tempo / DT));
-		for (let k = 0; k < n; k++) schritt();
-		const a = anteile();
-		if (a.B < 0.002 && zustand.t > 4 && (a.L + a.R > 0.998) && zustand.t > 18) { zustand.laeuft = false; startKnopf(); }
+		for (let k = 0; k < n; k++) { schritt(); if (k % 5 === 4 && pruefeEnde()) { zustand.laeuft = false; zustand.ende = true; startKnopf(); break; } }
 		zeichne();
 	}
 	letzte = t;
