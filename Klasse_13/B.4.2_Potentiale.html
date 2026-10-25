@@ -566,10 +566,11 @@ function achsenZeichnen(ctx, A, opt) {
 	ctx.fillText("E", x0 + 6, y0 - 2); ctx.font = schrift(A.W, 12); ctx.fillText("in eV", x0 + 17, y0 - 2);
 	const yAchse = opt.yAchse !== undefined ? opt.yAchse : y1;
 	pfeil(ctx, x0, yAchse, x1 + 10, yAchse);
-	ctx.fillStyle = "#111"; ctx.font = schrift(A.W, 13, "italic"); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText(opt.xName, x1 + 8, y1 + 6);
-	if (opt.xEinheit) { ctx.font = schrift(A.W, 11); ctx.fillStyle = "#555"; ctx.fillText(opt.xEinheit, x1 + 8, y1 + 22); }
+	const yT = opt.ticksAmAchse ? yAchse : y1; // Beschriftung der Ortsachse direkt an der Achse oder am unteren Bildrand
+	ctx.fillStyle = "#111"; ctx.font = schrift(A.W, 13, "italic"); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText(opt.xName, x1 + 8, yT + 6);
+	if (opt.xEinheit) { ctx.font = schrift(A.W, 11); ctx.fillStyle = "#555"; ctx.fillText(opt.xEinheit, x1 + 8, yT + 22); }
 	ctx.fillStyle = "#555"; ctx.font = schrift(A.W, 11); ctx.textAlign = "center"; ctx.textBaseline = "top";
-	opt.xTicks.forEach(t => { const x = A.px(t.x); ctx.fillRect(x - 0.5, y1, 1, 4); textWennFrei(ctx, t.text, x, y1 + 6); });
+	opt.xTicks.forEach(t => { const x = A.px(t.x); ctx.fillRect(x - 0.5, yT, 1, 4); textWennFrei(ctx, t.text, x, yT + 6); });
 }
 function bereich(W, H, links, rechts, oben, unten, xmin, xmax, Emin, Emax) {
 	const x0 = links, x1 = W - rechts, y0 = oben, y1 = H - unten;
@@ -606,14 +607,17 @@ function zeichneTopf() {
 	const L = topf.L, n = topf.n, E = En(n, L);
 	// zwei Teilbilder: links Energie und psi, rechts |psi|^2
 	const teil = schmal ? { aW: W, aH: H * 0.6, bY: H * 0.6, bH: H * 0.4 } : { aW: W * 0.6, aH: H, bY: 0, bH: H };
-	const A = bereich(teil.aW, teil.aH, schmal ? 40 : 54, 22, 26, 34, -0.35, 2.35, 0, topf.EMAX);
-	// Topfinneres und Wände
-	ctx.fillStyle = TOPFINNEN; ctx.fillRect(A.px(0), A.y0 - 10, A.px(L) - A.px(0), A.y1 - A.y0 + 10);
-	wand(ctx, A.x0 + 1, A.y0 - 10, A.px(0) - A.x0 - 1, A.y1 - A.y0 + 10, "rechts");
-	wand(ctx, A.px(L), A.y0 - 10, A.x1 - A.px(L), A.y1 - A.y0 + 10, "links");
-	achsenZeichnen(ctx, A, { Emin: 0, Emax: topf.EMAX, eStep: schmal ? 5 : 3, xTicks: [{ x: 0, text: "0" }, { x: L, text: "L" }], xName: "x" });
+	// Energieachse unten und oben um eine Amplitude verlängert: psi schwingt um seine Energiehöhe und wird nie abgeschnitten (auch n = 1 dicht über dem Boden und Niveaus dicht unter EMAX)
+	const hA = teil.aH - 26 - 34, amp = Math.min(42, hA * 0.13), dE = amp * topf.EMAX / (hA - 2 * amp);
+	const A = bereich(teil.aW, teil.aH, schmal ? 40 : 54, 22, 26, 34, -0.35, 2.35, -dE, topf.EMAX + dE);
+	const yB = A.py(0); // Topfboden
+	// Topfinneres und Wände (bis zum Boden; darunter bleibt Platz für das untere Ende von psi)
+	ctx.fillStyle = TOPFINNEN; ctx.fillRect(A.px(0), A.y0 - 10, A.px(L) - A.px(0), yB - A.y0 + 10);
+	wand(ctx, A.x0 + 1, A.y0 - 10, A.px(0) - A.x0 - 1, yB - A.y0 + 10, "rechts");
+	wand(ctx, A.px(L), A.y0 - 10, A.x1 - A.px(L), yB - A.y0 + 10, "links");
+	achsenZeichnen(ctx, A, { Emin: 0, Emax: topf.EMAX + dE, eStep: schmal ? 5 : 3, xTicks: [{ x: 0, text: "0" }, { x: L, text: "L" }], xName: "x", yAchse: yB, ticksAmAchse: true });
 	ctx.strokeStyle = "#111"; ctx.lineWidth = 2.6;
-	ctx.beginPath(); ctx.moveTo(A.px(0), A.y0 - 10); ctx.lineTo(A.px(0), A.y1); ctx.lineTo(A.px(L), A.y1); ctx.lineTo(A.px(L), A.y0 - 10); ctx.stroke();
+	ctx.beginPath(); ctx.moveTo(A.px(0), A.y0 - 10); ctx.lineTo(A.px(0), yB); ctx.lineTo(A.px(L), yB); ctx.lineTo(A.px(L), A.y0 - 10); ctx.stroke();
 	// alle Niveaus dünn; beschriftet wird zuerst der gewählte Zustand, die anderen nur, wo Platz ist
 	for (let k = 1; k <= 6; k++) {
 		const e = En(k, L); if (e > topf.EMAX) break;
@@ -622,11 +626,10 @@ function zeichneTopf() {
 	}
 	if (E <= topf.EMAX) plakette(ctx, W, "n = " + n, A.px(L) + 6, A.py(E), "#7A4A00", "#FFF4D6");
 	const nebenNiveaus = () => { ctx.fillStyle = "#6a6a6a"; ctx.font = schrift(W, 12); ctx.textAlign = "left"; ctx.textBaseline = "middle";
-		for (let k = 1; k <= 6; k++) { const e = En(k, L); if (e > topf.EMAX) break; if (k !== n) textWennFrei(ctx, "n = " + k, A.px(L) + 8, A.py(e)); } };
+		for (let k = 1; k <= 6; k++) { const e = En(k, L); if (e > topf.EMAX) break; if (k !== n) { const r = textRahmen(ctx, "n = " + k, A.px(L) + 8, A.py(e)); if (frei(ctx, r, 4)) textWennFrei(ctx, "n = " + k, A.px(L) + 8, A.py(e)); } } }; // mit 4 px Abstand, damit dicht liegende Niveaus nicht aneinanderkleben
 	// psi auf der Energiehöhe, Realteil schwingt mit cos(phase)
 	const N = 240, xs = [], werte = [];
 	for (let i = 0; i <= N; i++) { const x = L * i / N; xs.push(x); werte.push(Math.sin(n * Math.PI * x / L) * Math.cos(topf.phase)); }
-	const amp = Math.min(42, (A.y1 - A.y0) * 0.13);
 	if (E <= topf.EMAX) {
 		ctx.strokeStyle = "rgba(31,58,168,0.25)"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
 		ctx.beginPath(); for (let i = 0; i <= N; i++) { const yy = A.py(E) - Math.sin(n * Math.PI * xs[i] / L) * amp; i ? ctx.lineTo(A.px(xs[i]), yy) : ctx.moveTo(A.px(xs[i]), yy); } ctx.stroke();
