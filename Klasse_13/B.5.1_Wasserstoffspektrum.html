@@ -362,7 +362,7 @@ function tabellenBild(kopf, zeilen) {
    E_Ph = E_m - E_n,  lambda = h c / E_Ph  (h c = 1239,84 eV nm)
    Kontrolle: 3 -> 2: 1,89 eV, 656 nm; 2 -> 1: 10,2 eV, 122 nm; 4 -> 3: 0,661 eV, 1875 nm
    ========================================================================== */
-const RYD = 13.6057, HC = 1239.84, NMAX = 7;
+const RYD = 13.6057, HC = 1239.84, NMAX = 7, NZIEL = 3; // Sprünge nur nach n = 1, 2, 3: Lyman, Balmer, Paschen
 const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
 const BLAU = "#3050E0", BLAUDUNKEL = "#1F3AA8", BERNSTEIN = "#E0A100", GRUEN = "#2E8B3A", ROT = "#BF0000";
 const SERIE = { 1: { name: "Lyman-Serie", farbe: "#6A3D9A", kurz: "serie-l" }, 2: { name: "Balmer-Serie", farbe: "#BF0000", kurz: "serie-b" }, 3: { name: "Paschen-Serie", farbe: "#8D5524", kurz: "serie-p" } };
@@ -435,13 +435,16 @@ function zeichneNiveaus(ctx, W, H, opt) {
 	ctx.font = schrift(W, 13, "italic"); ctx.fillStyle = "#222"; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("E", g.l + 2, 0);
 	/* Niveaus */
 	const niveaus = [1, 2, 3, 4, 5, 6, 7, Infinity];
+	/* Beschriftung nur, wo zu den schon beschrifteten Niveaus genug Abstand ist (wichtige zuerst); sonst bleibt die Linie unbeschriftet */
+	const beschriftet = new Set(), abstand = (W < 400 ? 12 : 11) + 2;
+	[1, 2, 3, 4, 5, Infinity, 7, 6].forEach(n => { if ([...beschriftet].every(k => Math.abs(g.yN(k) - g.yN(n)) >= abstand)) beschriftet.add(n); });
 	niveaus.forEach(n => {
 		const y = g.yN(n), markiert = opt.markiert === n;
 		ctx.strokeStyle = markiert ? BLAU : "#222"; ctx.lineWidth = markiert ? 3 : (n === Infinity ? 1 : 1.5);
 		if (n === Infinity) ctx.setLineDash([5, 4]);
 		ctx.beginPath(); ctx.moveTo(g.l, y); ctx.lineTo(W - g.r + 8, y); ctx.stroke(); ctx.setLineDash([]);
 		const eng = n >= 5 && n !== Infinity;
-		if (!eng || n === 5 || n === 7 || W >= 400) {
+		if (beschriftet.has(n)) {
 			ctx.font = schrift(W, eng ? 11 : 12); ctx.fillStyle = markiert ? BLAUDUNKEL : "#222"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
 			ctx.fillText("n = " + (n === Infinity ? "∞" : n), g.l - 14, y);
 			ctx.fillStyle = "#7A4A00"; ctx.textAlign = "left";
@@ -450,19 +453,48 @@ function zeichneNiveaus(ctx, W, H, opt) {
 	});
 	/* Serienbeschriftung */
 	if (opt.serien) {
-		ctx.font = schrift(W, 12, "bold"); ctx.textAlign = "center"; ctx.textBaseline = "top";
-		[1, 2, 3].forEach(n => { const x = (g.spalte(n, n + 1) + g.spalte(n, NMAX)) / 2; ctx.fillStyle = SERIE[n].farbe; ctx.fillText(SERIE[n].name, x, g.yN(n) + 5); });
+		/* Mittig unter den eigenen Pfeilen, aber nie über den Bildrand oder (Paschen) in die Balmer-Pfeile, die unter n = 3 weiterlaufen */
+		ctx.textAlign = "left"; ctx.textBaseline = "top";
+		[1, 2, 3].forEach(n => {
+			let gr = 12; ctx.font = schrift(W, gr, "bold");
+			const links = n === 3 ? g.spalte(2, NMAX) + 6 : g.l + 2, rechts = W - g.r + 8; // Lyman und Balmer rechts der Energieachse
+			while (ctx.measureText(SERIE[n].name).width > rechts - links && gr > 8) { gr--; ctx.font = schrift(W, gr, "bold"); }
+			const w = ctx.measureText(SERIE[n].name).width, mitte = (g.spalte(n, n + 1) + g.spalte(n, NMAX)) / 2;
+			const x = Math.max(links, Math.min(rechts - w, mitte - w / 2));
+			ctx.fillStyle = SERIE[n].farbe; ctx.fillText(SERIE[n].name, x, g.yN(n) + 5);
+		});
 	}
 	/* Pfeile */
-	(opt.pfeile || []).forEach(p => {
+	const gezeichnet = (opt.pfeile || []).map(p => {
 		const x = g.spalte(p.n, p.m), y1 = g.yN(p.m), y2 = g.yN(p.n), f = p.farbe || pfeilFarbe(p.m, p.n);
 		const yEnde = y1 + (y2 - y1) * (p.anteil === undefined ? 1 : p.anteil);
 		if (yEnde - y1 > 9) pfeil(ctx, x, y1, x, yEnde, f, p.dick || 2.4, 9);
-		if (p.text && (p.anteil === undefined || p.anteil >= 1)) {
-			ctx.save(); ctx.translate(x - 4, (y1 + y2) / 2); ctx.rotate(-Math.PI / 2);
-			ctx.font = schrift(W, 11); ctx.fillStyle = f; ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(p.text, 0, 0); ctx.restore();
+		return { p, x, y1, y2, f, fertig: p.anteil === undefined || p.anteil >= 1 };
+	});
+	/* Beschriftungen nur in nachgemessen freie Lücken (Kast 2026-10-25: nichts darf sich überlappen):
+	   Kandidaten sind die Abschnitte des Pfeils zwischen zwei Niveaulinien, größter zuerst. Ein Abschnitt taugt nur,
+	   wenn der Text (gedreht, links am Pfeil) hineinpasst und dort weder ein anderer Pfeil noch eine andere Beschriftung liegt.
+	   Findet sich kein Platz, bleibt der Pfeil unbeschriftet; der Wert steht ohnehin in der Karte daneben. */
+	ctx.font = schrift(W, 11);
+	const th = W < 400 ? 13 : 12, belegt = [];
+	const linien = [1, 2, 3, 4, 5, 6, 7, Infinity].map(n => g.yN(n));
+	gezeichnet.filter(a => a.p.text && a.fertig).sort((a, b) => (b.p.dick || 0) - (a.p.dick || 0)).forEach(a => {
+		const tw = ctx.measureText(a.p.text).width, xl = a.x - 4 - th, xr = a.x - 3;
+		const schnitte = [a.y1, ...linien.filter(y => y > a.y1 + 1 && y < a.y2 - 1), a.y2].sort((u, v) => u - v);
+		const luecken = [];
+		for (let i = 0; i < schnitte.length - 1; i++) luecken.push([schnitte[i] + 3, schnitte[i + 1] - 3]);
+		luecken.sort((u, v) => (v[1] - v[0]) - (u[1] - u[0]));
+		for (const [o, u] of luecken) {
+			if (u - o < tw + 4) break;
+			const ym = (o + u) / 2, yo = ym - tw / 2 - 2, yu = ym + tw / 2 + 2;
+			const stoesst = gezeichnet.some(b => b !== a && b.x > xl - 2 && b.x < xr + 2 && b.y1 < yu && b.y2 > yo)
+				|| belegt.some(r => r.xl < xr && r.xr > xl && r.yo < yu && r.yu > yo);
+			if (stoesst) continue;
+			ctx.save(); ctx.translate(a.x - 4, ym); ctx.rotate(-Math.PI / 2);
+			ctx.fillStyle = a.f; ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(a.p.text, 0, 0); ctx.restore();
+			belegt.push({ xl, xr, yo, yu });
+			break;
 		}
-		if (p.zeichen) { ctx.font = "bold 15px " + SCHRIFT; ctx.fillStyle = p.zeichen === "✓" ? GRUEN : ROT; ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(p.zeichen, x, y1 - 2); }
 	});
 	return g;
 }
@@ -515,16 +547,19 @@ function zeichneSpektrum(ctx, W, H, linien, opt = {}) {
 	if (opt.text) {
 		const li = linien.find(z => z.markiert);
 		if (li) {
-			const sichtbar = li.l >= 380 && li.l <= 780, x = sichtbar ? X(li.l) : L(li.l), y = sichtbar ? y0 + sh / 2 : u0 - 8;
+			/* Schild immer im schwarzen Streifen: sichtbare Linie rechts daneben (oder links, wenn rechts kein Platz), unsichtbare Linie mittig
+			   statt des Hinweistexts; im Überblick darunter ist kein Platz für ein Schild (Kast 2026-10-25: keine Überlappung) */
+			const sichtbar = li.l >= 380 && li.l <= 780, x = sichtbar ? X(li.l) : W / 2, y = y0 + sh * (sichtbar ? 0.5 : 0.36);
 			ctx.font = schrift(W, 15, "bold"); const b = ctx.measureText(opt.text).width + 14;
-			const xb = Math.max(rand + 2, Math.min(W - rand - b - 2, x + 10));
+			const xb = !sichtbar ? x - b / 2 : (x + 10 + b <= W - rand - 2 ? x + 10 : Math.max(rand + 2, x - 10 - b));
 			ctx.fillStyle = sichtbar ? "rgba(255,255,255,0.92)" : "#fff"; ctx.strokeStyle = "#999"; ctx.lineWidth = 1;
 			ctx.beginPath(); ctx.roundRect(xb, y - 13, b, 26, 4); ctx.fill(); ctx.stroke();
 			ctx.fillStyle = "#111"; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(opt.text, xb + 7, y);
 		}
 	}
 	if (opt.leerText && !linien.some(z => z.l >= 380 && z.l <= 780)) {
-		ctx.font = schrift(W, 13); ctx.fillStyle = "#bbb"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opt.leerText, W / 2, y0 + sh / 2);
+		const mitSchild = opt.text && linien.some(z => z.markiert);
+		ctx.font = schrift(W, mitSchild ? 12 : 13); ctx.fillStyle = "#bbb"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(opt.leerText, W / 2, y0 + sh * (mitSchild ? 0.8 : 0.5), W - 2 * rand - 8);
 	}
 }
 
@@ -537,8 +572,8 @@ const cSp = document.getElementById("sp-canvas"), ctxSp = cSp.getContext("2d");
 let WN = 400, HN = 400, WSp = 800, HSp = 200;
 function knoepfeUe() {
 	const sk = document.getElementById("start-knoepfe"), zk = document.getElementById("ziel-knoepfe"); sk.innerHTML = ""; zk.innerHTML = "";
-	for (let m = 2; m <= NMAX; m++) { const b = document.createElement("button"); b.innerHTML = '<span class="zahl">' + m + "</span>"; b.className = m === ue.start ? "aktiv" : ""; b.title = "Start bei n = " + m; b.setAttribute("aria-label", b.title); b.onclick = () => { ue.start = m; if (ue.ziel === null || ue.ziel >= m) ue.ziel = m - 1; knoepfeUe(); aussenden(); }; sk.appendChild(b); }
-	for (let n = 1; n < NMAX; n++) { const b = document.createElement("button"); b.innerHTML = '<span class="zahl">' + n + "</span>"; b.className = n === ue.ziel ? "aktiv" : ""; b.disabled = ue.start === null || n >= ue.start; b.title = "Sprung nach n = " + n; b.setAttribute("aria-label", b.title); b.onclick = () => { ue.ziel = n; knoepfeUe(); aussenden(); }; zk.appendChild(b); }
+	for (let m = 2; m <= NMAX; m++) { const b = document.createElement("button"); b.innerHTML = '<span class="zahl">' + m + "</span>"; b.className = m === ue.start ? "aktiv" : ""; b.title = "Start bei n = " + m; b.setAttribute("aria-label", b.title); b.onclick = () => { ue.start = m; if (ue.ziel === null || ue.ziel >= m) ue.ziel = Math.min(m - 1, NZIEL); knoepfeUe(); aussenden(); }; sk.appendChild(b); }
+	for (let n = 1; n <= NZIEL; n++) { const b = document.createElement("button"); b.innerHTML = '<span class="zahl">' + n + "</span>"; b.className = n === ue.ziel ? "aktiv" : ""; b.disabled = ue.start === null || n >= ue.start; b.title = "Sprung nach n = " + n; b.setAttribute("aria-label", b.title); b.onclick = () => { ue.ziel = n; knoepfeUe(); aussenden(); }; zk.appendChild(b); }
 }
 function aussenden() {
 	const m = ue.start, n = ue.ziel;
@@ -572,7 +607,7 @@ function zeichneUe(p = 1) {
 }
 cN.addEventListener("click", e => {
 	const n = niveauBei(cN, WN, HN, e); if (!n) return;
-	if (ue.wahl && n < ue.wahl) { ue.start = ue.wahl; ue.ziel = n; ue.wahl = null; knoepfeUe(); aussenden(); }
+	if (ue.wahl && n < ue.wahl && n <= NZIEL) { ue.start = ue.wahl; ue.ziel = n; ue.wahl = null; knoepfeUe(); aussenden(); }
 	else { ue.wahl = n >= 2 ? n : null; zeichneUe(); }
 });
 
@@ -618,7 +653,7 @@ function zeichneTraining() {
 cTn.addEventListener("click", e => {
 	if (tr.geprueft) return;
 	const n = niveauBei(cTn, WTn, HTn, e); if (!n) return;
-	if (tr.oben && n < tr.oben) { tr.wahl = { m: tr.oben, n }; tr.oben = null; document.getElementById("t-ueb").textContent = tr.wahl.m + " → " + tr.wahl.n; }
+	if (tr.oben && n < tr.oben && n <= NZIEL) { tr.wahl = { m: tr.oben, n }; tr.oben = null; document.getElementById("t-ueb").textContent = tr.wahl.m + " → " + tr.wahl.n; }
 	else { tr.oben = n >= 2 ? n : null; tr.wahl = null; document.getElementById("t-ueb").textContent = tr.oben ? "von " + tr.oben + " nach …" : "noch nicht gewählt"; }
 	zeichneTraining();
 });
@@ -681,7 +716,9 @@ function ende() {
 	punkteZeigen(); layout();
 }
 /* Heftbild: Niveauschema mit allen Übergängen der Serie und Liste */
-function heftHoehe(W) { return W < 480 ? Math.round(W * 1.0) + 34 + 10 * 22 + 16 : Math.round(W * 0.52) + 34; }
+/* Liste: richtige Zeilen 22 px, falsche 40 px (Ihre Antwort in eigener Zeile, nie zusammengestaucht) */
+function listenHoehe() { return tr.ergebnisse.reduce((s, e) => s + (e && !e.richtig ? 40 : 22), 0); }
+function heftHoehe(W) { return W < 480 ? Math.round(W * 1.0) + 34 + listenHoehe() + 16 : Math.max(Math.round(W * 0.52), listenHoehe() + 28) + 34; }
 function zeichneHeft(ctx, W) {
 	const H = heftHoehe(W), schmal = W < 480, kopf = 34;
 	ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
@@ -691,15 +728,18 @@ function zeichneHeft(ctx, W) {
 	for (let i = 0; i < 3; i++) { ctx.fillStyle = i < tr.sterne ? "#C8A000" : "#D8D8D8"; ctx.fillText("★", xs + i * 20, kopf / 2); }
 	const bw = schmal ? W : Math.round(W * 0.55), bh = schmal ? Math.round(W * 1.0) : H - kopf;
 	ctx.save(); ctx.translate(0, kopf);
-	zeichneNiveaus(ctx, bw, bh, { serien: true, pfeile: tr.ergebnisse.map(e => ({ m: e.a.m, n: e.a.n, text: "", zeichen: e.richtig ? "✓" : "✗" })) });
+	zeichneNiveaus(ctx, bw, bh, { serien: true, pfeile: tr.ergebnisse.map(e => ({ m: e.a.m, n: e.a.n, farbe: e.richtig ? GRUEN : ROT, text: "" })) });
 	ctx.restore();
 	const x0 = schmal ? 14 : bw + 16, y0 = schmal ? kopf + bh + 14 : kopf + 18;
 	ctx.font = "13px " + SCHRIFT; ctx.textBaseline = "middle";
-	tr.ergebnisse.forEach((e, i) => {
-		const y = y0 + i * 22, lg = lamGegeben(e.a);
+	let y = y0;
+	tr.ergebnisse.forEach(e => {
+		const lg = lamGegeben(e.a);
 		ctx.fillStyle = e.richtig ? GRUEN : ROT; ctx.font = "bold 14px " + SCHRIFT; ctx.textAlign = "left"; ctx.fillText(e.richtig ? "✓" : "✗", x0, y);
 		ctx.fillStyle = "#111"; ctx.font = "13px " + SCHRIFT;
-		ctx.fillText("λ = " + lg + " nm: " + de(HC / lg, 2) + " eV, " + e.a.m + " → " + e.a.n + (e.richtig ? "" : " (Ihre Antwort: " + de(e.E, 2) + " eV, " + e.wahl.m + " → " + e.wahl.n + ")"), x0 + 18, y, W - x0 - 24);
+		ctx.fillText("λ = " + lg + " nm: " + de(HC / lg, 2) + " eV, " + e.a.m + " → " + e.a.n, x0 + 18, y);
+		if (!e.richtig) { ctx.fillStyle = ROT; ctx.fillText("Ihre Antwort: " + de(e.E, 2) + " eV, " + e.wahl.m + " → " + e.wahl.n, x0 + 18, y + 18); }
+		y += e.richtig ? 22 : 40;
 	});
 	return H;
 }
@@ -708,7 +748,7 @@ function zeichneHeft(ctx, W) {
    Hinweise, Modi, Bildleisten, Layout
    ========================================================================== */
 const HINWEIS = {
-	uebergaenge: ["Übergänge", "Tippen Sie erst ein oberes, dann ein unteres Niveau an. Das Elektron springt, ein Photon entsteht. Erzeugen Sie so die Linien der drei Serien und vergleichen Sie mit Ihrer Beobachtung durch das Gitter."],
+	uebergaenge: ["Übergänge", "Tippen Sie erst ein oberes, dann ein unteres Niveau an (n = 1, 2 oder 3). Das Elektron springt, ein Photon entsteht. Erzeugen Sie so die Linien der drei Serien und vergleichen Sie mit Ihrer Beobachtung durch das Gitter."],
 	zuordnen: ["Linien zuordnen", "Berechnen Sie aus der Wellenlänge die Energie des Photons. Tippen Sie dann den Übergang an, der genau diese Energie liefert. Sie haben je Linie einen Versuch."]
 };
 let modus = "uebergaenge";
