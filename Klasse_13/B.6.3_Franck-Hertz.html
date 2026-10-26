@@ -527,10 +527,10 @@ function atomeNeu() {
 }
 function geometrie(W, H) {
 	const schmal = W < 480;
-	const ox0 = W * 0.045, ox1 = W * (schmal ? 0.84 : 0.86), oy0 = H * 0.05, oy1 = H * 0.6;
-	const tx0 = W * (schmal ? 0.08 : 0.095), tx1 = W * (schmal ? 0.79 : 0.81), ym = H * 0.32, r = H * 0.17;
+	const ox0 = W * 0.045, ox1 = W * (schmal ? 0.87 : 0.88), oy0 = H * 0.05, oy1 = H * 0.64;
+	const tx0 = W * (schmal ? 0.08 : 0.095), tx1 = W * (schmal ? 0.745 : 0.78), ym = H * 0.32, r = H * 0.17;
 	const kx = tx0 + (tx1 - tx0) * 0.09, ax = tx1 - (tx1 - tx0) * 0.07, gx = kx + (ax - kx) * G_ANTEIL;
-	return { schmal, ox0, ox1, oy0, oy1, tx0, tx1, ym, r, kx, ax, gx, yl: H * 0.88, mx: W * (schmal ? 0.91 : 0.92) };
+	return { schmal, ox0, ox1, oy0, oy1, tx0, tx1, ym, r, kx, ax, gx, yl: H * 0.88, mx: W * (schmal ? 0.935 : 0.94) };
 }
 const xBild = (g, x) => g.kx + (g.ax - g.kx) * x;
 function zeichneRoehre() {
@@ -543,17 +543,17 @@ function zeichneRoehre() {
 		ctx.beginPath(); ctx.roundRect(g.ox0, g.oy0, g.ox1 - g.ox0, g.oy1 - g.oy0, 8); ctx.fill(); ctx.stroke();
 		const heiss = Math.min(1, Math.max(0.15, (ro.T - 20) / 180));
 		ctx.strokeStyle = "rgba(255,106,0," + (0.35 + 0.65 * heiss) + ")"; ctx.lineWidth = 1.4; ctx.beginPath();
-		const yh = g.oy1 - (g.oy1 - g.oy0) * 0.07, z = (g.ox1 - g.ox0 - 16) / 60;
+		const yh = g.oy1 - 7, z = (g.ox1 - g.ox0 - 16) / 60;
 		for (let i = 0; i <= 60; i++) { const xx = g.ox0 + 8 + i * z, yy = yh + (i % 2 ? -3 : 3); if (i) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy); }
 		ctx.stroke();
-		const tx = g.ox1 - (g.ox1 - g.ox0) * 0.035, t0 = g.oy0 + (g.oy1 - g.oy0) * 0.62, t1 = g.oy0 - H * 0.02, hb = Math.max(4, W * 0.006);
+		const hb = Math.max(4, W * 0.006), tx = (g.tx1 + g.ox1) / 2, t0 = g.ym - g.r * 0.35 - hb, t1 = g.oy0 - H * 0.03;
 		ctx.fillStyle = "#fff"; ctx.strokeStyle = "#999"; ctx.lineWidth = 1;
 		ctx.beginPath(); ctx.roundRect(tx - hb, t1, 2 * hb, t0 - t1, hb); ctx.fill(); ctx.stroke();
 		const anteil = Math.max(0.05, Math.min(1, (ro.T - 10) / 200));
 		ctx.fillStyle = "#E03030"; ctx.fillRect(tx - hb * 0.45, t0 - (t0 - t1 - hb) * anteil, hb * 0.9, (t0 - t1 - hb) * anteil);
 		ctx.beginPath(); ctx.arc(tx, t0 + hb * 0.6, hb * 1.5, 0, 2 * Math.PI); ctx.fill(); ctx.strokeStyle = "#999"; ctx.stroke();
 		ctx.fillStyle = "#7A4A00"; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
-		ctx.fillText(Math.round(ro.T) + " °C", tx - hb * 3.2, t1 + 10);
+		ctx.fillText(Math.round(ro.T) + " °C", tx - hb * 3.2, g.oy0 + 14);
 		ctx.font = schrift(W, gs); ctx.fillStyle = "#8a5a2b"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
 		ctx.textBaseline = "top"; ctx.fillText("Ofen", g.ox0 + 6, g.oy0 + 4); ctx.textBaseline = "alphabetic";
 	}
@@ -656,13 +656,14 @@ function zeichneRoehre() {
 	buchsen(ctx, xug, g.yl, ab, rb, true, ab);
 	ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(g.gx, g.yl, 2.6, 0, 2 * Math.PI); ctx.fill();
 	ctx.textBaseline = "alphabetic";
-	textMitIndex(ctx, "U", "B", xub, g.yl - ab * 1.6, "center", gs + 1, " = " + de(ro.UB) + " V");
-	textMitIndex(ctx, "U", "G", xug, g.yl - ab * 1.6, "center", gs + 1, " = " + de(ro.UG) + " V");
-	const ym = (g.ym + g.yl) / 2 + H * 0.06, rm = Math.max(9, W * 0.016);
+	textMitIndex(ctx, "U", "B", xub, g.yl - ab * 2.2, "center", gs + 1, " = " + de(ro.UB) + " V");
+	textMitIndex(ctx, "U", "G", xug, g.yl - ab * 2.2, "center", gs + 1, " = " + de(ro.UG) + " V");
+	const ym = (g.oy1 + g.yl) / 2, rm = Math.max(9, W * 0.016);
 	ctx.fillStyle = "#fff"; ctx.strokeStyle = "#111"; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(g.mx, ym, rm, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
 	ctx.fillStyle = "#111"; ctx.font = schrift(W, gs); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("A", g.mx, ym + 0.5);
 	ctx.textBaseline = "alphabetic"; ctx.fillStyle = VIOLETT_I;
-	textMitIndex(ctx, "I", "A", g.mx + rm + 4, ym + 4, "left", gs + 1);
+	const rechtsFrei = g.mx + rm + 4 + 2.2 * gs < W - 2;
+	textMitIndex(ctx, "I", "A", rechtsFrei ? g.mx + rm + 4 : g.mx - rm - 4, ym + 4, rechtsFrei ? "left" : "right", gs + 1);
 }
 
 /* Teilchen bewegen. Ein Zeitschritt dt (s) */
@@ -798,7 +799,7 @@ function messeBis(alt, neu) {
 	for (let k = a; s > 0 ? k <= b : k >= b; k += s) kl.punkte.set(k, messwert(k / 10));
 	if (modus === "kennlinie" || modus === "raetsel") zeichneKennlinie();
 }
-function kGeom(W, H) { const l = W < 420 ? 40 : 48, r = 18, o = 26, u = 40; return { l, r, o, u, x0: l, x1: W - r, y0: H - u, y1: o }; }
+function kGeom(W, H) { const l = W < 420 ? 40 : 48, r = 18, o = 26, u = 48; return { l, r, o, u, x0: l, x1: W - r, y0: H - u, y1: o }; }
 function iMax() { let m = 10; kl.punkte.forEach(v => { m = Math.max(m, v); }); const st = m > 30 ? 10 : 5; return Math.max(st * 2, Math.ceil((m * 1.08) / st) * st); }
 function zeichneKennlinie() {
 	const ctx = ctxK, W = WK, H = HK, g = kGeom(W, H), gs = W < 420 ? 12 : 13, Im = iMax(), Um = kl.Umax;
@@ -818,7 +819,7 @@ function zeichneKennlinie() {
 	ctx.textAlign = "right"; ctx.textBaseline = "middle";
 	for (let i = stI; i <= Im + 1e-9; i += stI) { ctx.beginPath(); ctx.moveTo(g.x0 - 4, Y(i)); ctx.lineTo(g.x0, Y(i)); ctx.stroke(); ctx.fillText(String(i), g.x0 - 6, Y(i)); }
 	ctx.textBaseline = "alphabetic";
-	textMitIndex(ctx, "U", "B", g.x1 + 4, g.y0 + 32, "right", gs, " in V");
+	textMitIndex(ctx, "U", "B", g.x1 + 4, g.y0 + 40, "right", gs, " in V");
 	textMitIndex(ctx, "I", "A", g.x0 + 8, g.y1 - 8, "left", gs, " in nA");
 	// Messpunkte
 	const ks = [...kl.punkte.keys()].sort((a, b) => a - b);
@@ -1084,7 +1085,7 @@ function zeichneElektronRoehre() {
 		const xx = X(b.x), yy = ym + b.y * r * 0.85, p = Math.min(1, b.alter / 0.6);
 		ctx.strokeStyle = "rgba(123,47,190," + (1 - 0.6 * p) + ")"; ctx.lineWidth = 2; ctx.setLineDash([3, 2]);
 		ctx.beginPath(); ctx.arc(xx, yy, 5 + 12 * p, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
-		ctx.fillStyle = UV; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText("−4,9 eV", xx, yy - 20);
+		ctx.fillStyle = UV; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "center"; ctx.textBaseline = b.y < 0 ? "top" : "bottom"; ctx.fillText("−4,9 eV", xx, b.y < 0 ? yy + 21 : yy - 21);
 	}
 	if (el.laeuft || el.spur.length) {
 		const xx = X(el.x), yy = ym + el.y * r * 0.85, re = Math.max(4, W * 0.007), l = 6 + 14 * Math.sqrt(Math.max(el.E, 0));
@@ -1114,22 +1115,30 @@ function zeichneEnergie() {
 	ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "center"; ctx.textBaseline = "top";
 	[[0, "K"], [G_ANTEIL, "G"], [1, "A"]].forEach(([x, t]) => { ctx.beginPath(); ctx.moveTo(X(x), y0); ctx.lineTo(X(x), y0 + 4); ctx.stroke(); ctx.fillText(t, X(x), y0 + 6); });
 	ctx.strokeStyle = HILFE; ctx.setLineDash([5, 3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x0, Y(4.9)); ctx.lineTo(x1, Y(4.9)); ctx.stroke(); ctx.setLineDash([]);
-	ctx.fillStyle = "#555"; ctx.font = schrift(W, gs - 1); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; ctx.fillText("4,9 eV", x0 + 4, Y(4.9) - 2);
-	const zeichneSpur = (pk, farbe, dick, UB, erg) => {
+	const zeichneSpur = (pk, farbe, dick, umkehrText) => {
 		if (pk.length < 2) return;
 		ctx.strokeStyle = farbe; ctx.lineWidth = dick; ctx.lineJoin = "round"; ctx.beginPath();
 		pk.forEach((p, i) => { if (i) ctx.lineTo(X(p.x), Y(p.E)); else ctx.moveTo(X(p.x), Y(p.E)); }); ctx.stroke();
 		pk.filter(p => p.stoss).forEach(p => { ctx.fillStyle = UV; ctx.font = schrift(W, gs + 3, "bold"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("✶", X(p.x), Y(4.9)); });
-		const u = pk.find(p => p.umkehr); if (u) { ctx.fillStyle = farbe; ctx.font = schrift(W, gs - 1, "bold"); ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("kehrt um", Math.min(X(u.x), x1) - 4, Y(0) - 3); }
-		if (UB !== undefined) { const last = pk[pk.length - 1]; ctx.fillStyle = farbe; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(de(UB) + " V" + (erg === "ja" ? " ✓" : erg === "nein" ? " ✗" : ""), x1 + 8, Y(last.E) + 0); }
+		const u = pk.find(p => p.umkehr);
+		if (u) { // Umkehrpunkt: Ring; Text nur an der neuesten Spur (sonst stapeln sich die Texte)
+			ctx.strokeStyle = farbe; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(X(u.x), Y(0), 4, 0, 2 * Math.PI); ctx.stroke();
+			if (umkehrText) { ctx.font = schrift(W, gs - 1, "bold"); ctx.textAlign = "right"; ctx.textBaseline = "top"; halbText("kehrt um ↩", X(G_ANTEIL) - 14, y0 + 6, farbe); }
+		}
 	};
-	// Beschriftungen rechts entzerren
-	const fertige = el.spuren.slice();
-	fertige.forEach((s, i) => zeichneSpur(s.punkte, s.farbe + (i === fertige.length - 1 && !el.laeuft ? "" : "88"), i === fertige.length - 1 && !el.laeuft ? 2.6 : 1.8));
+	/* Text mit weißem Hof, damit er über Linien lesbar bleibt (Schrift und Ausrichtung vorher setzen) */
+	const halbText = (t, x, y, farbe) => { ctx.save(); ctx.lineWidth = 4; ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.lineJoin = "round"; ctx.strokeText(t, x, y); ctx.fillStyle = farbe; ctx.fillText(t, x, y); ctx.restore(); };
+	const fertige = el.spuren.slice(), neueste = fertige.length - 1;
+	fertige.forEach((s, i) => zeichneSpur(s.punkte, s.farbe + (i === neueste && !el.laeuft ? "" : "88"), i === neueste && !el.laeuft ? 2.6 : 1.8, i === neueste && !el.laeuft));
+	if (el.laeuft) { zeichneSpur(el.spur, el.farbe, 2.8, false); ctx.fillStyle = el.farbe; ctx.beginPath(); ctx.arc(X(el.x), Y(Math.max(0, el.E)), 4.5, 0, 2 * Math.PI); ctx.fill(); }
+	// Beschriftung der 4,9-eV-Linie über den Spuren
+	ctx.font = schrift(W, gs - 1); ctx.textAlign = "left"; ctx.textBaseline = "bottom"; halbText("4,9 eV", x0 + 4, Y(4.9) - 2, "#555");
+	// Beschriftungen rechts: Abstand mindestens 16 px, ganze Gruppe bleibt über der Achse
 	const lab = fertige.map(s => ({ y: Y(s.punkte[s.punkte.length - 1].E), s })).sort((a, b) => a.y - b.y);
-	for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 16) lab[i].y = lab[i - 1].y + 16;
-	lab.forEach(({ y, s }) => { ctx.fillStyle = s.farbe; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(de(s.UB) + " V " + (s.ergebnis === "ja" ? "✓" : "✗"), x1 + 8, Math.min(y, y0 - 6)); });
-	if (el.laeuft) { zeichneSpur(el.spur, el.farbe, 2.8); ctx.fillStyle = el.farbe; ctx.beginPath(); ctx.arc(X(el.x), Y(Math.max(0, el.E)), 4.5, 0, 2 * Math.PI); ctx.fill(); }
+	for (let i = 1; i < lab.length; i++) lab[i].y = Math.max(lab[i].y, lab[i - 1].y + 16);
+	const ueber = lab.length ? lab[lab.length - 1].y - (y0 - 7) : 0;
+	if (ueber > 0) lab.forEach(l => l.y -= ueber);
+	lab.forEach(({ y, s }) => { ctx.fillStyle = s.farbe; ctx.font = schrift(W, gs, "bold"); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(de(s.UB) + " V " + (s.ergebnis === "ja" ? "✓" : "✗"), x1 + 6, y); });
 }
 (function eKnoepfe() {
 	const k = document.getElementById("e-ub-knoepfe");
