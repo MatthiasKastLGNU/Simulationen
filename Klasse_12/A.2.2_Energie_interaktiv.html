@@ -2258,7 +2258,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Wird ein Kondensator von 6 V auf 3 V entladen, hat er die Hälfte seiner Energie abgegeben.", ja: false, erkl: "Bei halber Spannung ist noch ein Viertel der Energie gespeichert: Er hat drei Viertel abgegeben." },
 		{ t: "Die Einheit F·V² ist dasselbe wie Joule.", ja: true, erkl: "" },
 		{ t: "Zieht man die Platten eines getrennten Kondensators auseinander, wird die gespeicherte Energie kleiner.", ja: false, erkl: "Q bleibt gleich, C wird kleiner, U = Q/C größer: Die Energie wird größer. Sie stammt aus der Arbeit gegen die Anziehung der Platten." },
-		{ t: "Ein Kondensator mit 1 F speichert bei 5,5 V etwa 15 J.", ja: true, erkl: "" }
+		{ t: "Ein Kondensator mit 1 F speichert bei 5,5 V etwa 15 J.", ja: true, erkl: "" },
+		{ t: "Ein Kondensator mit 470&nbsp;µF speichert bei 10&nbsp;V etwa 24 mJ.", ja: true, erkl: "E = ½ · 470 · 10⁻⁶ F · (10&nbsp;V)² ≈ 2,4 · 10⁻² J." },
+		{ t: "Bei gleicher Ladung speichert ein Kondensator mit doppelter Kapazität doppelt so viel Energie.", ja: false, erkl: "E = Q² : (2 · C): bei gleichem Q halb so viel. Die Spannung ist nur halb so groß." },
+		{ t: "Halbiert man bei getrennter Quelle den Plattenabstand, halbiert sich die gespeicherte Energie.", ja: true, erkl: "Q bleibt, C verdoppelt sich: E = Q² : (2 · C) halbiert sich. Die Platten verrichten beim Annähern Arbeit." },
+		{ t: "Ein Superkondensator (1&nbsp;F, 5,5&nbsp;V) speichert mehr Energie als ein Handyakku (3000&nbsp;mAh, 3,7&nbsp;V).", ja: false, erkl: "Kondensator: ½ · 1&nbsp;F · (5,5&nbsp;V)² ≈ 15&nbsp;J. Akku: 3&nbsp;A · 3600&nbsp;s · 3,7&nbsp;V ≈ 40&nbsp;kJ, also über 2500-mal so viel." },
+		{ t: "Verdreifacht man die Ladung bei gleicher Kapazität, speichert der Kondensator neunmal so viel Energie.", ja: true, erkl: "U wird dreimal so groß: E = ½ · Q · U wird neunmal so groß." },
+		{ t: "Die Energie des Kondensators steckt in den überzähligen Elektronen auf der negativen Platte.", ja: false, erkl: "Sie ist im elektrischen Feld zwischen den Platten gespeichert." },
+		{ t: "Ein Blitzlichtkondensator mit 100&nbsp;µF speichert bei 300&nbsp;V eine Energie von 4,5&nbsp;J.", ja: true, erkl: "E = ½ · 100 · 10⁻⁶ F · (300&nbsp;V)² = 4,5&nbsp;J." }
 	]
 });
 
