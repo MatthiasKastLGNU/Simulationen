@@ -208,6 +208,13 @@ details.tipp > summary { cursor: pointer; color: var(--green-frame); font-weight
 .modusleiste button.aktiv .mstern { color: #FFE27A; }
 
 .auftrag { margin: 0 0 0.6rem; }
+.rundenhinweis { margin: -0.3rem 0 0.6rem; color: #555; font-size: 0.92em; }
+/* Fortschritt: ein Kreis je Runde (KI.kreise), hier zentral änderbar */
+.kreise { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; vertical-align: middle; }
+.kreise i { width: 0.95rem; height: 0.95rem; border-radius: 50%; border: 1.5px solid #9AA3AD; background: #fff; display: inline-block; box-sizing: border-box; }
+.kreise i.jetzt { border-color: var(--blue-frame, #0000BF); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 6px var(--blue-title, #C9C9F2); }
+.kreise i.ja { background: #2E7D32; border-color: #1B5E20; }
+.kreise i.nein { background: #C62828; border-color: #7F1515; }
 .leiste { display: flex; align-items: center; gap: 0.4rem 0.8rem; flex-wrap: wrap; margin: 0.4rem 0; }
 .leiste .rechts { margin-left: auto; display: flex; gap: 0.35rem; align-items: center; }
 .chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
@@ -605,6 +612,9 @@ window.KI = (function () {
 		if (knoepfe.filter(k => !k.hidden).length <= 1) chips.hidden = true;
 	};
 	KI.el = el; KI.mischen = mischen; KI.de = de;
+	/* Anrede (KI.seite setzt KI.sie ab Klasse 12): KI.du("Du hast …", "Sie haben …") */
+	KI.sie = false;
+	KI.du = (du, sie) => KI.sie ? sie : du;
 
 	/* Speicher je Seite: Alle Simulationen auf GitHub Pages teilen sich einen Speicher, sonst zeigt z. B. A.3.1 die Sterne von „Paare“ aus A.3.2 */
 	const SEITE = (location.pathname.split("/").pop() || "start").replace(/\.html?$/, "");
@@ -616,6 +626,74 @@ window.KI = (function () {
 	KI.bestwert = function (id, sterne) {
 		const alt = KI.speicher.lies("sterne_" + id, 0);
 		if (sterne > alt) { KI.speicher.schreib("sterne_" + id, sterne); document.dispatchEvent(new CustomEvent("ki-sterne")); }
+	};
+	/* Schummelschutz für Übungen mit festem Inhalt (Kast 2026-10-27): Nur der erste Durchgang zählt voll. Ist eine Runde
+	   begonnen (erste Antwort bewertet) oder gelöst, ist jeder spätere Durchgang (Neu, Stufenwechsel, Neuladen) eine
+	   Wiederholung mit höchstens 1 Stern. Fehlversuche (Kette, Lückentext, Filmleiste) überstehen Neuladen und Stufenwechsel. */
+	KI.runde = function (id, nr) {
+		const kb = "begonnen_" + id + "_" + nr, kv = "fehlversuche_" + id + "_" + nr;
+		const r = {
+			wiederholung: !!KI.speicher.lies(kb, 0),
+			get fehlversuche() { return KI.speicher.lies(kv, 0); },
+			beginne() { KI.speicher.schreib(kb, 1); },
+			fehlversuch() { const v = r.fehlversuche + 1; KI.speicher.schreib(kv, v); return v; },
+			/* Sterne am Ende der Runde; danach zählen die Fehlversuche wieder von vorn */
+			sterne(s) { KI.speicher.schreib(kv, 0); KI.speicher.schreib(kb, 1); return r.wiederholung ? Math.min(1, s) : s; },
+			/* nur für Übungen, die bei jedem Start neu ausgelost werden (Fachsprache): fertige Runde gibt die nächste wieder frei */
+			freigeben() { KI.speicher.schreib(kb, 0); }
+		};
+		return r;
+	};
+	/* Ordnen (Kette, Lückentext, Filmleiste): Sterne nach Fehlversuchen, Status und Hinweis (Kast 2026-10-27: keine Grenze bei
+	   der Zahl der Versuche, „Es wird ja nicht mehr angezeigt, was richtig war. Das reicht schon“) */
+	KI.sterneNachFehlversuchen = v => v === 0 ? 3 : v === 1 ? 2 : v === 2 ? 1 : 0;
+	KI.versuchsStatus = v => "<span>Versuch " + (v + 1) + "</span>" + (v >= 3 ? "<span>ohne Sterne</span>" : "");
+	KI.ordnenHinweis = function (r, was) {
+		const v = r.fehlversuche;
+		if (v) return '<p class="rundenhinweis">' + KI.du("Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ", "Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ") + (v >= 3 ? "Sterne gibt es hier nicht mehr." : "Jeder weitere kostet einen Stern.") + "</p>";
+		return KI.rundenHinweis(r, KI.du("Beim Prüfen erfährst du nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern.", "Beim Prüfen erfahren Sie nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern."));
+	};
+	KI.ordnenFehler = function (v, anzahlText) {
+		return anzahlText + KI.du(" Alles liegt wieder gemischt da.", " Alles liegt wieder gemischt da.") + (v === 3 ? " Ab jetzt gibt es keine Sterne mehr." : "");
+	};
+	/* Hinweis unter dem Auftrag, wie die Runde zählt */
+	KI.rundenHinweis = function (r, text) {
+		if (r.wiederholung) return '<p class="rundenhinweis">' + KI.du("Wiederholung: Diese Runde hast du schon begonnen, sie bringt höchstens 1 Stern.", "Wiederholung: Diese Runde haben Sie schon begonnen, sie bringt höchstens 1 Stern.") + "</p>";
+		return text ? '<p class="rundenhinweis">' + text + "</p>" : "";
+	};
+	/* Angefangene Serie merken (Kast 2026-10-27): Neuladen, Stufenwechsel oder Neubeginn mitten in der Serie löschen keine Fehlschläge.
+	   stand = beliebiges Objekt (z. B. { nr, treffer, tipps }), nach dem Ende der Serie loeschen(). */
+	KI.serie = function (id) {
+		const k = st => "serie_" + id + "_" + st;
+		return { lies: st => KI.speicher.lies(k(st), null), merke: (st, stand) => KI.speicher.schreib(k(st), stand), loesche: st => KI.speicher.schreib(k(st), null) };
+	};
+	/* Film mit Stopps u. Ä.: Nur die erste Antwort je Frage zählt, auch nach „Von vorn“, Szenenwechsel oder Neuladen (Kast 2026-10-27) */
+	KI.ersteAntworten = function (id) {
+		const k = "erste_" + id;
+		return {
+			setze(frage, ok) { const m = KI.speicher.lies(k, {}); if (frage in m) return false; m[frage] = ok; KI.speicher.schreib(k, m); return true; },
+			lies(frage) { return KI.speicher.lies(k, {})[frage]; }
+		};
+	};
+	/* Fortschritt als Reihe grüner und roter Kreise (Kast 2026-10-25: „Viel besser als sonst das stumpfe Zählen. Unbedingt merken
+	   und IMMER so machen“; 2026-10-27: „überall ausrollen, global, damit man es einfach ändern kann“). Aussehen nur in
+	   kast_interaktiv.css (.kreise). ergebnisse[i] = true (richtig) | false (falsch) | undefined (offen); jetzt = laufende Runde. */
+	KI.kreise = function (ergebnisse, anzahl, jetzt) {
+		let s = "", r = 0;
+		for (let i = 0; i < anzahl; i++) {
+			const e = ergebnisse[i];
+			if (e === true) r++;
+			s += '<i class="' + (e === true ? "ja" : e === false ? "nein" : i === jetzt ? "jetzt" : "") + '"></i>';
+		}
+		const fertig = ergebnisse.filter(e => e !== undefined).length;
+		return '<span class="kreise" role="img" aria-label="' + fertig + " von " + anzahl + " erledigt, " + r + ' richtig">' + s + "</span>";
+	};
+	/* Aufgabe als reine Daten (für KI.serie), sonst null: Enthält sie Funktionen oder Elemente, lässt sie sich nicht speichern.
+	   Dann zählt eine offene Aufgabe nach dem Neuladen als nicht gelöst (kein Wegklicken schwerer Aufgaben). */
+	KI.alsDaten = function (o) {
+		let sicher = true;
+		try { JSON.stringify(o, (k, w) => { if (typeof w === "function" || (typeof Node !== "undefined" && w instanceof Node)) sicher = false; return w; }); } catch (e) { sicher = false; }
+		return sicher ? o : null;
 	};
 	/* Sterne: jeder erreichte Stern wird einzeln bejubelt (Kast 2026-10-15: „jeder Stern (Stern 1, 2 und 3) werden ‚bejubelt‘ …
 	   Es muss mehr motivieren! Spiele dürfen ruhig emotionaler sein!“). Die Feier startet von selbst, sobald die Sterne im Dokument
@@ -1148,9 +1226,10 @@ window.KI = (function () {
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
 		const gef = el("div", "gefunden"); behaelter.appendChild(gef);
 		const nochmal = el("div", "leiste");
-		nochmal.appendChild(KI.symbolKnopf("zurueck", "Neu mischen", () => starte(stufeNr)));
+		nochmal.appendChild(KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", () => starte(stufeNr)));
 		behaelter.appendChild(nochmal);
-		let stufeNr = 0, gewaehlt = [], fehler = 0, start = 0, uhr = 0, gefunden = [], groesse = 2, offen = 0;
+		const hinweis = el("div", ""); auftrag.after(hinweis);
+		let stufeNr = 0, gewaehlt = [], fehler = 0, start = 0, uhr = 0, gefunden = [], groesse = 2, offen = 0, runde;
 		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: cfg.stufen[stufeNr].titel || cfg.stufen[stufeNr].name }]
 			.concat(gefunden.map(g => ({ art: "reihe", elemente: g.map(k => k.svg ? { svg: k.svg } : { text: k.text }) })))), cfg.id);
 		heft.hidden = true;
@@ -1159,9 +1238,10 @@ window.KI = (function () {
 			kopf.status.innerHTML = "<span>⏱ " + t + " s</span><span>Fehler: " + fehler + "</span>";
 		}
 		function starte(i) {
-			stufeNr = i; const st = cfg.stufen[i];
+			stufeNr = i; const st = cfg.stufen[i]; runde = KI.runde(cfg.id, i);
 			kopf.markiere(i);
 			auftrag.innerHTML = st.auftrag;
+			hinweis.innerHTML = KI.rundenHinweis(runde); nochmal.hidden = true;   /* kein Neustart mitten in der Runde (Kast 2026-10-27) */
 			groesse = st.gruppen[0].length;
 			const auswahl = mischen(st.gruppen).slice(0, st.anzahl || st.gruppen.length);
 			const karten = [];
@@ -1171,7 +1251,7 @@ window.KI = (function () {
 			clearInterval(uhr); uhr = setInterval(zeigeStatus, 500); zeigeStatus();
 			for (const { k, gi } of mischen(karten)) {
 				const d = el("div", "karte waehlbar" + (k.svg ? "" : " text"), k.svg || k.text);
-				d.dataset.g = gi; d._k = k; d._gruppe = auswahl[gi];
+				d._g = gi; d._k = k; d._gruppe = auswahl[gi];
 				if (k.alt) d.title = k.alt;
 				d.addEventListener("click", () => tippe(d));
 				feld.appendChild(d);
@@ -1179,10 +1259,10 @@ window.KI = (function () {
 		}
 		function tippe(d) {
 			if (d.classList.contains("weg")) return;
-			if (!start) start = Date.now();
+			if (!start) { start = Date.now(); runde.beginne(); }
 			if (gewaehlt.includes(d)) { d.classList.remove("gewaehlt"); gewaehlt = gewaehlt.filter(x => x !== d); return; }
 			gewaehlt.push(d); d.classList.add("gewaehlt");
-			if (gewaehlt.some(x => x.dataset.g !== d.dataset.g)) {
+			if (gewaehlt.some(x => x._g !== d._g)) {
 				fehler++; zeigeStatus();
 				const falsche = gewaehlt.slice();
 				falsche.forEach(x => { x.classList.remove("gewaehlt"); x.classList.add("falsch", "wackeln"); });
@@ -1209,13 +1289,14 @@ window.KI = (function () {
 		function fertig() {
 			clearInterval(uhr); zeigeStatus();
 			const t = Math.round((Date.now() - start) / 1000);
-			const s = fehler <= 1 ? 3 : fehler <= 4 ? 2 : 1;
-			rueck.className = "rueck gut";
+			const s = runde.sterne(fehler <= 1 ? 3 : fehler <= 4 ? 2 : fehler <= 8 ? 1 : 0);   /* wahlloses Antippen kostet */
+			rueck.className = "rueck " + (s ? "gut" : "schlecht");
 			rueck.innerHTML = "Geschafft in " + t + " s mit " + fehler + " Fehler" + (fehler === 1 ? "" : "n") + "! " + KI.sterneHtml(s);
+			nochmal.hidden = false; hinweis.innerHTML = "";
 			KI.speicher.schreib("sterne_" + cfg.id + "_" + stufeNr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + stufeNr, 0)));
 			KI.bestwert(cfg.id, s);
 			kopf.markiere(stufeNr);
-			KI.funken(rueck, 20);
+			if (s) KI.funken(rueck, 20);
 			heft.hidden = false;
 		}
 		starte(KI.startStufe(cfg.stufen.length));
@@ -1227,15 +1308,16 @@ window.KI = (function () {
 	   ========================================================================== */
 	KI.kette = function (behaelter, cfg) {
 		const kopf = kopfzeile(behaelter, cfg.ketten, cfg.id, starte);
-		const auftrag = el("p", "auftrag"); behaelter.appendChild(auftrag);
+		const auftrag = el("div", "auftrag"); behaelter.appendChild(auftrag);
 		const feld = el("div", "kettenfeld"); behaelter.appendChild(feld);
 		const steuer = el("div", "leiste");
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", () => starte(nr));
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
-		let nr = 0, versuche = 0, vorrat, plaetze, korb, kette;
+		let nr = 0, runde, vorrat, plaetze, korb, kette, karten = [], fertig = false;
 		const grp = "kette_" + cfg.id;
 		const heft = KI.heftleiste(behaelter, () => {
 			const b = [{ art: "titel", t: kette.titel }];
@@ -1250,24 +1332,32 @@ window.KI = (function () {
 		KI.ziehGruppe(grp, ".platz, .vorrat, .korb", (q, z) => {
 			if (q.dataset.gesperrt) return;
 			const herkunft = q.parentElement;
-			q.classList.remove("richtig", "falsch");
 			if (z.classList.contains("platz")) {
 				const alt = z.querySelector(".karte");
 				if (alt && alt !== q) {
-					alt.classList.remove("richtig", "falsch");
 					if (herkunft.classList.contains("platz")) herkunft.appendChild(alt); else vorrat.appendChild(alt);
 				}
 				z.querySelector(".nr") && (z.querySelector(".nr").hidden = true);
 				z.appendChild(q);
 			} else z.appendChild(q);
 			if (herkunft.classList.contains("platz") && !herkunft.querySelector(".karte")) herkunft.querySelector(".nr").hidden = false;
-			rueck.textContent = "";
+			if (!fertig) rueck.textContent = "";
 		});
+		/* Schummelschutz (Kast 2026-10-27): Prüfen färbt keine Karte und sagt nur, wie viele Glieder falsch stehen; danach liegen
+		   ALLE Bausteine gemischt im Vorrat. Die Lösung wird nie aufgedeckt (Kast: „Dann bekommt man die Lösung ja erst recht ganz
+		   einfach“). Beliebig viele Versuche, Sterne 3 / 2 / 1 / 0. Fehlversuche überstehen Neuladen und Stufenwechsel (KI.runde). */
+		function versuchsStatus() { kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche); }
+		function zurueckInDenVorrat() {
+			KI.auswahlWeg(grp);
+			for (const k of mischen(karten)) vorrat.appendChild(k);
+			plaetze.forEach(p => { p.querySelector(".nr").hidden = false; });
+		}
 		function starte(i) {
-			nr = i; kette = cfg.ketten[i]; versuche = 0;
-			kopf.markiere(i); kopf.status.innerHTML = "";
-			auftrag.innerHTML = kette.auftrag;
-			feld.innerHTML = ""; rueck.textContent = ""; heft.hidden = true; pruefKnopf.disabled = false;
+			nr = i; kette = cfg.ketten[i]; runde = KI.runde(cfg.id, i); fertig = false;
+			kopf.markiere(i);
+			const v = runde.fehlversuche;
+			auftrag.innerHTML = '<p style="margin:0 0 0.6rem">' + kette.auftrag + "</p>" + KI.ordnenHinweis(runde, "Glieder");
+			feld.innerHTML = ""; rueck.textContent = ""; rueck.className = "rueck"; heft.hidden = true; pruefKnopf.disabled = false; neuKnopf.hidden = true;
 			vorrat = el("div", "vorrat", '<div class="titel">Bausteine (ziehen oder antippen)</div>');
 			const rechts = el("div", "kette", '<div class="titel">Kette</div>');
 			plaetze = kette.schritte.map((_, j) => {
@@ -1280,42 +1370,44 @@ window.KI = (function () {
 			korb.style.borderColor = "#999"; korb.style.minHeight = "60px";
 			rechts.appendChild(korb);
 			const alle = kette.schritte.map((t, j) => ({ t, j })).concat((kette.falsche || []).map(t => ({ t, j: -1 })));
-			for (const a of mischen(alle)) {
+			karten = mischen(alle).map(a => {
 				const k = el("div", "karte satz", a.t);
-				k.dataset.j = a.j;
+				k._j = a.j;   /* Lösung nicht im Seitenquelltext (kein data-…) */
 				KI.ziehbar(k, grp);
 				vorrat.appendChild(k);
-			}
+				return k;
+			});
 			feld.appendChild(vorrat); feld.appendChild(rechts);
+			versuchsStatus();
 		}
 		pruefKnopf.addEventListener("click", () => {
+			if (fertig) return;
 			const leer = plaetze.filter(p => !p.querySelector(".karte")).length;
 			if (leer) { rueck.className = "rueck schlecht"; rueck.textContent = "Es sind noch " + leer + " Plätze frei."; return; }
-			versuche++;
 			let falsch = 0;
-			plaetze.forEach((p, j) => {
-				const k = p.querySelector(".karte");
-				const ok = +k.dataset.j === j;
-				k.classList.toggle("richtig", ok); k.classList.toggle("falsch", !ok);
-				if (!ok) falsch++;
-			});
-			korb.querySelectorAll(".karte").forEach(k => { const ok = +k.dataset.j === -1; k.classList.toggle("richtig", ok); k.classList.toggle("falsch", !ok); });
-			const imVorrat = vorrat.querySelectorAll(".karte").length;
+			plaetze.forEach((p, j) => { if (p.querySelector(".karte")._j !== j) falsch++; });
 			if (falsch === 0) {
-				const s = sterneNachVersuchen(versuche);
+				const v = runde.fehlversuche;
+				const s = runde.sterne(KI.sterneNachFehlversuchen(v));
+				fertig = true;
 				rueck.className = "rueck gut";
-				rueck.innerHTML = "Die Kette stimmt! " + KI.sterneHtml(s) + (imVorrat ? " (Die übrigen Bausteine gehören nicht dazu.)" : "");
+				rueck.innerHTML = "Die Kette stimmt! " + KI.sterneHtml(s) + (vorrat.querySelector(".karte") ? " Die übrigen Bausteine gehören nicht dazu." : "");
+				plaetze.forEach(p => p.querySelector(".karte").classList.add("richtig"));
 				vorrat.querySelectorAll(".karte").forEach(k => korb.appendChild(k));
 				behaelter.querySelectorAll(".karte").forEach(k => k.dataset.gesperrt = "1");
-				pruefKnopf.disabled = true;
+				pruefKnopf.disabled = true; neuKnopf.hidden = false;
 				KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
 				KI.bestwert(cfg.id, s); kopf.markiere(nr);
-				KI.funken(rueck, 18);
-				heft.hidden = false;
-			} else {
-				rueck.className = "rueck schlecht";
-				rueck.textContent = falsch === 1 ? "Ein Glied steht noch an der falschen Stelle." : falsch + " Glieder stehen noch an der falschen Stelle.";
+				if (s) KI.funken(rueck, 18);
+				heft.hidden = false; versuchsStatus();
+				return;
 			}
+			const v = runde.fehlversuch();
+			zurueckInDenVorrat();
+			rueck.className = "rueck schlecht";
+			rueck.innerHTML = KI.ordnenFehler(v, (falsch === 1 ? "Ein Glied steht" : falsch + " Glieder stehen") + " an der falschen Stelle.");
+			auftrag.querySelector(".rundenhinweis") && auftrag.querySelector(".rundenhinweis").remove();
+			versuchsStatus();
 		});
 		starte(KI.startStufe(cfg.ketten.length));
 	};
@@ -1327,16 +1419,18 @@ window.KI = (function () {
 	KI.luecken = function (behaelter, cfg) {
 		const kopf = kopfzeile(behaelter, [{ name: "" }], cfg.id, () => { });
 		const auftrag = el("p", "auftrag", cfg.auftrag); behaelter.appendChild(auftrag);
+		const hinweis = el("div", ""); behaelter.appendChild(hinweis);
 		const text = el("div", "lueckentext"); behaelter.appendChild(text);
 		const bank = el("div", "wortbank"); behaelter.appendChild(bank);
 		const steuer = el("div", "leiste");
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", starte);
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
 		const grp = "luecken_" + cfg.id;
-		let versuche = 0, luecken = [];
+		let luecken = [], woerter = [], runde, fertig = false;
 		const heft = KI.heftleiste(behaelter, () => {
 			const teile = [];
 			cfg.text.split(/(\[[^\]]+\])/).forEach(s => {
@@ -1354,41 +1448,63 @@ window.KI = (function () {
 				z._wort = w; w._luecke = z; w.classList.add("benutzt");
 				z.textContent = w.textContent; z.classList.add("voll"); z.classList.remove("richtig", "falsch");
 			} else if (w._luecke) leere(w._luecke);
-			rueck.textContent = "";
+			if (!fertig) rueck.textContent = "";
 		});
 		function leere(z) {
 			if (z._wort) { z._wort.classList.remove("benutzt"); z._wort._luecke = null; }
 			z._wort = null; z.textContent = ""; z.classList.remove("voll", "richtig", "falsch");
 		}
+		/* Schummelschutz wie bei der Kette (Kast 2026-10-27): keine Färbung, nur die Anzahl, danach alle Wörter gemischt zurück,
+		   Lösung bleibt verborgen, beliebig viele Versuche, Sterne 3 / 2 / 1 / 0. */
+		function versuchsStatus() { kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche); }
+		function hinweisZeigen() { hinweis.innerHTML = KI.ordnenHinweis(runde, "Wörter"); }
+		function wortbank() {
+			KI.auswahlWeg(grp);
+			luecken.forEach(leere);
+			for (const b of mischen(woerter)) bank.appendChild(b);
+		}
 		function starte() {
-			versuche = 0; text.innerHTML = ""; bank.innerHTML = ""; rueck.textContent = ""; heft.hidden = true; pruefKnopf.disabled = false;
+			runde = KI.runde(cfg.id, 0); fertig = false;
+			text.innerHTML = ""; bank.innerHTML = ""; rueck.textContent = ""; rueck.className = "rueck"; heft.hidden = true; pruefKnopf.disabled = false; neuKnopf.hidden = true;
 			luecken = [];
 			const loesungen = [];
 			cfg.text.split(/(\[[^\]]+\])/).forEach(s => {
 				if (s.startsWith("[")) {
-					const z = el("span", "luecke"); z.dataset.loesung = s.slice(1, -1);
+					const z = el("span", "luecke"); z._loesung = s.slice(1, -1);
 					z.addEventListener("click", (e) => { if (z._wort && !z.dataset.gesperrt && !(aktiveGruppe && aktiveGruppe.auswahl)) { leere(z); e.stopPropagation(); } });
 					luecken.push(z); loesungen.push(s.slice(1, -1)); text.appendChild(z);
 				} else text.appendChild(document.createTextNode(s));
 			});
-			for (const w of mischen(loesungen.concat(cfg.extra || []))) {
+			woerter = mischen(loesungen.concat(cfg.extra || [])).map(w => {
 				const b = el("button", "wort", w);
 				KI.ziehbar(b, grp);
 				bank.appendChild(b);
-			}
+				return b;
+			});
+			hinweisZeigen(); versuchsStatus();
 		}
 		pruefKnopf.addEventListener("click", () => {
+			if (fertig) return;
 			const leer = luecken.filter(z => !z._wort).length;
 			if (leer) { rueck.className = "rueck schlecht"; rueck.textContent = "Es sind noch " + leer + " Lücken frei."; return; }
-			versuche++;
-			let f = 0;
-			luecken.forEach(z => { const ok = z.textContent === z.dataset.loesung; z.classList.toggle("richtig", ok); z.classList.toggle("falsch", !ok); if (!ok) f++; });
+			const f = luecken.filter(z => z.textContent !== z._loesung).length;
 			if (!f) {
-				const s = sterneNachVersuchen(versuche);
+				const v = runde.fehlversuche;
+				const s = runde.sterne(KI.sterneNachFehlversuchen(v));
+				fertig = true;
+				luecken.forEach(z => z.classList.add("richtig"));
 				rueck.className = "rueck gut"; rueck.innerHTML = "Alles richtig! " + KI.sterneHtml(s);
-				luecken.forEach(z => z.dataset.gesperrt = "1"); bank.querySelectorAll(".wort").forEach(w => w.dataset.gesperrt = "1");
-				pruefKnopf.disabled = true; KI.bestwert(cfg.id, s); KI.funken(rueck, 18); heft.hidden = false;
-			} else { rueck.className = "rueck schlecht"; rueck.textContent = f === 1 ? "Ein Wort passt noch nicht." : f + " Wörter passen noch nicht."; }
+				luecken.forEach(z => z.dataset.gesperrt = "1"); woerter.forEach(w => w.dataset.gesperrt = "1");
+				pruefKnopf.disabled = true; neuKnopf.hidden = false;
+				KI.bestwert(cfg.id, s); if (s) KI.funken(rueck, 18); heft.hidden = false;
+				hinweis.innerHTML = ""; versuchsStatus();
+				return;
+			}
+			const v = runde.fehlversuch();
+			wortbank();
+			rueck.className = "rueck schlecht";
+			rueck.innerHTML = KI.ordnenFehler(v, (f === 1 ? "Ein Wort passt" : f + " Wörter passen") + " nicht.");
+			hinweis.innerHTML = ""; versuchsStatus();
 		});
 		starte();
 	};
@@ -1400,58 +1516,64 @@ window.KI = (function () {
 	KI.sortieren = function (behaelter, cfg) {
 		const kopf = kopfzeile(behaelter, [{ name: "" }], cfg.id, () => { });
 		behaelter.appendChild(el("p", "auftrag", cfg.auftrag));
+		const hinweis = el("div", ""); behaelter.appendChild(hinweis);
 		const stapel = el("div", "stapel vorrat"); behaelter.appendChild(stapel);
 		const kf = el("div", "koerbe"); behaelter.appendChild(kf);
 		kf.style.setProperty("--koerbe", cfg.koerbe.length);
 		const STANDARDFARBEN = ["#BF0000", "#B35C00", "#295C06"];
 		const farbe = (k, i) => k.farbe || STANDARDFARBEN[cfg.koerbe.length === 2 ? i * 2 : i] || "#555";
-		const koerbe = cfg.koerbe.map((k, i) => { const d = el("div", "korb", '<div class="kopf2">' + (k.icon || "") + k.name + "</div>"); d.style.setProperty("--korbfarbe", farbe(k, i)); d.dataset.k = i; kf.appendChild(d); return d; });
+		const koerbe = cfg.koerbe.map((k, i) => { const d = el("div", "korb", '<div class="kopf2">' + (k.icon || "") + k.name + "</div>"); d.style.setProperty("--korbfarbe", farbe(k, i)); d._k = i; kf.appendChild(d); return d; });
 		const steuer = el("div", "leiste");
-		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
-		steuer.appendChild(pruefKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", starte);
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
 		const erkl = el("div", ""); behaelter.appendChild(erkl);
 		const grp = "sort_" + cfg.id;
-		let versuche = 0;
+		let fehler = 0, offen = 0, runde, ergebnisse = [];
 		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: cfg.titel },
 			{ art: "spalten", spalten: cfg.koerbe.map((k, i) => ({ titel: k.name, farbe: farbe(k, i), zeilen: cfg.dinge.filter(d => d.korb === i).map(d => d.text) })) }]), cfg.id);
 		heft.hidden = true;
+		/* Schummelschutz (Kast 2026-10-27): Jede Karte wird beim Ablegen sofort bewertet und bleibt liegen, ein Versuch pro Karte.
+		   Falsch abgelegte Karten wandern rot in den richtigen Korb, die Begründung erscheint sofort. Nichts lässt sich umsortieren. */
+		function zeigeStatus() { kopf.status.innerHTML = KI.kreise(ergebnisse, cfg.dinge.length, ergebnisse.length); }
 		KI.ziehGruppe(grp, ".korb, .stapel", (q, z) => {
-			if (q.dataset.gesperrt) return;
-			q.classList.remove("richtig", "falsch"); z.appendChild(q); rueck.textContent = "";
+			if (q.dataset.gesperrt || !z.classList.contains("korb")) return;
+			runde.beginne();
+			const d = q._d, ok = d.korb === z._k;
+			q.dataset.gesperrt = "1"; q.classList.add(ok ? "richtig" : "falsch"); ergebnisse.push(ok);
+			koerbe[d.korb].appendChild(q);
+			offen--;
+			if (ok) { rueck.className = "rueck gut"; rueck.textContent = "Richtig!"; erkl.innerHTML = ""; KI.funken(q, 6); }
+			else {
+				fehler++;
+				rueck.className = "rueck schlecht"; rueck.textContent = "Leider falsch. Die Karte gehört zu „" + KI.reinText(cfg.koerbe[d.korb].name) + "“.";
+				erkl.innerHTML = d.warum ? '<div class="erkl">' + KI.icon("tipp", 15) + " " + d.warum + "</div>" : "";
+				q.classList.add("wackeln"); setTimeout(() => q.classList.remove("wackeln"), 450);
+			}
+			zeigeStatus();
+			if (!offen) fertig();
 		});
 		function starte() {
-			versuche = 0; stapel.innerHTML = ""; koerbe.forEach(k => k.querySelectorAll(".karte").forEach(x => x.remove()));
-			rueck.textContent = ""; erkl.innerHTML = ""; heft.hidden = true; pruefKnopf.disabled = false;
+			runde = KI.runde(cfg.id, 0); fehler = 0; offen = cfg.dinge.length; ergebnisse = [];
+			stapel.innerHTML = ""; koerbe.forEach(k => k.querySelectorAll(".karte").forEach(x => x.remove()));
+			rueck.textContent = ""; rueck.className = "rueck"; erkl.innerHTML = ""; heft.hidden = true; neuKnopf.hidden = true;
+			hinweis.innerHTML = KI.rundenHinweis(runde, KI.du("Jede Karte wird sofort bewertet. Du hast pro Karte einen Versuch.", "Jede Karte wird sofort bewertet. Sie haben pro Karte einen Versuch."));
 			for (const d of mischen(cfg.dinge)) {
 				const k = el("div", "karte ding", (d.svg || "") + "<div>" + d.text + "</div>");
 				k._d = d;
 				KI.ziehbar(k, grp);
 				stapel.appendChild(k);
 			}
+			zeigeStatus();
 		}
-		pruefKnopf.addEventListener("click", () => {
-			const rest = stapel.querySelectorAll(".karte").length;
-			if (rest) { rueck.className = "rueck schlecht"; rueck.textContent = "Es liegen noch " + rest + " Karten oben."; return; }
-			versuche++;
-			const falsche = [];
-			koerbe.forEach((korb, i) => korb.querySelectorAll(".karte").forEach(k => {
-				const ok = k._d.korb === i; k.classList.toggle("richtig", ok); k.classList.toggle("falsch", !ok);
-				if (!ok) falsche.push(k._d);
-			}));
-			erkl.innerHTML = "";
-			if (!falsche.length) {
-				const s = sterneNachVersuchen(versuche);
-				rueck.className = "rueck gut"; rueck.innerHTML = "Alles richtig sortiert! " + KI.sterneHtml(s);
-				behaelter.querySelectorAll(".karte").forEach(k => k.dataset.gesperrt = "1");
-				pruefKnopf.disabled = true; KI.bestwert(cfg.id, s); KI.funken(rueck, 18); heft.hidden = false;
-			} else {
-				rueck.className = "rueck schlecht"; rueck.textContent = falsche.length === 1 ? "Eine Karte liegt noch falsch." : falsche.length + " Karten liegen noch falsch.";
-				if (versuche >= 2) falsche.forEach(d => { if (d.warum) erkl.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + d.warum)); });
-			}
-		});
+		function fertig() {
+			const s = runde.sterne(fehler === 0 ? 3 : fehler === 1 ? 2 : fehler <= 3 ? 1 : 0);
+			rueck.className = "rueck " + (s ? "gut" : "schlecht");
+			rueck.innerHTML = "Fertig sortiert, " + (fehler === 0 ? "ohne Fehler! " : fehler === 1 ? "eine Karte lag zuerst falsch. " : fehler + " Karten lagen zuerst falsch. ") + KI.sterneHtml(s);
+			neuKnopf.hidden = false; hinweis.innerHTML = "";
+			KI.bestwert(cfg.id, s); if (s) KI.funken(rueck, 18); heft.hidden = false;
+		}
 		starte();
 	};
 
@@ -1469,18 +1591,20 @@ window.KI = (function () {
 		knoepfe.appendChild(nein); knoepfe.appendChild(ja); behaelter.appendChild(knoepfe);
 		const rueck = el("div", ""); behaelter.appendChild(rueck);
 		const steuer = el("div", "leiste");
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
+		steuer.appendChild(KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", starte));
 		behaelter.appendChild(steuer);
-		let stapel = [], i = 0, punkte = 0, serie = 0, besteSerie = 0, wartet = false, antworten = [];
+		const hinweis = el("div", ""); buehne.before(hinweis);
+		let stapel = [], i = 0, punkte = 0, serie = 0, besteSerie = 0, wartet = false, antworten = [], runde;
 		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: cfg.titel }].concat(cfg.karten.map(k => ({
 			art: "kasten", groesse: 22, rand: k.ja ? "#2E7D32" : "#C62828", hg: "#fff",
 			teile: [{ t: (k.ja ? "✓ " : "✗ ") , fett: true, farbe: k.ja ? "#2E7D32" : "#C62828" }, { t: k.t }].concat(k.ja ? [] : [{ t: "  " }, { t: k.erkl, farbe: "#555", kursiv: true }])
 		})))), cfg.id);
 		heft.hidden = true;
-		function zeigeStatus() { kopf.status.innerHTML = "<span>" + Math.min(i + 1, stapel.length) + " / " + stapel.length + "</span><span>Richtig: " + punkte + "</span>" + (serie >= 2 ? '<span class="serie">🔥 ' + serie + "</span>" : ""); }
+		function zeigeStatus() { kopf.status.innerHTML = KI.kreise(antworten, stapel.length, i) + (serie >= 2 ? '<span class="serie">🔥 ' + serie + "</span>" : ""); }
 		function starte() {
 			stapel = mischen(cfg.karten); i = 0; punkte = 0; serie = 0; besteSerie = 0; wartet = false; antworten = [];
 			rueck.innerHTML = ""; heft.hidden = true; knoepfe.hidden = false;
+			runde = KI.runde(cfg.id, 0); hinweis.innerHTML = KI.rundenHinweis(runde); steuer.hidden = true;   /* kein Neustart mitten im Stapel (Kast 2026-10-27) */
 			zeichne(); zeigeStatus();
 		}
 		function karteEl(k, nr) {
@@ -1514,6 +1638,7 @@ window.KI = (function () {
 			if (wartet || i >= stapel.length) return;
 			const k = stapel[i], d = buehne.lastChild;
 			const ok = antwortJa === k.ja;
+			runde.beginne();
 			antworten.push(ok);
 			d.style.transition = "transform 0.35s, opacity 0.35s";
 			d.querySelector(antwortJa ? ".stempel.ja" : ".stempel.nein").style.opacity = 1;
@@ -1541,9 +1666,10 @@ window.KI = (function () {
 			if (i >= stapel.length) {
 				buehne.innerHTML = ""; knoepfe.hidden = true;
 				const anteil = punkte / stapel.length;
-				const s = anteil >= 0.9 ? 3 : anteil >= 0.7 ? 2 : 1;
-				const p = el("p", "rueck gut", punkte + " von " + stapel.length + " richtig, beste Serie: " + besteSerie + " " + KI.sterneHtml(s));
-				rueck.appendChild(p); KI.funken(p, 20); KI.bestwert(cfg.id, s); heft.hidden = false;
+				const s = runde.sterne(anteil >= 0.9 ? 3 : anteil >= 0.7 ? 2 : anteil >= 0.5 ? 1 : 0);
+				const p = el("p", "rueck " + (s ? "gut" : "schlecht"), punkte + " von " + stapel.length + " richtig, beste Serie: " + besteSerie + " " + KI.sterneHtml(s));
+				rueck.appendChild(p); if (s) KI.funken(p, 20); KI.bestwert(cfg.id, s); heft.hidden = false;
+				steuer.hidden = false; hinweis.innerHTML = "";
 				zeigeStatus(); return;
 			}
 			zeichne(); zeigeStatus();
@@ -1563,12 +1689,15 @@ window.KI = (function () {
 		const kopf = kopfzeile(behaelter, [{ name: "" }], cfg.id, () => { });
 		behaelter.appendChild(el("p", "auftrag", cfg.auftrag));
 		const text = el("div", "markiertext"); behaelter.appendChild(text);
+		const hinweis = el("div", ""); text.before(hinweis);
 		const steuer = el("div", "leiste");
-		steuer.appendChild(KI.symbolKnopf("tipp", "Tipp: Satz mit Fehler zeigen", tipp));
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", starte));
+		const tippKnopf = KI.symbolKnopf("tipp", "Tipp: eine Fehlerstelle kurz aufleuchten lassen (höchstens zweimal)", tipp);
+		steuer.appendChild(tippKnopf);
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", starte);
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
-		let fehler = [], gefunden = 0, daneben = 0, tipps = 0;
+		let fehler = [], gefunden = 0, daneben = 0, tipps = 0, runde;
 		const teileRoh = cfg.text.split(/(\{[^}]+\})/);
 		const heft = KI.heftleiste(behaelter, () => {
 			const teile = [];
@@ -1582,12 +1711,14 @@ window.KI = (function () {
 		function status() { kopf.status.innerHTML = "<span>Gefunden: " + gefunden + " / " + fehler.length + "</span><span>Daneben: " + daneben + "</span>"; }
 		function starte() {
 			text.innerHTML = ""; fehler = []; gefunden = 0; daneben = 0; tipps = 0; rueck.textContent = ""; heft.hidden = true;
+			runde = KI.runde(cfg.id, 0); hinweis.innerHTML = KI.rundenHinweis(runde); neuKnopf.hidden = true; tippKnopf.disabled = false;
 			teileRoh.forEach(s => {
 				if (s.startsWith("{")) {
 					const [f, r] = s.slice(1, -1).split("|");
 					const g = el("span", "w fehlerteil", f); g._r = r;
 					g.addEventListener("click", () => {
 						if (g.classList.contains("gefunden")) return;
+						runde.beginne();
 						g.classList.add("gefunden"); gefunden++;
 						const k = el("span", "korrektur", r); g.after(k);
 						KI.funken(g, 6);
@@ -1598,7 +1729,7 @@ window.KI = (function () {
 					s.split(/(\s+)/).forEach(w => {
 						if (/^\s*$/.test(w)) { text.appendChild(document.createTextNode(w)); return; }
 						const sp = el("span", "w", w);
-						sp.addEventListener("click", () => { if (sp.classList.contains("daneben") || gefunden === fehler.length) return; sp.classList.add("daneben"); daneben++; status(); });
+						sp.addEventListener("click", () => { if (sp.classList.contains("daneben") || gefunden === fehler.length) return; runde.beginne(); sp.classList.add("daneben"); daneben++; status(); });
 						text.appendChild(sp);
 					});
 				}
@@ -1607,15 +1738,16 @@ window.KI = (function () {
 		}
 		function tipp() {
 			const f = fehler.find(g => !g.classList.contains("gefunden"));
-			if (!f) return;
-			tipps++;
+			if (!f || tipps >= 2) return;
+			tipps++; runde.beginne(); if (tipps >= 2) tippKnopf.disabled = true;
 			f.style.transition = "background 0.3s"; f.style.background = "#FFF3B0";
 			setTimeout(() => f.style.background = "", 900);
 		}
 		function fertig() {
-			const s = daneben + tipps <= 1 ? 3 : daneben + tipps <= 3 ? 2 : 1;
-			rueck.className = "rueck gut"; rueck.innerHTML = "Alle Fehler gefunden! " + KI.sterneHtml(s);
-			KI.bestwert(cfg.id, s); KI.funken(rueck, 18); heft.hidden = false;
+			const a = daneben + tipps, s = runde.sterne(a <= 1 ? 3 : a <= 3 ? 2 : a <= 6 ? 1 : 0);   /* wahlloses Antippen kostet */
+			rueck.className = "rueck " + (s ? "gut" : "schlecht"); rueck.innerHTML = "Alle Fehler gefunden! " + KI.sterneHtml(s);
+			KI.bestwert(cfg.id, s); if (s) KI.funken(rueck, 18); heft.hidden = false;
+			neuKnopf.hidden = false; hinweis.innerHTML = ""; tippKnopf.disabled = true;
 		}
 		starte();
 	};
@@ -1643,10 +1775,12 @@ window.KI = (function () {
 		const steuer = el("div", "leiste");
 		const tippKnopf = KI.symbolKnopf("tipp", "Tipp: eine falsche Stelle kurz aufleuchten lassen (höchstens zweimal)", tipp);
 		steuer.appendChild(tippKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen (andere Stellen sind falsch)", () => starte(nr)));
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (andere Stellen sind falsch)", () => starte(nr));
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const ende = el("div", ""); behaelter.appendChild(ende);
-		let nr = 0, tx = null, falschIdx = new Set(), stellen = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0, anzahl = 0;
+		const hinweis = el("div", ""); auftrag.after(hinweis);
+		let nr = 0, tx = null, falschIdx = new Set(), stellen = [], aktiv = null, richtig = 0, erledigt = 0, daneben = 0, tipps = 0, anzahl = 0, runde, ergebnisse = [];
 		const heft = KI.heftleiste(behaelter, () => {
 			const teile = [];
 			tx.teile.forEach((t, i) => {
@@ -1660,7 +1794,7 @@ window.KI = (function () {
 			return KI.blattBild(bl);
 		}, id);
 		heft.hidden = true;
-		function status() { kopf.status.innerHTML = "<span>Gefunden: " + erledigt + " / " + anzahl + "</span><span>Richtig ersetzt: " + richtig + "</span><span>Fehlgriffe: " + daneben + "</span>"; }
+		function status() { kopf.status.innerHTML = KI.kreise(ergebnisse, anzahl, erledigt) + "<span>Fehlgriffe: " + daneben + "</span>"; }
 		/* ein Wort als antippbare Stelle; Satzzeichen davor und danach sind nicht antippbar */
 		function wort(w, daten) {
 			const m = w.match(/^([(„"']*)(.*?)([.,;:!?)"“']*)$/);
@@ -1673,12 +1807,15 @@ window.KI = (function () {
 		}
 		function starte(i) {
 			nr = i; tx = texte[i];
-			text.innerHTML = ""; stellen = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0;
+			text.innerHTML = ""; stellen = []; aktiv = null; richtig = 0; erledigt = 0; daneben = 0; tipps = 0; ergebnisse = [];
 			kasten.hidden = true; rueck.innerHTML = ""; ende.innerHTML = ""; heft.hidden = true; tippKnopf.disabled = false;
+			/* abgebrochener Text (Stufenwechsel, Neuladen) zählt beim nächsten Start nur noch als Wiederholung (Kast 2026-10-27) */
+			runde = KI.runde(id, i); neuKnopf.hidden = true;
 			const kandidaten = tx.teile.map((t, j) => (typeof t !== "string" && t.f) ? j : -1).filter(j => j >= 0);
 			falschIdx = new Set(mischen(kandidaten).slice(0, tx.falsch || kandidaten.length));
 			anzahl = falschIdx.size;
-			auftrag.innerHTML = "In " + tx.wer + " sind <b>" + anzahl + " Wörter</b> physikalisch falsch. Tippe ein falsches Wort an und ersetze es durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>. Daneben getippte Wörter zählen als Fehlgriff, auch richtig verwendete Fachwörter.";
+			auftrag.innerHTML = "In " + tx.wer + " sind <b>" + anzahl + " Wörter</b> physikalisch falsch. " + KI.du("Tippe ein falsches Wort an und ersetze es durch das richtige Kärtchen. Du hast pro Stelle <b>einen Versuch</b>.", "Tippen Sie ein falsches Wort an und ersetzen Sie es durch das richtige Kärtchen. Sie haben pro Stelle <b>einen Versuch</b>.") + " Daneben getippte Wörter zählen als Fehlgriff, auch richtig verwendete Fachwörter.";
+			hinweis.innerHTML = runde.wiederholung ? '<p class="rundenhinweis">' + KI.du("Diesen Text hattest du schon angefangen und abgebrochen. Diese Runde bringt höchstens 1 Stern.", "Diesen Text hatten Sie schon angefangen und abgebrochen. Diese Runde bringt höchstens 1 Stern.") + "</p>" : "";
 			tx.teile.forEach((t, j) => {
 				if (typeof t !== "string") {
 					if (t.t) wort(t.t, { _erkl: t.e });
@@ -1698,6 +1835,7 @@ window.KI = (function () {
 			if (erledigt === anzahl) return;
 			if (sp._stelle) { oeffne(sp); return; }
 			if (sp.classList.contains("daneben")) return;
+			runde.beginne();
 			sp.classList.add("daneben"); daneben++; status();
 			if (aktiv) { aktiv.classList.remove("aktiv"); aktiv = null; kasten.hidden = true; }
 			rueck.innerHTML = '<p class="rueck schlecht">Das ist richtig so. Fehlgriff!</p>' + (sp._erkl ? '<div class="erkl">' + KI.icon("tipp", 15) + " " + sp._erkl + "</div>" : "");
@@ -1719,7 +1857,8 @@ window.KI = (function () {
 		}
 		function waehle(s, ok) {
 			const t = s._stelle;
-			s._fertig = true; s.classList.remove("aktiv"); aktiv = null; erledigt++;
+			runde.beginne();
+			s._fertig = true; s.classList.remove("aktiv"); aktiv = null; erledigt++; ergebnisse.push(ok);
 			const erkl = '<div class="erkl">' + KI.icon("tipp", 15) + " " + t.e + "</div>";
 			if (ok) { richtig++; s.classList.add("richtig"); s.textContent = t.r; KI.funken(s, 6); rueck.innerHTML = '<p class="rueck gut">Richtig!</p>' + erkl; }
 			else { s.classList.add("falsch"); s.innerHTML = "<s>" + t.f + "</s> " + t.r; rueck.innerHTML = '<p class="rueck schlecht">Leider falsch. Richtig ist: ' + t.r + "</p>" + erkl; }
@@ -1729,14 +1868,16 @@ window.KI = (function () {
 		function tipp() {
 			const s = stellen.find(x => !x._fertig);
 			if (!s || tipps >= 2) return;
-			tipps++; if (tipps >= 2) tippKnopf.disabled = true;
+			tipps++; runde.beginne(); if (tipps >= 2) tippKnopf.disabled = true;
 			s.classList.add("tipp"); setTimeout(() => s.classList.remove("tipp"), 900);
 		}
 		function fertig() {
 			const abzug = daneben + tipps;
-			const s = richtig === anzahl && abzug <= 1 ? 3 : richtig >= anzahl - 1 && abzug <= 3 ? 2 : 1;
-			const p = el("p", "rueck gut", richtig + " von " + anzahl + " Wörtern richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
-			ende.innerHTML = ""; ende.appendChild(p); KI.funken(p, 18);
+			const s = runde.sterne(richtig === anzahl && abzug <= 1 ? 3 : richtig >= anzahl - 1 && abzug <= 3 ? 2 : richtig >= anzahl / 2 && abzug <= 6 ? 1 : 0);
+			runde.freigeben();   /* fertiger Text: der nächste Start lost neue Stellen aus und zählt wieder voll */
+			neuKnopf.hidden = false; hinweis.innerHTML = ""; tippKnopf.disabled = true;
+			const p = el("p", "rueck " + (s ? "gut" : "schlecht"), richtig + " von " + anzahl + " Wörtern richtig ersetzt, " + daneben + " Fehlgriff" + (daneben === 1 ? "" : "e") + (tipps ? ", " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
+			ende.innerHTML = ""; ende.appendChild(p); if (s) KI.funken(p, 18);
 			KI.speicher.schreib("sterne_" + id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + nr, 0)));
 			KI.bestwert(id, s); kopf.markiere(nr);
 			const folge = KI.naechsteStufe(nr, texte.length);
@@ -1764,11 +1905,13 @@ window.KI = (function () {
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
 		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
-		steuer.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(nr)));
+		const neuKnopf = KI.symbolKnopf("zurueck", "Noch einmal (Wiederholung, höchstens 1 Stern)", () => starte(nr));
+		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("div", ""); behaelter.appendChild(rueck);
+		const hinweis = el("div", ""); auftrag.after(hinweis);
 		const grp = "film_" + cfg.id;
-		let nr = 0, st, fehler = 0, versuche = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null;
+		let nr = 0, st, fehler = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null, runde, karten = [];
 		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel }, { art: "film", bilder: st.bilder }]
 			.concat(st.schluss ? [{ art: "kasten", teile: [{ t: st.schluss }], groesse: 22 }] : [])), cfg.id);
 		heft.hidden = true;
@@ -1780,47 +1923,58 @@ window.KI = (function () {
 			f.appendChild(b); streifen.appendChild(f);
 			return b;
 		}
-		function sterne(f) { return f === 0 ? 3 : f === 1 ? 2 : 1; }
+		/* Schummelschutz (Kast 2026-10-27): Ordnen wie die Kette (keine Färbung, nur die Anzahl, alles gemischt zurück, Sterne
+		   3 / 2 / 1 / 0). Lücke und Fehlerbild: jeder Fehlgriff kostet viel (3, 1, 0 Sterne), Wiederholung höchstens 1 Stern. */
+		function sterne(f) { return f === 0 ? 3 : f === 1 ? 1 : 0; }
+		function hinweisZeigen() {
+			const v = runde.fehlversuche;
+			if (st.art !== "ordnen") { hinweis.innerHTML = KI.rundenHinweis(runde, KI.du("Jeder Fehlgriff kostet Sterne.", "Jeder Fehlgriff kostet Sterne.")); return; }
+			hinweis.innerHTML = KI.ordnenHinweis(runde, "Bilder");
+		}
 		function geschafft(text) {
-			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false;
-			const s = st.art === "ordnen" ? sterneNachVersuchen(versuche) : sterne(fehler);
+			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false; neuKnopf.hidden = false; hinweis.innerHTML = "";
+			const v = runde.fehlversuche;
+			const s = runde.sterne(st.art === "ordnen" ? KI.sterneNachFehlversuchen(v) : sterne(fehler));
+			kopf.status.innerHTML = "";
 			rueck.innerHTML = "";
-			const p = el("p", "rueck gut", text + " " + KI.sterneHtml(s)); rueck.appendChild(p);
+			const p = el("p", "rueck " + (s ? "gut" : "schlecht"), text + " " + KI.sterneHtml(s)); rueck.appendChild(p);
 			if (st.schluss) rueck.appendChild(el("div", "erkl", KI.icon("tipp", 15) + " " + st.schluss));
 			KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
 			KI.bestwert(cfg.id, s); kopf.markiere(nr);
-			KI.funken(p, 16); heft.hidden = false;
+			if (s) KI.funken(p, 16); heft.hidden = false;
 			const n = KI.naechsteStufe(nr, cfg.stufen.length);
 			if (n >= 0) { const w = KI.hauptKnopf("weiter", "Nächste Stufe"); w.addEventListener("click", () => starte(n)); const l = el("div", "leiste"); l.appendChild(w); rueck.appendChild(l); }
 		}
 		KI.ziehGruppe(grp, ".filmbild.platz, .filmvorrat", (q, z) => {
 			if (q.dataset.gesperrt) return;
 			const herkunft = q.parentElement;
-			felder.forEach(f => f.classList.remove("richtig", "falsch"));
 			if (z.classList.contains("platz")) {
 				const alt = z.querySelector(".filmkarte");
 				if (alt && alt !== q) (herkunft.classList.contains("platz") ? herkunft : unten.querySelector(".filmvorrat")).appendChild(alt);
 				z.appendChild(q);
 			} else z.appendChild(q);
 			felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
-			rueck.innerHTML = "";
+			if (!fertigB) rueck.innerHTML = "";
 		});
 		function starte(i) {
-			nr = i; st = cfg.stufen[i]; fehler = 0; versuche = 0; fertigB = false; falschesBild = null;
+			nr = i; st = cfg.stufen[i]; fehler = 0; fertigB = false; falschesBild = null; runde = KI.runde(cfg.id, i); neuKnopf.hidden = true;
 			stoppe(); kopf.markiere(i); kopf.status.innerHTML = "";
 			auftrag.innerHTML = st.auftrag;
 			streifen.innerHTML = ""; unten.innerHTML = ""; rueck.innerHTML = ""; heft.hidden = true;
 			const n = st.bilder.length;
 			streifen.style.setProperty("--n", n); streifen.style.setProperty("--nhandy", spalten(n));
 			pruefKnopf.hidden = st.art !== "ordnen"; pruefKnopf.disabled = false; spielKnopf.hidden = true;
+			hinweisZeigen();
+			if (st.art === "ordnen") kopf.status.innerHTML = KI.versuchsStatus(runde.fehlversuche);
 			if (st.art === "ordnen") {
 				felder = st.bilder.map((_, j) => feld('<span class="nr">' + (j + 1) + "</span>", "platz"));
 				const vorrat = el("div", "filmvorrat"); unten.appendChild(vorrat);
 				vorrat.style.setProperty("--n", n); vorrat.style.setProperty("--nhandy", spalten(n));
-				for (const j of mischen(st.bilder.map((_, j) => j))) {
-					const k = el("div", "filmkarte", bildHtml(st.bilder[j])); k.dataset.j = j;
+				karten = mischen(st.bilder.map((_, j) => j)).map(j => {
+					const k = el("div", "filmkarte", bildHtml(st.bilder[j])); k._j = j;   /* Lösung nicht im Seitenquelltext */
 					KI.ziehbar(k, grp); vorrat.appendChild(k);
-				}
+					return k;
+				});
 			} else if (st.art === "luecke") {
 				const L = st.luecke;
 				felder = st.bilder.map((b, j) => feld(j === L.stelle ? '<span class="frage">?</span>' : bildHtml(b), j === L.stelle ? "frage" : ""));
@@ -1832,6 +1986,7 @@ window.KI = (function () {
 					const k = el("button", "filmkarte", bildHtml(w));
 					k.addEventListener("click", () => {
 						if (fertigB || k.disabled) return;
+						runde.beginne();
 						if (w.ok) {
 							k.classList.add("richtig");
 							const f = felder[L.stelle]; f.classList.remove("frage"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[L.stelle]);
@@ -1853,6 +2008,7 @@ window.KI = (function () {
 					const f = feld(bildHtml(j === F.stelle ? F : b), "tippbar");
 					f.addEventListener("click", () => {
 						if (fertigB || f.classList.contains("daneben")) return;
+						runde.beginne();
 						if (j === F.stelle) {
 							f.classList.add("falsch");
 							setTimeout(() => { f.classList.remove("falsch"); f.classList.add("richtig"); f.innerHTML = bildHtml(st.bilder[j]); }, 700);
@@ -1870,14 +2026,25 @@ window.KI = (function () {
 		}
 		pruefKnopf.addEventListener("click", () => {
 			const leer = felder.filter(f => !f.querySelector(".filmkarte")).length;
+			if (fertigB) return;
 			if (leer) { rueck.innerHTML = '<p class="rueck schlecht">Es sind noch ' + leer + " Bilder frei.</p>"; return; }
-			versuche++;
 			let falsch = 0;
-			felder.forEach((f, j) => { const ok = +f.querySelector(".filmkarte").dataset.j === j; f.classList.toggle("richtig", ok); f.classList.toggle("falsch", !ok); if (!ok) falsch++; });
+			felder.forEach((f, j) => { if (f.querySelector(".filmkarte")._j !== j) falsch++; });
 			if (!falsch) {
+				const v = runde.fehlversuche;
+				felder.forEach(f => f.classList.add("richtig"));
 				streifen.querySelectorAll(".filmkarte").forEach(k => k.dataset.gesperrt = "1");
 				geschafft("Die Reihenfolge stimmt!");
-			} else rueck.innerHTML = '<p class="rueck schlecht">' + (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " noch an der falschen Stelle.</p>";
+				return;
+			}
+			const v = runde.fehlversuch();
+			KI.auswahlWeg(grp);
+			const vorrat = unten.querySelector(".filmvorrat");
+			for (const k of mischen(karten)) vorrat.appendChild(k);
+			felder.forEach(f => f.classList.remove("voll"));
+			rueck.innerHTML = '<p class="rueck schlecht">' + KI.ordnenFehler(v, (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " an der falschen Stelle.") + "</p>";
+			hinweis.innerHTML = "";
+			kopf.status.innerHTML = KI.versuchsStatus(v);
 		});
 		/* Daumenkino: Bilder groß nacheinander, aktuelles Bild im Streifen markiert */
 		function zeigeBild() {
@@ -1920,6 +2087,7 @@ window.KI = (function () {
 		spiel: '<rect x="2" y="7" width="20" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 10v5M4.5 12.5h5" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="11" r="1.4" fill="currentColor"/><circle cx="18.5" cy="14" r="1.4" fill="currentColor"/>'
 	};
 	KI.seite = function (cfg) {
+		KI.sie = parseInt(cfg.klasse, 10) >= 12;   /* Anrede: bis Klasse 11 du, ab Klasse 12 Sie */
 		const blatt = document.querySelector(".blatt");
 		blatt.innerHTML = '<div class="kopf"><span class="nr">' + cfg.klasse + '</span><span class="kapitel">' + cfg.kapitel + '</span><span class="nr zwilling">' + cfg.klasse + "</span></div>";
 		const leiste = el("div", "modusleiste"); blatt.appendChild(leiste);
@@ -2628,9 +2796,11 @@ function BAU_TRAINING(behaelter) {
 	const rueck = KI.el("p", "rueck"); karte.appendChild(rueck);
 	const weiterLeiste = KI.el("div", "leiste"); const weiterKnopf = KI.hauptKnopf("weiter", "Weiter"); weiterLeiste.appendChild(weiterKnopf); weiterLeiste.hidden = true; karte.appendChild(weiterLeiste);
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
-	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
+	/* Schummelschutz (Kast 2026-10-27): kein Neustart mitten in der Serie; Neuladen oder Stufenwechsel setzen sie fort */
+	const SERIE = KI.serie(id);
 
-	let stufeNr = 0, nr = 0, treffer = 0, aufgabe = null, geloest = false, erledigt = [], geprueftUm = 0;
+	let stufeNr = 0, nr = 0, ergebnisse = [], zaehlerVorher = 0, treffer = 0, aufgabe = null, geloest = false, erledigt = [], geprueftUm = 0;
+	function merke(beantwortet) { if (beantwortet) ergebnisse[nr] = treffer > zaehlerVorher; if (beantwortet) setTimeout(zeigeStatus, 0); const d = beantwortet ? null : KI.alsDaten(aufgabe); SERIE.merke(stufeNr, { ergebnisse, nr: beantwortet ? nr + 1 : nr, treffer, aufgabe: d, offen: !beantwortet && !d }); }
 	const heft = KI.heftleiste(behaelter, () => {
 		const b = [{ art: "titel", t: "Potentiale im Stromkreis: " + STUFEN[stufeNr].titel }];
 		erledigt.forEach((a, i) => {
@@ -2651,7 +2821,7 @@ function BAU_TRAINING(behaelter) {
 			k.innerHTML = STUFEN[j].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : "");
 		});
 	}
-	function zeigeStatus() { status.innerHTML = "<span>Aufgabe " + Math.min(nr + 1, STUFEN[stufeNr].anzahl) + " / " + STUFEN[stufeNr].anzahl + "</span><span>Richtig: " + treffer + "</span>"; }
+	function zeigeStatus() { status.innerHTML = KI.kreise(ergebnisse, STUFEN[stufeNr].anzahl, nr); }
 	function zeichne(cvZiel, loesung) {
 		const { ctx: c, B, H } = KI.leinwand(cvZiel, w => w < 560 ? w * 1.2 : Math.min(380, w * 0.5));
 		c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
@@ -2665,13 +2835,16 @@ function BAU_TRAINING(behaelter) {
 		if (loesung) zeichneSkala(c, B - (B < 560 ? 50 : 70), B < 560 ? 30 : 46, H - 30, aufgabe.L, B < 560 ? 11 : 12);
 	}
 	function starte(i) {
-		stufeNr = i; nr = 0; treffer = 0; erledigt = [];
+		stufeNr = i; nr = 0; ergebnisse = []; treffer = 0; erledigt = [];
 		markiere(); ende.innerHTML = ""; heft.hidden = true; karte.hidden = false;
 		auftrag.innerHTML = "Der Minuspol der Batterie hat das Potential 0&nbsp;V. " + (STUFEN[i].gleich ? "Alle Lampen sind gleich." : "Die Widerstände der Lampen stehen daneben.") + " Du hast für jede Aufgabe <b>einen</b> Versuch.";
-		neueAufgabe();
+		const alt = SERIE.lies(i);
+		if (alt) { nr = alt.nr; ergebnisse = alt.ergebnisse || []; treffer = alt.treffer; if (alt.offen) { ergebnisse[nr] = false; nr++; KI.meldung("Deine Serie geht weiter. Die offene Aufgabe zählt als nicht gelöst."); } else KI.meldung("Deine angefangene Serie geht weiter."); }
+		if (nr >= STUFEN[i].anzahl) { nr--; geprueftUm = 0; weiter(); return; }
+		neueAufgabe(alt && alt.aufgabe);
 	}
-	function neueAufgabe() {
-		aufgabe = erzeugeAufgabe(STUFEN[stufeNr].gleich); geloest = false;
+	function neueAufgabe(gespeichert) {
+		zaehlerVorher = treffer; aufgabe = gespeichert || erzeugeAufgabe(STUFEN[stufeNr].gleich); merke(false); geloest = false;
 		frageEl.innerHTML = aufgabe.frage + " Die Batterie liefert " + volt(aufgabe.U) + ".";
 		gesuchtEl.innerHTML = aufgabe.gesucht + " =";
 		eingabe.value = ""; eingabe.disabled = false; pruefKnopf.disabled = false;
@@ -2701,22 +2874,23 @@ function BAU_TRAINING(behaelter) {
 		rueck.appendChild(det);
 		zeichne(cv, true);
 		const bild = weissKopie(cv);
-		erledigt.push({ frage: aufgabe.frage, gesucht: aufgabe.gesucht, wert: w, richtig, antwort: String(eingabe.value).trim() + " V", bild, weg });
+		erledigt.push({ frage: aufgabe.frage, gesucht: aufgabe.gesucht, wert: w, richtig, antwort: String(eingabe.value).trim() + " V", bild, weg }); merke(true);
 		zeigeStatus(); weiterLeiste.hidden = false; geprueftUm = performance.now(); weiterKnopf.focus({ preventScroll: true });
 	}
 	function weiter() {
 		if (performance.now() - geprueftUm < 250) return;   /* Schutz: kein "Weiter" im selben Augenblick wie "Prüfen" */
 		nr++;
 		if (nr < STUFEN[stufeNr].anzahl) { neueAufgabe(); return; }
+		SERIE.loesche(stufeNr);
 		karte.hidden = true; zeigeStatus();
-		const n = STUFEN[stufeNr].anzahl, s = treffer >= n ? 3 : treffer >= n - 1 ? 2 : 1;
-		KI.speicher.schreib("sterne_" + id + "_" + stufeNr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + stufeNr, 0)));
-		KI.bestwert(id, s); markiere();
-		const p = KI.el("p", "rueck gut", treffer + " von " + n + " Aufgaben im ersten Versuch richtig. " + KI.sterneHtml(s));
+		const n = STUFEN[stufeNr].anzahl, s = treffer >= n ? 3 : treffer >= n - 1 ? 2 : treffer >= n - 2 ? 1 : 0;
+		if (s) { KI.speicher.schreib("sterne_" + id + "_" + stufeNr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + stufeNr, 0))); KI.bestwert(id, s); markiere(); }
+		const p = KI.el("p", "rueck " + (s ? "gut" : "schlecht"), treffer + " von " + n + " Aufgaben im ersten Versuch richtig. " + (s ? KI.sterneHtml(s) : "Sieh dir die Lösungswege an und versuche es noch einmal."));
 		ende.innerHTML = ""; ende.appendChild(p);
+		const nl = KI.el("div", "leiste"); const nk = KI.hauptKnopf("zurueck", "Neue Aufgaben"); nk.addEventListener("click", () => starte(stufeNr)); nl.appendChild(nk); ende.appendChild(nl);
 		const folge = KI.naechsteStufe(stufeNr, STUFEN.length);
 		if (folge >= 0) { const l = KI.el("div", "leiste"); const k = KI.hauptKnopf("weiter", "Nächste Stufe: " + STUFEN[folge].name); k.addEventListener("click", () => starte(folge)); l.appendChild(k); ende.appendChild(l); }
-		KI.funken(p, 20); heft.hidden = false;
+		if (s) KI.funken(p, 20); heft.hidden = false;
 	}
 	pruefKnopf.addEventListener("click", pruefe);
 	/* Eingabetaste: Tastendruck abfangen, sonst löst derselbe Druck auf dem danach fokussierten Weiter-Knopf gleich "Weiter" aus
