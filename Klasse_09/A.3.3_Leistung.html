@@ -2323,7 +2323,7 @@ const FS_TEXTE = [
 			" an ihr verrichtet. Zum Glück hatte der Motor des Umzugswagens eine ",
 			{ f: "Kraft", r: "Leistung", w: ["Energie", "Arbeit"], e: "PS ist eine Einheit der Leistung: 1 PS ≈ 736 W." },
 			" von 150 PS. Am Ende des Tages hatte mein Körper viel Energie ",
-			{ f: "verbraucht", r: "umgewandelt", w: ["vernichtet", "erzeugt"], e: "Energie geht nicht verloren und entsteht nicht neu. Sie wird umgewandelt, zum Beispiel in thermische Energie." },
+			{ f: "verbraucht", r: "umgewandelt", w: ["vernichtet", "erzeugt"], e: "Energie geht nicht „verloren“ und entsteht nicht neu. Sie wird umgewandelt, zum Beispiel in thermische Energie." },
 			"."
 		]
 	},
@@ -2834,7 +2834,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "PS und kW sind Einheiten derselben Größe.", ja: true, erkl: "" },
 		{ t: "Beim Arbeiten wird Leistung verbraucht.", ja: false, erkl: "Leistung ist kein Vorrat. Sie gibt an, wie schnell Energie umgewandelt wird." },
 		{ t: "Mit 80&nbsp;W kann man einen 700-W-Toaster betreiben, wenn man nur lange genug tritt.", ja: false, erkl: "Mit 80&nbsp;W wird der Heizdraht nicht heiß genug, weil er ständig Energie an die Umgebung abgibt. Es kommt auf die Leistung an." },
-		{ t: "Doppelte Masse in gleicher Zeit gleich hoch heben erfordert die doppelte Leistung.", ja: true, erkl: "" }
+		{ t: "Doppelte Masse in gleicher Zeit gleich hoch heben erfordert die doppelte Leistung.", ja: true, erkl: "" },
+		{ t: "Ein Wasserkocher mit 2000&nbsp;W braucht für dieselbe Wassermenge mehr Energie als einer mit 1000&nbsp;W.", ja: false, erkl: "Die Energie ist (ohne Verluste) gleich. Mit doppelter Leistung dauert es nur halb so lang." },
+		{ t: "Hebt ein Kran 500&nbsp;kg in 10&nbsp;s um 4&nbsp;m, ist seine Leistung etwa 2&nbsp;kW.", ja: true, erkl: "P = m · g · Δh : Δt = 500&nbsp;kg · 9,81&nbsp;m/s² · 4&nbsp;m : 10&nbsp;s ≈ 1960&nbsp;W." },
+		{ t: "Eine 10-W-LED, die 100 Stunden leuchtet, wandelt weniger Energie um als ein 2000-W-Föhn, der 15 Minuten läuft.", ja: false, erkl: "LED: 10&nbsp;W · 100&nbsp;h = 1&nbsp;kWh. Föhn: 2&nbsp;kW · 0,25&nbsp;h = 0,5&nbsp;kWh. Die LED wandelt doppelt so viel um." },
+		{ t: "Ein 2-kW-Heizlüfter wandelt in einer halben Stunde 1&nbsp;kWh um.", ja: true, erkl: "ΔE = P · Δt = 2&nbsp;kW · 0,5&nbsp;h = 1&nbsp;kWh." },
+		{ t: "Ein Motor mit 1&nbsp;PS ist stärker als einer mit 1&nbsp;kW.", ja: false, erkl: "1&nbsp;PS ≈ 0,74&nbsp;kW. Der 1-kW-Motor hat die größere Leistung." },
+		{ t: "Läuft Agatha (50&nbsp;kg) in 5&nbsp;s eine 3&nbsp;m hohe Treppe hinauf, ist ihre Leistung etwa 300&nbsp;W.", ja: true, erkl: "P = 50&nbsp;kg · 9,81&nbsp;m/s² · 3&nbsp;m : 5&nbsp;s ≈ 294&nbsp;W." },
+		{ t: "Die Leistung gibt an, wie viel Energie ein Gerät insgesamt umwandelt.", ja: false, erkl: "Sie gibt an, wie viel Energie pro Sekunde umgewandelt wird. Insgesamt: ΔE = P · Δt." }
 	]
 });
 
