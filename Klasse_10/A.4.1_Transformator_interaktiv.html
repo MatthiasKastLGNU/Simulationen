@@ -2260,7 +2260,7 @@ BAU.kette = (b) => KI.kette(b, {
 			name: "Energie", titel: "Warum wird die Stromstärke kleiner, wenn die Spannung hochtransformiert wird?",
 			auftrag: "Bringe die Bausteine in die richtige Reihenfolge. Zwei Bausteine sind falsch.",
 			schritte: [
-				"Beim idealen Transformator geht keine Energie verloren.",
+				"Beim idealen Transformator geht keine Energie „verloren“.",
 				"Die Leistung auf der Sekundärseite ist genauso groß wie auf der Primärseite.",
 				"Das Produkt aus Spannung und Stromstärke ist also auf beiden Seiten gleich.",
 				"Wird die Spannung verdoppelt, muss die Stromstärke halbiert werden.",
@@ -2336,7 +2336,15 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Der Eisenkern verstärkt die Änderungen des Magnetfelds.", ja: true, erkl: "" },
 		{ t: "Hat die Sekundärspule weniger Windungen als die Primärspule, ist die Sekundärspannung größer.", ja: false, erkl: "Weniger Windungen auf der Sekundärseite: Die Spannung wird heruntertransformiert." },
 		{ t: "Der Eisenkern besteht aus isolierten Blechen, damit kaum Wirbelströme entstehen.", ja: true, erkl: "" },
-		{ t: "Am Kraftwerk wird die Spannung hochtransformiert, damit sich die Leitungen kaum erwärmen.", ja: true, erkl: "" }
+		{ t: "Am Kraftwerk wird die Spannung hochtransformiert, damit sich die Leitungen kaum erwärmen.", ja: true, erkl: "" },
+		{ t: "Ein Transformator mit 500 Windungen primär und 25 Windungen sekundär macht aus 230&nbsp;V etwa 11,5&nbsp;V.", ja: true, erkl: "U₂ = U₁ · N₂ : N₁ = 230&nbsp;V · 25 : 500 = 11,5&nbsp;V." },
+		{ t: "Die Sekundärspannung hängt nur von der Windungszahl der Sekundärspule ab.", ja: false, erkl: "Es kommt auf das Verhältnis N₂ : N₁ und auf die Primärspannung an." },
+		{ t: "Ohne Eisenkern kommt an der Sekundärspule eine viel kleinere Spannung an.", ja: true, erkl: "Ohne Eisenkern geht nur ein kleiner Teil des Feldes durch die Sekundärspule." },
+		{ t: "Ein Transformator wandelt Wechselspannung in Gleichspannung um.", ja: false, erkl: "Er liefert wieder Wechselspannung. Dafür braucht man zusätzlich einen Gleichrichter." },
+		{ t: "Ein Hochstromtransformator hat auf der Sekundärseite nur wenige, aber sehr dicke Windungen.", ja: true, erkl: "Wenige Windungen: kleine Spannung, große Stromstärke. Dicke Drähte erwärmen sich weniger." },
+		{ t: "Bei der Fernübertragung wird die Spannung hochtransformiert, damit der Strom schneller beim Verbraucher ankommt.", ja: false, erkl: "Bei gleicher Leistung ist die Stromstärke kleiner: Die Leitungen erwärmen sich weniger." },
+		{ t: "Schließt man einen Transformator, der 230&nbsp;V auf 23&nbsp;V herabsetzt, umgekehrt an 23&nbsp;V an, liefert er (ideal) 230&nbsp;V.", ja: true, erkl: "Das Windungszahlverhältnis gilt in beide Richtungen: Jetzt wird hochtransformiert." },
+		{ t: "Ein idealer Transformator, der die Spannung auf ein Zehntel herabsetzt, setzt auch die Leistung auf ein Zehntel herab.", ja: false, erkl: "Die Leistung bleibt gleich, dafür ist die Stromstärke zehnmal so groß." }
 	]
 });
 
