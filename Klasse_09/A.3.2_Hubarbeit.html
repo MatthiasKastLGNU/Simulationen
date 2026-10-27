@@ -2702,7 +2702,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Ist eine Rampe bei gleicher Höhe halb so lang, braucht man die doppelte Kraft.", ja: true, erkl: "" },
 		{ t: "Serpentinen machen den Weg länger, damit man weniger Kraft braucht.", ja: true, erkl: "" },
 		{ t: "Ein schräg gestellter Lastenaufzug braucht für dieselbe Höhe weniger Energie als ein senkrechter.", ja: false, erkl: "Gleicher Höhenunterschied, also gleiche Hubarbeit. Durch Reibung an der längeren Schiene eher sogar etwas mehr." },
-		{ t: "Auf eine 10 m hohe Plattform verrichtet man über eine Treppe mit vielen flachen Stufen weniger Hubarbeit als über eine Leiter.", ja: false, erkl: "Treppe und Leiter führen auf dieselbe Höhe: gleiche Hubarbeit. Die Treppe ist nur bequemer." }
+		{ t: "Auf eine 10 m hohe Plattform verrichtet man über eine Treppe mit vielen flachen Stufen weniger Hubarbeit als über eine Leiter.", ja: false, erkl: "Treppe und Leiter führen auf dieselbe Höhe: gleiche Hubarbeit. Die Treppe ist nur bequemer." },
+		{ t: "Über eine 4&nbsp;m lange Rampe auf 1&nbsp;m Höhe braucht man (ohne Reibung) nur ein Viertel der Gewichtskraft.", ja: true, erkl: "F · s = G · h ⇒ F = G · 1&nbsp;m : 4&nbsp;m = ¼ · G." },
+		{ t: "Wer mit dem Aufzug in den 5. Stock fährt, hat dort mehr Höhenenergie als jemand mit gleicher Masse, der die Treppe nimmt.", ja: false, erkl: "Gleiche Masse, gleicher Höhenunterschied: gleiche Höhenenergie. Der Weg spielt keine Rolle." },
+		{ t: "Hebt man einen 20-kg-Koffer 0,5&nbsp;m hoch in den Kofferraum, beträgt die Hubarbeit etwa 100&nbsp;J, egal auf welchem Weg.", ja: true, erkl: "W = m · g · Δh = 20&nbsp;kg · 9,81&nbsp;m/s² · 0,5&nbsp;m ≈ 98&nbsp;J." },
+		{ t: "Mit einer 6&nbsp;m langen Rampe auf 2&nbsp;m Höhe braucht man (ohne Reibung) halb so viel Kraft wie beim senkrechten Heben.", ja: false, erkl: "F = G · 2&nbsp;m : 6&nbsp;m = ⅓ · G, also ein Drittel." },
+		{ t: "Mit Reibung braucht man über eine lange Rampe insgesamt mehr Arbeit als beim senkrechten Heben.", ja: true, erkl: "Die Hubarbeit ist gleich, dazu kommt Arbeit gegen die Reibung auf dem langen Weg." },
+		{ t: "Von Garmisch (etwa 700&nbsp;m) aus verrichtet ein Bergsteiger bis zum Gipfel der Zugspitze (2962&nbsp;m) weniger Hubarbeit als vom Meer aus.", ja: true, erkl: "Es zählt der Höhenunterschied zwischen Start und Ziel: rund 2260&nbsp;m statt 2962&nbsp;m." },
+		{ t: "Auf dem Mond verrichtet man beim Heben derselben Last auf dieselbe Höhe dieselbe Hubarbeit wie auf der Erde.", ja: false, erkl: "W = m · g · Δh: Auf dem Mond ist g etwa ein Sechstel so groß, die Hubarbeit auch." }
 	]
 });
 
