@@ -2262,7 +2262,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Das Produkt R · C hat die Einheit einer Zeit.", ja: true, erkl: "" },
 		{ t: "Halbiert man R und verdoppelt C, bleibt die Halbwertszeit gleich.", ja: true, erkl: "" },
 		{ t: "Nach zehn Halbwertszeiten ist die Stromstärke auf weniger als 0,1 % gesunken.", ja: true, erkl: "" },
-		{ t: "Die Stromstärke nimmt in gleichen Zeitabständen um den gleichen Betrag ab.", ja: false, erkl: "Sie halbiert sich in gleichen Zeitabständen: gleicher Faktor, nicht gleicher Betrag. Deshalb wird die Kurve immer flacher." }
+		{ t: "Die Stromstärke nimmt in gleichen Zeitabständen um den gleichen Betrag ab.", ja: false, erkl: "Sie halbiert sich in gleichen Zeitabständen: gleicher Faktor, nicht gleicher Betrag. Deshalb wird die Kurve immer flacher." },
+		{ t: "Beim Laden ist die Stromstärke am Ende am größten, weil dann am meisten Ladung auf dem Kondensator ist.", ja: false, erkl: "Zu Beginn ist sie am größten, I₀ = U₀ : R. Mit wachsender Kondensatorspannung wird sie immer kleiner." },
+		{ t: "Beim Laden steigt die Kondensatorspannung zuerst schnell und dann immer langsamer.", ja: true, erkl: "Die Spannung am Widerstand und damit die Stromstärke nehmen ab." },
+		{ t: "Beim Laden ist der Kondensator nach einer Halbwertszeit zu drei Vierteln geladen.", ja: false, erkl: "Nach einer Halbwertszeit zur Hälfte, nach zwei Halbwertszeiten zu drei Vierteln." },
+		{ t: "Mit R = 10&nbsp;kΩ und C = 100&nbsp;µF beträgt die Halbwertszeit etwa 0,7&nbsp;s.", ja: true, erkl: "T₁/₂ = R · C · ln(2) = 10⁴ Ω · 10⁻⁴ F · 0,69 ≈ 0,69&nbsp;s." },
+		{ t: "Verdoppelt man die Ladespannung, verdoppelt sich auch die Halbwertszeit.", ja: false, erkl: "T₁/₂ = R · C · ln(2) hängt nicht von U₀ ab. Nur die Anfangsstromstärke verdoppelt sich." },
+		{ t: "Beim Entladen ist die Spannung am Widerstand stets kleiner als die am Kondensator.", ja: false, erkl: "Im Entladekreis liegen nur Kondensator und Widerstand: Die beiden Spannungen sind in jedem Moment gleich." },
+		{ t: "Ist die Stromstärke beim Entladen auf ein Achtel gesunken, sind drei Halbwertszeiten vergangen.", ja: true, erkl: "(½)³ = ⅛." }
 	]
 });
 
