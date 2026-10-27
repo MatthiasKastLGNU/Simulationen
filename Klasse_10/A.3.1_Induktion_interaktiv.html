@@ -2341,7 +2341,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Verschiebt man eine Spule ganz im gleichmäßigen Feld zwischen zwei Polplatten, wird eine Spannung induziert.", ja: false, erkl: "Im gleichmäßigen Feld gehen immer gleich viele Feldlinien durch die Spule: keine Änderung, keine Spannung." },
 		{ t: "Die Induktionsspannung ist umso größer, je schneller sich das Magnetfeld in der Spule ändert.", ja: true, erkl: "" },
 		{ t: "Dreht sich ein Stabmagnet vor der Spule um seine Längsachse, wird eine Spannung induziert.", ja: false, erkl: "Das Feld ist rund um die Längsachse gleich: In der Spule ändert sich nichts." },
-		{ t: "Schiebt man einen Magneten ganz durch eine Spule hindurch, entstehen nacheinander zwei Ausschläge mit verschiedenem Vorzeichen.", ja: true, erkl: "" }
+		{ t: "Schiebt man einen Magneten ganz durch eine Spule hindurch, entstehen nacheinander zwei Ausschläge mit verschiedenem Vorzeichen.", ja: true, erkl: "" },
+		{ t: "Bewegt man Magnet und Spule gleich schnell in dieselbe Richtung, wird eine Spannung induziert.", ja: false, erkl: "Zueinander ruhen sie: Das Feld in der Spule ändert sich nicht, keine Spannung." },
+		{ t: "Schiebt man den Magneten schnell hinein und zieht ihn langsam heraus, sind die beiden Ausschläge verschieden hoch.", ja: true, erkl: "Schnell: große Änderung pro Zeit, hoher Ausschlag. Langsam: niedriger, aber längerer Ausschlag mit anderem Vorzeichen." },
+		{ t: "Sind die Spulenenden offen, wird beim Hineinschieben des Magneten keine Spannung induziert.", ja: false, erkl: "Die Spannung entsteht trotzdem und ist messbar. Ohne geschlossenen Stromkreis fließt nur kein Strom." },
+		{ t: "Ein Magnet, der an einer Spule vorbeifährt, ohne in sie hineinzutauchen, kann eine Spannung induzieren.", ja: true, erkl: "Auch dann ändert sich das Magnetfeld in der Spule." },
+		{ t: "Ein Eisenkern in der Spule verringert die Induktionsspannung, weil er das Magnetfeld abschirmt.", ja: false, erkl: "Der Eisenkern verstärkt das Feld und seine Änderungen: Die Induktionsspannung wird größer." },
+		{ t: "Kippt man eine Spule im Feld eines Hufeisenmagneten, wird eine Spannung induziert.", ja: true, erkl: "Beim Kippen ändert sich die Zahl der Feldlinien durch die Spule." },
+		{ t: "Die Induktionsspannung hängt nur davon ab, wie weit man den Magneten bewegt, nicht wie schnell.", ja: false, erkl: "Je schneller sich das Feld ändert, desto größer die Spannung." }
 	]
 });
 
