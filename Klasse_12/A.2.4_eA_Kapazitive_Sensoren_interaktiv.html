@@ -2226,7 +2226,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Mit einem dicken Wollhandschuh lässt sich ein Touchscreen gut bedienen.", ja: false, erkl: "Wolle leitet nicht und ist dick: Der Finger ist zu weit weg, die Änderung bleibt unter der Schwelle." },
 		{ t: "Wassertropfen auf dem Display können eine Berührung vortäuschen.", ja: true, erkl: "" },
 		{ t: "Ein Stift mit Alufolie funktioniert am Touchscreen nur, wenn die Hand die Alufolie berührt.", ja: true, erkl: "Erst über die Hand ist die Folie mit dem Körper verbunden und kann genug Feldlinien abfangen." },
-		{ t: "Bei allen kapazitiven Sensoren fließt ein Strom durch den Gegenstand, der erkannt wird.", ja: false, erkl: "Gemessen wird die Kapazität: Der Gegenstand verändert nur das elektrische Feld." }
+		{ t: "Bei allen kapazitiven Sensoren fließt ein Strom durch den Gegenstand, der erkannt wird.", ja: false, erkl: "Gemessen wird die Kapazität: Der Gegenstand verändert nur das elektrische Feld." },
+		{ t: "Ein Touchscreen erkennt den Finger, weil bei der Berührung ein Strom über den Körper fließt.", ja: false, erkl: "Das Glas isoliert. Der Finger verändert nur das elektrische Feld und damit die Kapazität." },
+		{ t: "Im Beschleunigungssensor ist die Auslenkung der Masse bei gleicher Beschleunigung umso kleiner, je kleiner die Masse und je steifer die Federn sind.", ja: true, erkl: "m · a = D · s ⇒ s = m · a : D." },
+		{ t: "Im freien Fall zeigt der Beschleunigungssensor des Handys 9,81&nbsp;m/s² an.", ja: false, erkl: "Im freien Fall müssen die Federn keine Gewichtskraft tragen: Die Masse wird nicht ausgelenkt, der Sensor zeigt null." },
+		{ t: "Ein kapazitiver Sensor außen an einem Kunststofftank erkennt den Wasserstand durch die Wand hindurch.", ja: true, erkl: "Kunststoff isoliert. Wasser hat eine große Permittivitätszahl (etwa 80) und verändert das Feld stark." },
+		{ t: "Ein Regensensor erkennt Öltropfen genauso gut wie Wassertropfen.", ja: false, erkl: "Öl hat eine Permittivitätszahl von etwa 2 bis 3, Wasser etwa 80: Öl ändert die Kapazität viel weniger." },
+		{ t: "Ein Holzstift funktioniert am Touchscreen genauso gut wie der Finger, wenn man ihn in der Hand hält.", ja: false, erkl: "Trockenes Holz leitet kaum und hat eine kleine Permittivitätszahl: Die Änderung bleibt unter der Schwelle." },
+		{ t: "Ein kapazitiver Näherungsschalter erkennt einen Gegenstand umso früher, je größer dessen Permittivitätszahl ist.", ja: true, erkl: "Größere Permittivitätszahl, größere Kapazitätsänderung: Die Schwelle wird schon in größerem Abstand erreicht." }
 	]
 });
 
