@@ -2465,7 +2465,14 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Verdoppelt man den Radius kreisförmiger Platten, verdoppelt sich die Kapazität.", ja: false, erkl: "A = π·r² wird viermal so groß, also auch C." },
 		{ t: "Auf einem Handyakku steht „Kapazität: 3000 mAh“. Das ist eine Kapazität im Sinne der Physik.", ja: false, erkl: "mAh ist eine Ladung: 3000 mAh = 3 A·3600 s = 10 800 C. Die physikalische Kapazität ist Ladung je Spannung, C = Q/U." },
 		{ t: "Im U-Q-Diagramm eines Kondensators ist die Steigung der Geraden die Kapazität.", ja: true, erkl: "Steigung = Q/U = C." },
-		{ t: "Die Feldkonstante ε₀ hängt vom Material zwischen den Platten ab.", ja: false, erkl: "ε₀ ist eine Naturkonstante. Das Material steckt in der Dielektrizitätszahl εr." }
+		{ t: "Die Feldkonstante ε₀ hängt vom Material zwischen den Platten ab.", ja: false, erkl: "ε₀ ist eine Naturkonstante. Das Material steckt in der Dielektrizitätszahl εr." },
+		{ t: "Verdoppelt man Plattenfläche und Plattenabstand, bleibt die Kapazität gleich.", ja: true, erkl: "C = ε₀ · A : d: Zähler und Nenner verdoppeln sich." },
+		{ t: "Ein Luftkondensator mit A = 0,10&nbsp;m² und d = 1,0&nbsp;mm hat eine Kapazität von knapp 1&nbsp;nF.", ja: true, erkl: "C = 8,85 · 10⁻¹² F/m · 0,10&nbsp;m² : 1,0 · 10⁻³ m ≈ 0,89&nbsp;nF." },
+		{ t: "Schiebt man bei getrennter Quelle Glas zwischen die Platten, sinkt die Spannung.", ja: true, erkl: "Q bleibt, C wird εr-mal größer: U = Q : C sinkt." },
+		{ t: "Bei angeschlossener Quelle fließt beim Einschieben eines Dielektrikums Ladung auf den Kondensator nach.", ja: true, erkl: "U bleibt, C wird größer: Q = C · U wächst." },
+		{ t: "Ein Kondensator mit 100&nbsp;µF trägt bei 12&nbsp;V eine Ladung von 1,2&nbsp;mC.", ja: true, erkl: "Q = C · U = 100 · 10⁻⁶ F · 12&nbsp;V = 1,2 · 10⁻³ C." },
+		{ t: "Halbiert man bei getrennter Quelle den Plattenabstand, verdoppelt sich die Spannung.", ja: false, erkl: "C verdoppelt sich, Q bleibt: U = Q : C halbiert sich." },
+		{ t: "Vergrößert man bei getrennter Quelle den Plattenabstand, bleibt die Feldstärke zwischen den Platten gleich.", ja: true, erkl: "U = Q : C wächst proportional zu d, also bleibt E = U : d gleich." }
 	]
 });
 
