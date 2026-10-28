@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physik-Simulationen</title>
+<meta name="description" content="Interaktive Physik-Simulationen zu den Arbeitsblättern, nach Klassen und Kapiteln geordnet.">
+<meta property="og:title" content="Physik-Simulationen">
+<meta property="og:description" content="Interaktive Physik-Simulationen zu den Arbeitsblättern, nach Klassen und Kapiteln geordnet.">
+<!-- Automatisch erzeugt (GitHub Action, .github/index/erzeugen.py) – nicht von Hand bearbeiten -->
+<link rel="stylesheet" href="libertinus.css">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<style>
+:root {
+	--blue-frame:  #0000BF;
+	--blue-title:  #F2F2FF;
+	--red-frame:   #BF0000;
+	--red-title:   #FFF2F2;
+	--green-frame: #295C06;
+	--green-title: #F5FAF3;
+	--text:        #111111;
+	--grau:        #6b6b6b;
+	--hell:        #e6e6ee;
+	--seite:       #ffffff;
+	--schrift: 'Libertinus Sans', 'Segoe UI', system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+	margin: 0; background: var(--seite); color: var(--text);
+	font-family: var(--schrift); font-size: 17px; line-height: 1.35;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 40px; }
+
+/* Kopf im Stil einer tcolorbox */
+.kopf {
+	border: 2px solid var(--blue-frame); border-radius: 4px; background: var(--blue-title);
+	padding: 12px 16px; display: flex; align-items: center; gap: 14px;
+}
+.kopf svg { flex: none; }
+.kopf h1 { margin: 0; font-size: 1.6em; font-weight: bold; color: var(--blue-frame); }
+.kopf p { margin: 2px 0 0; color: var(--grau); font-size: 0.92em; }
+
+/* Bedienleiste */
+.leiste {
+	position: sticky; top: 0; z-index: 5; background: var(--seite);
+	display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px;
+	padding: 12px 0 10px; border-bottom: 1px solid var(--hell);
+}
+.gruppe { display: flex; flex-direction: column; gap: 3px; }
+.gruppe > span { font-size: 0.72em; color: var(--grau); letter-spacing: .02em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+	font: inherit; font-size: 0.95em; min-width: 3.1em; padding: 5px 10px; cursor: pointer;
+	border: 1.5px solid #c8c8d4; border-radius: 4px; background: #f3f3f6; color: var(--text);
+}
+a.chip { display: inline-block; text-align: center; text-decoration: none; }
+.chip:hover { border-color: var(--blue-frame); }
+.chip[aria-current="page"] {
+	border-color: var(--blue-frame); background: var(--blue-frame); color: #fff;
+	box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
+}
+.suche { position: relative; flex: 1 1 220px; max-width: 360px; }
+.suche svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.suche input {
+	width: 100%; font: inherit; font-size: 0.95em; padding: 6px 30px 6px 32px;
+	border: 1.5px solid #c8c8d4; border-radius: 4px; background: #fff; color: var(--text);
+}
+.suche input:focus { outline: none; border-color: var(--blue-frame); }
+.suche button {
+	position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: none;
+	border: 0; background: none; cursor: pointer; color: var(--grau); font-size: 1.1em; padding: 2px 6px;
+}
+.suche.voll button { display: block; }
+.anzahl { margin-left: auto; color: var(--grau); font-size: 0.85em; align-self: center; }
+
+/* Gliederung */
+h2.klasse {
+	margin: 26px 0 4px; font-size: 1.35em; color: var(--blue-frame);
+	border-bottom: 2px solid var(--blue-frame); padding-bottom: 2px;
+}
+h3.kapitel { margin: 18px 0 2px; font-size: 0.95em; font-weight: normal; color: var(--grau); }
+h3.kapitel b { color: var(--grau); font-weight: bold; }
+h4.abs {
+	margin: 4px 0 8px; font-size: 1.12em; font-weight: bold;
+	display: flex; align-items: center; gap: 9px;
+	border-left: 4px solid var(--themafarbe, transparent); padding-left: 8px;
+}
+.pikto {
+	flex: none; width: 30px; height: 30px; border-radius: 6px; color: #fff;
+	display: grid; place-items: center;
+}
+.kopf > div { flex: 1; min-width: 0; }
+.seitenqr {
+	flex: none; width: 52px; height: 52px; cursor: pointer; border-radius: 4px;
+	border: 1.5px solid var(--blue-frame); background: #fff; color: var(--blue-frame);
+	display: grid; place-items: center;
+}
+.seitenqr:hover { background: var(--blue-frame); color: #fff; }
+.abschnitt > .titel .niveau { font-weight: normal; }
+.abschnitt {
+	border: 2px solid var(--blue-frame); border-radius: 4px; margin: 0 0 14px; overflow: hidden;
+}
+.abschnitt > .titel {
+	background: var(--blue-title); color: var(--blue-frame); font-weight: bold;
+	padding: 5px 12px; border-bottom: 1px solid #ccd;
+}
+.raster {
+	display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 10px; padding: 10px;
+}
+
+/* Karte */
+.karte {
+	position: relative; display: flex; align-items: stretch;
+	border: 1.5px solid #d4d4de; border-radius: 4px; background: #fff;
+	transition: border-color .12s, box-shadow .12s;
+}
+.karte:hover { border-color: var(--blue-frame); box-shadow: 0 2px 8px rgba(0,0,191,.12); }
+.karte a {
+	flex: 1; min-width: 0; padding: 8px 10px; color: inherit; text-decoration: none;
+	display: flex; flex-direction: column; gap: 3px;
+}
+.karte a:focus-visible { outline: 2px solid var(--blue-frame); outline-offset: -2px; }
+.karte .ab { font-size: 0.75em; color: var(--grau); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.karte .name { font-size: 1.05em; }
+.karte .name::after { content: " ›"; color: var(--blue-frame); }
+.niveau {
+	display: inline-block; font-size: 0.85em; padding: 0 5px; border-radius: 3px; margin-left: 4px;
+	border: 1px solid; vertical-align: 1px;
+}
+.niveau.eA { color: var(--red-frame); background: var(--red-title); }
+.niveau.gA { color: var(--green-frame); background: var(--green-title); }
+.qr {
+	flex: none; width: 40px; border: 0; border-left: 1px solid #e3e3ea; background: #fafafc;
+	cursor: pointer; display: grid; place-items: center; color: #555; border-radius: 0 3px 3px 0;
+}
+.qr:hover { background: var(--blue-title); color: var(--blue-frame); }
+.leer { color: var(--grau); padding: 30px 0; text-align: center; }
+mark { background: #fff1a8; color: inherit; padding: 0; }
+
+/* QR-Overlay zum Projizieren */
+.overlay {
+	position: fixed; inset: 0; z-index: 20; background: rgba(20,20,40,.55);
+	display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.overlay.offen { display: flex; }
+.qrbox {
+	background: #fff; border: 2px solid var(--blue-frame); border-radius: 4px; max-width: 92vw;
+	padding: 0 0 16px; text-align: center; position: relative;
+}
+.qrbox .titel {
+	background: var(--blue-title); color: var(--blue-frame); font-weight: bold; font-size: 1.2em;
+	padding: 8px 48px; border-bottom: 1px solid #ccd;
+}
+.qrbox #qrbild { padding: 18px 18px 8px; display: inline-block; }
+.qrbox #qrbild svg { width: min(70vmin, 420px); height: auto; display: block; }
+.qrbox .url { font-size: 0.8em; color: var(--grau); word-break: break-all; padding: 0 16px; }
+.qrbox .zu {
+	position: absolute; right: 6px; top: 5px; border: 0; background: none; cursor: pointer;
+	color: var(--blue-frame); font-size: 1.5em; line-height: 1; padding: 4px 8px;
+}
+.qrbox .oeffnen {
+	display: inline-block; margin-top: 10px; padding: 6px 14px; border-radius: 4px;
+	background: var(--blue-frame); color: #fff; text-decoration: none;
+}
+footer { margin-top: 30px; color: var(--grau); font-size: 0.8em; text-align: center; }
+
+@media (max-width: 560px) {
+	body { font-size: 16px; }
+	.kopf h1 { font-size: 1.3em; }
+	.anzahl { display: none; }
+	.raster { grid-template-columns: 1fr; padding: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+	<header class="kopf">
+		<svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="kopflogo"><rect x="1.5" y="5" width="22" height="22" rx="2.5"/></clipPath></defs><rect x="1.5" y="5" width="22" height="22" rx="2.5" fill="#F7F7FF"/><path clip-path="url(#kopflogo)" stroke="#D4D4F2" stroke-width="0.5" d="M7 5V27M12.5 5V27M18 5V27M1.5 10.5H23.5M1.5 16H23.5M1.5 21.5H23.5"/><path d="M23.5 13.2V7.5Q23.5 5 21 5H4Q1.5 5 1.5 7.5V24.5Q1.5 27 4 27H21Q23.5 27 23.5 24.5V24.3" fill="none" stroke="#0000BF" stroke-width="2.2" stroke-linecap="round"/><path d="M6 20.476 C6.547 19.822 7.093 18.841 7.64 17.717 C8.187 16.594 8.733 15.333 9.28 14.169 C9.827 13.005 10.373 11.945 10.92 11.186 C11.467 10.427 12.013 9.973 12.56 9.908 C13.107 9.844 13.653 10.169 14.2 10.824 C14.747 11.478 15.293 12.459 15.84 13.583 C16.387 14.706 16.933 15.967 17.48 17.131 C18.027 18.295 18.573 19.355 19.12 20.114 C19.667 20.873 20.213 21.327 20.76 21.392 C21.307 21.456 21.853 21.131 22.4 20.476 L28.4 13.292" fill="none" stroke="#0000BF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28.55" cy="13.092" r="2.5" fill="#BF0000"/></svg>
+		<div>
+			<h1 id="ueberschrift">Physik-Simulationen</h1>
+			<p>Interaktive Simulationen zu den Arbeitsblättern · M. Kast</p>
+		</div>
+		<button class="seitenqr" id="seitenqr" type="button" title="QR-Code dieser Seite zeigen" aria-label="QR-Code dieser Seite zeigen">
+			<svg width="34" height="34" viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="M2 2h7v7H2zM4 4v3h3V4zM11 2h7v7h-7zM13 4v3h3V4zM2 11h7v7H2zM4 13v3h3v-3zM11 11h3v3h-3zM14 14h4v4h-4zM11 15h2v3h-2zM16 11h2v2h-2z"/></svg>
+		</button>
+	</header>
+
+	<nav class="leiste" aria-label="Filter">
+		<div class="gruppe">
+			<span>Klasse</span>
+			<div class="chips" id="chips"></div>
+		</div>
+		<div class="gruppe suche" id="suchfeld">
+			<span>Suche</span>
+			<div style="position:relative">
+				<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.8" fill="none" stroke="#777" stroke-width="1.8"/><path d="M10 10l4.5 4.5" stroke="#777" stroke-width="2" stroke-linecap="round"/></svg>
+				<input id="suche" type="text" inputmode="search" enterkeyhint="search" placeholder="z. B. Kondensator, A.2.1, eA" autocomplete="off" aria-label="Simulationen durchsuchen">
+				<button id="loeschen" type="button" title="Suche löschen" aria-label="Suche löschen">✕</button>
+			</div>
+		</div>
+		<div class="anzahl" id="anzahl"></div>
+	</nav>
+
+	<main id="liste"></main>
+	<footer>Simulationen für den Physikunterricht · <a href="https://github.com/MatthiasKastLGNU/Simulationen" style="color:inherit">Quelltext auf GitHub</a></footer>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="qrtitel">
+	<div class="qrbox">
+		<div class="titel" id="qrtitel"></div>
+		<button class="zu" id="qrzu" type="button" title="Schließen" aria-label="Schließen">✕</button>
+		<div id="qrbild"></div>
+		<div class="url" id="qrurl"></div>
+		<a class="oeffnen" id="qroeffnen" href="#" target="_blank" rel="noopener">Simulation öffnen ›</a>
+	</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const DATEN = {"klassen":{"09":{"A":"Energie als Erhaltungsgröße","A.1":"Energie","A.1.1":"Überblick über verschiedene Energieformen","A.1.2":"Prinzip der Energieerhaltung","A.2":"Mechanische Energie","A.2.1":"Berechnung der Höhenenergie","A.2.2":"Berechnung der kinetischen Energie","A.2.3":"Anwendungen","A.3":"Arbeit und Leistung","A.3.1":"Arbeit und Energie","A.3.2":"Wegunabhängigkeit der Hubarbeit","A.3.3":"Leistung","A.3.4":"Leistung des menschlichen Körpers","A.4":"Elektrische Energie","A.4.1":"Elektrische Ladung und Stromstärke","A.4.2":"Potentialdifferenz und Energie","A.5":"Elektrische Leistung","A.5.1":"Elektrische Energie Leistung Spannung und Stromstärke","A.5.2":"Wirkungsgrad","A.5.3":"Leistung bei mehreren Widerständen","A.5.4":"Anwendungen","B":"Atome","B.6":"Photonenmodell des Lichts","B.6.1":"Farbe und Energie des Lichts","B.6.2":"Diskrete und kontinuierliche Energiespektren","B.7":"Energiestufenmodell des Atoms","B.7.1":"Energiestufenmodell des Atoms","B.7.2":"Absorptionsspektrum der Erdatmosphäre","C":"Wärmelehre","C.10":"Thermischer Energietransport","C.10.1":"Abhängigkeiten bei Temperaturerhöhungen","C.10.2":"Spezifische Wärmekapazität","C.10.3":"Änderung der inneren Energie","C.10.4":"Wärmeleitung, Konvektion, Wärmestrahlung","C.11":"Treibhauseffekt und Klimaveränderungen","C.11.1":"Modellversuch zum Treibhauseffekt","C.11.2":"Strahlungsgleichgewicht der Erde","C.11.3":"Beiträge zum Treibhauseffekt","C.8":"Temperatur und innere Energie","C.8.1":"Aggregatszustände und Teilchenmodell","C.8.2":"Absolute Temperatur im Teilchenmodell","C.8.3":"Innere Energie","C.8.4":"Energieänderung bei Änderung des Aggregatszustands","C.9":"Druck in Gasen","C.9.1":"Druck als Zustandsgröße","C.9.2":"Druckänderung eines Gases","C.9.3":"Druckunterschied als Ursache für einen Teilchenstrom"},"10":{"A":"Elektromagnetismus","A.1":"Felder","A.1.0":"Grundwissen Magnetismus","A.1.1":"Magnetismus und Einblick in den allgemeinen Feldbegriff","A.1.2":"Das magnetische Feld","A.2":"Kraft auf Ströme","A.2.1":"Kraft auf stromdurchflossene Leiter im Magnetfeld","A.2.2":"Lorentzkraft","A.2.3":"Elektromotor","A.3":"Induktion","A.3.1":"Erzeugen von Induktionsspannungen","A.3.2":"Grundlegende Induktionsphänomene","A.3.3":"Generator","A.4":"Technische Anwendungen","A.4.1":"Der Transformator","A.4.2":"Gesellschaftliche Folgen der Elektrifizierung","B":"Impulserhaltung in der Mechanik","B.5":"Impuls","B.5.1":"Impuls als Erhaltungsgröße im zweidimensionalen Fall","B.5.2":"Eindimensionale Impuls- und Energiebetrachtungen","B.6":"Wechselwirkungsgesetz","C":"Bewegungen und Modellierung","C.7":"Bewegungen","C.7.1":"Diagramme bei konstanter Geschwindigkeit","C.7.2":"Diagramme der beschleunigten Bewegung","C.7.3":"Bewegungsfunktionen","C.7.4":"Der freie Fall","C.8":"Der waagerechte Wurf","C.9":"Konzepte anwenden","C.9.2":"Anwendungen im Straßenverkehr","D":"Kernphysik","D.10":"Radioaktivität","D.10.1":"Entdeckung der Radioaktivität","D.10.2":"Eigenschaften und Entstehung radioaktiver Strahlung","D.10.3":"Aufbau des Atomkerns und der Kernbausteine","D.11":"Energie und Radioaktivität","D.11.1":"Äquivalenz von Masse und Energie","D.11.2":"Energieberechnung bei Kernreaktionen","D.11.3":"Die Funktionsweise eines Kernreaktors","D.12":"Halbwertszeit","D.12.1":"Halbwertszeit","D.12.3":"Gefahren radioaktiver Strahlung"},"12":{"A":"Statische elektrische und magnetische Felder","A.0":"eA Methoden","A.1":"Elektrische Felder","A.1.0":"Wiederholung Ladungen","A.1.1":"Beschreibung statischer E-Felder","A.1.2":"Elektrische Feldstärke","A.1.3":"Überlagerung von Feldern","A.1.4":"Gesetz von Coulomb","A.2":"Kondensator","A.2.1":"Die Kapazität","A.2.2":"Kondensator als Energiespeicher","A.2.3":"SE Auf- und Entladevorgänge","A.2.4":"Materie im E-Feld Dielektrikum","A.2.5":"RC-Glied Differentialgleichung","A.3":"Energie im elektrischen Feld","A.3.1":"Potentielle Energie und Potential","A.3.2":"SE Äquipotentiallinien","A.3.3":"Radialfeld Analogie Gravitation","A.4":"Geladene Teilchen in elektrischen Feldern","A.4.1":"Elektrische Längs- und Querfelder","A.4.2":"Relativistischer Impuls und Energie","A.5":"Magnetisches Feld","A.5.1":"Magnetische Flussdichte","A.5.2":"Magnetfeld einer Spule","A.6":"Geladene Teilchen in magnetischen Feldern","A.6.1":"Die Lorentzkraft","A.6.2":"Technische Anwendungen B-Feld","B":"Induktion und elektromagnetische Schwingung","B.07.1":"Magnetischer Fluss Induktionsgesetz","B.07.2":"Sinusförmige Wechselspannung","B.08.1":"Ein- und Ausschaltvorgang Spule","B.08.2":"Selbstinduktion Vertiefung","B.08.3":"Risiken Selbstinduktionsspannung","B.09":"Technische Anwendungen Induktion","B.10":"Elektromagnetische Schwingungen","B.10.1":"Elektromagnetischer Schwingkreis","B.10.2":"SE Untersuchung Schwingkreis","B.10.3":"Thomsonsche Schwingungsgleichung","B.10.5":"Dämpfung Resonanz","B.7":"Induktion","B.7.1":"Magnetischer Fluss und Induktionsgesetz","B.7.2":"Erzeugung sinusförmiger Wechselspannung","B.8":"EVA Selbstinduktion","B.9":"Technische Anwendungen Induktion","C":"Elektromagnetische Wellen","C.11":"Elektromagnetische Wellen","C.11.1":"Ausbreitung E- und B-Felder","C.11.2":"Eigenschaften em Wellen","C.12":"Superposition und Interferenz","C.12.1":"Interferenz Dipol- und Mikrowellen","C.12.2":"Interferenz am Doppelspalt","C.12.3":"SE Wellenlänge von Licht","C.12.4":"Zeiger Kohärenz Gitter","C.13.1":"Entstehung Röntgenstrahlung","C.13.2":"Spektrum Röntgenstrahlung","C.13.3":"Elektromagnetisches Spektrum","C.13.4":"Risiken em Strahlung","D.2":"Potentialmessung","D.3":"Ladevorgänge Kondensator","D.5":"Messungen mit der Hall-Sonde","D.6":"Elektronen im E- und B-Feld","D.8":"Dämpfung Resonanz Schwingkreis"},"13":{"A":"Grundideen der Quantenphysik","A.1":"Elektronen","A.1.1":"Versuche mit der Elektronenbeugungsröhre","A.1.2":"Simulation des Doppelspaltexperiments","A.1.3":"de-Broglie-Beziehung für das Elektron","A.2":"Photonen","A.2.1":"Photon Welle oder Teilchen","A.2.2":"Energie des Photons","A.2.3":"Impuls des Photons","A.3":"Einblick in die Welt der Quantenphysik","A.3.1":"Wellenfunktionen und Nachweiswahrscheinlichkeit","A.3.2":"Superposition und Determiniertheit","A.3.3":"Komplementarität","A.3.4":"Messungen in der Quantenphysik","B":"Atommodelle in der Quantenphysik","B.4":"Potentiale und Wellenfunktion","B.4.1":"Eindimensionaler Potentialtopf","B.4.2":"Wellenfunktionen für weitere Potentiale","B.5":"Wasserstoffatom","B.5.1":"Eigenschaften des Wasserstoffatoms","B.5.2":"Orbitale des Wasserstoffatoms","B.6":"Energiespektren, Franck-Hertz-Versuch","B.6.1":"Energieniveauschema","B.6.2":"Charakteristisches Röntgenspektrum","B.6.3":"Franck-Hertz-Versuch","C":"Kernphysik und Aufbau der Materie","C.10":"Radioaktiver Zerfall","C.10.1":"Ionisierende Wirkung und Nachweis radioaktiver Strahlung","C.10.2":"Mathematische Beschreibung des radioaktiven Zerfalls","C.10.3":"Anwendung des radioaktiven Zerfalls","C.11":"Strahlenschutz","C.11.1":"Energiedosis und Äquivalenzdosis","C.11.2":"Strahlenbelastung des Menschen","C.11.3":"Massnahmen zum Strahlenschutz","C.12":"Kernenergietechnik","C.12.1":"Energietechnik","C.12.2":"Chancen und Risiken des Kernenergienutzung","C.7":"EVA Strukturuntersuchungen und Standardmodell","C.7.1":"Methoden zur Strukturuntersuchung","C.7.2":"Standardmodell der Teilchenphysik","C.7.3":"Gesellschaftlicher Nutzen von Grundlagenforschung","C.8":"Kernmodelle","C.8.1":"Massendefekt und Bindungsenergie","C.8.2":"Energiebilanz bei Kernreaktionen","C.8.3":"Potentialtopfmodell des Kerns","C.9":"Strahlungsarten","C.9.1":"Entstehung von alpha beta und gamma Strahlung","C.9.2":"Energiebilanzen und spektren","Z":"Abitur"}},"sims":[{"k":"09","pfad":"Klasse_09/A.2.1_Nullniveau.html","titel":"Höhenenergie und Nullniveau","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"09","pfad":"Klasse_09/A.2.2_Kinetische_Energie.html","titel":"Kinetische Energie","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"09","pfad":"Klasse_09/A.2.3_Achterbahn.html","titel":"Energiebilanz Achterbahn","kap":"A","abs":"A.2","ab":"A.2.3","niveau":""},{"k":"09","pfad":"Klasse_09/A.3.1_Arbeit.html","titel":"Arbeit und Energie","kap":"A","abs":"A.3","ab":"A.3.1","niveau":""},{"k":"09","pfad":"Klasse_09/A.3.2_Hubarbeit.html","titel":"Wegunabhängigkeit der Hubarbeit","kap":"A","abs":"A.3","ab":"A.3.2","niveau":""},{"k":"09","pfad":"Klasse_09/A.3.3_Leistung.html","titel":"Leistung","kap":"A","abs":"A.3","ab":"A.3.3","niveau":""},{"k":"09","pfad":"Klasse_09/A.3.4_Treppenlauf.html","titel":"Treppenlauf: Arbeit und Leistung","kap":"A","abs":"A.3","ab":"A.3.4","niveau":""},{"k":"09","pfad":"Klasse_09/A.4.1_Ladung_und_Strom.html","titel":"Ladung und Stromstärke","kap":"A","abs":"A.4","ab":"A.4.1","niveau":""},{"k":"09","pfad":"Klasse_09/A.4.2_Potentiale_im_Stromkreis.html","titel":"Potentiale im Stromkreis","kap":"A","abs":"A.4","ab":"A.4.2","niveau":""},{"k":"09","pfad":"Klasse_09/A.5.1_Energietransport.html","titel":"Energietransport und elektrische Leistung","kap":"A","abs":"A.5","ab":"A.5.1","niveau":""},{"k":"09","pfad":"Klasse_09/A.5.3_Leistungsbilanz.html","titel":"Leistungsbilanz","kap":"A","abs":"A.5","ab":"A.5.3","niveau":""},{"k":"09","pfad":"Klasse_09/A.5.4_Kaufentscheidung.html","titel":"Kaufentscheidung","kap":"A","abs":"A.5","ab":"A.5.4","niveau":""},{"k":"09","pfad":"Klasse_09/C.10.2_Spezifische_Waermekapazitaet.html","titel":"Erwärmen verschiedener Stoffe","kap":"C","abs":"C.10","ab":"C.10.2","niveau":""},{"k":"09","pfad":"Klasse_09/C.10.3_Aenderung_der_inneren_Energie.html","titel":"Änderung der inneren Energie","kap":"C","abs":"C.10","ab":"C.10.3","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.1_Drei_Finger_Regel.html","titel":"Trainer Drei-Finger-Regel","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.1_Feldlinienbild.html","titel":"Feldlinienbild Leiter im Magnetfeld","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.1_Leiterschaukel.html","titel":"Leiterschaukel","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.2_Fadenstrahlrohr.html","titel":"Fadenstrahlrohr","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.2_Kreisbahn_und_Schraubenbahn.html","titel":"Kreisbahn und Schraubenbahn","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.2_Ladungstraeger_im_Leiter.html","titel":"Elektronen im Leiter","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.2_Teilchenbahn.html","titel":"Trainer Lorentzkraft","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.3_Elektromotor.html","titel":"Elektromotor","kap":"A","abs":"A.2","ab":"A.2.3","niveau":""},{"k":"10","pfad":"Klasse_10/A.2.3_Elektromotor_interaktiv.html","titel":"Elektromotor interaktiv","kap":"A","abs":"A.2","ab":"A.2.3","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.1_Induktion.html","titel":"Induktion: Magnet und Spule","kap":"A","abs":"A.3","ab":"A.3.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.1_Induktion_interaktiv.html","titel":"Induktion erzeugen interaktiv","kap":"A","abs":"A.3","ab":"A.3.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.2_Fallender_Magnet.html","titel":"Fallender Magnet im Rohr","kap":"A","abs":"A.3","ab":"A.3.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.2_Induktion_interaktiv.html","titel":"Induktion interaktiv","kap":"A","abs":"A.3","ab":"A.3.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.2_Waltenhofen_Pendel.html","titel":"Waltenhofensches Pendel","kap":"A","abs":"A.3","ab":"A.3.2","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.3_Generator.html","titel":"Generator","kap":"A","abs":"A.3","ab":"A.3.3","niveau":""},{"k":"10","pfad":"Klasse_10/A.3.3_Generator_interaktiv.html","titel":"Generator interaktiv","kap":"A","abs":"A.3","ab":"A.3.3","niveau":""},{"k":"10","pfad":"Klasse_10/A.4.1_Transformator.html","titel":"Transformator","kap":"A","abs":"A.4","ab":"A.4.1","niveau":""},{"k":"10","pfad":"Klasse_10/A.4.1_Transformator_interaktiv.html","titel":"Transformator interaktiv","kap":"A","abs":"A.4","ab":"A.4.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.0_Elektroskop_und_Influenz.html","titel":"Elektroskop, Influenz und Polarisation","kap":"A","abs":"A.1","ab":"A.1.0","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.0_Elektrostatisches_Pendel.html","titel":"Elektrostatisches Pendel","kap":"A","abs":"A.1","ab":"A.1.0","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.1_Abschirmung_Faradayscher_Kaefig.html","titel":"Abschirmung im Faradayschen Käfig","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.1_Elektrisches_Feldhockey.html","titel":"Elektrisches Feldhockey","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.1_Feld_an_Leiteroberflaeche.html","titel":"Feld an einer Leiteroberfläche","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.1_Feldlinien_Grieskoerner.html","titel":"Feldlinienbilder mit Grieskörnern","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.2_Elektrofilter.html","titel":"Der Elektrofilter","kap":"A","abs":"A.1","ab":"A.1.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.2_Feinwaage_Ladungsloeffel.html","titel":"Ladungslöffel an der Feinwaage","kap":"A","abs":"A.1","ab":"A.1.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.2_Feldstaerken_Skala.html","titel":"Elektrische Feldstärken im Vergleich","kap":"A","abs":"A.1","ab":"A.1.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.3_Pfeiladdition.html","titel":"Pfeiladdition mit Maßstab","kap":"A","abs":"A.1","ab":"A.1.3","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.3_Platten_Influenz.html","titel":"Kügelchen zwischen zwei Platten","kap":"A","abs":"A.1","ab":"A.1.3","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.3_Superposition_Feld.html","titel":"Überlagerung elektrischer Felder","kap":"A","abs":"A.1","ab":"A.1.3","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.4_Coulomb_Kraft.html","titel":"Coulomb-Kraft","kap":"A","abs":"A.1","ab":"A.1.4","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.4_Feld_zweier_Punktladungen.html","titel":"Feld zweier Punktladungen","kap":"A","abs":"A.1","ab":"A.1.4","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.4_Feldliniendichte_Kugel.html","titel":"Feldliniendichte auf Kugelflächen","kap":"A","abs":"A.1","ab":"A.1.4","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.4_Kraft_auf_Probeladung.html","titel":"Kräfte auf eine Probeladung","kap":"A","abs":"A.1","ab":"A.1.4","niveau":""},{"k":"12","pfad":"Klasse_12/A.1.4_eA1_Coulomb_Messlabor.html","titel":"Coulomb-Messlabor","kap":"A","abs":"A.1","ab":"A.1.4","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.1.4_eA2_Feld_auf_der_Achse.html","titel":"Feld auf der Verbindungsachse","kap":"A","abs":"A.1","ab":"A.1.4","niveau":"eA2"},{"k":"12","pfad":"Klasse_12/A.1.4_eA2_Superposition.html","titel":"Superpositions-Rechner","kap":"A","abs":"A.1","ab":"A.1.4","niveau":"eA2"},{"k":"12","pfad":"Klasse_12/A.1.4_gA_Coulomb_Kraft.html","titel":"Coulomb-Kraft","kap":"A","abs":"A.1","ab":"A.1.4","niveau":"gA"},{"k":"12","pfad":"Klasse_12/A.2.1_Kapazitaet_interaktiv.html","titel":"Kapazität interaktiv","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.1_Plattenkondensator.html","titel":"Plattenkondensator","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.2_Energie_im_Kondensator.html","titel":"Energie im Kondensator","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.2_Energie_interaktiv.html","titel":"Energie im Kondensator interaktiv","kap":"A","abs":"A.2","ab":"A.2.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.2_eA_Superkondensator_Bus.html","titel":"Superkondensator im Stadtbus","kap":"A","abs":"A.2","ab":"A.2.2","niveau":"eA"},{"k":"12","pfad":"Klasse_12/A.2.3_RC_Messlabor.html","titel":"RC-Messlabor","kap":"A","abs":"A.2","ab":"A.2.3","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.3_RC_interaktiv.html","titel":"RC-Glied interaktiv","kap":"A","abs":"A.2","ab":"A.2.3","niveau":""},{"k":"12","pfad":"Klasse_12/A.2.3_eA1_RC-Glied_DGL.html","titel":"RC-Glied: Euler-Verfahren, Linearisierung, Energie","kap":"A","abs":"A.2","ab":"A.2.3","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.2.4_eA_Kapazitive_Sensoren.html","titel":"Kapazitive Sensoren","kap":"A","abs":"A.2","ab":"A.2.4","niveau":"eA"},{"k":"12","pfad":"Klasse_12/A.2.4_eA_Kapazitive_Sensoren_interaktiv.html","titel":"Kapazitive Sensoren interaktiv","kap":"A","abs":"A.2","ab":"A.2.4","niveau":"eA"},{"k":"12","pfad":"Klasse_12/A.3.1_Feld_und_Potential.html","titel":"Elektrisches Feld und Potential","kap":"A","abs":"A.3","ab":"A.3.1","niveau":""},{"k":"12","pfad":"Klasse_12/A.3.1_eA1_Radialfeld_Gravitation.html","titel":"Radialfeld und Gravitationsanalogie","kap":"A","abs":"A.3","ab":"A.3.1","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.3.2_eA1_Potentialmessung.html","titel":"Potentialmessung in der Wasserwanne","kap":"A","abs":"A.3","ab":"A.3.2","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.4.1_eA1_Elektronenablenkroehre.html","titel":"Elektronenablenkröhre","kap":"A","abs":"A.4","ab":"A.4.1","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.4.2_eA1_Relativistische_Teilchen.html","titel":"Relativistische Teilchen","kap":"A","abs":"A.4","ab":"A.4.2","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.5.2_eA1_Hall-Sonde.html","titel":"Hall-Sonde: Magnetfeldkartierung","kap":"A","abs":"A.5","ab":"A.5.2","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.5.2_eA2_Spulenenergie_MRT.html","titel":"Energie im Magnetfeld einer Spule","kap":"A","abs":"A.5","ab":"A.5.2","niveau":"eA2"},{"k":"12","pfad":"Klasse_12/A.6.1_eA1_Fadenstrahlrohr_Messunsicherheit.html","titel":"Fadenstrahlrohr mit Messunsicherheit","kap":"A","abs":"A.6","ab":"A.6.1","niveau":"eA1"},{"k":"12","pfad":"Klasse_12/A.6.2_Hall-Effekt.html","titel":"Hall-Effekt","kap":"A","abs":"A.6","ab":"A.6.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.6.2_Massenspektrometer.html","titel":"Massenspektrometer","kap":"A","abs":"A.6","ab":"A.6.2","niveau":""},{"k":"12","pfad":"Klasse_12/A.6.2_Zyklotron.html","titel":"Zyklotron","kap":"A","abs":"A.6","ab":"A.6.2","niveau":""},{"k":"12","pfad":"Klasse_12/C.12.2_Interferenz_am_Doppelspalt.html","titel":"Interferenz am Doppelspalt","kap":"C","abs":"C.12","ab":"C.12.2","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.1_Bragg-Bedingung.html","titel":"Reflexion an Netzebenen","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.1_Elektronenbeugungsroehre_Hypothesen.html","titel":"Hypothesen-Labor Elektronenbeugungsröhre","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.1_Laser_an_Gittern.html","titel":"Laser an gedrehten Gittern","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.1_Zwei_Ringe_Graphit.html","titel":"Zwei Ringe bei Graphit","kap":"A","abs":"A.1","ab":"A.1.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.2_Doppelspalt_Simulation.html","titel":"Doppelspalt mit Elektronen","kap":"A","abs":"A.1","ab":"A.1.2","niveau":""},{"k":"13","pfad":"Klasse_13/A.1.3_Elektronenbeugungsroehre_Messung.html","titel":"Messung an der Elektronenbeugungsröhre","kap":"A","abs":"A.1","ab":"A.1.3","niveau":""},{"k":"13","pfad":"Klasse_13/A.2.1_Doppelspalt_Photonen.html","titel":"Doppelspalt mit Photonen","kap":"A","abs":"A.2","ab":"A.2.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.3.1_Nachweiswahrscheinlichkeit.html","titel":"Nachweiswahrscheinlichkeit","kap":"A","abs":"A.3","ab":"A.3.1","niveau":""},{"k":"13","pfad":"Klasse_13/A.3.2_Determiniertheit.html","titel":"Determiniert und zufällig","kap":"A","abs":"A.3","ab":"A.3.2","niveau":""},{"k":"13","pfad":"Klasse_13/A.3.4_Messprozess.html","titel":"Messprozess","kap":"A","abs":"A.3","ab":"A.3.4","niveau":""},{"k":"13","pfad":"Klasse_13/B.4.1_Potentialtopf.html","titel":"Potentialtopf","kap":"B","abs":"B.4","ab":"B.4.1","niveau":""},{"k":"13","pfad":"Klasse_13/B.4.2_Potentiale.html","titel":"Zustände in Potentialen","kap":"B","abs":"B.4","ab":"B.4.2","niveau":""},{"k":"13","pfad":"Klasse_13/B.4.2_Tunneleffekt.html","titel":"Tunneleffekt","kap":"B","abs":"B.4","ab":"B.4.2","niveau":""},{"k":"13","pfad":"Klasse_13/B.5.1_Wasserstoffspektrum.html","titel":"Wasserstoffspektrum","kap":"B","abs":"B.5","ab":"B.5.1","niveau":""},{"k":"13","pfad":"Klasse_13/B.5.2_Orbitale.html","titel":"Orbitale des Wasserstoffatoms","kap":"B","abs":"B.5","ab":"B.5.2","niveau":""},{"k":"13","pfad":"Klasse_13/B.6.1_Spektrallabor.html","titel":"Spektrallabor","kap":"B","abs":"B.6","ab":"B.6.1","niveau":""},{"k":"13","pfad":"Klasse_13/B.6.2_Roentgenspektrum.html","titel":"Röntgenspektrum","kap":"B","abs":"B.6","ab":"B.6.2","niveau":""},{"k":"13","pfad":"Klasse_13/B.6.3_Fachsprache.html","titel":"Franck-Hertz erklären","kap":"B","abs":"B.6","ab":"B.6.3","niveau":""},{"k":"13","pfad":"Klasse_13/B.6.3_Franck-Hertz.html","titel":"Franck-Hertz-Versuch","kap":"B","abs":"B.6","ab":"B.6.3","niveau":""}]};
+const START = "";
+const PRAEFIX = "";
+const BASIS = 'https://matthiaskastlgnu.github.io/Simulationen/';
+
+const $ = id => document.getElementById(id);
+const klassen = Object.keys(DATEN.klassen).sort((a, b) => a - b);
+const param = new URLSearchParams(location.search);
+const aktiv = START;
+// alte Links ?klasse=9 auf die Klassenseite Klasse_09/ umleiten
+const kParam = (param.get('klasse') || '').padStart(2, '0');
+if (param.has('klasse') && klassen.includes(kParam) && kParam !== START)
+	location.replace(PRAEFIX + 'Klasse_' + kParam + '/' + (param.get('suche') ? '?suche=' + encodeURIComponent(param.get('suche')) : ''));
+$('suche').value = param.get('suche') || '';
+const SEITE = BASIS + (aktiv ? 'Klasse_' + aktiv + '/' : '');
+
+const nr = s => s.replace(/^0/, '');
+const esc = s => s.replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ß/g, 'ss');
+const codeSort = c => c.split('.').map((t, i) => i ? t.padStart(3, '0') : t).join('.');
+
+function markiere(text, woerter) {
+	let h = esc(text);
+	for (const w of woerter) {
+		if (!w) continue;
+		const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+		h = h.replace(re, '<mark>$1</mark>');
+	}
+	return h;
+}
+
+// Themen: Piktogramm + Farbe je Abschnitt (Reihenfolge = Vorrang; geprüft wird erst der Abschnitts-, dann der Kapitelname)
+const THEMEN = [
+	{name: 'Quanten & Atome', farbe: '#6a1b9a', re: /quant|elektronen|photon|broglie|atom|wasserstoff|franck/,
+	 svg: '<ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.5" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(-60 12 12)"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/>'},
+	{name: 'Kernphysik', farbe: '#9a7b00', re: /radioakt|kern|zerfall|halbwert|strahlenschutz|strahlungsarten/,
+	 svg: '<circle cx="12" cy="12" r="2.6" fill="currentColor"/><path d="M12 9.4 L8 2.6 A10 10 0 0 1 16 2.6 Z M14.3 13.3 L18.2 20.1 A10 10 0 0 0 22.1 13.2 Z M9.7 13.3 L1.9 13.2 A10 10 0 0 0 5.8 20.1 Z" fill="currentColor"/>'},
+	{name: 'Kondensator', farbe: '#00838f', re: /kondensator|kapazit|rc-/,
+	 svg: '<path d="M2 12h7M15 12h7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M9.5 4v16M14.5 4v16" stroke="currentColor" stroke-width="3" fill="none"/>'},
+	{name: 'Induktion', farbe: '#b85c00', re: /indukt|generator|transformator|wechselspannung|schwing/,
+	 svg: '<path d="M3 15c0-4 3-4 3 0s3 4 3 0-3-4 3 0 3 4 3 0 3-4 3 0 3 4 3 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 6h14" stroke="currentColor" stroke-width="1.8"/><path d="M16 3l4 3-4 3z" fill="currentColor"/>'},
+	{name: 'Wellen & Interferenz', farbe: '#1565c0', re: /welle|interferenz|spalt|licht|beugung/,
+	 svg: '<path d="M2 9c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-2M2 16c2.5-4 5-4 7.5 0s5 4 7.5 0 3.5-3 5-2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'},
+	{name: 'Wärmelehre', farbe: '#c62828', re: /wärme|waerme|therm|temperatur|innere energie|druck in gasen|treibhaus/,
+	 svg: '<path d="M10 4a2 2 0 0 1 4 0v9.5a4.5 4.5 0 1 1-4 0z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="17.5" r="2.4" fill="currentColor"/><path d="M12 9v8" stroke="currentColor" stroke-width="2"/>'},
+	{name: 'Magnetismus', farbe: '#2e7d32', re: /magnet|lorentz|kraft auf str|motor|b-feld|hall/,
+	 svg: '<path d="M5 3v9a7 7 0 0 0 14 0V3h-4.5v9a2.5 2.5 0 0 1-5 0V3z" fill="currentColor"/><path d="M5 3h4.5v3H5zM14.5 3H19v3h-4.5z" fill="#fff" opacity=".75"/>'},
+	{name: 'Elektrisches Feld', farbe: '#ad1457', re: /elektrisch|e-feld|ladung|coulomb|influenz|feldst|potential/,
+	 svg: '<circle cx="6" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.8 12h4.4M6 9.8v4.4" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.8 12h4.4" stroke="currentColor" stroke-width="1.8"/>'},
+	{name: 'Mechanik & Energie', farbe: '#455a64', re: /bewegung|impuls|wurf|kreis|energie|leistung|arbeit|kraft/,
+	 svg: '<circle cx="7" cy="12" r="4" fill="currentColor"/><path d="M12 12h9M17.5 8.5 21 12l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'},
+];
+function thema(k, s) {
+	const kn = DATEN.klassen[k];
+	for (const text of [kn[s.abs], kn[s.kap], s.titel]) {
+		if (!text) continue;
+		const t = text.toLowerCase();
+		const th = THEMEN.find(x => x.re.test(t));
+		if (th) return th;
+	}
+	return null;
+}
+const piktogramm = th => th
+	? '<span class="pikto" style="background:' + th.farbe + '" title="' + th.name + '"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' + th.svg + '</svg></span>'
+	: '';
+
+// Klassen-Chips: echte Links auf Klasse_<nn>/
+function chipsBauen() {
+	const c = $('chips');
+	c.innerHTML = '';
+	for (const k of ['', ...klassen]) {
+		const a = document.createElement('a');
+		a.className = 'chip';
+		a.textContent = k ? nr(k) : 'Alle';
+		a.title = k ? 'Klasse ' + nr(k) : 'Alle Klassen';
+		a.href = PRAEFIX + (k ? 'Klasse_' + k + '/' : '');
+		a.onclick = () => { const q = $('suche').value.trim(); if (q) a.href += '?suche=' + encodeURIComponent(q); };
+		if (k === aktiv) a.setAttribute('aria-current', 'page');
+		c.appendChild(a);
+	}
+}
+
+function zeigen() {
+	const q = $('suche').value.trim();
+	$('suchfeld').classList.toggle('voll', !!q);
+	const woerter = norm(q).split(/\s+/).filter(Boolean);
+	history.replaceState(null, '', location.pathname + (q ? '?suche=' + encodeURIComponent(q) : ''));
+	$('ueberschrift').textContent = aktiv ? 'Physik-Simulationen · Klasse ' + nr(aktiv) : 'Physik-Simulationen';
+	document.title = aktiv ? 'Simulationen Klasse ' + nr(aktiv) : 'Physik-Simulationen';
+
+	const treffer = DATEN.sims.filter(s => {
+		if (aktiv && s.k !== aktiv) return false;
+		if (!woerter.length) return true;
+		const kn = DATEN.klassen[s.k];
+		const heu = norm([s.titel, s.ab, s.niveau, s.pfad, kn[s.kap] || '', kn[s.abs] || '', kn[s.ab] || '', 'klasse ' + nr(s.k)].join(' '));
+		return woerter.every(w => heu.includes(w));
+	});
+	$('anzahl').textContent = treffer.length === 1 ? '1 Simulation' : treffer.length + ' Simulationen';
+
+	const main = $('liste');
+	main.innerHTML = '';
+	if (!treffer.length) { main.innerHTML = '<p class="leer">Keine Simulation gefunden.</p>'; return; }
+
+	for (const k of klassen) {
+		const rang = n => (n === '' ? '0' : n === 'gA' ? '1' : '2') + n;
+		const sims = treffer.filter(s => s.k === k)
+			.sort((a, b) => codeSort(a.ab).localeCompare(codeSort(b.ab)) || rang(a.niveau).localeCompare(rang(b.niveau)) || a.titel.localeCompare(b.titel, 'de'));
+		if (!sims.length) continue;
+		const kn = DATEN.klassen[k];
+		if (!aktiv) {
+			const h = document.createElement('h2');
+			h.className = 'klasse'; h.id = 'klasse-' + nr(k); h.textContent = 'Klasse ' + nr(k);
+			main.appendChild(h);
+		}
+		let kap = null, abs = null, blatt = null, raster = null;
+		for (const s of sims) {
+			if (s.kap !== kap || s.abs !== abs) {
+				if (s.kap !== kap) {
+					const h = document.createElement('h3');
+					h.className = 'kapitel';
+					h.innerHTML = s.kap ? '<b>' + esc(s.kap) + '</b> · ' + markiere(kn[s.kap] || '', woerter) : '<b>Weitere</b>';
+					main.appendChild(h);
+				}
+				kap = s.kap; abs = s.abs; blatt = null;
+				if (abs) {
+					const h = document.createElement('h4');
+					h.className = 'abs';
+					const th = thema(k, s);
+					if (th) h.style.setProperty('--themafarbe', th.farbe);
+					h.innerHTML = piktogramm(th) + '<span>' + esc(abs) + ' ' + markiere(kn[abs] || '', woerter) + '</span>';
+					main.appendChild(h);
+				}
+			}
+			const blattNeu = s.ab + '|' + s.niveau;
+			if (blattNeu !== blatt) {
+				blatt = blattNeu;
+				const box = document.createElement('section');
+				box.className = 'abschnitt';
+				const niv = s.niveau ? '<span class="niveau ' + s.niveau.slice(0, 2) + '">' + esc(s.niveau) + '</span>' : '';
+				box.innerHTML = '<div class="titel">' + (s.ab ? esc(s.ab) + ' ' + markiere(kn[s.ab] || '', woerter) : 'Ohne Zuordnung') + niv + '</div>';
+				raster = document.createElement('div');
+				raster.className = 'raster';
+				box.appendChild(raster);
+				main.appendChild(box);
+			}
+			const karte = document.createElement('div');
+			karte.className = 'karte';
+			karte.innerHTML =
+				'<a href="' + esc(PRAEFIX + s.pfad) + '" target="_blank" rel="noopener">' +
+					'<span class="name">' + markiere(s.titel, woerter) + '</span>' +
+				'</a>' +
+				'<button class="qr" type="button" title="QR-Code zeigen" aria-label="QR-Code für ' + esc(s.titel) + ' zeigen">' +
+					'<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="M2 2h7v7H2zM4 4v3h3V4zM11 2h7v7h-7zM13 4v3h3V4zM2 11h7v7H2zM4 13v3h3v-3zM11 11h3v3h-3zM14 14h4v4h-4zM11 15h2v3h-2zM16 11h2v2h-2z"/></svg>' +
+				'</button>';
+			karte.querySelector('.qr').onclick = () => qrZeigen(s);
+			raster.appendChild(karte);
+		}
+	}
+}
+
+// QR-Code zum Projizieren
+let qrZuletzt = null;
+function qrZeigen(s) {
+	const url = BASIS + s.pfad;
+	qrOeffnen(s.titel + (s.niveau ? ' (' + s.niveau + ')' : ''), url, PRAEFIX + s.pfad);
+}
+const QR_LOGO = '<defs><clipPath id="qrlogo"><rect x="1.5" y="5" width="22" height="22" rx="2.5"/></clipPath></defs><rect x="1.5" y="5" width="22" height="22" rx="2.5" fill="#F7F7FF"/><path clip-path="url(#qrlogo)" stroke="#D4D4F2" stroke-width="0.5" d="M7 5V27M12.5 5V27M18 5V27M1.5 10.5H23.5M1.5 16H23.5M1.5 21.5H23.5"/><path d="M23.5 13.2V7.5Q23.5 5 21 5H4Q1.5 5 1.5 7.5V24.5Q1.5 27 4 27H21Q23.5 27 23.5 24.5V24.3" fill="none" stroke="#0000BF" stroke-width="2.2" stroke-linecap="round"/><path d="M6 20.476 C6.547 19.822 7.093 18.841 7.64 17.717 C8.187 16.594 8.733 15.333 9.28 14.169 C9.827 13.005 10.373 11.945 10.92 11.186 C11.467 10.427 12.013 9.973 12.56 9.908 C13.107 9.844 13.653 10.169 14.2 10.824 C14.747 11.478 15.293 12.459 15.84 13.583 C16.387 14.706 16.933 15.967 17.48 17.131 C18.027 18.295 18.573 19.355 19.12 20.114 C19.667 20.873 20.213 21.327 20.76 21.392 C21.307 21.456 21.853 21.131 22.4 20.476 L28.4 13.292" fill="none" stroke="#0000BF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28.55" cy="13.092" r="2.5" fill="#BF0000"/>';
+function qrSvg(url) {
+	const q = qrcode(0, 'H'); q.addData(url); q.make();
+	const n = q.getModuleCount(), z = 4, T = n + 2 * z, F = '#0000BF';
+	const ecke = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+	const ls = Math.round(n * 0.24) | 1, l0 = (n - ls) / 2;
+	const logo = (r, c) => r >= l0 && r < l0 + ls && c >= l0 && c < l0 + ls;
+	// abgerundetes Rechteck als Pfad (wie auf den Arbeitsblättern: Module abgerundet, Ecken leicht gerundet)
+	const rr = (x, y, w, h, k) => 'M' + +(x + k).toFixed(2) + ' ' + +y.toFixed(2) + 'h' + +(w - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 ' + k + ' ' + k +
+		'v' + +(h - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 -' + k + ' ' + k + 'h-' + +(w - 2 * k).toFixed(2) +
+		'a' + k + ' ' + k + ' 0 0 1 -' + k + ' -' + k + 'v-' + +(h - 2 * k).toFixed(2) + 'a' + k + ' ' + k + ' 0 0 1 ' + k + ' -' + k + 'z';
+	let p = '';
+	for (let r = 0; r < n; r++) for (let c = 0; c < n; c++)
+		if (q.isDark(r, c) && !ecke(r, c) && !logo(r, c)) p += rr(c + z + 0.04, r + z + 0.04, 0.92, 0.92, 0.28);
+	for (const [r, c] of [[0, 0], [0, n - 7], [n - 7, 0]]) {
+		const x = c + z, y = r + z;
+		p += rr(x, y, 7, 7, 0.5) + rr(x + 1, y + 1, 5, 5, 0.35) + rr(x + 2, y + 2, 3, 3, 0.25);
+	}
+	return '<svg viewBox="0 0 ' + T + ' ' + T + '" role="img" aria-label="QR-Code"><rect width="' + T + '" height="' + T + '" fill="#fff"/>' +
+		'<path d="' + p + '" fill="' + F + '" fill-rule="evenodd"/>' +
+		'<svg x="' + (l0 + z) + '" y="' + (l0 + z) + '" width="' + ls + '" height="' + ls + '" viewBox="0 0 32 32">' + QR_LOGO + '</svg></svg>';
+}
+function qrOeffnen(titel, url, link) {
+	$('qrtitel').textContent = titel;
+	$('qrurl').textContent = url;
+	$('qroeffnen').href = link || '#';
+	$('qroeffnen').style.display = link ? '' : 'none';
+	qrZuletzt = document.activeElement;
+	$('qrbild').innerHTML = '';
+	if (window.qrcode) $('qrbild').innerHTML = qrSvg(url);
+	else $('qrbild').textContent = 'QR-Code konnte nicht geladen werden.';
+	$('overlay').classList.add('offen');
+	$('qrzu').focus();
+}
+function qrZu() { $('overlay').classList.remove('offen'); if (qrZuletzt) qrZuletzt.focus(); }
+$('qrzu').onclick = qrZu;
+$('seitenqr').onclick = () => qrOeffnen(aktiv ? 'Simulationen Klasse ' + nr(aktiv) : 'Physik-Simulationen', SEITE);
+$('overlay').onclick = e => { if (e.target === $('overlay')) qrZu(); };
+
+document.addEventListener('keydown', e => {
+	if (e.key === 'Escape' && $('overlay').classList.contains('offen')) qrZu();
+	else if (e.key === '/' && document.activeElement !== $('suche')) { e.preventDefault(); $('suche').focus(); }
+});
+$('suche').addEventListener('input', zeigen);
+$('loeschen').onclick = () => { $('suche').value = ''; zeigen(); $('suche').focus(); };
+if (param.get('klasse') === 'alle') aktiv = '';
+
+chipsBauen();
+zeigen();
+</script>
+</body>
+</html>
