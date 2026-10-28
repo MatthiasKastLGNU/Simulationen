@@ -235,6 +235,13 @@ button.symbol {
 button.symbol:hover { background: #f2f2f2; color: #222; }
 button.haupt { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; }
 button.haupt:disabled { opacity: 0.45; cursor: default; }
+/* Tipp beim Ordnen (2026-10-28): Knopf und vom Tipp festgesetztes Glied in Gold */
+button.tippknopf { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; font: inherit; padding: 0.35rem 0.8rem; border-radius: 1mm; border: 1.5px solid var(--gold); background: #FFF8E1; color: #7A5200; cursor: pointer; }
+button.tippknopf:hover { background: #FFEFB8; }
+button.tippknopf[hidden] { display: none; }
+.karte.tipp { border-color: var(--gold); background: #FFF8E1; cursor: default; }
+.luecke.voll.tipp:not(.richtig) { color: #7A5200; border-bottom-color: var(--gold); background: #FFF8E1; cursor: default; }
+.filmbild.platz.tipp.voll:not(.richtig) { border-color: var(--gold); }
 
 /* Status: Zeit, Fehler, Sterne */
 .status { display: flex; gap: 0.9rem; align-items: center; font-variant-numeric: tabular-nums; color: #444; font-size: 0.95rem; }
@@ -625,17 +632,20 @@ window.KI = (function () {
 	   steht aber fett bei den Sternen und im Heftbild („2. Durchgang“). Eine angefangene Runde (stand, Fehlversuche) übersteht
 	   Neuladen und Stufenwechsel; erst ein Neustart nach dem Ende beginnt den nächsten Durchgang. */
 	KI.runde = function (id, nr) {
-		const kd = "durchgang_" + id + "_" + nr, kv = "fehlversuche_" + id + "_" + nr, ks = "stand_" + id + "_" + nr;
+		const kd = "durchgang_" + id + "_" + nr, kv = "fehlversuche_" + id + "_" + nr, ks = "stand_" + id + "_" + nr, kt = "tipp_" + id + "_" + nr;
 		const fertige = KI.speicher.lies(kd, 0);
 		const r = {
 			durchgang: fertige + 1,
 			stand: KI.speicher.lies(ks, null),
 			get fehlversuche() { return KI.speicher.lies(kv, 0); },
 			fehlversuch() { const v = r.fehlversuche + 1; KI.speicher.schreib(kv, v); return v; },
+			/* Ordnen: Stelle, die der Tipp festgesetzt hat (null = noch kein Tipp); übersteht Neuladen */
+			get tipp() { return KI.speicher.lies(kt, null); },
+			setzeTipp(j) { KI.speicher.schreib(kt, j); },
 			merke(st) { KI.speicher.schreib(ks, st); },
 			beginne() { },
 			/* Sterne am Ende der Runde; der Durchgang ist abgeschlossen, der nächste Start ist Durchgang + 1 */
-			sterne(s) { KI.speicher.schreib(kv, 0); KI.speicher.schreib(ks, null); KI.speicher.schreib(kd, fertige + 1); return s; }
+			sterne(s) { KI.speicher.schreib(kv, 0); KI.speicher.schreib(ks, null); KI.speicher.schreib(kt, null); KI.speicher.schreib(kd, fertige + 1); return s; }
 		};
 		return r;
 	};
@@ -651,7 +661,23 @@ window.KI = (function () {
 		return KI.rundenHinweis(r, KI.du("Beim Prüfen erfährst du nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern.", "Beim Prüfen erfahren Sie nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern."));
 	};
 	KI.ordnenFehler = function (v, anzahlText) {
-		return anzahlText + KI.du(" Alles liegt wieder gemischt da.", " Alles liegt wieder gemischt da.") + (v === 3 ? " Ab jetzt gibt es keine Sterne mehr." : "");
+		return anzahlText + (KI.ordnenLiegenLassen(v) ? "" : " Alles liegt wieder gemischt da.") + (v === 3 ? " Ab jetzt gibt es keine Sterne mehr." : "");
+	};
+	/* Ordnen (Kast 2026-10-28): Nach Fehlversuch 1 und 2 liegt alles gemischt da, ab dem dritten (dann ohne Sterne) bleibt die
+	   Zuordnung liegen, damit man nicht alles neu ziehen muss. Nach dem zweiten Fehlversuch EIN Tipp, einmal je Runde, ohne
+	   zusätzlichen Sternabzug: Er setzt ein zufälliges, noch falsch liegendes Glied an seinen Platz und sperrt es. */
+	KI.ordnenLiegenLassen = v => v >= 3;
+	KI.ordnenTippErlaubt = r => r.fehlversuche >= 2 && r.tipp === null;
+	KI.tippKnopf = function (aktion) {
+		const b = el("button", "tippknopf", KI.icon("tipp", 18) + "<span>Tipp</span>");
+		b.title = "Ein Glied wird an seinen Platz gesetzt (nur einmal)"; b.hidden = true;
+		b.addEventListener("click", aktion);
+		return b;
+	};
+	/* Zeile fürs Heftbild: Fehlversuche und Tipp, damit der Lehrer sieht, wie es gelöst wurde */
+	KI.ordnenBilanz = function (v, tipp) {
+		const f = v === 0 ? "Auf Anhieb richtig" : v === 1 ? "1 Fehlversuch" : v + " Fehlversuche";
+		return { art: "text", teile: [{ t: f + (v < 2 ? "" : tipp ? ", 1 Tipp" : ", ohne Tipp"), farbe: "#555" }], groesse: 22 };
 	};
 	/* Hinweis unter dem Auftrag, wie die Runde zählt */
 	KI.rundenHinweis = function (r, text) {
@@ -1321,14 +1347,16 @@ window.KI = (function () {
 		const steuer = el("div", "leiste");
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
+		const tippKnopf = KI.tippKnopf(() => tipp());
+		steuer.appendChild(tippKnopf);
 		const neuKnopf = KI.symbolKnopf("zurueck", "Neuer Durchgang", () => starte(nr));
 		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
-		let nr = 0, runde, vorrat, plaetze, korb, kette, karten = [], fertig = false;
+		let nr = 0, runde, vorrat, plaetze, korb, kette, karten = [], fertig = false, bilanz = null;
 		const grp = "kette_" + cfg.id;
 		const heft = KI.heftleiste(behaelter, () => {
-			const b = [{ art: "titel", t: kette.titel + KI.durchgangTitel(runde) }];
+			const b = [{ art: "titel", t: kette.titel + KI.durchgangTitel(runde) }].concat(bilanz ? [bilanz] : []);
 			plaetze.forEach((p, i) => {
 				const k = p.querySelector(".karte");
 				if (i) b.push({ art: "pfeil" });
@@ -1342,6 +1370,7 @@ window.KI = (function () {
 			const herkunft = q.parentElement;
 			if (z.classList.contains("platz")) {
 				const alt = z.querySelector(".karte");
+				if (alt && alt.dataset.gesperrt) return;   /* vom Tipp festgesetzt */
 				if (alt && alt !== q) {
 					if (herkunft.classList.contains("platz")) herkunft.appendChild(alt); else vorrat.appendChild(alt);
 				}
@@ -1354,14 +1383,35 @@ window.KI = (function () {
 		/* Schummelschutz (Kast 2026-10-27): Prüfen färbt keine Karte und sagt nur, wie viele Glieder falsch stehen; danach liegen
 		   ALLE Bausteine gemischt im Vorrat. Die Lösung wird nie aufgedeckt (Kast: „Dann bekommt man die Lösung ja erst recht ganz
 		   einfach“). Beliebig viele Versuche, Sterne 3 / 2 / 1 / 0. Fehlversuche überstehen Neuladen und Stufenwechsel (KI.runde). */
-		function versuchsStatus() { kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche); }
+		function versuchsStatus() {
+			kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche);
+			tippKnopf.hidden = fertig || !KI.ordnenTippErlaubt(runde);
+		}
 		function zurueckInDenVorrat() {
 			KI.auswahlWeg(grp);
-			for (const k of mischen(karten)) vorrat.appendChild(k);
-			plaetze.forEach(p => { p.querySelector(".nr").hidden = false; });
+			for (const k of mischen(karten)) if (!k.dataset.gesperrt) vorrat.appendChild(k);
+			plaetze.forEach(p => { p.querySelector(".nr").hidden = !!p.querySelector(".karte"); });
+		}
+		/* Tipp-Glied j an seinen Platz setzen und sperren; ein anderes Glied dort geht in den Vorrat */
+		function festsetzen(j) {
+			const p = plaetze[j], k = karten.find(x => x._j === j), alt = p.querySelector(".karte");
+			if (!k) return;
+			const herkunft = k.parentElement;
+			if (alt && alt !== k) vorrat.appendChild(alt);
+			p.appendChild(k); p.querySelector(".nr").hidden = true;
+			if (herkunft.classList.contains("platz") && herkunft !== p) herkunft.querySelector(".nr").hidden = false;
+			k.dataset.gesperrt = "1"; k.classList.add("tipp");
+		}
+		function tipp() {
+			if (fertig || !KI.ordnenTippErlaubt(runde)) return;
+			KI.auswahlWeg(grp);
+			const offen = plaetze.map((p, j) => j).filter(j => { const k = plaetze[j].querySelector(".karte"); return !k || k._j !== j; });
+			if (!offen.length) return;
+			const j = offen[Math.floor(Math.random() * offen.length)];
+			runde.setzeTipp(j); festsetzen(j); rueck.textContent = ""; versuchsStatus();
 		}
 		function starte(i) {
-			nr = i; kette = cfg.ketten[i]; runde = KI.runde(cfg.id, i); fertig = false;
+			nr = i; kette = cfg.ketten[i]; runde = KI.runde(cfg.id, i); fertig = false; bilanz = null;
 			kopf.markiere(i);
 			const v = runde.fehlversuche;
 			auftrag.innerHTML = '<p style="margin:0 0 0.6rem">' + kette.auftrag + "</p>" + KI.ordnenHinweis(runde, "Glieder");
@@ -1386,6 +1436,7 @@ window.KI = (function () {
 				return k;
 			});
 			feld.appendChild(vorrat); feld.appendChild(rechts);
+			if (runde.tipp !== null) festsetzen(runde.tipp);
 			versuchsStatus();
 		}
 		pruefKnopf.addEventListener("click", () => {
@@ -1396,6 +1447,7 @@ window.KI = (function () {
 			plaetze.forEach((p, j) => { if (p.querySelector(".karte")._j !== j) falsch++; });
 			if (falsch === 0) {
 				const v = runde.fehlversuche;
+				bilanz = KI.ordnenBilanz(v, runde.tipp !== null);
 				const s = runde.sterne(KI.sterneNachFehlversuchen(v));
 				fertig = true;
 				rueck.className = "rueck gut";
@@ -1411,7 +1463,7 @@ window.KI = (function () {
 				return;
 			}
 			const v = runde.fehlversuch();
-			zurueckInDenVorrat();
+			if (!KI.ordnenLiegenLassen(v)) zurueckInDenVorrat(); else KI.auswahlWeg(grp);
 			rueck.className = "rueck schlecht";
 			rueck.innerHTML = KI.ordnenFehler(v, (falsch === 1 ? "Ein Glied steht" : falsch + " Glieder stehen") + " an der falschen Stelle.");
 			auftrag.querySelector(".rundenhinweis") && auftrag.querySelector(".rundenhinweis").remove();
@@ -1433,23 +1485,26 @@ window.KI = (function () {
 		const steuer = el("div", "leiste");
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		steuer.appendChild(pruefKnopf);
+		const tippKnopf = KI.tippKnopf(() => tipp());
+		steuer.appendChild(tippKnopf);
 		const neuKnopf = KI.symbolKnopf("zurueck", "Neuer Durchgang", starte);
 		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("p", "rueck"); behaelter.appendChild(rueck);
 		const grp = "luecken_" + cfg.id;
-		let luecken = [], woerter = [], runde, fertig = false;
+		let luecken = [], woerter = [], runde, fertig = false, bilanz = null;
 		const heft = KI.heftleiste(behaelter, () => {
 			const teile = [];
 			cfg.text.split(/(\[[^\]]+\])/).forEach(s => {
 				if (s.startsWith("[")) teile.push({ t: s.slice(1, -1), farbe: "#0000BF", fett: true });
 				else if (s) teile.push({ t: s });
 			});
-			return KI.blattBild([{ art: "titel", t: cfg.titel + KI.durchgangTitel(runde) }, { art: "text", teile }]);
+			return KI.blattBild([{ art: "titel", t: cfg.titel + KI.durchgangTitel(runde) }].concat(bilanz ? [bilanz] : [], [{ art: "text", teile }]));
 		}, cfg.id);
 		heft.hidden = true;
 		KI.ziehGruppe(grp, ".luecke, .wortbank", (w, z) => {
 			if (w.dataset.gesperrt) return;
+			if (z.dataset.gesperrt) return;   /* vom Tipp festgesetzt */
 			if (z.classList.contains("luecke")) {
 				if (z._wort) z._wort.classList.remove("benutzt");
 				if (w._luecke && w._luecke !== z) leere(w._luecke);
@@ -1464,15 +1519,37 @@ window.KI = (function () {
 		}
 		/* Schummelschutz wie bei der Kette (Kast 2026-10-27): keine Färbung, nur die Anzahl, danach alle Wörter gemischt zurück,
 		   Lösung bleibt verborgen, beliebig viele Versuche, Sterne 3 / 2 / 1 / 0. */
-		function versuchsStatus() { kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche); }
+		function versuchsStatus() {
+			kopf.status.innerHTML = fertig ? "" : KI.versuchsStatus(runde.fehlversuche);
+			tippKnopf.hidden = fertig || !KI.ordnenTippErlaubt(runde);
+		}
 		function hinweisZeigen() { hinweis.innerHTML = KI.ordnenHinweis(runde, "Wörter"); }
 		function wortbank() {
 			KI.auswahlWeg(grp);
-			luecken.forEach(leere);
-			for (const b of mischen(woerter)) bank.appendChild(b);
+			luecken.forEach(z => { if (!z.dataset.gesperrt) leere(z); });
+			for (const b of mischen(woerter)) if (!b.dataset.gesperrt) bank.appendChild(b);
+		}
+		/* Tipp: Lücke j bekommt ihr richtiges Wort und wird gesperrt (Kast 2026-10-28) */
+		function festsetzen(j) {
+			const z = luecken[j];
+			const w = woerter.find(b => !b.dataset.gesperrt && b.textContent === z._loesung && (!b._luecke || b._luecke.textContent !== b._luecke._loesung || b._luecke === z));
+			if (!w) return;
+			if (w._luecke && w._luecke !== z) leere(w._luecke);
+			if (z._wort && z._wort !== w) leere(z);
+			z._wort = w; w._luecke = z; w.classList.add("benutzt");
+			z.textContent = w.textContent; z.classList.add("voll", "tipp");
+			z.dataset.gesperrt = "1"; w.dataset.gesperrt = "1";
+		}
+		function tipp() {
+			if (fertig || !KI.ordnenTippErlaubt(runde)) return;
+			KI.auswahlWeg(grp);
+			const offen = luecken.map((z, j) => j).filter(j => luecken[j].textContent !== luecken[j]._loesung);
+			if (!offen.length) return;
+			const j = offen[Math.floor(Math.random() * offen.length)];
+			runde.setzeTipp(j); festsetzen(j); rueck.textContent = ""; versuchsStatus();
 		}
 		function starte() {
-			runde = KI.runde(cfg.id, 0); fertig = false;
+			runde = KI.runde(cfg.id, 0); fertig = false; bilanz = null;
 			text.innerHTML = ""; bank.innerHTML = ""; rueck.textContent = ""; rueck.className = "rueck"; heft.hidden = true; pruefKnopf.disabled = false; neuKnopf.hidden = true;
 			luecken = [];
 			const loesungen = [];
@@ -1489,6 +1566,7 @@ window.KI = (function () {
 				bank.appendChild(b);
 				return b;
 			});
+			if (runde.tipp !== null) festsetzen(runde.tipp);
 			hinweisZeigen(); versuchsStatus();
 		}
 		pruefKnopf.addEventListener("click", () => {
@@ -1498,6 +1576,7 @@ window.KI = (function () {
 			const f = luecken.filter(z => z.textContent !== z._loesung).length;
 			if (!f) {
 				const v = runde.fehlversuche;
+				bilanz = KI.ordnenBilanz(v, runde.tipp !== null);
 				const s = runde.sterne(KI.sterneNachFehlversuchen(v));
 				fertig = true;
 				luecken.forEach(z => z.classList.add("richtig"));
@@ -1509,7 +1588,7 @@ window.KI = (function () {
 				return;
 			}
 			const v = runde.fehlversuch();
-			wortbank();
+			if (!KI.ordnenLiegenLassen(v)) wortbank(); else KI.auswahlWeg(grp);
 			rueck.className = "rueck schlecht";
 			rueck.innerHTML = KI.ordnenFehler(v, (f === 1 ? "Ein Wort passt" : f + " Wörter passen") + " nicht.");
 			hinweis.innerHTML = ""; versuchsStatus();
@@ -1953,14 +2032,16 @@ window.KI = (function () {
 		const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen");
 		const spielKnopf = el("button", "haupt film-ab", KI.icon("play", 20) + "<span>Film abspielen</span>");
 		steuer.appendChild(pruefKnopf); steuer.appendChild(spielKnopf);
+		const tippKnopf = KI.tippKnopf(() => tipp());
+		steuer.appendChild(tippKnopf);
 		const neuKnopf = KI.symbolKnopf("zurueck", "Neuer Durchgang", () => starte(nr));
 		steuer.appendChild(neuKnopf);
 		behaelter.appendChild(steuer);
 		const rueck = el("div", ""); behaelter.appendChild(rueck);
 		const hinweis = el("div", ""); auftrag.after(hinweis);
 		const grp = "film_" + cfg.id;
-		let nr = 0, st, fehler = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null, runde, karten = [];
-		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel + KI.durchgangTitel(runde) }, { art: "film", bilder: st.bilder }]
+		let nr = 0, st, fehler = 0, felder = [], fertigB = false, uhr = 0, bildNr = 0, falschesBild = null, runde, karten = [], bilanz = null;
+		const heft = KI.heftleiste(behaelter, () => KI.blattBild([{ art: "titel", t: st.titel + KI.durchgangTitel(runde) }].concat(bilanz ? [bilanz] : [], [{ art: "film", bilder: st.bilder }])
 			.concat(st.schluss ? [{ art: "kasten", teile: [{ t: st.schluss }], groesse: 22 }] : [])), cfg.id);
 		heft.hidden = true;
 		const spalten = n => n <= 3 ? n : n === 4 ? 2 : 3;
@@ -1980,8 +2061,9 @@ window.KI = (function () {
 			hinweis.innerHTML = KI.ordnenHinweis(runde, "Bilder");
 		}
 		function geschafft(text) {
-			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false; neuKnopf.hidden = false; hinweis.innerHTML = "";
+			fertigB = true; pruefKnopf.hidden = true; spielKnopf.hidden = false; neuKnopf.hidden = false; tippKnopf.hidden = true; hinweis.innerHTML = "";
 			const v = runde.fehlversuche;
+			bilanz = st.art === "ordnen" ? KI.ordnenBilanz(v, runde.tipp !== null) : null;
 			const s = runde.sterne(st.art === "ordnen" ? KI.sterneNachFehlversuchen(v) : sterne(fehler));
 			kopf.status.innerHTML = "";
 			rueck.innerHTML = "";
@@ -1998,14 +2080,32 @@ window.KI = (function () {
 			const herkunft = q.parentElement;
 			if (z.classList.contains("platz")) {
 				const alt = z.querySelector(".filmkarte");
+				if (alt && alt.dataset.gesperrt) return;   /* vom Tipp festgesetzt */
 				if (alt && alt !== q) (herkunft.classList.contains("platz") ? herkunft : unten.querySelector(".filmvorrat")).appendChild(alt);
 				z.appendChild(q);
 			} else z.appendChild(q);
 			felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
 			if (!fertigB) rueck.innerHTML = "";
 		});
+		function tippStatus() { tippKnopf.hidden = fertigB || st.art !== "ordnen" || !KI.ordnenTippErlaubt(runde); }
+		/* Tipp (Kast 2026-10-28): Bild j an seinen Platz setzen und sperren; ein anderes Bild dort geht in den Vorrat */
+		function festsetzen(j) {
+			const f = felder[j], k = karten.find(x => x._j === j), alt = f.querySelector(".filmkarte");
+			if (!k) return;
+			if (alt && alt !== k) unten.querySelector(".filmvorrat").appendChild(alt);
+			f.appendChild(k); k.dataset.gesperrt = "1"; f.classList.add("tipp");
+			felder.forEach(x => x.classList.toggle("voll", !!x.querySelector(".filmkarte")));
+		}
+		function tipp() {
+			if (fertigB || st.art !== "ordnen" || !KI.ordnenTippErlaubt(runde)) return;
+			KI.auswahlWeg(grp);
+			const offen = felder.map((f, j) => j).filter(j => { const k = felder[j].querySelector(".filmkarte"); return !k || k._j !== j; });
+			if (!offen.length) return;
+			const j = offen[Math.floor(Math.random() * offen.length)];
+			runde.setzeTipp(j); festsetzen(j); rueck.innerHTML = ""; tippStatus();
+		}
 		function starte(i) {
-			nr = i; st = cfg.stufen[i]; fertigB = false; falschesBild = null; runde = KI.runde(cfg.id, i); neuKnopf.hidden = true;
+			nr = i; st = cfg.stufen[i]; fertigB = false; falschesBild = null; runde = KI.runde(cfg.id, i); neuKnopf.hidden = true; bilanz = null;
 			fehler = st.art === "ordnen" ? 0 : runde.fehlversuche;   /* Fehlgriffe überstehen Neuladen (Kast 2026-10-27) */
 			stoppe(); kopf.markiere(i); kopf.status.innerHTML = "";
 			auftrag.innerHTML = st.auftrag;
@@ -2013,7 +2113,7 @@ window.KI = (function () {
 			const n = st.bilder.length;
 			streifen.style.setProperty("--n", n); streifen.style.setProperty("--nhandy", spalten(n));
 			pruefKnopf.hidden = st.art !== "ordnen"; pruefKnopf.disabled = false; spielKnopf.hidden = true;
-			hinweisZeigen();
+			hinweisZeigen(); tippStatus();
 			if (st.art === "ordnen") kopf.status.innerHTML = KI.versuchsStatus(runde.fehlversuche);
 			if (st.art === "ordnen") {
 				felder = st.bilder.map((_, j) => feld('<span class="nr">' + (j + 1) + "</span>", "platz"));
@@ -2024,6 +2124,7 @@ window.KI = (function () {
 					KI.ziehbar(k, grp); vorrat.appendChild(k);
 					return k;
 				});
+				if (runde.tipp !== null) festsetzen(runde.tipp);
 			} else if (st.art === "luecke") {
 				const L = st.luecke;
 				felder = st.bilder.map((b, j) => feld(j === L.stelle ? '<span class="frage">?</span>' : bildHtml(b), j === L.stelle ? "frage" : ""));
@@ -2086,12 +2187,15 @@ window.KI = (function () {
 			}
 			const v = runde.fehlversuch();
 			KI.auswahlWeg(grp);
-			const vorrat = unten.querySelector(".filmvorrat");
-			for (const k of mischen(karten)) vorrat.appendChild(k);
-			felder.forEach(f => f.classList.remove("voll"));
+			if (!KI.ordnenLiegenLassen(v)) {
+				const vorrat = unten.querySelector(".filmvorrat");
+				for (const k of mischen(karten)) if (!k.dataset.gesperrt) vorrat.appendChild(k);
+				felder.forEach(f => f.classList.toggle("voll", !!f.querySelector(".filmkarte")));
+			}
 			rueck.innerHTML = '<p class="rueck schlecht">' + KI.ordnenFehler(v, (falsch === 1 ? "Ein Bild steht" : falsch + " Bilder stehen") + " an der falschen Stelle.") + "</p>";
 			hinweis.innerHTML = "";
 			kopf.status.innerHTML = KI.versuchsStatus(v);
+			tippStatus();
 		});
 		/* Daumenkino: Bilder groß nacheinander, aktuelles Bild im Streifen markiert */
 		function zeigeBild() {
