@@ -2613,7 +2613,7 @@ BAU.transport = function (b) {
 		c.fillStyle = FT.ladung; c.beginPath(); c.arc(16, ly2, 6, 0, 7); c.fill(); KI.text(c, "0,1 C", 27, ly2, fs - 1, "#333", "left");
 		c.fillStyle = FT.energie; c.fillRect(80, ly2 - 4, 8, 8); KI.text(c, "0,15 J", 94, ly2, fs - 1, "#333", "left");
 	}
-	bildleiste(rahmen, canvas, "Energietransport", () => { stoppe(); startKn.innerHTML = KI.icon("play", 18) + "<span>Start</span>"; neu(); }, "Zurücksetzen");
+	bildleiste(rahmen, canvas, () => "Energietransport", () => { stoppe(); startKn.innerHTML = KI.icon("play", 18) + "<span>Start</span>"; neu(); }, "Zurücksetzen");
 	window.addEventListener("resize", () => { masse(); kugeln.length ? zeichne() : neu(); });
 	masse(); neu();
 };
