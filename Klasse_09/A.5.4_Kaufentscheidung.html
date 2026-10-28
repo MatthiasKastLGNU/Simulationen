@@ -1106,7 +1106,7 @@ window.KI = (function () {
 			if (b.art === "kasten") return umbrechen(b.teile, B - 2 * R - 36, g).length * g * 1.4 + 26;
 			if (b.art === "pfeil") return 34;
 			if (b.art === "reihe") return 184;
-			if (b.art === "bild") return b.quelle.height * (B - 2 * R) / b.quelle.width + 10;
+			if (b.art === "bild") { const q = b.quelle.ohneKast || b.quelle; return q.height * (B - 2 * R) / q.width + 10; }
 			if (b.art === "spalten") return 50 + Math.max(...b.spalten.map(s => s.zeilen.reduce((a, z) => a + umbrechen([{ t: z }], (B - 2 * R) / b.spalten.length - 30, 22).length * 31 + 8, 0))) + 10;
 			if (b.art === "abstand") return b.h;
 			if (b.art === "film") return filmMasse(b).h + 12;
@@ -1170,7 +1170,7 @@ window.KI = (function () {
 					if (i < n - 1) { ctx.font = font(30, true); ctx.fillStyle = "#2E7D32"; ctx.textAlign = "center"; ctx.fillText(b.trenner || "=", x + lw + 20, y + 99); ctx.textAlign = "left"; }
 				});
 			} else if (b.art === "bild") {
-				ctx.drawImage(b.quelle, R, y, B - 2 * R, h - 10);
+				ctx.drawImage(b.quelle.ohneKast || b.quelle, R, y, B - 2 * R, h - 10);
 			} else if (b.art === "film") {
 				/* dunkler Streifen mit Lochung oben und unten, weiße Einzelbilder */
 				const m = filmMasse(b), y0 = y + 4;
@@ -2332,10 +2332,17 @@ window.KI = (function () {
 		c.lineTo(x2 - l * Math.cos(w) - b * Math.sin(w), y2 - l * Math.sin(w) + b * Math.cos(w));
 		c.lineTo(x2 - l * Math.cos(w) + b * Math.sin(w), y2 - l * Math.sin(w) - b * Math.cos(w)); c.fill();
 	};
-	/* Canvas für ein Ergebnisbild kopieren (weißer Hintergrund) */
+	/* Canvas für ein Ergebnisbild kopieren (weißer Hintergrund), darunter ein weißer Streifen mit "Kast" rechts unten (Kast 2026-10-28).
+	   Im Heftbild (blattBild, art "bild") wird die Kopie ohne Streifen verwendet, dort steht "Kast" schon unten. */
 	KI.canvasKopie = function (canvas) {
-		const c = document.createElement("canvas"); c.width = canvas.width; c.height = canvas.height;
-		const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(canvas, 0, 0);
+		const ohne = document.createElement("canvas"); ohne.width = canvas.width; ohne.height = canvas.height;
+		const o = ohne.getContext("2d"); o.fillStyle = "#fff"; o.fillRect(0, 0, ohne.width, ohne.height); o.drawImage(canvas, 0, 0);
+		const s = Math.max(1, canvas.width / (canvas.clientWidth || canvas.width)), hs = Math.round(26 * s);
+		const c = document.createElement("canvas"); c.width = canvas.width; c.height = canvas.height + hs;
+		const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(ohne, 0, 0);
+		x.font = Math.round(15 * s) + "px " + SCHRIFT; x.fillStyle = "#888"; x.textAlign = "right"; x.textBaseline = "alphabetic";
+		x.fillText("Kast", c.width - Math.round(10 * s), c.height - Math.round(8 * s));
+		c.ohneKast = ohne;
 		return c;
 	};
 
