@@ -1778,6 +1778,8 @@ async function oeffneDateien(dateien) {
 	if (fehler) SimUI.meldung((neu ? neu + " Messreihen geöffnet, " : "") + fehler + " Datei(en) nicht lesbar. Möglich sind .spklab, .csv und .xlsx mit Zeit und Spannung.");
 	else if (neu) SimUI.meldung(neu === 1 ? "Messreihe geöffnet" : neu + " Messreihen geöffnet");
 }
+/* Apple (iPhone, iPad, Mac) kennt die Endung .spklab nicht und graut solche Dateien im Auswahlfenster aus: dort ohne Filter öffnen, geprüft wird ohnehin beim Lesen */
+if (/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)) $("datei").removeAttribute("accept");
 $("btn-oeffnen").addEventListener("click", () => $("datei").click());
 $("datei").addEventListener("change", () => { const f = [...$("datei").files]; $("datei").value = ""; if (f.length) oeffneDateien(f); });
 $("btn-beispiele").addEventListener("click", () => {
