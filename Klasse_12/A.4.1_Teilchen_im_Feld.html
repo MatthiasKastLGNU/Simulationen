@@ -423,10 +423,18 @@ function kartenBild(liste) {
 			x.fillStyle = "#fafafa"; x.fillRect(kx, ky, kb, kh); x.strokeStyle = k.r; x.lineWidth = 2 * d; x.strokeRect(kx, ky, kb, kh);
 			x.fillStyle = "#666"; x.font = Math.round(11 * d) + "px " + SCHRIFT; x.textAlign = "left"; x.textBaseline = "top"; x.fillText(k.t, kx + 8 * d, ky + 5 * d);
 			x.fillStyle = k.f; x.font = "bold " + Math.round((schmal ? 16 : 19) * d) + "px " + SCHRIFT;
-			if (schmal) { x.textAlign = "right"; x.textBaseline = "top"; x.fillText(k.w, kx + kb - 8 * d, ky + 18 * d); }
-			else { x.textBaseline = "bottom"; x.fillText(k.w, kx + 8 * d, ky + kh - 6 * d); }
+			const g = Math.round((schmal ? 16 : 19) * d);
+			if (schmal) { x.textBaseline = "top"; hochText(x, k.w, kx + kb - 8 * d, ky + 18 * d, g, true); }
+			else { x.textBaseline = "bottom"; hochText(x, k.w, kx + 8 * d, ky + kh - 6 * d, g, false); }
 		});
 	} };
+}
+/* Text mit Hochzahl "10^15" als echter Exponent (fett, Schriftgröße g), rechtsbündig oder linksbündig ab x */
+function hochText(x, t, px, py, g, rechts) {
+	const m = t.match(/^(.*?)\^(\S+)(.*)$/), teile = m ? [[m[1], g, 0], [m[2], Math.round(g * 0.65), -g * 0.38], [m[3], g, 0]] : [[t, g, 0]];
+	const breite = teile.reduce((b, [s, gr]) => { x.font = "bold " + gr + "px " + SCHRIFT; return b + x.measureText(s).width; }, 0);
+	let xx = rechts ? px - breite : px; x.textAlign = "left";
+	teile.forEach(([s, gr, dy]) => { x.font = "bold " + gr + "px " + SCHRIFT; x.fillText(s, xx, py + dy); xx += x.measureText(s).width; });
 }
 function mitKast(c, unten) {
 	const k = weissKopie(c), d = window.devicePixelRatio || 1, zusatz = unten ? Math.round(unten.hoehe * d) : 0, streifen = Math.round(22 * d);
@@ -449,14 +457,14 @@ function knopfgruppe(id, aktion) {
    Längsfeld: Platten senkrecht im Abstand d = 5 cm, Löcher in der Mitte.
    Rechnung in SI-Einheiten; x in m ab der linken Platte, positiv nach rechts.
    ========================================================================== */
-const L = { d: 0.05, links: 0.016, rechts: 0.024, teilchen: "e", start: "ruhe", linksPlus: true, U: 1200, E0: 840, tempo: 1,
+const L = { d: 0.05, links: 0.024, rechts: 0.024, teilchen: "e", start: "ruhe", linksPlus: true, U: 1200, E0: 840, tempo: 1,
 	lauf: null, spur: [], fertig: false };
 function lTeilchen() { return L.teilchen === "e" ? { q: -E, m: ME, z: -1, name: "Elektron" } : { q: E, m: MP, z: 1, name: "Proton" }; }
 /* Beschleunigung im Feld (in x-Richtung): Feld zeigt von Plus nach Minus */
 function lBeschl() { const t = lTeilchen(), Ex = (L.linksPlus ? 1 : -1) * L.U / L.d; return t.q * Ex / t.m; }
 function lStartwerte() {
 	const t = lTeilchen(), a = lBeschl();
-	if (L.start === "v0") return { x: -L.links * 0.85, v: Math.sqrt(2 * L.E0 * E / t.m) };
+	if (L.start === "v0") return { x: -L.links * 0.75, v: Math.sqrt(2 * L.E0 * E / t.m) };
 	// aus der Ruhe an der Platte, von der weg die Kraft zeigt
 	if (a >= 0) return { x: 1e-7, v: 0 };
 	return { x: L.d - 1e-7, v: 0 };
@@ -481,7 +489,7 @@ function lSchritt(dtReal) {
 		r.x += r.v * h + 0.5 * ak * h * h; r.v += ak * h; r.t += h;
 		if (imFeld && vAlt * r.v < 0 && r.umkehr === null) r.umkehr = r.x;
 		if (r.t >= r.naechster) { L.spur.push({ x: r.x, t: r.t }); r.naechster += r.dt; }
-		if (r.x < -L.links || r.x > L.d + L.rechts) { r.raus = true; break; }
+		if (r.x < -L.links * 0.8 || r.x > L.d + L.rechts * 0.8) { r.raus = true; break; }
 		if (r.v === 0 && ak === 0) { r.raus = true; break; }
 	}
 }
@@ -527,7 +535,7 @@ function lZeichne() {
 	const imFeld = r.x > 0 && r.x < L.d, a = lBeschl();
 	if (imFeld && a !== 0) { const lf = (schmal ? 26 : 38) * Math.sign(a); pfeil(ctx, px, ym + rK + 9, px + lf, ym + rK + 9, FARBE_F, "#5C0000", 3); ctx.fillStyle = FARBE_F; ctx.font = "italic bold " + (schmal ? 12 : 14) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.fillText("F", px + lf / 2, ym + rK + 22); }
 	if (Math.abs(r.v) > 1) {
-		const vmax = Math.sqrt(2 * 2000 * E / ME), lv = Math.sign(r.v) * Math.max(10, (schmal ? 60 : 110) * Math.sqrt(Math.abs(r.v) / vmax));
+		const vmax = Math.sqrt(2 * 2000 * E / ME), lv = Math.sign(r.v) * Math.max(10, (schmal ? 40 : 75) * Math.sqrt(Math.abs(r.v) / vmax));
 		pfeil(ctx, px, ym - rK - 9, px + lv, ym - rK - 9, FARBE_V, "#14461D", 3);
 		ctx.fillStyle = FARBE_V; ctx.font = "italic bold " + (schmal ? 12 : 14) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.fillText("v", px + lv / 2, ym - rK - 20);
 	}
@@ -638,7 +646,6 @@ function qZeichne() {
 		if (!aktuell || sp.fertig) {
 			ctx.fillStyle = t.q < 0 ? "#2238A8" : "#A82222"; ctx.font = (schmal ? 10 : 12) + "px " + SCHRIFT; ctx.textAlign = "left"; ctx.textBaseline = "middle";
 			const xe2 = X(Math.min(sp.x, Q.l + Q.nach)), ye = Y(Math.max(-Q.d / 2, Math.min(Q.d / 2, sp.y)));
-			if (sp.trifft === null) ctx.fillText(t.name === "Elektron" ? "" : "", xe2 + 4, ye);
 		}
 	});
 	// Zerlegung: Projektionen der Stroboskoppunkte auf die Achsen
