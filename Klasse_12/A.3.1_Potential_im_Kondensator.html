@@ -2556,7 +2556,7 @@ function BAU_NULLNIVEAU(b) {
    Modus "weg": Arbeit auf verschiedenen Wegen von A nach B
    ========================================================================== */
 function BAU_WEG(b) {
-	b.appendChild(KI.el("p", "hinweis", "Ziehen Sie die Probeladung von <b>A</b> aus auf einem beliebigen Weg. Lassen Sie sie bei <b>B</b> los (oder wieder bei A: geschlossener Weg). Die Simulation addiert die Arbeit von außen Stück für Stück: <i>W</i> = Σ <i>F</i>·Δ<i>s</i>."));
+	b.appendChild(KI.el("p", "hinweis", "Ziehen Sie die Probeladung von <b>A</b> aus auf einem beliebigen Weg. Lassen Sie sie im grünen Kreis um <b>B</b> los (oder wieder bei A: geschlossener Weg). Die Simulation addiert die Arbeit von außen Stück für Stück: <i>W</i> = Σ <i>F</i>·Δ<i>s</i>."));
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const cv = KI.el("canvas", "sim"); rahmen.appendChild(cv);
 	const karten = KI.el("div", "wertkarten"); b.appendChild(karten);
@@ -2582,6 +2582,13 @@ function BAU_WEG(b) {
 		};
 		wege.forEach((w, i) => zeichnePfad(w, WEGFARBEN[i % WEGFARBEN.length] + "B0", 3));
 		if (aktiv) zeichnePfad(aktiv, "#111", 3.5);
+		const ende = aktiv && aktiv.punkte[aktiv.punkte.length - 1];
+		[[Bp, true], [A, aktiv && aktiv.weg]].forEach(([z, zeigen]) => {   /* grüner Zielkreis: hier loslassen (gefüllt, sobald die Ladung darin ist) */
+			if (!zeigen) return;
+			const an = ende && nahe(ende, z);
+			c.save(); c.setLineDash([5, 4]); c.strokeStyle = an ? "#2E8B3A" : "#2E8B3A99"; c.lineWidth = 2;
+			c.beginPath(); c.arc(gz.px(z.s), gz.py(z.y), fangRadius(), 0, 2 * Math.PI); if (an) { c.fillStyle = "#2E8B3A30"; c.fill(); } c.stroke(); c.restore();
+		});
 		kreuz(c, gz.px(A.s), gz.py(A.y), null); KI.text(c, "A", gz.px(A.s) - 20, gz.py(A.y) + 18, 15, "#111", "center", "bold"); kreuz(c, gz.px(Bp.s), gz.py(Bp.y), "B");
 		const p = aktiv ? aktiv.punkte[aktiv.punkte.length - 1] : A;
 		zeichneLadung(c, gz.px(p.s), gz.py(p.y), Math.max(11, gz.u * 0.36), plus);
@@ -2596,11 +2603,13 @@ function BAU_WEG(b) {
 		tab.innerHTML = "<tr><th>Weg</th><th>Länge</th><th>Arbeit <i>W</i></th></tr>" + wege.map((w, i) =>
 			'<tr><td><span class="farbpunkt" style="background:' + WEGFARBEN[i % WEGFARBEN.length] + '"></span>' + w.name + "</td><td>" + zahl(w.laenge, 1) + " cm</td><td>" + vz(Math.abs(w.W) < 0.05 ? 0 : w.W, 1) + " eV</td></tr>").join("");
 	}
+	function fangRadius() { return Math.max(26, gz.u * 0.55); }   /* Pixel: auch mit dem Finger gut zu treffen */
+	function nahe(p, z) { return Math.hypot(gz.px(p.s) - gz.px(z.s), gz.py(p.y) - gz.py(z.y)) < fangRadius(); }
 	function pos(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 	cv.addEventListener("pointerdown", e => {
 		if (!gz) zeichne();
 		const [x, y] = pos(e);
-		if (Math.hypot(x - gz.px(A.s), y - gz.py(A.y)) > Math.max(28, gz.u * 0.8)) { KI.meldung("Starten Sie bei A."); return; }
+		if (Math.hypot(x - gz.px(A.s), y - gz.py(A.y)) > fangRadius() * 1.3) { KI.meldung("Starten Sie bei A."); return; }
 		aktiv = { punkte: [{ s: A.s, y: A.y }], laenge: 0, W: 0, weg: false };
 		cv.setPointerCapture(e.pointerId); zeichne();
 	});
@@ -2618,8 +2627,8 @@ function BAU_WEG(b) {
 	function loslassen() {
 		if (!aktiv) return;
 		const p = aktiv.punkte[aktiv.punkte.length - 1];
-		if (Math.hypot(p.s - Bp.s, p.y - Bp.y) < 0.6) { aktiv.punkte.push({ s: Bp.s, y: Bp.y }); aktiv.W += arbeit(p, Bp); aktiv.name = "A → B"; wege.push(aktiv); KI.funken(tab, 6); }
-		else if (aktiv.weg && Math.hypot(p.s - A.s, p.y - A.y) < 0.6) { aktiv.punkte.push({ s: A.s, y: A.y }); aktiv.W += arbeit(p, A); aktiv.name = "A → A (geschlossen)"; wege.push(aktiv); KI.funken(tab, 6); }
+		if (nahe(p, Bp)) { aktiv.punkte.push({ s: Bp.s, y: Bp.y }); aktiv.W += arbeit(p, Bp); aktiv.name = "A → B"; wege.push(aktiv); KI.funken(tab, 6); }
+		else if (aktiv.weg && nahe(p, A)) { aktiv.punkte.push({ s: A.s, y: A.y }); aktiv.W += arbeit(p, A); aktiv.name = "A → A (geschlossen)"; wege.push(aktiv); KI.funken(tab, 6); }
 		else if (aktiv.punkte.length > 3) KI.meldung("Der Weg endet nicht bei B oder A und wird nicht gespeichert.");
 		if (wege.length > 6) wege.shift();
 		const fertig = aktiv; aktiv = null; zeichne();
