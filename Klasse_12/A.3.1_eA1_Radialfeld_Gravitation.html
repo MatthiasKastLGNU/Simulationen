@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Radialfeld und Gravitationsanalogie</title>
-	<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGzklEQVR4nM1XW2yUxxX+Zv7b3tj1utg42G7dUFAEPJCHVm3fWmhCFBH1wUKVkBCWU+fBxCEReWhA0OBaSZWHBkVVBEK5CBGkOmoVchFtGpYoN6ttLg04pbGFgh3iywK22X8v//VUZ36vvcY4LSRSeqTZf2d0zplzvnOZGeAbJrFwul9+faofDW+Aeb8E6Bpjviqxvv/ukIgYBUXTgRbLCmOAAyJxwwYJQQRYcBxZAX74+bwhVf3XNYDpjXVCxJ8Cgh8Q+TG1dFOIRBsJoTmA9jci937gJ2cjJK4fEgHkmgDxd2BZCzANw9DBftwsMW6e5wPIACiOA94GYONkrYG1pEspuogSLU1NJe+5527X29piCEOgVAoUQzKpzRnE36kpF3V1JqSc37BYjHgTCU2tX7hQwY4dn7hjY8uahLi6IwzFb4GcDsBfZICu4zbXdeiuuxrkHXdkhecBhgHYdoRYKhXtFASApgGuG4NpCjXnzdiAWl6WX7Mmjs2bG7RnnrlChkFrXHdpxGTklxCsLAgI5TKhUgHK5VANx+ENSG1++XKAV17J48yZspqXSgt5o/+k9EQprH7nYCdA5gD9D4A2hwBqSNMEpIyEqxBzOJJJgYGBArZvH8TQUAmxmMTDD7fhwIE2lMvzvFU51nMtrcVpKaIQKLiU1wDNGiDgOCGuXvUwMxPCMKI5EXsTYnjYxT33fIx8vsxmolIJ0ds7pCDv7l6JmRlPbep5ITyPEIYSjhPlBe/G5nyC37h/BjY0At+/AgwK4F02YtZ2gmVJpNMGslkT9fUmUikdiYSOxkYTfX2jyOdLSCYt9Pevx913Nyqp3t4LyOcDNDRYipflWJ71xGIRygZ8yTE4CWN7GnjfBw5ngHdywIOMwJKdKgwJ6bSOgQEb/f3jyo9HHmlDe3sDDh5cjfr6OGy7jMcfH1FIMH8tMRJCgALokrBfCgS9nHNXoVKFmfe8BWSXNIBTU9cFnnhiBEQeVq9Oo6enGSMjFaxaZWHnzlZl1LFj4/joI1uVK+dLlVpaLNVNSWgjBh4NU6o7iGpbDAgwS4AxZ0C18UpOFW4jGR3vvTeDV1/Ng0jioYdaladCRCXY3d2MFSuSsO0Knn764ly5cv54HoK9e7+tHzzYevw7jt3nZ6Y2HEFnJg0SKQgrC+gEPHsnMDlnACdQuRzAtjkRfZV8rNhxXKxcmcSWLd/C1JSPMAxx6ZKHujqJrVsblGx/fx7nzpXgugEKBZ+TkqSU6Om55YNhTAi9ePZPz+KB5bvxq0sB5O/HYfzyp8CumiSsjT1gWcDQUBknTlxSa52dt2D5cg2uy3HlUuWGROjqakYqFcP0dBkvvDCp5LgHEJHwfdWg6oCmo0CqDZgOXscDv/gRgp2bEByZPQVpzgDDkIjHNZXNnHxHj06iWHSQzcZx333NMAwNmYwB05Tqq2ka1q9PoL2dK4Lw/PPjqFQE6usNJJOGlkgAXV3/7gHMdiIuf7dbQ9Mb92OzRQi5RFSsZW3SMSUSAsPDDg4fvqjmHR0r0dxsqK5X5WOUoh4B7NrVCtO0MDJSwJNPjqo2zjoee2wUx49/ntS0LIJg5nfApkMBcvpTOOkIgJtEpNA0c8eAt+nee8/5RESlUkBbtpwhIV6nbPYtGh11yHV5nahcJvriC0d9edh2yCLU0XGOgL9QKvUmnT1bopdeuszyvq7/g4TInYhc48No8REva2PP9OmnFbz88jiIAhw4cCtaWkw4TrW3LyzT6OgF9u1rQyYTg2272LjxQ2zbNhgSWdL37X8SzWyLNj4dXu84lrNFqKqAWyon2549q7B79/ewdetyjI05KBQ8dQzz4Erh7/S0q/gnJx0sWyZw6NAapNMmJiZs2HYxXLeuSbz44m1/BH5e6Op6X1/yjmheE4JCIYLV84jyeY8qlQju6qgNAQ/HIZqYcMlxQhocLNHeveepr+8zj+WIaF+EVvXMWUx67YRLiENRLJKqZz5gqklXG6rauYJRCly54mPt2jh6e7/LS9rp09NhZ+f5Dst6821OgKjixCIU9NlTkVgpb8jloyuzosMkNntDrFKlIhXPQsPn2wkfz/E4xJEj48H582GbaVKHEOIUkGOFiw3wffqXEJZ47bV8cPJko+QrGXtdKkW3p2RSX+Axx537wLz3jFjEyz2E3eErWS53OZAyzvo/xpeQAP66AtD5UtrKl1K+o33VS6nvc5mnAdhjgH/7l11KJbBpAsCdQjinhDBt3w/8IFDjZshneSGMohDuKSD4WaT/10u+DcTCh8O7zdWHyc1T9WHy44v/y8Pk/+FphmuEGK6vg27ocfrN0X8A5kDBuZ/UI/YAAAAASUVORK5CYII=">
-	<style>
-/* ==========================================================================
-   Arbeitsblatt-Stil fuer Physik-Simulationen (Kast)
-   Vermessen am kompilierten LaTeX-Original (tcolorbox, scrartcl, Libertinus):
-   - Schrift: Libertinus Sans (\familydefault{\sfdefault})
-   - Boxrahmen: 0,5 mm (= 2 px am Bildschirm), Eckenradius 1 mm
-   - Farben: blue!75!black / red!75!black / OliveGreen!75!black,
-     Titelgruende: FARBE!5!white
-   ========================================================================== */
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radialfeld: Fläche, Berg und Topf</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAGzklEQVR4nM1XW2yUxxX+Zv7b3tj1utg42G7dUFAEPJCHVm3fWmhCFBH1wUKVkBCWU+fBxCEReWhA0OBaSZWHBkVVBEK5CBGkOmoVchFtGpYoN6ttLg04pbGFgh3iywK22X8v//VUZ36vvcY4LSRSeqTZf2d0zplzvnOZGeAbJrFwul9+faofDW+Aeb8E6Bpjviqxvv/ukIgYBUXTgRbLCmOAAyJxwwYJQQRYcBxZAX74+bwhVf3XNYDpjXVCxJ8Cgh8Q+TG1dFOIRBsJoTmA9jci937gJ2cjJK4fEgHkmgDxd2BZCzANw9DBftwsMW6e5wPIACiOA94GYONkrYG1pEspuogSLU1NJe+5527X29piCEOgVAoUQzKpzRnE36kpF3V1JqSc37BYjHgTCU2tX7hQwY4dn7hjY8uahLi6IwzFb4GcDsBfZICu4zbXdeiuuxrkHXdkhecBhgHYdoRYKhXtFASApgGuG4NpCjXnzdiAWl6WX7Mmjs2bG7RnnrlChkFrXHdpxGTklxCsLAgI5TKhUgHK5VANx+ENSG1++XKAV17J48yZspqXSgt5o/+k9EQprH7nYCdA5gD9D4A2hwBqSNMEpIyEqxBzOJJJgYGBArZvH8TQUAmxmMTDD7fhwIE2lMvzvFU51nMtrcVpKaIQKLiU1wDNGiDgOCGuXvUwMxPCMKI5EXsTYnjYxT33fIx8vsxmolIJ0ds7pCDv7l6JmRlPbep5ITyPEIYSjhPlBe/G5nyC37h/BjY0At+/AgwK4F02YtZ2gmVJpNMGslkT9fUmUikdiYSOxkYTfX2jyOdLSCYt9Pevx913Nyqp3t4LyOcDNDRYipflWJ71xGIRygZ8yTE4CWN7GnjfBw5ngHdywIOMwJKdKgwJ6bSOgQEb/f3jyo9HHmlDe3sDDh5cjfr6OGy7jMcfH1FIMH8tMRJCgALokrBfCgS9nHNXoVKFmfe8BWSXNIBTU9cFnnhiBEQeVq9Oo6enGSMjFaxaZWHnzlZl1LFj4/joI1uVK+dLlVpaLNVNSWgjBh4NU6o7iGpbDAgwS4AxZ0C18UpOFW4jGR3vvTeDV1/Ng0jioYdaladCRCXY3d2MFSuSsO0Knn764ly5cv54HoK9e7+tHzzYevw7jt3nZ6Y2HEFnJg0SKQgrC+gEPHsnMDlnACdQuRzAtjkRfZV8rNhxXKxcmcSWLd/C1JSPMAxx6ZKHujqJrVsblGx/fx7nzpXgugEKBZ+TkqSU6Om55YNhTAi9ePZPz+KB5bvxq0sB5O/HYfzyp8CumiSsjT1gWcDQUBknTlxSa52dt2D5cg2uy3HlUuWGROjqakYqFcP0dBkvvDCp5LgHEJHwfdWg6oCmo0CqDZgOXscDv/gRgp2bEByZPQVpzgDDkIjHNZXNnHxHj06iWHSQzcZx333NMAwNmYwB05Tqq2ka1q9PoL2dK4Lw/PPjqFQE6usNJJOGlkgAXV3/7gHMdiIuf7dbQ9Mb92OzRQi5RFSsZW3SMSUSAsPDDg4fvqjmHR0r0dxsqK5X5WOUoh4B7NrVCtO0MDJSwJNPjqo2zjoee2wUx49/ntS0LIJg5nfApkMBcvpTOOkIgJtEpNA0c8eAt+nee8/5RESlUkBbtpwhIV6nbPYtGh11yHV5nahcJvriC0d9edh2yCLU0XGOgL9QKvUmnT1bopdeuszyvq7/g4TInYhc48No8REva2PP9OmnFbz88jiIAhw4cCtaWkw4TrW3LyzT6OgF9u1rQyYTg2272LjxQ2zbNhgSWdL37X8SzWyLNj4dXu84lrNFqKqAWyon2549q7B79/ewdetyjI05KBQ8dQzz4Erh7/S0q/gnJx0sWyZw6NAapNMmJiZs2HYxXLeuSbz44m1/BH5e6Op6X1/yjmheE4JCIYLV84jyeY8qlQju6qgNAQ/HIZqYcMlxQhocLNHeveepr+8zj+WIaF+EVvXMWUx67YRLiENRLJKqZz5gqklXG6rauYJRCly54mPt2jh6e7/LS9rp09NhZ+f5Dst6821OgKjixCIU9NlTkVgpb8jloyuzosMkNntDrFKlIhXPQsPn2wkfz/E4xJEj48H582GbaVKHEOIUkGOFiw3wffqXEJZ47bV8cPJko+QrGXtdKkW3p2RSX+Axx537wLz3jFjEyz2E3eErWS53OZAyzvo/xpeQAP66AtD5UtrKl1K+o33VS6nvc5mnAdhjgH/7l11KJbBpAsCdQjinhDBt3w/8IFDjZshneSGMohDuKSD4WaT/10u+DcTCh8O7zdWHyc1T9WHy44v/y8Pk/+FphmuEGK6vg27ocfrN0X8A5kDBuZ/UI/YAAAAASUVORK5CYII=">
+<style>
 @font-face {
 	font-family: 'Libertinus Sans';
 	font-weight: normal;
@@ -35,1409 +26,525 @@
 }
 
 :root {
-	--blue-frame:  #0000BF;   /* blue!75!black       */
-	--blue-title:  #F2F2FF;   /* blue!5!white        */
-	--red-frame:   #BF0000;   /* red!75!black        */
-	--red-title:   #FFF2F2;   /* red!5!white         */
-	--green-frame: #295C06;   /* OliveGreen!75!black */
-	--green-title: #F5FAF3;   /* OliveGreen!5!white  */
-	--text:        #111111;
-	--kopf-grau:   #808080;
+	--blue-frame: #0000BF; --blue-title: #F2F2FF;
+	--red-frame: #BF0000; --red-title: #FFF2F2;
+	--green-frame: #295C06; --green-title: #F5FAF3;
+	--text: #111; --kopf-grau: #808080;
 	--schrift: 'Libertinus Sans', 'Segoe UI', system-ui, sans-serif;
+	--plus: #E03030; --minus: #3050E0; --kraft: #BF0000; --phimitte: #8A3FB0; --v: #2E8B3A; --hilfe: #808080;
 }
-
 * { box-sizing: border-box; }
-
-body {
-	margin: 0;
-	padding: 1rem 0.6rem 2.5rem;
-	background: #E8E8E8;
-	font-family: var(--schrift);
-	font-size: 16px;
-	line-height: 1.45;
-	color: var(--text);
-}
-
-/* Das "Blatt": weisse Seite mit Schatten */
-.blatt {
-	max-width: 820px;
-	margin: 0 auto;
-	background: #fff;
-	padding: 1.6rem 1.8rem 2rem;
-	box-shadow: 0 1px 6px rgba(0,0,0,0.25);
-}
-
-/* Kopfzeile: nur zentrierter Kapiteltitel, graue Trennlinie (scrlayer-Optik) */
-.kopf {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
-	gap: 0.2rem 1rem;
-	color: var(--kopf-grau);
-	border-bottom: 0.15mm solid var(--kopf-grau);
-	padding-bottom: 0.25rem;
-	margin-bottom: 1.1rem;
-	font-size: 1rem;
-}
+body { margin: 0; padding: 1rem 0.6rem 2.5rem; background: #E8E8E8; font-family: var(--schrift); font-size: 16px; line-height: 1.45; color: var(--text); }
+.blatt { max-width: 860px; margin: 0 auto; background: #fff; padding: 1.4rem 1.6rem 1.6rem; box-shadow: 0 1px 6px rgba(0,0,0,0.25); }
+.kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 0.2rem 1rem; color: var(--kopf-grau); border-bottom: 0.15mm solid var(--kopf-grau); padding-bottom: 0.25rem; margin-bottom: 1rem; }
 .kopf .kapitel { font-weight: bold; color: var(--blue-frame); text-align: center; flex: 1; }
-
-/* tcolorbox-Nachbau: .tcb + Farbklasse (blau | rot | gruen) */
-.tcb { border: 2px solid; border-radius: 1mm; margin: 1.1rem 0; overflow: hidden; background: #fff; }
-.tcb > .tcb-title { font-weight: bold; padding: 0.22rem 0.9rem; border-bottom: 2px solid; }
-.tcb > .tcb-body { padding: 0.65rem 0.75rem 0.8rem; }
-.tcb.blau  { border-color: var(--blue-frame); }
-.tcb.blau  > .tcb-title { color: var(--blue-frame);  background: var(--blue-title);  border-color: var(--blue-frame); }
-.tcb.rot   { border-color: var(--red-frame); }
-.tcb.rot   > .tcb-title { color: var(--red-frame);   background: var(--red-title);   border-color: var(--red-frame); }
-.tcb.gruen { border-color: var(--green-frame); }
-.tcb.gruen > .tcb-title { color: var(--green-frame); background: var(--green-title); border-color: var(--green-frame); }
-
-/* Formelzeichen kursiv (wie Mathe-Modus) */
-i.gr { font-family: var(--schrift); font-style: italic; }
-sub, sup { font-size: 0.72em; }
-
-/* Simulations-Canvas */
-canvas.sim { display: block; width: 100%; height: auto; touch-action: manipulation; }
-
-/* Bedienelemente */
-.steuerung { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.6rem; font-size: 0.95rem; }
-.zeile { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.zeile > label { min-width: 7.2em; }
-.punkt { display: inline-block; width: 0.75em; height: 0.75em; border-radius: 50%; }
-
-select {
-	font: inherit;
-	font-size: 0.95rem;
-	padding: 0.2rem 0.35rem;
-	border: 1.5px solid var(--blue-frame);
-	border-radius: 1mm;
-	background: #fff;
-	color: var(--text);
-}
-input[type="range"] { flex: 1; min-width: 110px; accent-color: var(--blue-frame); }
-.wert { font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: right; }
-
-.knopfleiste { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.knopfleiste button {
-	font: inherit;
-	font-size: 0.95rem;
-	padding: 0.28rem 0.7rem;
-	border: 1.5px solid var(--blue-frame);
-	border-radius: 1mm;
-	background: #fff;
-	color: var(--blue-frame);
-	cursor: pointer;
-}
-.knopfleiste button.aktiv, .knopfleiste button.laeuft { background: var(--blue-frame); color: #fff; }
-.knopfleiste button:hover:not(.aktiv):not(.laeuft) { background: var(--blue-title); }
-.schalter { display: flex; align-items: center; gap: 0.4rem; margin-left: auto; }
-
-.fussnote { font-size: 0.85rem; color: #555; margin: 0.55rem 0 0; }
-
-@media (max-width: 560px) {
-	.blatt { padding: 1rem 0.8rem 1.4rem; }
-	.zeile > label { min-width: 0; }
-	.schalter { margin-left: 0; }
-}
-
-/* ==========================================================================
-   Ergaenzungen fuer die eA-Simulationen Kapitel A (Kast)
-   uebernommen aus C.12.2 Doppelspalt, erweitert um Material-Export
-   ========================================================================== */
-.fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.4rem; }
-.kopf .nummer { color: var(--kopf-grau); font-weight: normal; white-space: nowrap; }
-.kopf .platzhalter { visibility: hidden; }
-.steuerung .zeile > label { flex: 0 0 10.5em; min-width: 0; white-space: nowrap; }
-@media (max-width: 560px) { .steuerung .zeile > label { flex: 1 1 auto; white-space: normal; } }
-input[type="range"]:disabled { opacity: 0.35; }
-input[type="checkbox"] { accent-color: var(--blue-frame); }
-
-.modusleiste { display: flex; gap: 0.35rem; margin: 0 0 0.5rem 0; flex-wrap: wrap; }
-.modusleiste button {
-	font: inherit; font-size: 0.95rem; padding: 0.3rem 1.1rem;
-	border: 1.5px solid var(--blue-frame); border-radius: 1mm;
-	background: #fff; color: var(--blue-frame); cursor: pointer;
-}
+.kopf .zwilling { visibility: hidden; }
+.modusleiste { display: flex; gap: 0.35rem; flex-wrap: wrap; margin: 0 0 0.8rem; }
+.modusleiste button { font: inherit; font-size: 0.95rem; padding: 0.4rem 0.9rem; border: 1.5px solid var(--blue-frame); border-radius: 1mm; background: #fff; color: var(--blue-frame); cursor: pointer; min-height: 2.6rem; }
 .modusleiste button.aktiv { background: var(--blue-frame); color: #fff; }
-.modusleiste button:hover:not(.aktiv) { background: var(--blue-title); }
-
-.auswertung { margin-top: 0.7rem; padding-top: 0.55rem; border-top: 1px solid #DDD; font-size: 0.95rem; line-height: 1.7; }
-.auswertung .wert { font-variant-numeric: tabular-nums; min-width: 0; text-align: left; }
-.auswertung .trenner { color: #BBB; margin: 0 0.5rem; }
-.auswertung .naeherung { color: #555; font-size: 0.9rem; }
-.folgerung { font-weight: bold; }
-
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
+.tcb { border: 2px solid var(--blue-frame); border-radius: 1mm; overflow: hidden; background: #fff; }
+.tcb > .tcb-title { font-weight: bold; padding: 0.22rem 0.9rem; border-bottom: 2px solid var(--blue-frame); color: var(--blue-frame); background: var(--blue-title); }
+.tcb > .tcb-body { padding: 0.65rem 0.75rem 0.8rem; }
+.auftrag { margin: 0 0 0.6rem; }
+i.gr { font-style: italic; }
+sub, sup { font-size: 0.72em; }
+.leinwand { position: relative; }
+canvas.sim { display: block; width: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
+.bildleiste { display: flex; justify-content: flex-end; gap: 0.25rem; margin-bottom: 0.25rem; }
+button.symbol { display: inline-flex; align-items: center; justify-content: center; width: 2.4rem; height: 2.4rem; padding: 0; border-radius: 1mm; border: 1.5px solid #aaa; background: rgba(255,255,255,0.92); color: #555; cursor: pointer; }
+button.symbol:hover { background: #f2f2f2; color: #222; }
+.werte { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+.karte { border: 1.5px solid #ccc; border-radius: 1mm; padding: 0.3rem 0.7rem; min-width: 9.5rem; background: #fafafa; }
+.karte .klein { font-size: 0.78rem; color: #777; line-height: 1.1; }
+.karte .gross { font-size: 1.45rem; font-weight: bold; font-variant-numeric: tabular-nums; line-height: 1.25; white-space: nowrap; }
+.karte.haupt { border-color: var(--blue-frame); background: var(--blue-title); }
+.karte.haupt .gross { color: var(--blue-frame); }
+.gruppen { display: flex; flex-wrap: wrap; gap: 0.7rem 1.4rem; align-items: flex-end; margin-top: 0.7rem; }
+div.gr { display: flex; flex-direction: column; gap: 0.2rem; }
+.gr > .gt { font-size: 0.75rem; color: #888; line-height: 1; }
+.kn { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.kn button { font: inherit; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; min-height: 2.7rem; min-width: 2.9rem; padding: 0.2rem 0.6rem; border: 1.5px solid #aaa; border-radius: 1mm; background: #f4f4f4; color: #333; cursor: pointer; }
+.kn button.aktiv { border-color: var(--blue-frame); background: var(--blue-title); color: var(--blue-frame); box-shadow: inset 0 0 0 1px var(--blue-frame); }
+.kn button.haupt { background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; padding: 0.2rem 1.1rem; }
+.kn input[type="range"] { width: 12rem; max-width: 52vw; accent-color: var(--blue-frame); height: 2.2rem; }
+.kn .wert { font-variant-numeric: tabular-nums; min-width: 5.6em; white-space: nowrap; }
+.hinweis { font-size: 0.92rem; margin-top: 0.55rem; min-height: 1.4em; }
+.hinweis.warn { color: var(--red-frame); }
+.fuss-autor { text-align: right; color: #808080; font-size: 0.9rem; margin-top: 1.2rem; }
+.meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem; border-radius: 1mm; font-size: 0.9rem; z-index: 50; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }
+.meldung.zeigen { opacity: 0.94; }
+[hidden] { display: none !important; }
+@media (max-width: 560px) {
+	body { padding: 0.5rem 0.3rem 1.5rem; }
+	.blatt { padding: 0.8rem 0.7rem 1rem; }
+	.tcb > .tcb-body { padding: 0.55rem 0.5rem 0.7rem; }
+	.karte { min-width: 0; flex: 1 1 8.5rem; }
+	.karte .gross { font-size: 1.25rem; }
+	.gruppen { gap: 0.6rem 1rem; }
 }
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
-.formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
-.bruch { display: inline-flex; flex-direction: column; align-items: center; }
-.bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
-.bruch > .n { padding: 0.14em 0.45em 0; }
-
-/* Tabellen ohne senkrechte Striche (booktabs-Optik) */
-table.messtabelle { border-collapse: collapse; width: 100%; font-size: 0.88rem; border-top: 1.5px solid #333; border-bottom: 1.5px solid #333; }
-table.messtabelle th, table.messtabelle td { border: none; border-bottom: 1px solid #DDD; padding: 0.22rem 0.55rem; text-align: right; white-space: nowrap; }
-table.messtabelle thead th { color: #333; border-bottom: 1px solid #333; }
-table.messtabelle tbody th { color: #333; text-align: left; }
-table.messtabelle tr:last-child td, table.messtabelle tr:last-child th { border-bottom: none; }
-table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
-.tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
-.verborgen { display: none !important; }
-
-.hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
-.kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
-.zweispaltig { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-@media (max-width: 640px) { .zweispaltig { grid-template-columns: 1fr; } }
-
-/* Material-Export: druckfertige Ansicht ohne Bedienelemente */
-.material-overlay { position: fixed; inset: 0; background: rgba(40,40,40,0.55); z-index: 50; overflow: auto; padding: 1rem 0.6rem; }
-.material-blatt { max-width: 820px; margin: 0 auto; background: #fff; padding: 1.4rem 1.6rem; box-shadow: 0 2px 12px rgba(0,0,0,0.35); }
-.material-blatt h2 { font-size: 1.1rem; margin: 0 0 0.6rem; color: var(--green-frame); }
-.material-blatt figure { margin: 0.6rem 0; }
-.material-blatt figure img { width: 100%; border: 1px solid #ccc; }
-.material-blatt figcaption { font-size: 0.85rem; color: #333; margin-top: 0.2rem; }
-.material-blatt .material-text { font-size: 0.95rem; }
-.material-knoepfe { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
-@media print {
-	body.material-druck > *:not(.material-overlay) { display: none !important; }
-	body.material-druck { background: #fff; padding: 0; }
-	body.material-druck .material-overlay { position: static; background: none; padding: 0; }
-	body.material-druck .material-blatt { box-shadow: none; max-width: none; }
-	body.material-druck .material-knoepfe { display: none; }
-}
-
-	</style>
-	<script>
-/* ==========================================================================
-   Sim-Kit: wiederverwendbare Bausteine fuer Physik-Simulationen (Kast)
-   Vanilla JS, keine Abhaengigkeiten. Alle Funktionen unter window.SimKit.
-   ========================================================================== */
-"use strict";
-
-window.SimKit = (function () {
-
-	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
-
-	/* Zahl im deutschen Format (Komma), z. B. de(3.14159, 2) -> "3,14" */
-	function de(zahl, stellen = 1) {
-		return zahl.toFixed(stellen).replace(".", ",");
-	}
-
-	/* Canvas scharf auf Geraeteaufloesung skalieren.
-	   verhaeltnis: Hoehe/Breite (Funktion von Breite erlaubt, z. B. fuer Mobil-Layout).
-	   Gibt {W, H} in CSS-Pixeln zurueck. */
-	function skaliereCanvas(canvas, ctx, verhaeltnis = 0.58) {
-		const dpr = window.devicePixelRatio || 1;
-		const W = canvas.clientWidth || canvas.parentElement.clientWidth || 740;
-		const v = typeof verhaeltnis === "function" ? verhaeltnis(W) : verhaeltnis;
-		const H = Math.round(W * v);
-		canvas.style.height = H + "px";
-		canvas.width = Math.round(W * dpr);
-		canvas.height = Math.round(H * dpr);
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		return { W, H };
-	}
-
-	/* Schieberegler mit Wertanzeige verbinden.
-	   bindeSlider("masse-a", "wert-masse-a", "g", v => zustand.m = v/1000, () => neuZeichnen()) */
-	function bindeSlider(sliderId, anzeigeId, einheit, setzer, danach) {
-		const el = document.getElementById(sliderId);
-		const anzeige = document.getElementById(anzeigeId);
-		const update = () => {
-			setzer(parseFloat(el.value));
-			if (anzeige) anzeige.textContent = el.value + "\u00A0" + einheit;
-			if (danach) danach();
-		};
-		el.addEventListener("input", update);
-		return update;
-	}
-
-	/* Knopfgruppe (genau einer aktiv) verbinden; Wert steht in data-wert.
-	   bindeKnopfgruppe("tempo-knoepfe", w => zustand.tempo = +w) */
-	function bindeKnopfgruppe(containerId, setzer, danach) {
-		const c = document.getElementById(containerId);
-		c.addEventListener("click", ev => {
-			const b = ev.target.closest("button");
-			if (!b) return;
-			setzer(b.dataset.wert);
-			c.querySelectorAll("button").forEach(x => x.classList.toggle("aktiv", x === b));
-			if (danach) danach();
-		});
-	}
-
-	/* Achsenkreuz mit Gitter und Beschriftung zeichnen.
-	   o = {dx, dy, dw, dh, xMax, yMax, xSchritt, ySchritt, xLabel, xEinheit, yLabel, yEinheit}
-	   Gibt Umrechner {xPix, yPix} von Daten- in Pixelkoordinaten zurueck. */
-	function zeichneAchsen(ctx, o) {
-		ctx.strokeStyle = "#111";
-		ctx.lineWidth = 1.2;
-		ctx.beginPath();
-		ctx.moveTo(o.dx, o.dy);
-		ctx.lineTo(o.dx, o.dy + o.dh);
-		ctx.lineTo(o.dx + o.dw, o.dy + o.dh);
-		ctx.stroke();
-
-		ctx.font = "12px " + SCHRIFT;
-		ctx.fillStyle = "#111";
-		ctx.strokeStyle = "#DDD";
-		ctx.lineWidth = 1;
-		for (let yw = 0; yw <= o.yMax + 1e-9; yw += o.ySchritt) {
-			const py = o.dy + o.dh - (yw / o.yMax) * o.dh;
-			if (yw > 0) {
-				ctx.beginPath();
-				ctx.moveTo(o.dx, py);
-				ctx.lineTo(o.dx + o.dw, py);
-				ctx.stroke();
-			}
-			ctx.textAlign = "right";
-			ctx.fillText(String(Math.round(yw)), o.dx - 5, py + 4);
-		}
-		for (let xw = 0; xw <= o.xMax + 1e-9; xw += o.xSchritt) {
-			const px = o.dx + (xw / o.xMax) * o.dw;
-			if (xw > 0) {
-				ctx.beginPath();
-				ctx.moveTo(px, o.dy);
-				ctx.lineTo(px, o.dy + o.dh);
-				ctx.stroke();
-			}
-			ctx.textAlign = "center";
-			ctx.fillText(String(Math.round(xw)), px, o.dy + o.dh + 16);
-		}
-		ctx.textAlign = "left";
-		ctx.font = "italic 13px " + SCHRIFT;
-		ctx.fillText(o.yLabel || "", o.dx - 30, o.dy + 6);
-		ctx.font = "12px " + SCHRIFT;
-		ctx.fillText(o.yEinheit ? "in " + o.yEinheit : "", o.dx - 38, o.dy + 21);
-		ctx.font = "italic 13px " + SCHRIFT;
-		ctx.fillText(o.xLabel || "", o.dx + o.dw - 8, o.dy + o.dh + 32);
-		ctx.font = "12px " + SCHRIFT;
-		ctx.fillText(o.xEinheit ? " in " + o.xEinheit : "", o.dx + o.dw - 4, o.dy + o.dh + 32);
-
-		return {
-			xPix: xw => o.dx + (xw / o.xMax) * o.dw,
-			yPix: yw => o.dy + o.dh - (yw / o.yMax) * o.dh
-		};
-	}
-
-	/* Funktionsgraph f(t) fuer t in [0, tEnde] zeichnen */
-	function zeichneKurve(ctx, umrechner, f, tEnde, farbe, punkte = 240) {
-		ctx.strokeStyle = farbe;
-		ctx.lineWidth = 2.2;
-		ctx.beginPath();
-		for (let i = 0; i <= punkte; i++) {
-			const t = (i / punkte) * tEnde;
-			const px = umrechner.xPix(t);
-			const py = umrechner.yPix(f(t));
-			if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-		}
-		ctx.stroke();
-	}
-
-	/* Animationsschleife mit Echtzeit-dt und Zeitraffer.
-	   starteSchleife(dt => { zustand.t += dt; zeichne(); return zustand.t < ende; }, () => zustand.tempo)
-	   Rueckgabe von false beendet die Schleife. Liefert eine stopp()-Funktion. */
-	function starteSchleife(schritt, tempo) {
-		let letzter = null;
-		let aktiv = true;
-		function frame(zeit) {
-			if (!aktiv) return;
-			if (letzter === null) letzter = zeit;
-			const dt = (zeit - letzter) / 1000 * (tempo ? tempo() : 1);
-			letzter = zeit;
-			if (schritt(dt) === false) { aktiv = false; return; }
-			requestAnimationFrame(frame);
-		}
-		requestAnimationFrame(frame);
-		return () => { aktiv = false; };
-	}
-
-	/* Neu zeichnen, sobald die eingebettete Schrift geladen ist */
-	function nachFontLaden(zeichne) {
-		if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => zeichne());
-	}
-
-	return { SCHRIFT, de, skaliereCanvas, bindeSlider, bindeKnopfgruppe, zeichneAchsen, zeichneKurve, starteSchleife, nachFontLaden };
-})();
-
-/* ==========================================================================
-   Sim-Plus: Ergaenzungen zum Sim-Kit fuer die eA-Simulationen (Kast)
-   Achsen mit beliebigen Skalen, Regression, Rauschen, Messtabelle,
-   Aufgabenpruefung, Ziehen im Canvas, Material-Export.
-   Alle Funktionen unter window.SimPlus.
-   ========================================================================== */
-"use strict";
-
-window.SimPlus = (function () {
-
-	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
-	const FARBEN = { blau: "#0000BF", rot: "#BF0000", gruen: "#295C06", grau: "#808080", orange: "#C86400", lila: "#7A1FA2" };
-
-	/* Zahl mit Komma; stellen = Nachkommastellen */
-	function de(z, stellen = 2) {
-		if (!isFinite(z)) return "n. d.";
-		return z.toFixed(stellen).replace(".", ",");
-	}
-
-	/* Zahl mit signifikanten Stellen, bei Bedarf in Zehnerpotenz */
-	const HOCH = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
-	function hoch(n) { return String(n).split("").map(c => HOCH[c] || c).join(""); }
-	function sig(z, stellen = 3) {
-		if (z === 0) return "0";
-		if (!isFinite(z)) return "n. d.";
-		const exp = Math.floor(Math.log10(Math.abs(z)));
-		if (exp >= -2 && exp <= 4) {
-			const nk = Math.max(0, stellen - 1 - exp);
-			return z.toFixed(nk).replace(".", ",");
-		}
-		const man = z / Math.pow(10, exp);
-		return man.toFixed(stellen - 1).replace(".", ",") + "·10" + hoch(exp);
-	}
-
-	/* Normalverteilte Zufallszahl (Box-Muller) */
-	function gauss() {
-		let u = 0, v = 0;
-		while (u === 0) u = Math.random();
-		while (v === 0) v = Math.random();
-		return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-	}
-	function zufall(a, b) { return a + Math.random() * (b - a); }
-	function runde(z, schritt) { return Math.round(z / schritt) * schritt; }
-
-	/* Lineare Regression y = m x + b mit Bestimmtheitsmass */
-	function linReg(xs, ys) {
-		const n = xs.length;
-		if (n < 2) return null;
-		let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
-		for (let i = 0; i < n; i++) { sx += xs[i]; sy += ys[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; syy += ys[i] * ys[i]; }
-		const nenner = n * sxx - sx * sx;
-		if (Math.abs(nenner) < 1e-300) return null;
-		const m = (n * sxy - sx * sy) / nenner;
-		const b = (sy - m * sx) / n;
-		const my = sy / n;
-		let ssRes = 0, ssTot = 0;
-		for (let i = 0; i < n; i++) { const f = m * xs[i] + b; ssRes += (ys[i] - f) ** 2; ssTot += (ys[i] - my) ** 2; }
-		return { m, b, R2: ssTot > 0 ? 1 - ssRes / ssTot : 1 };
-	}
-	/* Ursprungsgerade y = m x */
-	function ursprungReg(xs, ys) {
-		const n = xs.length;
-		if (n < 1) return null;
-		let sxx = 0, sxy = 0, my = 0;
-		for (let i = 0; i < n; i++) { sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; my += ys[i]; }
-		if (sxx === 0) return null;
-		const m = sxy / sxx;
-		my /= n;
-		let ssRes = 0, ssTot = 0;
-		for (let i = 0; i < n; i++) { ssRes += (ys[i] - m * xs[i]) ** 2; ssTot += (ys[i] - my) ** 2; }
-		return { m, b: 0, R2: ssTot > 0 ? 1 - ssRes / ssTot : 1 };
-	}
-
-	/* Schoene Skalenschritte */
-	function schrittFuer(spanne, ziel = 6) {
-		const roh = spanne / ziel;
-		const p = Math.pow(10, Math.floor(Math.log10(roh)));
-		const f = roh / p;
-		const s = f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10;
-		return s * p;
-	}
-	function stellenFuer(schritt) { return Math.max(0, -Math.floor(Math.log10(schritt) + 1e-9)); }
-
-	/* Achsenkreuz mit Gitter.
-	   o = {dx, dy, dw, dh, xMin, xMax, yMin, yMax, xSchritt, ySchritt, xLabel, xEinheit, yLabel, yEinheit, xStellen, yStellen, gitter}
-	   Rueckgabe: {xPix, yPix, xWert, yWert, o} */
-	/* Achsenbeschriftung: Formelzeichen kursiv, Index nach "_" aufrecht und tiefgestellt (z. B. "E_kin"); liefert die Breite */
-	function beschrifte(ctx, s, x, y, rechtsbuendig) {
-		const [grund, index] = String(s).split("_");
-		ctx.save();
-		ctx.textAlign = "left";
-		ctx.font = "italic 13px " + SCHRIFT; const wG = ctx.measureText(grund).width;
-		ctx.font = "10px " + SCHRIFT; const wI = index ? ctx.measureText(index).width + 1 : 0;
-		const x0 = rechtsbuendig ? x - wG - wI : x;
-		ctx.font = "italic 13px " + SCHRIFT; ctx.fillText(grund, x0, y);
-		if (index) { ctx.font = "10px " + SCHRIFT; ctx.fillText(index, x0 + wG + 1, y + 4); }
-		ctx.restore();
-		return wG + wI;
-	}
-	function achsen(ctx, o) {
-		const xMin = o.xMin ?? 0, yMin = o.yMin ?? 0;
-		const xs = o.xSchritt || schrittFuer(o.xMax - xMin);
-		const ys = o.ySchritt || schrittFuer(o.yMax - yMin);
-		const xSt = o.xStellen ?? stellenFuer(xs), ySt = o.yStellen ?? stellenFuer(ys);
-		const xPix = x => o.dx + (x - xMin) / (o.xMax - xMin) * o.dw;
-		const yPix = y => o.dy + o.dh - (y - yMin) / (o.yMax - yMin) * o.dh;
-		const xWert = px => xMin + (px - o.dx) / o.dw * (o.xMax - xMin);
-		const yWert = py => yMin + (o.dy + o.dh - py) / o.dh * (o.yMax - yMin);
-
-		ctx.save();
-		ctx.font = "12px " + SCHRIFT;
-		ctx.lineWidth = 1;
-		if (o.gitter !== false) {
-			ctx.strokeStyle = "#DDD";
-			for (let k = Math.ceil(yMin / ys - 1e-9); k * ys <= o.yMax + 1e-9 * ys; k++) {
-				const py = yPix(k * ys);
-				ctx.beginPath(); ctx.moveTo(o.dx, py); ctx.lineTo(o.dx + o.dw, py); ctx.stroke();
-			}
-			for (let k = Math.ceil(xMin / xs - 1e-9); k * xs <= o.xMax + 1e-9 * xs; k++) {
-				const px = xPix(k * xs);
-				ctx.beginPath(); ctx.moveTo(px, o.dy); ctx.lineTo(px, o.dy + o.dh); ctx.stroke();
-			}
-		}
-		/* Achsen: bei Null, sonst am Rand */
-		const x0 = (xMin <= 0 && o.xMax >= 0) ? xPix(0) : o.dx;
-		const y0 = (yMin <= 0 && o.yMax >= 0) ? yPix(0) : o.dy + o.dh;
-		ctx.strokeStyle = "#111"; ctx.lineWidth = 1.2;
-		ctx.beginPath(); ctx.moveTo(o.dx, y0); ctx.lineTo(o.dx + o.dw, y0); ctx.stroke();
-		ctx.beginPath(); ctx.moveTo(x0, o.dy); ctx.lineTo(x0, o.dy + o.dh); ctx.stroke();
-		ctx.fillStyle = "#111";
-		ctx.textAlign = "right";
-		for (let k = Math.ceil(yMin / ys - 1e-9); k * ys <= o.yMax + 1e-9 * ys; k++) {
-			const w = k * ys;
-			ctx.fillText(de(w, ySt), o.dx - 5, yPix(w) + 4);
-		}
-		ctx.textAlign = "center";
-		for (let k = Math.ceil(xMin / xs - 1e-9); k * xs <= o.xMax + 1e-9 * xs; k++) {
-			const w = k * xs;
-			ctx.fillText(de(w, xSt), xPix(w), o.dy + o.dh + 15);
-		}
-		ctx.textAlign = "left";
-		ctx.font = "italic 13px " + SCHRIFT;
-		if (o.yLabel) {
-			const w = beschrifte(ctx, o.yLabel, o.dx + 6, o.dy + 2, false);
-			if (o.yEinheit) { ctx.font = "12px " + SCHRIFT; ctx.fillText(" in " + o.yEinheit, o.dx + 6 + w, o.dy + 2); }
-		}
-		ctx.font = "italic 13px " + SCHRIFT;
-		ctx.textAlign = "right";
-		if (o.xLabel) {
-			let t = o.xEinheit ? " in " + o.xEinheit : "";
-			ctx.font = "12px " + SCHRIFT; const wE = ctx.measureText(t).width; ctx.fillText(t, o.dx + o.dw, o.dy + o.dh + 30);
-			beschrifte(ctx, o.xLabel, o.dx + o.dw - wE, o.dy + o.dh + 30, true);
-		}
-		ctx.restore();
-		return { xPix, yPix, xWert, yWert, o: Object.assign({}, o, { xMin, yMin }) };
-	}
-
-	/* Graph f(x) in [a, b]; nicht endliche Werte unterbrechen die Linie */
-	function kurve(ctx, u, f, a, b, farbe, opt = {}) {
-		const n = opt.punkte || 300;
-		ctx.save();
-		ctx.strokeStyle = farbe; ctx.lineWidth = opt.breite || 2.2;
-		if (opt.gestrichelt) ctx.setLineDash([6, 4]);
-		ctx.beginPath();
-		let offen = false;
-		const yLo = u.o.yMin - (u.o.yMax - u.o.yMin) * 2, yHi = u.o.yMax + (u.o.yMax - u.o.yMin) * 2;
-		for (let i = 0; i <= n; i++) {
-			const x = a + (b - a) * i / n;
-			const y = f(x);
-			if (!isFinite(y) || y < yLo || y > yHi) { offen = false; continue; }
-			const px = u.xPix(x), py = u.yPix(y);
-			if (!offen) { ctx.moveTo(px, py); offen = true; } else ctx.lineTo(px, py);
-		}
-		ctx.stroke();
-		ctx.restore();
-	}
-
-	/* Messpunkte mit optionalen Fehlerbalken: liste = [{x, y, ux, uy}] */
-	function punkte(ctx, u, liste, farbe, opt = {}) {
-		ctx.save();
-		ctx.strokeStyle = farbe; ctx.fillStyle = farbe; ctx.lineWidth = 1.3;
-		for (const p of liste) {
-			const px = u.xPix(p.x), py = u.yPix(p.y);
-			if (p.ux) { ctx.beginPath(); ctx.moveTo(u.xPix(p.x - p.ux), py); ctx.lineTo(u.xPix(p.x + p.ux), py); ctx.stroke(); }
-			if (p.uy) { ctx.beginPath(); ctx.moveTo(px, u.yPix(p.y - p.uy)); ctx.lineTo(px, u.yPix(p.y + p.uy)); ctx.stroke(); }
-			if (opt.kreuz) {
-				ctx.beginPath(); ctx.moveTo(px - 4, py - 4); ctx.lineTo(px + 4, py + 4); ctx.moveTo(px - 4, py + 4); ctx.lineTo(px + 4, py - 4); ctx.stroke();
-			} else {
-				ctx.beginPath(); ctx.arc(px, py, opt.r || 3.2, 0, 2 * Math.PI); ctx.fill();
-			}
-		}
-		ctx.restore();
-	}
-
-	/* Pfeil von (x1,y1) nach (x2,y2) in Pixeln */
-	function pfeil(ctx, x1, y1, x2, y2, farbe, breite = 2, kopf = 9) {
-		const l = Math.hypot(x2 - x1, y2 - y1);
-		if (l < 0.5) return;
-		const ux = (x2 - x1) / l, uy = (y2 - y1) / l;
-		const k = Math.min(kopf, l * 0.6);
-		ctx.save();
-		ctx.strokeStyle = farbe; ctx.fillStyle = farbe; ctx.lineWidth = breite;
-		ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * k * 0.8, y2 - uy * k * 0.8); ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(x2, y2);
-		ctx.lineTo(x2 - ux * k - uy * k * 0.45, y2 - uy * k + ux * k * 0.45);
-		ctx.lineTo(x2 - ux * k + uy * k * 0.45, y2 - uy * k - ux * k * 0.45);
-		ctx.closePath(); ctx.fill();
-		ctx.restore();
-	}
-
-	/* Text im Canvas; opt = {groesse, kursiv, fett, ausrichtung, farbe, basis} */
-	function text(ctx, s, x, y, opt = {}) {
-		ctx.save();
-		ctx.font = (opt.kursiv ? "italic " : "") + (opt.fett ? "bold " : "") + (opt.groesse || 13) + "px " + SCHRIFT;
-		ctx.fillStyle = opt.farbe || "#111";
-		ctx.textAlign = opt.ausrichtung || "left";
-		ctx.textBaseline = opt.basis || "alphabetic";
-		ctx.fillText(s, x, y);
-		ctx.restore();
-	}
-
-	/* Formelzeichen mit Index im Canvas: zeichen kursiv, index klein */
-	function symbol(ctx, zeichen, index, x, y, opt = {}) {
-		ctx.save();
-		const g = opt.groesse || 13;
-		ctx.fillStyle = opt.farbe || "#111";
-		ctx.textAlign = "left";
-		ctx.font = "italic " + g + "px " + SCHRIFT;
-		const w = ctx.measureText(zeichen).width;
-		let x0 = x;
-		if (opt.ausrichtung === "center") x0 = x - w / 2;
-		ctx.fillText(zeichen, x0, y);
-		if (index) { ctx.font = Math.round(g * 0.72) + "px " + SCHRIFT; ctx.fillText(index, x0 + w + 1, y + g * 0.25); }
-		ctx.restore();
-	}
-
-	/* Messtabelle: tbody fuellen */
-	function Messtabelle(tbodyId) {
-		this.koerper = document.getElementById(tbodyId);
-		this.zeilen = [];
-	}
-	Messtabelle.prototype.hinzu = function (werte, roh) {
-		this.zeilen.push(roh || werte);
-		const tr = document.createElement("tr");
-		const nr = document.createElement("td"); nr.textContent = this.zeilen.length; tr.appendChild(nr);
-		for (const w of werte) { const td = document.createElement("td"); td.innerHTML = w; tr.appendChild(td); }
-		this.koerper.appendChild(tr);
-	};
-	Messtabelle.prototype.leeren = function () { this.zeilen = []; this.koerper.innerHTML = ""; };
-
-	/* Moduswechsel Erkunden | Aufgabe */
-	function bindeModus(containerId, setzer) {
-		const c = document.getElementById(containerId);
-		c.addEventListener("click", ev => {
-			const b = ev.target.closest("button");
-			if (!b) return;
-			c.querySelectorAll("button").forEach(x => x.classList.toggle("aktiv", x === b));
-			setzer(b.dataset.modus);
-		});
-	}
-
-	/* Antwort pruefen: relative Abweichung; Rueckgabe "gut" | "knapp" | "falsch" */
-	function pruefe(eingabe, soll, tol = 0.03, knapp = 0.12) {
-		if (!isFinite(eingabe)) return "leer";
-		const a = Math.abs(eingabe - soll) / Math.abs(soll);
-		return a <= tol ? "gut" : a <= knapp ? "knapp" : "falsch";
-	}
-	function zeigeRueckmeldung(el, art, text) {
-		el.className = "rueckmeldung " + (art === "gut" ? "gut" : art === "knapp" ? "knapp" : "falsch");
-		el.innerHTML = text;
-	}
-	/* Deutsche Eingabe lesen (Komma erlaubt) */
-	function leseZahl(el) { return parseFloat(String(el.value).replace(",", ".")); }
-
-	/* Ziehen im Canvas: treffer(x,y) -> Kennung oder null; bewege(kennung, x, y) */
-	function ziehbar(canvas, treffer, bewege, fertig) {
-		let aktiv = null;
-		const pos = ev => { const r = canvas.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; };
-		canvas.addEventListener("pointerdown", ev => {
-			const p = pos(ev); const t = treffer(p.x, p.y);
-			if (t !== null && t !== undefined) { aktiv = t; canvas.setPointerCapture(ev.pointerId); bewege(aktiv, p.x, p.y); ev.preventDefault(); }
-		});
-		canvas.addEventListener("pointermove", ev => {
-			const p = pos(ev);
-			if (aktiv !== null) { bewege(aktiv, p.x, p.y); return; }
-			canvas.style.cursor = (treffer(p.x, p.y) !== null && treffer(p.x, p.y) !== undefined) ? "grab" : "default";
-		});
-		const ende = () => { if (aktiv !== null && fertig) fertig(aktiv); aktiv = null; };
-		canvas.addEventListener("pointerup", ende);
-		canvas.addEventListener("pointercancel", ende);
-	}
-
-	/* Material-Export.
-	   m = {titel, text (HTML), bilder: [{canvas, unterschrift}], tabelle: {kopf: [], zeilen: [[]], unterschrift}} */
-	function zeigeMaterial(m) {
-		const alt = document.querySelector(".material-overlay");
-		if (alt) alt.remove();
-		const ov = document.createElement("div");
-		ov.className = "material-overlay";
-		const blatt = document.createElement("div");
-		blatt.className = "material-blatt";
-		const kn = document.createElement("div");
-		kn.className = "material-knoepfe knopfleiste";
-		kn.innerHTML = '<button data-a="druck">Drucken</button><button data-a="zu">Schließen</button>';
-		blatt.appendChild(kn);
-		const h = document.createElement("h2"); h.textContent = m.titel; blatt.appendChild(h);
-		if (m.text) { const p = document.createElement("div"); p.className = "material-text"; p.innerHTML = m.text; blatt.appendChild(p); }
-		let nr = 1;
-		for (const b of (m.bilder || [])) {
-			const fig = document.createElement("figure");
-			const img = document.createElement("img");
-			img.src = b.canvas.toDataURL("image/png");
-			img.alt = b.unterschrift || "Abbildung";
-			fig.appendChild(img);
-			const cap = document.createElement("figcaption");
-			cap.innerHTML = "<b>Abb. " + (nr++) + ":</b> " + (b.unterschrift || "");
-			fig.appendChild(cap);
-			const lnk = document.createElement("a");
-			lnk.href = img.src; lnk.download = "Material_Abb" + (nr - 1) + ".png"; lnk.textContent = " (als PNG speichern)";
-			lnk.style.fontSize = "0.8rem";
-			cap.appendChild(lnk);
-			blatt.appendChild(fig);
-		}
-		if (m.tabelle) {
-			const wrap = document.createElement("div"); wrap.className = "tabelle-wrap";
-			let html = '<table class="messtabelle"><thead><tr>' + m.tabelle.kopf.map(k => "<th>" + k + "</th>").join("") + "</tr></thead><tbody>";
-			for (const z of m.tabelle.zeilen) html += "<tr>" + z.map(w => "<td>" + w + "</td>").join("") + "</tr>";
-			html += "</tbody></table>";
-			wrap.innerHTML = html;
-			blatt.appendChild(wrap);
-			if (m.tabelle.unterschrift) { const p = document.createElement("p"); p.className = "hinweis"; p.innerHTML = m.tabelle.unterschrift; blatt.appendChild(p); }
-		}
-		ov.appendChild(blatt);
-		ov.addEventListener("click", ev => {
-			const a = ev.target.dataset && ev.target.dataset.a;
-			if (ev.target === ov || a === "zu") { ov.remove(); document.body.classList.remove("material-druck"); }
-			if (a === "druck") { document.body.classList.add("material-druck"); window.print(); setTimeout(() => document.body.classList.remove("material-druck"), 500); }
-		});
-		document.body.appendChild(ov);
-		return ov;
-	}
-
-	/* Hilfscanvas in fester Groesse (fuer Material-Abbildungen) */
-	function neuerCanvas(W, H, faktor = 2) {
-		const c = document.createElement("canvas");
-		c.width = W * faktor; c.height = H * faktor;
-		const ctx = c.getContext("2d");
-		ctx.setTransform(faktor, 0, 0, faktor, 0, 0);
-		ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
-		return { canvas: c, ctx, W, H };
-	}
-
-	/* Reglerwert mit Anzeige formatiert binden */
-	function regler(id, anzeigeId, format, setzer, danach) {
-		const el = document.getElementById(id);
-		const an = document.getElementById(anzeigeId);
-		const upd = () => { const v = parseFloat(el.value); setzer(v); if (an) an.innerHTML = format(v); if (danach) danach(); };
-		el.addEventListener("input", upd);
-		return upd;
-	}
-
-	return { SCHRIFT, FARBEN, de, sig, hoch, gauss, zufall, runde, linReg, ursprungReg, schrittFuer, stellenFuer, achsen, kurve, punkte, pfeil, text, symbol, Messtabelle, bindeModus, pruefe, zeigeRueckmeldung, leseZahl, ziehbar, zeigeMaterial, neuerCanvas, regler };
-})();
-
-	</script>
-	<style>
-/* ==========================================================================
-   Sim-UI 2026-10-03: Bedienung nach den neuen Vorgaben (Kast)
-   - Piktogramme statt Woerter, Bedeutung in title/aria-label
-   - Farben nach Rolle: Modusleiste und Hauptaktion blau, Bewegung dunkel,
-     Auswahl neutral grau (aktiv mit blauem Rahmen), Nebensaechliches hellgrau
-   - Gruppen mit kleinem grauem Titel
-   ========================================================================== */
-.knopfleiste button, button.wahl {
-	font: inherit; font-size: 0.95rem;
-	padding: 0.26rem 0.65rem;
-	border: 1.5px solid #B4B4B4; border-radius: 1mm;
-	background: #F4F4F4; color: #222; cursor: pointer;
-	display: inline-flex; align-items: center; justify-content: center; gap: 0.3em;
-	line-height: 1.2; min-height: 2.05rem;
-}
-.knopfleiste button:hover:not(.aktiv):not(:disabled), button.wahl:hover:not(.aktiv) { background: #E9E9E9; }
-.knopfleiste button.aktiv, button.wahl.aktiv {
-	background: #EEF0FF; color: var(--blue-frame); border-color: var(--blue-frame);
-	box-shadow: 0 0 0 1px var(--blue-frame) inset;
-}
-.knopfleiste button.laeuft { background: #fff; color: var(--blue-frame); border-color: var(--blue-frame); }
-.knopfleiste button:disabled { opacity: 0.4; cursor: default; }
-/* Hauptaktion: gefuellt blau und fett */
-.knopfleiste button.haupt, button.haupt {
-	background: var(--blue-frame); border-color: var(--blue-frame); color: #fff; font-weight: bold; box-shadow: none;
-}
-.knopfleiste button.haupt:hover:not(:disabled), button.haupt:hover:not(:disabled) { background: #00008F; }
-.knopfleiste button.haupt.aktiv { background: #00006A; color: #fff; }
-/* Bewegungen: dunkel wie ein Geraetegehaeuse */
-.knopfleiste button.beweg, button.beweg {
-	background: #2E3238; border-color: #2E3238; color: #fff; box-shadow: none;
-}
-.knopfleiste button.beweg:hover:not(:disabled) { background: #474C54; }
-.knopfleiste button.beweg.aktiv { background: #2E3238; color: #FFD34D; border-color: #FFD34D; }
-/* Nebensaechliches: hellgrau und kleiner */
-.knopfleiste button.neben, button.neben {
-	background: transparent; border: 1px solid transparent; color: #8A8A8A; font-size: 0.8rem;
-	padding: 0.15rem 0.4rem; min-height: 1.85rem; min-width: 1.95rem; font-weight: normal; box-shadow: none;
-}
-.knopfleiste button.neben:hover, button.neben:hover { background: #EFEFEF; border-color: #DDD; color: #333; }
-/* Piktogramm-Knopf */
-button.ik { padding: 0.2rem 0.5rem; min-width: 2.3rem; }
-button.ik svg { width: 1.25rem; height: 1.25rem; display: block; flex: none; }
-button.ik.neben svg { width: 1.05rem; height: 1.05rem; }
-button.ik.gross svg { width: 1.75rem; height: 1.75rem; }
-button.ik.gross { padding: 0.12rem 0.4rem; }
-.bgruppe .zeile { gap: 0.4rem; flex-wrap: nowrap; }
-.bgruppe .wert { min-width: 2.2em; text-align: left; }
-button .chev { font-weight: bold; letter-spacing: -0.12em; font-size: 1.15rem; line-height: 1; }
-/* Bediengruppen mit kleinem grauem Titel */
-.bedienleiste { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; align-items: flex-end; margin-top: 0.55rem; }
-.bgruppe { display: inline-flex; flex-direction: column; gap: 0.18rem; }
-.bgruppe > .btitel { font-size: 0.72rem; color: #808080; letter-spacing: 0.02em; }
-.bgruppe > .knopfleiste { flex-wrap: wrap; }
-.bgruppe.rechts { margin-left: auto; }
-.bedienleiste .zeile { flex: 1 1 100%; }
-/* Knopfleiste direkt am Bild (Pause, Herunterladen) */
-.bildleiste { display: flex; justify-content: flex-end; gap: 0.35rem; margin: 0.25rem 0 0; flex-wrap: wrap; }
-/* kleines Farbmuster (Material) in Knoepfen */
-.muster { display: inline-block; width: 0.95em; height: 0.95em; border: 1px solid #888; border-radius: 2px; }
-/* Schalter-Chips: Haekchen als Knopf (Checkbox bleibt fuer die Logik erhalten) */
-label.chip {
-	display: inline-flex; align-items: center; gap: 0.35em; position: relative;
-	border: 1.5px solid #B4B4B4; background: #F4F4F4; border-radius: 1mm; color: #222;
-	padding: 0.2rem 0.6rem; cursor: pointer; min-height: 2.05rem; font-size: 0.92rem; min-width: 0 !important;
-}
-label.chip:hover { background: #E9E9E9; }
-label.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-label.chip:has(input:checked) { background: #EEF0FF; border-color: var(--blue-frame); color: var(--blue-frame); box-shadow: 0 0 0 1px var(--blue-frame) inset; }
-label.chip:has(input:focus-visible) { outline: 2px solid #8080FF; outline-offset: 1px; }
-label.chip:has(input:disabled) { opacity: 0.4; cursor: default; }
-span[data-chipicon] svg { width: 1.3em; height: 1.3em; display: block; }
-span[data-pfeil] svg { width: 1.7em; height: 0.75em; display: block; }
-/* Modusleiste in Blau (Erkunden | Aufgabe ...) */
-.knopfleiste.modus-blau button { background: #fff; color: var(--blue-frame); border: 1.5px solid var(--blue-frame); font-weight: normal; box-shadow: none; }
-.knopfleiste.modus-blau button:hover:not(.aktiv) { background: var(--blue-title); }
-.knopfleiste.modus-blau button.aktiv { background: var(--blue-frame); color: #fff; }
-/* Modus per Link: ausgeblendete Elemente */
-.per-link-aus { display: none !important; }
-	</style>
-	<script>
-/* ==========================================================================
-   Sim-UI: Piktogramme, Modus per Link, Bild herunterladen (Kast, 2026-10-03)
-   ========================================================================== */
-"use strict";
-window.SimUI = (function () {
-	const P = {
-		play: '<path fill="currentColor" d="M8 5v14l11-7z"/>',
-		pause: '<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>',
-		stopp: '<rect x="5.5" y="5.5" width="13" height="13" rx="1.5" fill="currentColor"/>',
-		reset: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>',
-		muell: '<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>',
-		download: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
-		kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
-		teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
-		speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
-		rechts: '<path d="M2.5 9h11V4l8.5 8-8.5 8v-5h-11z" fill="currentColor"/>',
-		links: '<path d="M21.5 9h-11V4L2 12l8.5 8v-5h11z" fill="currentColor"/>',
-		hoch: '<path d="M9 21.5v-11H4L12 2l8 8.5h-5v11z" fill="currentColor"/>',
-		runter: '<path d="M9 2.5v11H4l8 8.5 8-8.5h-5v-11z" fill="currentColor"/>',
-		plus: '<path d="M12 4.5v15M4.5 12h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
-		minus: '<path d="M4.5 12h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
-		wuerfel: '<rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.3" cy="8.3" r="1.7" fill="currentColor"/><circle cx="15.7" cy="15.7" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="15.7" cy="8.3" r="1.7" fill="currentColor"/><circle cx="8.3" cy="15.7" r="1.7" fill="currentColor"/>',
-		auge: '<path d="M1.8 12C4.3 7.3 7.9 5.2 12 5.2s7.7 2.1 10.2 6.8C19.7 16.7 16.1 18.8 12 18.8S4.3 16.7 1.8 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="currentColor"/>',
-		haken: '<path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
-		notieren: '<rect x="3" y="4" width="13" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 9h7M6 13h7M6 17h4" stroke="currentColor" stroke-width="1.8"/><path d="M19 12v8M15 16h8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
-		schritt: '<path d="M4 4.5v15l11-7.5z" fill="currentColor"/><rect x="16" y="4.5" width="3.6" height="15" rx="1" fill="currentColor"/>',
-		zurueck: '<path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/>',
-		lupeplus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M10 7v6M7 10h6" stroke="currentColor" stroke-width="2"/>',
-		lupeminus: '<circle cx="10" cy="10" r="6.3" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M14.7 14.7l5.6 5.6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6" stroke="currentColor" stroke-width="2"/>',
-		drehen: '<path d="M18.5 12a6.5 6.5 0 1 1-2.2-4.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v6.3h-6.3z" fill="currentColor"/>',
-		tausch: '<path d="M3 8.5h13V5l5 5-5 5v-3.5H3z" fill="currentColor" transform="translate(0,-2)"/><path d="M21 15.5H8V12l-5 5 5 5v-3.5h13z" fill="currentColor" transform="translate(0,-1)"/>',
-		ziel: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
-		stern: '<path d="M12 2.8l2.8 6 6.5.7-4.9 4.4 1.4 6.4L12 17l-5.8 3.3 1.4-6.4-4.9-4.4 6.5-.7z" fill="currentColor"/>',
-		blitz: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="currentColor"/>',
-		platten_an: '<rect x="1.5" y="3" width="4" height="18" rx="0.6" fill="#E04848"/><rect x="18.5" y="3" width="4" height="18" rx="0.6" fill="#4848E0"/><path d="M7 8h8M7 16h8" stroke="#333" stroke-width="1.7"/><path d="M14.5 5.6l3 2.4-3 2.4zM14.5 13.6l3 2.4-3 2.4z" fill="#333"/>',
-		platten_aus: '<rect x="1.5" y="3" width="4" height="18" rx="0.6" fill="#B8B8B8"/><rect x="18.5" y="3" width="4" height="18" rx="0.6" fill="#B8B8B8"/>',
-		puck_plus: '<circle cx="12" cy="12" r="9.5" fill="#222"/><path d="M7 12h10M12 7v10" stroke="#FF6B6B" stroke-width="2.6" stroke-linecap="round"/>',
-		puck_minus: '<circle cx="12" cy="12" r="9.5" fill="#222"/><path d="M7 12h10" stroke="#8A8AFF" stroke-width="2.6" stroke-linecap="round"/>',
-		ladung_plus: '<circle cx="12" cy="12" r="9.3" fill="#FFE5E5" stroke="#E00000" stroke-width="2"/><path d="M7.5 12h9M12 7.5v9" stroke="#E00000" stroke-width="2.2"/>',
-		ladung_minus: '<circle cx="12" cy="12" r="9.3" fill="#E5E5FF" stroke="#0000E0" stroke-width="2"/><path d="M7.5 12h9" stroke="#0000E0" stroke-width="2.2"/>',
-		feldpfeile: '<path d="M3 6h12M3 12h12M3 18h12" stroke="#555" stroke-width="1.8"/><path d="M14 3.5l5 2.5-5 2.5zM14 9.5l5 2.5-5 2.5zM14 15.5l5 2.5-5 2.5z" fill="#555"/>',
-		bahn: '<path d="M3 19C7 19 8 6 13 6s6 8 8 8" fill="none" stroke="#E04848" stroke-width="2.4" stroke-linecap="round"/><circle cx="21" cy="14" r="2.3" fill="#222"/>',
-		an_einzeln: '<path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4M4.6 4.6l2.8 2.8M16.6 16.6l2.8 2.8M4.6 19.4l2.8-2.8M16.6 7.4l2.8-2.8" stroke="#888" stroke-width="1.5"/><circle cx="12" cy="12" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.6"/><path d="M9.6 12h4.8M12 9.6v4.8" stroke="#E00000" stroke-width="1.6"/>',
-		an_ungleich: '<path d="M7 9.5Q12 4.5 17 9.5M7 14.5Q12 19.5 17 14.5M8.5 12h7" fill="none" stroke="#888" stroke-width="1.4"/><circle cx="5" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M3 12h4M5 10v4" stroke="#E00000" stroke-width="1.4"/><circle cx="19" cy="12" r="3.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.5"/><path d="M17 12h4" stroke="#0000E0" stroke-width="1.4"/>',
-		an_gleich: '<path d="M7 9Q9 4 8 1.5M17 9Q15 4 16 1.5M7 15Q9 20 8 22.5M17 15Q15 20 16 22.5" fill="none" stroke="#888" stroke-width="1.4"/><circle cx="5" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M3 12h4M5 10v4" stroke="#E00000" stroke-width="1.4"/><circle cx="19" cy="12" r="3.8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M17 12h4M19 10v4" stroke="#E00000" stroke-width="1.4"/>',
-		an_platten: '<path d="M7 6h10M7 10h10M7 14h10M7 18h10" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><rect x="17.5" y="3" width="4" height="18" rx="0.5" fill="#4848E0"/>',
-		an_ring: '<path d="M7 5h10M7 19h10" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><rect x="17.5" y="3" width="4" height="18" rx="0.5" fill="#4848E0"/><circle cx="12" cy="12" r="4.3" fill="#fff" stroke="#555" stroke-width="2.2"/>',
-		an_spitze: '<path d="M7 7l6.5 4M7 12h6.5M7 17l6.5-4" stroke="#888" stroke-width="1.4"/><rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M13 12l9-4v8z" fill="#4848E0"/>',
-		blitz_aus: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="#C8C8C8"/>',
-		blitz_an: '<path d="M13.5 2L5 13.5h6L9.5 22 19 9.8h-6.2z" fill="#F2B400" stroke="#8A6400" stroke-width="0.8"/>',
-		dipol: '<ellipse cx="12" cy="12" rx="9.5" ry="4.2" fill="#E7DEC8" stroke="#8A7A55" stroke-width="1.2"/><path d="M5 12h3" stroke="#0000E0" stroke-width="1.8"/><path d="M16 12h3M17.5 10.5v3" stroke="#E00000" stroke-width="1.8"/>',
-		zerlegung: '<path d="M3 20L17 6" stroke="#C00000" stroke-width="2.2"/><path d="M14.5 4.5l4.5-0.5-0.5 4.5z" fill="#C00000"/><path d="M3 20h12M3 20V8" stroke="#555" stroke-width="1.6" stroke-dasharray="2.5 2"/>',
-		feldlinien: '<path d="M2 7c6-4 14-4 20 0M2 12h20M2 17c6 4 14 4 20 0" fill="none" stroke="#555" stroke-width="1.7"/><path d="M14 10l3 2-3 2z" fill="#555"/>',
-		erde: '<path d="M12 3v9M4.5 12h15M7.5 15.5h9M10.3 19h3.4" stroke="#333" stroke-width="2.2" stroke-linecap="round"/>',
-		parallelogramm: '<path d="M3 19L8 6h13l-5 13z" fill="none" stroke="#888" stroke-width="1.8" stroke-dasharray="3 2"/>',
-		gewicht: '<path d="M12 3v15" stroke="#111" stroke-width="2.6"/><path d="M7 15l5 6.5 5-6.5z" fill="#111"/>',
-		winkel: '<path d="M3 20h18M3 20L16 6" stroke="#555" stroke-width="2"/><path d="M10 20a7 7 0 0 0-2-4.9" fill="none" stroke="#C00000" stroke-width="2"/>',
-		pf_rechtwinklig: '<path d="M4 20h13" stroke="#008040" stroke-width="2.4"/><path d="M15 16.5l6 3.5-6 3.5z" fill="#008040" transform="translate(0,-3.5)"/><path d="M4 20V7" stroke="#0000BF" stroke-width="2.4"/><path d="M0.5 9l3.5-6 3.5 6z" fill="#0000BF"/><path d="M4 16h4v4" fill="none" stroke="#777" stroke-width="1.2"/>',
-		pf_gleich: '<path d="M2 9h15" stroke="#008040" stroke-width="2.4"/><path d="M15 5.5l6 3.5-6 3.5z" fill="#008040"/><path d="M2 16h11" stroke="#0000BF" stroke-width="2.4"/><path d="M11 12.5l6 3.5-6 3.5z" fill="#0000BF"/>',
-		pf_gegen: '<path d="M2 9h15" stroke="#008040" stroke-width="2.4"/><path d="M15 5.5l6 3.5-6 3.5z" fill="#008040"/><path d="M22 16H11" stroke="#0000BF" stroke-width="2.4"/><path d="M13 12.5L7 16l6 3.5z" fill="#0000BF"/>',
-		anhaengen: '<path d="M2 18h9" stroke="#008040" stroke-width="2.2"/><path d="M9.5 15l4.5 3-4.5 3z" fill="#008040"/><path d="M14 18l5-11" stroke="#0000BF" stroke-width="2.2"/><path d="M16.3 7.8l3.6-3.6 0.3 5z" fill="#0000BF"/>',
-		komponenten: '<path d="M4 20L18 6" stroke="#C00000" stroke-width="2.2"/><path d="M4 20h14M18 20V6" stroke="#777" stroke-width="1.6" stroke-dasharray="3 2"/>',
-		linie_fertig: '<path d="M3 19C6 12 10 8 15 7" fill="none" stroke="#C00000" stroke-width="2.4"/><path d="M15 7c2.5-.4 4 0 6 1" fill="none" stroke="#C00000" stroke-width="2.4" stroke-dasharray="2.2 2"/><circle cx="3" cy="19" r="2.2" fill="#fff" stroke="#333" stroke-width="1.4"/><path d="M17.5 4.5l4 3.3-4.8 1.7z" fill="#C00000"/>',
-		elektroskop: '<rect x="3" y="7" width="18" height="15" rx="2" fill="#EEE" stroke="#666" stroke-width="1.4"/><circle cx="12" cy="11.5" r="5.5" fill="#fff" stroke="#999" stroke-width="1"/><path d="M12 1.5v14" stroke="#B07A2A" stroke-width="2"/><rect x="8" y="0.8" width="8" height="2" rx="0.8" fill="#B07A2A"/><path d="M12 9l4 5" stroke="#B07A2A" stroke-width="1.6"/>',
-		schnipsel: '<ellipse cx="12" cy="7" rx="7" ry="5.5" fill="#E04848"/><path d="M12 12.5l-1 2.5" stroke="#999" stroke-width="1"/><rect x="3" y="19" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6" transform="rotate(-12 5 20)"/><rect x="10" y="18.5" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6" transform="rotate(10 12 20)"/><rect x="17" y="19.5" width="4" height="2.5" fill="#E8E0C8" stroke="#999" stroke-width="0.6"/>',
-		stab_minus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#F4F4F4" stroke="#888" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.4"/><path d="M15.6 6h4.8" stroke="#0000E0" stroke-width="1.8"/>',
-		stab_plus: '<rect x="1.5" y="9.5" width="21" height="5" rx="2.5" fill="#D8EEF4" stroke="#6A9AA8" stroke-width="1" transform="rotate(-25 12 12)"/><circle cx="18" cy="6" r="4.6" fill="#FFE5E5" stroke="#E00000" stroke-width="1.4"/><path d="M15.6 6h4.8M18 3.6v4.8" stroke="#E00000" stroke-width="1.8"/>',
-		kugel_teilen: '<path d="M0.5 12h3" stroke="#8B5A2B" stroke-width="2"/><circle cx="8.5" cy="12" r="5.2" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><circle cx="18.6" cy="12" r="5.2" fill="#FFE5E5" stroke="#E00000" stroke-width="1.3"/><path d="M16.4 12h4.4M18.6 9.8v4.4" stroke="#E00000" stroke-width="1.6"/><path d="M6.6 12h3.8M8.5 10.1v3.8" stroke="#E00000" stroke-width="1.3" opacity="0.55"/>',
-		kugel_platte: '<rect x="2" y="2" width="20" height="4" rx="0.6" fill="#E04848"/><path d="M8 4h3M9.5 2.5v3" stroke="#fff" stroke-width="1.2"/><circle cx="12" cy="12.4" r="5.6" fill="#E6E6E6" stroke="#666" stroke-width="1.3"/><path d="M12 18v4" stroke="#C9B98A" stroke-width="2.4"/>',
-		finger: '<path d="M10 22v-4.5c-2-1.5-3.5-3.5-3.5-6V9.5c0-.9 1.6-.9 1.6 0v2.5V3c0-1.3 2.4-1.3 2.4 0v7V8.2c0-1.2 2.3-1.2 2.3 0V10V9c0-1.2 2.2-1.2 2.2 0v1.2c0-1 2-1 2 0v4.3c0 2-1 3.4-2.3 4.5V22z" fill="#F2C9A0" stroke="#9A6A40" stroke-width="1"/>',
-		alle_ladungen: '<circle cx="7" cy="8" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M5 8h4M7 6v4" stroke="#E00000" stroke-width="1.4"/><circle cx="17" cy="8" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M15.6 8h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="7" cy="17.5" r="2.8" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.2"/><path d="M5.6 17.5h2.8" stroke="#0000E0" stroke-width="1.4"/><circle cx="17" cy="17.5" r="4" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><path d="M15 17.5h4M17 15.5v4" stroke="#E00000" stroke-width="1.4"/>',
-		platte_eine: '<rect x="2.5" y="3" width="4" height="18" rx="0.5" fill="#E04848"/><path d="M15 4v8" stroke="#777" stroke-width="1"/><circle cx="15" cy="14.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
-		pendel_kond: '<rect x="1.5" y="3" width="3.6" height="18" rx="0.5" fill="#E04848"/><rect x="18.9" y="3" width="3.6" height="18" rx="0.5" fill="#4848E0"/><path d="M12 3v8" stroke="#777" stroke-width="1"/><circle cx="12" cy="13.5" r="3" fill="#C8C8C8" stroke="#666" stroke-width="1"/>',
-		schalter_zu: '<circle cx="4" cy="15" r="2" fill="currentColor"/><circle cx="20" cy="15" r="2" fill="currentColor"/><path d="M4 15h16" stroke="currentColor" stroke-width="2.4"/>',
-		schalter_offen: '<circle cx="4" cy="15" r="2" fill="currentColor"/><circle cx="20" cy="15" r="2" fill="currentColor"/><path d="M4 15L18 6" stroke="currentColor" stroke-width="2.4"/>',
-		zeitlupe: '<circle cx="12" cy="13" r="8.5" fill="none" stroke="#555" stroke-width="2"/><path d="M12 13V8M12 13l3.5 2" stroke="#555" stroke-width="2" stroke-linecap="round"/><path d="M9.5 2.5h5" stroke="#555" stroke-width="2"/>',
-		merken: '<path d="M6 2.5h12v19l-6-4.5-6 4.5z" fill="currentColor"/>',
-		fenster: '<rect x="4" y="4" width="16" height="16" fill="none" stroke="#C00000" stroke-width="2"/><circle cx="9" cy="9" r="1.6" fill="#333"/><circle cx="15" cy="14" r="1.6" fill="#333"/><circle cx="10" cy="16" r="1.6" fill="#333"/>',
-		richtungsfeld: '<g fill="#555" stroke="#555" stroke-width="1.5"><path d="M3 6h5M14 4l5 3M3 13l5-2M14 13h5M4 20l4-3M14 20l5 1"/><path d="M8 4.5l2 1.5-2 1.5zM19 5.6l1.6 2.4-2.8.2zM8 9.6l2 .9-1.8 1.4zM19 11.5l2 1.5-2 1.5zM8 15.6l1.1 2.3-2.4-.1zM19 19.5l2 1.7-2.5.6z"/></g>',
-		feldlinie_neu: '<path d="M2 18C6 18 8 6 14 6" fill="none" stroke="#555" stroke-width="2.2"/><path d="M12.5 3l4 3-4.3 2.6z" fill="#555"/><path d="M18 12v8M14 16h8" stroke="#295C06" stroke-width="2.4" stroke-linecap="round"/>',
-		radierer: '<path d="M3 15l9-9 7 7-6 6H8z" fill="#F4B8C0" stroke="#A04050" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.5 10.5l7 7" stroke="#A04050" stroke-width="1.4"/><path d="M13 20h8" stroke="#777" stroke-width="1.6"/>',
-		punkte_abc: '<circle cx="5" cy="17" r="2.3" fill="#333"/><circle cx="12" cy="7" r="2.3" fill="#333"/><circle cx="19" cy="15" r="2.3" fill="#333"/>',
-		iso: '<ellipse cx="12" cy="12" rx="9" ry="6" fill="none" stroke="#7A1FA2" stroke-width="1.8" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="2.2" fill="#C00000"/>',
-		st_qu: '<rect x="3" y="4" width="18" height="16" rx="2" fill="#2E3238"/><rect x="5.5" y="7" width="13" height="6" rx="1" fill="#7CFC7C"/><path d="M7 17h3M14 17h3" stroke="#bbb" stroke-width="1.6"/>',
-		st_abstand: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><path d="M7.5 12h9" stroke="#333" stroke-width="1.6"/><path d="M9.5 9.5L6.5 12l3 2.5zM14.5 9.5l3 2.5-3 2.5z" fill="#333"/>',
-		st_flaeche: '<path d="M3 8l6-5h12l-6 5z" fill="#E04848" opacity="0.85"/><path d="M3 19l6-5h12l-6 5z" fill="#4848E0" opacity="0.85"/><path d="M3 8v2M15 8v2" stroke="#999" stroke-width="1"/>',
-		st_material: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><rect x="7.5" y="5" width="9" height="14" rx="1" fill="#BFE3EC" stroke="#6A9AA8" stroke-width="1"/>',
-		an_fuell: '<rect x="2" y="2" width="20" height="3.5" rx="0.5" fill="#E04848"/><rect x="2" y="18.5" width="20" height="3.5" rx="0.5" fill="#4848E0"/><rect x="4" y="9" width="10" height="9.5" fill="#A8C8FF" stroke="#5A7AB0" stroke-width="1"/><path d="M18 17V9" stroke="#333" stroke-width="1.6"/><path d="M15.5 11l2.5-3.5 2.5 3.5z" fill="#333"/>',
-		an_schicht: '<rect x="2" y="2" width="20" height="3.5" rx="0.5" fill="#E04848"/><rect x="2" y="18.5" width="20" height="3.5" rx="0.5" fill="#4848E0"/><rect x="2" y="9.5" width="20" height="5" fill="#A8C8FF" stroke="#5A7AB0" stroke-width="1"/>',
-		kugel_kond: '<rect x="2" y="3" width="3.5" height="18" rx="0.5" fill="#E04848"/><rect x="18.5" y="3" width="3.5" height="18" rx="0.5" fill="#4848E0"/><path d="M8 15h8" stroke="#888" stroke-width="1.2" stroke-dasharray="2 1.6"/><circle cx="12" cy="11" r="3.3" fill="#C8C8C8" stroke="#555" stroke-width="1"/><path d="M12 3v4.7" stroke="#777" stroke-width="0.9"/>',
-		motor_last: '<circle cx="8" cy="12" r="6" fill="#fff" stroke="#333" stroke-width="1.6"/><path d="M5.3 14.5V9.5L8 12.5l2.7-3v5" fill="none" stroke="#333" stroke-width="1.3"/><path d="M14 9l5-5" stroke="#777" stroke-width="1"/><path d="M19 4v10" stroke="#777" stroke-width="1"/><rect x="16.5" y="14" width="5" height="6" fill="#8A8A8A"/>',
-		vorspulen: '<path d="M3 5v14l9-7zM12 5v14l9-7z" fill="currentColor"/>',
-		w_halb: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M3 11h4.6M7.6 11v10" stroke="#C00000" stroke-width="1.5" stroke-dasharray="2 1.5"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
-		w_flaeche: '<path d="M3 4c3 9 7 13 18 15v2H3z" fill="#9FB4FF" opacity="0.7"/><path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
-		w_fit: '<circle cx="5" cy="7" r="1.5" fill="#333"/><circle cx="9" cy="13" r="1.5" fill="#333"/><circle cx="14" cy="16" r="1.5" fill="#333"/><circle cx="19" cy="18.3" r="1.5" fill="#333"/><path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#C86400" stroke-width="2"/><path d="M2 21h20M2 3v18" stroke="#555" stroke-width="1.3"/>',
-		euler: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#999" stroke-width="1.4"/><path d="M3 4l5 9h0l5 4.5 6 2.5" fill="none" stroke="#C86400" stroke-width="2.2"/><circle cx="3" cy="4" r="1.5" fill="#C86400"/><circle cx="8" cy="13" r="1.5" fill="#C86400"/><circle cx="13" cy="17.5" r="1.5" fill="#C86400"/>',
-		tangente: '<path d="M3 4c3 9 7 13 18 15" fill="none" stroke="#0000BF" stroke-width="2"/><path d="M2 2l9 17" stroke="#C00000" stroke-width="1.8"/><path d="M2 21h20" stroke="#555" stroke-width="1.3"/>',
-		energie: '<rect x="3" y="8" width="5" height="13" fill="#0000BF"/><rect x="10" y="13" width="5" height="8" fill="#C86400"/><rect x="17" y="4" width="5" height="17" fill="#295C06"/>',
-		schuetteln: '<rect x="8" y="4" width="8" height="16" rx="1.6" fill="#2E3238"/><rect x="9.3" y="6" width="5.4" height="10" fill="#9FC4FF"/><path d="M4.5 7c-1.5 3-1.5 7 0 10M2 5c-2 4-2 10 0 14M19.5 7c1.5 3 1.5 7 0 10M22 5c2 4 2 10 0 14" fill="none" stroke="#C86400" stroke-width="1.5"/>',
-		handy: '<rect x="6" y="2" width="12" height="20" rx="2.2" fill="#2E3238"/><rect x="7.6" y="4.5" width="8.8" height="14" fill="#9FC4FF"/><circle cx="12" cy="20.2" r="0.9" fill="#ccc"/>',
-		handschuh: '<path d="M7 22v-6c-2-1-3.5-3-3.5-5.5 0-1.2 1.6-1.4 2.2-.3L7 13V5c0-1.6 2.4-1.6 2.4 0v5V3.6c0-1.6 2.4-1.6 2.4 0V10V4.5c0-1.6 2.4-1.6 2.4 0V11V6.5c0-1.5 2.3-1.5 2.3 0V15c0 3-1.3 5-3 7z" fill="#B03030" stroke="#6A1A1A" stroke-width="0.9"/><path d="M7 19h9M7 21h9" stroke="#E8A0A0" stroke-width="0.8"/>',
-		stift: '<path d="M5 19L17 7l2 2L7 21H5z" fill="#2B6CB0"/><path d="M17 7l1.5-1.5a1.4 1.4 0 0 1 2 2L19 9z" fill="#333"/><path d="M5 19v2h2" fill="#777"/><circle cx="5.2" cy="20.8" r="1.5" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/>',
-		stift_alu: '<path d="M5 19L17 7l2 2L7 21H5z" fill="#2B6CB0"/><path d="M17 7l1.5-1.5a1.4 1.4 0 0 1 2 2L19 9z" fill="#333"/><path d="M3 17.5l3.5-3.5 3.5 3.5L6.5 21z" fill="#D8DDE2" stroke="#7A8590" stroke-width="0.9"/>',
-		aequi: '<circle cx="12" cy="12" r="3" fill="#E04848"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#7A1FA2" stroke-width="1.5"/><circle cx="12" cy="12" r="10" fill="none" stroke="#7A1FA2" stroke-width="1.5"/>',
-		aequi_neu: '<path d="M3 16c3-6 9-8 13-7" fill="none" stroke="#7A1FA2" stroke-width="2"/><path d="M18 12v8M14 16h8" stroke="#295C06" stroke-width="2.4" stroke-linecap="round"/>',
-		pot3d: '<path d="M2 18l8 4 12-6-8-4z" fill="#E8E8E8" stroke="#888" stroke-width="0.8"/><path d="M5 17c3-1 4-12 6-12s2 9 4 10 4 0 5 .5" fill="none" stroke="#C00000" stroke-width="1.8"/>',
-		farbig: '<rect x="2" y="4" width="20" height="16" rx="2" fill="url(#g)"/><defs><linearGradient id="g"><stop offset="0" stop-color="#3050E0"/><stop offset="0.5" stop-color="#F0F0F0"/><stop offset="1" stop-color="#E03030"/></linearGradient></defs>',
-		wanne_platten: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><rect x="3.5" y="5" width="2.6" height="14" fill="#E04848"/><rect x="17.9" y="5" width="2.6" height="14" fill="#555"/>',
-		wanne_ring: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="#555" stroke-width="2"/><circle cx="12" cy="12" r="2.4" fill="#E04848"/>',
-		wanne_dipol: '<rect x="1.5" y="3" width="21" height="18" rx="1.5" fill="#DDEEFA" stroke="#7A9AB0" stroke-width="1"/><circle cx="7" cy="12" r="2.6" fill="#E04848"/><circle cx="17" cy="12" r="2.6" fill="#555"/>',
-		sonde: '<path d="M4 20l9-9" stroke="#111" stroke-width="2.2"/><circle cx="14" cy="10" r="3" fill="#111"/><path d="M15.5 8.5L21 3" stroke="#C00000" stroke-width="1.4"/>',
-		t_elektron: '<circle cx="12" cy="12" r="5" fill="#E5E5FF" stroke="#0000E0" stroke-width="1.5"/><path d="M9.5 12h5" stroke="#0000E0" stroke-width="1.8"/>',
-		t_proton: '<circle cx="12" cy="12" r="8" fill="#FFE5E5" stroke="#E00000" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="#E00000" stroke-width="2"/>',
-		t_alpha: '<circle cx="8.5" cy="8.5" r="5" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><circle cx="15.5" cy="15.5" r="5" fill="#FFE5E5" stroke="#E00000" stroke-width="1.2"/><circle cx="15.5" cy="8.5" r="5" fill="#E8E8E8" stroke="#777" stroke-width="1.2"/><circle cx="8.5" cy="15.5" r="5" fill="#E8E8E8" stroke="#777" stroke-width="1.2"/><path d="M6.3 8.5h4.4M8.5 6.3v4.4M13.3 15.5h4.4M15.5 13.3v4.4" stroke="#E00000" stroke-width="1.4"/>',
-		stoppuhr: '<circle cx="12" cy="13.5" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 13.5V9M12 13.5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 2.5h5M12 2.5v3" stroke="currentColor" stroke-width="2"/>',
-		sp_lang: '<rect x="2" y="5" width="20" height="14" rx="2" fill="#F4E2BC" stroke="#8B6508" stroke-width="0.8"/><path d="M4 5v14M6.5 5v14M9 5v14M11.5 5v14M14 5v14M16.5 5v14M19 5v14" stroke="#B87333" stroke-width="1.3"/>',
-		sp_helmholtz: '<ellipse cx="7" cy="12" rx="3" ry="9" fill="none" stroke="#B87333" stroke-width="2.6"/><ellipse cx="17" cy="12" rx="3" ry="9" fill="none" stroke="#B87333" stroke-width="2.6"/><path d="M1 12h22" stroke="#999" stroke-width="1" stroke-dasharray="2 1.5"/>',
-		sp_kurz: '<ellipse cx="12" cy="12" rx="3.5" ry="6" fill="none" stroke="#B87333" stroke-width="3"/><path d="M1 12h22" stroke="#999" stroke-width="1" stroke-dasharray="2 1.5"/>',
-		sp_draht: '<circle cx="12" cy="12" r="9" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#999" stroke-width="1"/><circle cx="12" cy="12" r="2.6" fill="#B87333"/><path d="M10.6 10.6l2.8 2.8M13.4 10.6l-2.8 2.8" stroke="#fff" stroke-width="1"/>',
-		mrt: '<rect x="2" y="4" width="20" height="16" rx="8" fill="#E8E8E8" stroke="#666" stroke-width="1.2"/><circle cx="12" cy="12" r="5" fill="#fff" stroke="#666" stroke-width="1.2"/><rect x="3" y="11" width="18" height="2.4" rx="1" fill="#9FC4FF"/>',
-		quench: '<path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 2-8.5z" fill="#9FC4FF" stroke="#4A7AB0" stroke-width="1.2"/>',
-		lineal: '<rect x="2" y="8" width="20" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 8v4M10 8v3M14 8v4M18 8v3" stroke="currentColor" stroke-width="1.8"/>'
-	};
-	function svg(name) {
-		return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + (P[name] || "") + "</svg>";
-	}
-	/* Knopf mit Piktogramm versehen; titel kommt in title und aria-label */
-	function setzeIcon(btn, name, titel) {
-		if (!btn) return;
-		/* nur bei Wechsel neu zeichnen: wird das Symbol in jedem Bild ersetzt, gehen Klicks im laufenden Betrieb verloren */
-		if (btn.dataset.ikAktuell !== name) { btn.innerHTML = svg(name); btn.dataset.ikAktuell = name; }
-		btn.classList.add("ik");
-		if (titel) { btn.title = titel; btn.setAttribute("aria-label", titel); }
-	}
-	/* Alle <button data-icon="..."> beim Laden fuellen (Text dahinter bleibt, falls data-text gesetzt) */
-	function fuelleIcons(wurzel) {
-		(wurzel || document).querySelectorAll("button[data-icon]").forEach(b => {
-			if (b.querySelector("svg")) return;
-			const t = b.getAttribute("title") || b.getAttribute("aria-label") || "";
-			const zusatz = b.dataset.text ? '<span>' + b.dataset.text + "</span>" : "";
-			b.innerHTML = svg(b.dataset.icon) + zusatz;
-			b.classList.add("ik");
-			if (t) { b.title = t; b.setAttribute("aria-label", t); }
-		});
-		(wurzel || document).querySelectorAll("span[data-chipicon]").forEach(sp => { sp.innerHTML = svg(sp.dataset.chipicon); });
-		(wurzel || document).querySelectorAll("span[data-pfeil]").forEach(sp => {
-			const f = sp.dataset.pfeil, gestr = sp.dataset.gestrichelt ? ' stroke-dasharray="4 3"' : "";
-			sp.innerHTML = '<svg viewBox="0 0 34 14" aria-hidden="true"><path d="M1 7h24" stroke="' + f + '" stroke-width="2.6"' + gestr + '/><path d="M23 1.5l10 5.5-10 5.5z" fill="' + f + '"/></svg>';
-		});
-	}
-	/* Modus per Link: ?modus=a,b zeigt nur diese Modi; bei genau einem Modus verschwindet die Leiste.
-	   leisteId: Container mit <button data-modus="...">. Liefert die erlaubten Modi. */
-	function modusPerLink(leisteId, attr) {
-		attr = attr || "modus";
-		const leiste = document.getElementById(leisteId);
-		if (!leiste) return null;
-		let roh = "";
-		try { roh = new URLSearchParams(location.search).get("modus") || ""; } catch (e) { roh = ""; }
-		const wunsch = roh.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
-		const knoepfe = Array.from(leiste.querySelectorAll("button[data-" + attr + "]"));
-		const erlaubt = knoepfe.filter(b => !wunsch.length || wunsch.includes(String(b.dataset[attr]).toLowerCase()));
-		if (!erlaubt.length) return null;
-		knoepfe.forEach(b => b.classList.toggle("per-link-aus", !erlaubt.includes(b)));
-		if (erlaubt.length === 1 && wunsch.length) leiste.classList.add("per-link-aus");
-		const aktiv = knoepfe.find(b => b.classList.contains("aktiv"));
-		if (wunsch.length && (!aktiv || !erlaubt.includes(aktiv))) erlaubt[0].click();
-		return erlaubt.map(b => b.dataset[attr]);
-	}
-	function istTablet() {
-		return (navigator.maxTouchPoints || 0) > 1 && window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-	}
-	/* Kurze Meldung unten am Bildschirm (z. B. "Bild kopiert") */
-	function meldung(text) {
-		let m = document.querySelector(".kit-meldung");
-		if (!m) { m = document.createElement("div"); m.className = "kit-meldung"; m.setAttribute("role", "status"); document.body.appendChild(m); }
-		m.textContent = text; m.classList.add("zeigen");
-		clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2400);
-	}
-	/* Stil fuer Meldung und Bildleiste einmal einhaengen */
-	(function () {
-		const st = document.createElement("style");
-		st.textContent = ".kit-meldung { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: #222; color: #fff; padding: 0.45rem 0.9rem; border-radius: 1mm; font-size: 0.9rem; z-index: 60; opacity: 0; transition: opacity 0.25s; pointer-events: none; max-width: 90vw; text-align: center; }"
-			+ ".kit-meldung.zeigen { opacity: 0.94; }"
-			+ ".bildleiste .bl-start:not(:first-child) { margin-left: 0.55rem; }";
-		document.head.appendChild(st);
-	})();
-	/* Dateiname ohne Sonderzeichen */
-	function dateiName(dateiname) {
-		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
-	}
-	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
-		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
-		const g = c.getContext("2d");
-		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
-		g.drawImage(canvas, 0, 0);
-		return new Promise(ok => c.toBlob(ok, "image/png"));
-	}
-	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
-	function kannTeilen() {
-		try { return !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); }
-		catch (e) { return false; }
-	}
-	/* In die Zwischenablage (danach in OneNote mit Strg+V einfuegen) */
-	async function kopiereBild(canvas) {
-		try {
-			await navigator.clipboard.write([new ClipboardItem({ "image/png": bildBlob(canvas) })]);
-			meldung("Bild kopiert: in OneNote mit Strg+V einfügen");
-		} catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
-	}
-	async function teileBild(canvas, dateiname) {
-		try {
-			const blob = await bildBlob(canvas);
-			await navigator.share({ files: [new File([blob], dateiName(dateiname), { type: "image/png" })] });
-		} catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
-	}
-	/* Canvas als PNG speichern (normaler Download) */
-	function speichereBild(canvas, dateiname) {
-		bildBlob(canvas).then(blob => {
-			if (!blob) return;
-			const a = document.createElement("a");
-			a.href = URL.createObjectURL(blob);
-			a.download = dateiName(dateiname);
-			document.body.appendChild(a); a.click(); a.remove();
-			setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-		});
-	}
-	/* Speichern-Knopf zur Bildleiste ausbauen: davor Kopieren und (wo moeglich) Teilen.
-	   holeCanvas() liefert das Bild, holeName() den sprechenden Dateinamen. */
-	function bildleisteAusbauen(btn, holeCanvas, holeName, was) {
-		setzeIcon(btn, "speichern", was + " speichern");
-		btn.classList.add("neben");
-		const neu = [];
-		if (kannKopieren()) {
-			const k = document.createElement("button");
-			k.type = "button"; k.className = "neben";
-			setzeIcon(k, "kopieren", was + " kopieren (in OneNote mit Strg+V einfügen)");
-			k.addEventListener("click", () => kopiereBild(holeCanvas()));
-			neu.push(k);
-		}
-		if (kannTeilen()) {
-			const t = document.createElement("button");
-			t.type = "button"; t.className = "neben";
-			setzeIcon(t, "teilen", was + " teilen (z. B. an OneNote senden)");
-			t.addEventListener("click", () => teileBild(holeCanvas(), holeName()));
-			neu.push(t);
-		}
-		neu.forEach(k => btn.parentNode.insertBefore(k, btn));
-		(neu[0] || btn).classList.add("bl-start");
-		btn.addEventListener("click", () => speichereBild(holeCanvas(), holeName()));
-	}
-	/* Knopf "Bild speichern" an ein Canvas binden (mit Kopieren und Teilen davor) */
-	function bildKnopf(btnId, canvasOderFn, dateiname) {
-		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
-		if (!btn) return;
-		const alt = (btn.getAttribute("title") || "") + (btn.getAttribute("aria-label") || "");
-		const was = /Diagramm/.test(alt) ? "Diagramm" : /Tabelle/.test(alt) ? "Tabelle" : "Bild";
-		bildleisteAusbauen(btn,
-			() => typeof canvasOderFn === "function" ? canvasOderFn() : canvasOderFn,
-			() => typeof dateiname === "function" ? dateiname() : dateiname, was);
-	}
-	/* Zelleninhalt als Text, Indizes/Hochzahlen als Unicode */
-	const TIEF = { "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄", "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉", "+": "₊", "-": "₋", "a": "ₐ", "e": "ₑ", "o": "ₒ", "x": "ₓ", "h": "ₕ", "k": "ₖ", "l": "ₗ", "m": "ₘ", "n": "ₙ", "p": "ₚ", "s": "ₛ", "t": "ₜ", "r": "ᵣ", "i": "ᵢ", "u": "ᵤ", "v": "ᵥ" };
-	const HOCH = { "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "-": "⁻", "−": "⁻", "+": "⁺" };
-	function zellText(el) {
-		const k = el.cloneNode(true);
-		k.querySelectorAll("button, input, select").forEach(x => x.remove());
-		k.querySelectorAll("sub").forEach(s => {
-			const t = s.textContent;
-			s.replaceWith(t.split("").every(c => TIEF[c]) ? t.split("").map(c => TIEF[c]).join("") : "_" + t);
-		});
-		k.querySelectorAll("sup").forEach(s => {
-			const t = s.textContent;
-			s.replaceWith(t.split("").every(c => HOCH[c]) ? t.split("").map(c => HOCH[c]).join("") : "^" + t);
-		});
-		return k.textContent.replace(/\s+/g, " ").trim();
-	}
-	/* Messtabelle als PNG speichern (Kopf fett, Linien wie booktabs, darunter Beschriftung) */
-	function tabellenCanvas(tabelle, titel, zeilen) {
-		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
-		if (typeof zeilen === "function") zeilen = zeilen();
-		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
-			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => z.offsetParent !== null || !tabelle.offsetParent).map(zellText) }))
-			.filter(r => r.zellen.length);
-		const f = 2, schrift = "'Libertinus Sans', 'Segoe UI', sans-serif";
-		const m = document.createElement("canvas").getContext("2d");
-		const spalten = Math.max(...reihen.map(r => r.zellen.length));
-		const breiten = new Array(spalten).fill(30);
-		reihen.forEach(r => r.zellen.forEach((z, i) => {
-			m.font = (r.kopf ? "bold " : "") + "15px " + schrift;
-			breiten[i] = Math.max(breiten[i], m.measureText(z).width + 24);
-		}));
-		const rand = 16, zh = 26, kopfH = titel ? 30 : 0;
-		const W = breiten.reduce((a, b) => a + b, 0) + 2 * rand;
-		const extra = (zeilen || []).length * 19;
-		const H = kopfH + reihen.length * zh + 2 * rand + (extra ? extra + 10 : 0);
-		const c = document.createElement("canvas");
-		c.width = W * f; c.height = H * f;
-		const g = c.getContext("2d");
-		g.scale(f, f);
-		g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-		g.fillStyle = "#111"; g.textBaseline = "middle";
-		if (titel) { g.font = "bold 16px " + schrift; g.fillText(titel, rand, rand + 10); }
-		let y = rand + kopfH;
-		const linie = (yy, d) => { g.strokeStyle = "#111"; g.lineWidth = d; g.beginPath(); g.moveTo(rand, yy); g.lineTo(W - rand, yy); g.stroke(); };
-		linie(y, 1.4);
-		reihen.forEach((r, ri) => {
-			let x = rand;
-			g.font = (r.kopf ? "bold " : "") + "15px " + schrift;
-			g.textAlign = "center";
-			r.zellen.forEach((z, i) => { g.fillText(z, x + breiten[i] / 2, y + zh / 2); x += breiten[i]; });
-			y += zh;
-			if (r.kopf && (!reihen[ri + 1] || !reihen[ri + 1].kopf)) linie(y, 0.8);
-		});
-		linie(y, 1.4);
-		g.textAlign = "left"; g.font = "13px " + schrift; g.fillStyle = "#333";
-		(zeilen || []).forEach((z, i) => g.fillText(z, rand, y + 18 + i * 19));
-		return c;
-	}
-	function speichereTabelle(tabelle, dateiname, titel, zeilen) {
-		speichereBild(tabellenCanvas(tabelle, titel, zeilen), typeof dateiname === "function" ? dateiname() : dateiname);
-	}
-	/* Knopf "Tabelle speichern" binden (mit Kopieren und Teilen davor) */
-	function tabelleKnopf(btnId, tabelle, dateiname, titel, zeilenFn) {
-		const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
-		if (!btn) return;
-		bildleisteAusbauen(btn, () => tabellenCanvas(tabelle, titel, zeilenFn), () => typeof dateiname === "function" ? dateiname() : dateiname, "Tabelle");
-	}
-	/* Vorzeichen einer Ladung als gezeichnete Striche genau in der Kreismitte (nie als Textzeichen) */
-	function ladungsZeichen(g, x, y, r, q, farbe, breite) {
-		const k = Math.max(3.5, 0.48 * r);
-		g.save();
-		g.strokeStyle = farbe || "#fff"; g.lineWidth = breite || Math.max(2, r / 5); g.lineCap = "butt";
-		g.beginPath();
-		if (q !== 0) { g.moveTo(x - k, y); g.lineTo(x + k, y); }
-		if (q > 0) { g.moveTo(x, y - k); g.lineTo(x, y + k); }
-		g.stroke();
-		g.restore();
-	}
-	document.addEventListener("DOMContentLoaded", () => fuelleIcons());
-	return { ladungsZeichen, svg, setzeIcon, fuelleIcons, modusPerLink, speichereBild, bildKnopf, speichereTabelle, tabelleKnopf, istTablet, meldung, kopiereBild, bildleisteAusbauen, tabellenCanvas };
-})();
-	</script>
-
+</style>
 </head>
 <body>
 <div class="blatt">
-
-	<div class="kopf">
-		<span class="nummer">12 eA</span>
-		<span class="kapitel">A.3.1* Radialfeld: Potential und Analogie zur Gravitation</span>
-		<span class="nummer platzhalter">12 eA</span>
+	<div class="kopf"><span>12</span><span class="kapitel">A.3.1* Radialfeld: Potential und Gravitation</span><span class="zwilling">12</span></div>
+	<div class="modusleiste" id="modusleiste">
+		<button type="button" data-modus="flaeche">Fläche</button>
+		<button type="button" data-modus="berg">Potentialberg</button>
+		<button type="button" data-modus="topf">Potentialtopf</button>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-		<button data-modus="aufgabe">Aufgabe</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title" id="aufgabe-titel">Aufgabe</div>
+	<!-- Modus Fläche -->
+	<section class="tcb" data-teil="flaeche">
+		<div class="tcb-title">Arbeit als Fläche unter dem <i class="gr">F</i>-<i class="gr">r</i>-Graphen</div>
 		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort" id="antwort-label"></label><input type="number" id="antwort" step="any" placeholder="?"><span id="antwort-einheit"></span>
-				<span class="knopfleiste"><button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button><button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button><button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button></span>
+			<p class="auftrag">Ziehen Sie die Marken <i class="gr">r</i><sub>E</sub> und <i class="gr">r</i><sub>A</sub>. Die Fläche oben ist so groß wie der Höhenunterschied unten.</p>
+			<div class="leinwand"><canvas class="sim" id="cf"></canvas></div>
+			<div class="werte">
+				<div class="karte haupt"><div class="klein">Arbeit von außen</div><div class="gross" id="fW"></div></div>
+				<div class="karte"><div class="klein"><i class="gr">E</i><sub>pot</sub>(<i class="gr">r</i><sub>E</sub>)</div><div class="gross" id="fE"></div></div>
+				<div class="karte"><div class="klein"><i class="gr">E</i><sub>pot</sub>(<i class="gr">r</i><sub>A</sub>)</div><div class="gross" id="fA"></div></div>
 			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1: Welcher Ansatz?</summary><p class="tipp" id="tipp1"></p></details>
-			<details class="tipp-box"><summary>Tipp 2: Welche Beziehung hilft?</summary><p class="tipp" id="tipp2"></p></details>
-			<details class="tipp-box"><summary>Tipp 3: Ergebnis zum Vergleichen</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
-	<div class="tcb blau" id="box-sim">
-		<div class="tcb-title">Simulation: Geladene Kugel und Planet im Vergleich</div>
-		<div class="tcb-body">
-			<div class="zeile" style="margin-bottom:0.4rem">
-				<span style="font-size:0.8rem;color:#808080">Dargestellte Gr&ouml;&szlig;e</span>
-				<span class="knopfleiste" id="groesse-knoepfe">
-					<button data-wert="F" class="aktiv">Kraft</button>
-					<button data-wert="E">Feldst&auml;rke</button>
-					<button data-wert="Ep">potentielle Energie</button>
-					<button data-wert="phi">Potential</button>
-				</span>
-			</div>
-			<div class="zweispaltig">
-				<div>
-					<canvas id="kugel-canvas" class="sim"></canvas>
-					<div class="bildleiste knopfleiste"><button id="btn-kugel-bild" class="neben" data-icon="download" title="Diagramm herunterladen"></button></div>
-					<div class="steuerung">
-						<div class="zeile"><label>Ladung <i class="gr">Q</i></label><input type="range" id="regler-q" min="-40" max="40" step="1" value="20"><span class="wert" id="wert-q"></span></div>
-						<div class="zeile"><label>Radius <i class="gr">R</i></label><input type="range" id="regler-rk" min="2" max="20" step="1" value="10"><span class="wert" id="wert-rk"></span></div>
-						<div class="zeile"><label>von <i class="gr">r</i><sub>1</sub></label><input type="range" id="regler-r1" min="2" max="100" step="1" value="10"><span class="wert" id="wert-r1"></span></div>
-						<div class="zeile"><label>bis <i class="gr">r</i><sub>2</sub></label><input type="range" id="regler-r2" min="2" max="100" step="1" value="40"><span class="wert" id="wert-r2"></span></div>
-					</div>
-					<div class="auswertung" id="aw-kugel"></div>
-				</div>
-				<div>
-					<canvas id="planet-canvas" class="sim"></canvas>
-					<div class="bildleiste knopfleiste"><button id="btn-planet-bild" class="neben" data-icon="download" title="Diagramm herunterladen"></button></div>
-					<div class="steuerung">
-						<div class="zeile"><label>Masse <i class="gr">M</i></label><input type="range" id="regler-m" min="0.1" max="5" step="0.1" value="1"><span class="wert" id="wert-m"></span></div>
-						<div class="zeile"><label>Radius <i class="gr">R</i></label><input type="range" id="regler-rp" min="0.2" max="3" step="0.1" value="1"><span class="wert" id="wert-rp"></span></div>
-						<div class="zeile"><label>von <i class="gr">r</i><sub>1</sub></label><input type="range" id="regler-p1" min="0.2" max="10" step="0.1" value="1"><span class="wert" id="wert-p1"></span></div>
-						<div class="zeile"><label>bis <i class="gr">r</i><sub>2</sub></label><input type="range" id="regler-p2" min="0.2" max="10" step="0.1" value="4"><span class="wert" id="wert-p2"></span></div>
-					</div>
-					<div class="auswertung" id="aw-planet"></div>
-				</div>
-			</div>
-			<p class="fussnote">Links: Probeladung <i class="gr">q</i> = +1,0&nbsp;nC; rechts: Probek&ouml;rper <i class="gr">m</i> = 1,0&nbsp;kg; Planetenmasse in Erdmassen, Radien in Erdradien. Die blaue Fl&auml;che ist die Arbeit von <i class="gr">r</i><sub>1</sub> nach <i class="gr">r</i><sub>2</sub>. Nullniveau von Energie und Potential: unendlich weit entfernt.</p>
-		</div>
-	</div>
-
-	<div class="tcb blau" id="box-szenarien">
-		<div class="tcb-title">Anwendungen: Rutherford-Streuung und Fluchtgeschwindigkeit</div>
-		<div class="tcb-body">
-			<div class="zweispaltig">
-				<div>
-					<div class="zeile"><label>&alpha;-Energie</label><input type="range" id="regler-ealpha" min="1" max="10" step="0.1" value="5.5"><span class="wert" id="wert-ealpha"></span></div>
-					<div class="zeile"><label>Kern</label><span class="knopfleiste" id="kern-knoepfe"><button data-wert="79" class="aktiv">Gold</button><button data-wert="47">Silber</button><button data-wert="13">Aluminium</button></span></div>
-					<div class="auswertung" id="aw-rutherford"></div>
-				</div>
-				<div>
-					<div class="zeile"><label>Kugelpotential &phi;(<i class="gr">R</i>)</label><input type="range" id="regler-phik" min="10" max="500" step="10" value="90"><span class="wert" id="wert-phik"></span></div>
-					<div class="auswertung" id="aw-flucht"></div>
-				</div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Anfang <i class="gr">r</i><sub>A</sub></div><div class="kn">
+					<button type="button" id="fWeit" title="Probeladung kommt aus dem Unendlichen" aria-label="r_A unendlich"><span style="font-size:1.35rem;line-height:1">∞</span></button>
+				</div></div>
+				<div class="gr"><div class="gt">Werte</div><div class="kn"><span class="wert" id="fWerte"></span></div></div>
 			</div>
 		</div>
-	</div>
+	</section>
 
+	<!-- Modus Berg -->
+	<section class="tcb" data-teil="berg">
+		<div class="tcb-title">Potentialberg: Alphateilchen fliegt auf einen Kern zu</div>
+		<div class="tcb-body">
+			<p class="auftrag">Stellen Sie die Energie ein und starten Sie. Wo schneidet die Gesamtenergie den Potentialberg?</p>
+			<div class="leinwand"><canvas class="sim" id="cb"></canvas></div>
+			<div class="werte">
+				<div class="karte haupt"><div class="klein">kleinster Abstand <i class="gr">r</i><sub>min</sub></div><div class="gross" id="bR">?</div></div>
+				<div class="karte"><div class="klein"><i class="gr">E</i><sub>kin</sub> jetzt</div><div class="gross" id="bK"></div></div>
+				<div class="karte"><div class="klein"><i class="gr">E</i><sub>pot</sub> jetzt</div><div class="gross" id="bP"></div></div>
+			</div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Kern</div><div class="kn" id="bKern"></div></div>
+				<div class="gr"><div class="gt">Energie des Alphateilchens</div><div class="kn">
+					<input type="range" id="bE" min="1" max="10" step="0.1" value="7.7" aria-label="Energie in MeV"><span class="wert" id="bEw"></span>
+				</div></div>
+				<div class="gr"><div class="gt">Flug</div><div class="kn">
+					<button type="button" class="haupt" id="bStart" title="Start" aria-label="Start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg></button>
+				</div></div>
+			</div>
+			<div class="hinweis" id="bHinweis"></div>
+		</div>
+	</section>
+
+	<!-- Modus Topf -->
+	<section class="tcb" data-teil="topf">
+		<div class="tcb-title">Potentialtopf: Start von der Erde</div>
+		<div class="tcb-body">
+			<p class="auftrag">Wählen Sie die Startgeschwindigkeit und starten Sie. Wann verlässt der Körper den Potentialtopf für immer?</p>
+			<div class="leinwand"><canvas class="sim" id="ct"></canvas></div>
+			<div class="werte">
+				<div class="karte haupt"><div class="klein" id="tRL">Ergebnis</div><div class="gross" id="tR">?</div></div>
+				<div class="karte"><div class="klein">Gesamtenergie pro kg</div><div class="gross" id="tG"></div></div>
+				<div class="karte"><div class="klein">Geschwindigkeit jetzt</div><div class="gross" id="tV"></div></div>
+			</div>
+			<div class="gruppen">
+				<div class="gr"><div class="gt">Startgeschwindigkeit</div><div class="kn">
+					<input type="range" id="tS" min="1" max="20" step="0.1" value="8" aria-label="Startgeschwindigkeit in km/s"><span class="wert" id="tSw"></span>
+				</div></div>
+				<div class="gr"><div class="gt">Flug</div><div class="kn">
+					<button type="button" class="haupt" id="tStart" title="Start" aria-label="Start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg></button>
+				</div></div>
+			</div>
+			<div class="hinweis" id="tHinweis"></div>
+		</div>
+	</section>
 	<div class="fuss-autor">Kast</div>
 </div>
-
 <script>
 "use strict";
-const K = window.SimKit, P = window.SimPlus;
-const KC = 8.988e9, G = 6.674e-11, ME = 5.972e24, RE = 6.371e6, E_LAD = 1.602e-19;
-
-/* Kugel: Q in nC, R, r in cm; Planet: M in Erdmassen, R, r in Erdradien */
-const zustand = { groesse: "F", Q: 20, Rk: 10, r1: 10, r2: 40, M: 1, Rp: 1, p1: 1, p2: 4, Ealpha: 5.5, Z: 79, phiK: 90, modus: "erkunden" };
-const aufgabe = { nr: 0, typ: 0, soll: 0 };
-
-function kugel(r) {                           /* r in cm; aussen Punktladung, innen feldfrei */
-	const Q = zustand.Q * 1e-9, q = 1e-9, R = zustand.Rk / 100, x = Math.max(r / 100, 1e-6);
-	const aussen = x >= R;
-	const E = aussen ? KC * Q / (x * x) : 0;
-	const phi = aussen ? KC * Q / x : KC * Q / R;
-	return { F: q * E * 1e6, E: E / 1000, Ep: q * phi * 1e6, phi: phi / 1000 };   /* muN, kV/m, muJ, kV */
+/* ---------- Hilfen ---------- */
+const $ = id => document.getElementById(id);
+const komma = (x, n) => x.toFixed(n).replace(".", ",");
+const SYMBOL = {
+	kopieren: '<path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>',
+	teilen: '<path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65A2.92 2.92 0 1 0 18 16.08z"/>',
+	speichern: '<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>',
+	zurueck: '<path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>'
+};
+function symbolKnopf(name, titel, aktion) {
+	const b = document.createElement("button");
+	b.className = "symbol"; b.type = "button"; b.title = titel; b.setAttribute("aria-label", titel);
+	b.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' + SYMBOL[name] + "</svg>";
+	b.addEventListener("click", aktion); return b;
 }
-function planet(r) {                          /* r in Erdradien; innen homogene Kugel */
-	const M = zustand.M * ME, R = zustand.Rp * RE, x = Math.max(r * RE, 1);
-	const g = x >= R ? G * M / (x * x) : G * M * x / (R * R * R);
-	const phi = x >= R ? -G * M / x : -G * M * (3 * R * R - x * x) / (2 * R * R * R);
-	return { F: g, E: g, Ep: phi / 1e6, phi: phi / 1e6 };                          /* N, N/kg, MJ, MJ/kg */
+function meldung(t) {
+	let m = document.querySelector(".meldung");
+	if (!m) { m = document.createElement("div"); m.className = "meldung"; document.body.appendChild(m); }
+	m.textContent = t; m.classList.add("zeigen");
+	clearTimeout(meldung.uhr); meldung.uhr = setTimeout(() => m.classList.remove("zeigen"), 2200);
 }
-const EINHEIT = { kugel: { F: ["F", "µN"], E: ["E", "kV/m"], Ep: ["E_pot", "µJ"], phi: ["φ", "kV"] }, planet: { F: ["F_G", "N"], E: ["g", "N/kg"], Ep: ["E_pot", "MJ"], phi: ["φ_G", "MJ/kg"] } };
+/* Bild fürs Heft: Canvas, darunter die Wertkarten als Zeile und ein eigener Streifen mit "Kast" */
+function heftBild(c, zeilen) {
+	const s = c.width / c.clientWidth, g = Math.round(15 * s), zh = Math.round(24 * s), rand = Math.round(12 * s);
+	const H = c.height + zeilen.length * zh + rand + Math.round(26 * s);
+	const k = document.createElement("canvas"); k.width = c.width; k.height = H;
+	const x = k.getContext("2d");
+	x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, H); x.drawImage(c, 0, 0);
+	x.fillStyle = "#111"; x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.textBaseline = "middle";
+	zeilen.forEach((z, i) => x.fillText(z, rand, c.height + rand / 2 + (i + 0.5) * zh));
+	x.fillStyle = "#888"; x.textAlign = "right"; x.fillText("Kast", k.width - rand, H - Math.round(13 * s));
+	return k;
+}
+function bildLeiste(behaelter, erzeuger, dateiname, vorne) {
+	const l = document.createElement("div"); l.className = "bildleiste";
+	(vorne || []).forEach(k => l.appendChild(k));
+	const blobVon = () => new Promise(ok => erzeuger().toBlob(ok, "image/png"));
+	if (navigator.clipboard && window.ClipboardItem) l.appendChild(symbolKnopf("kopieren", "Bild kopieren (in OneNote mit Strg+V einfügen)", async () => {
+		try { await navigator.clipboard.write([new ClipboardItem({ "image/png": blobVon() })]); meldung("Bild kopiert: in OneNote mit Strg+V einfügen"); }
+		catch (e) { meldung("Kopieren geht hier nicht, bitte speichern"); }
+	}));
+	let teilenGeht = false;
+	try { teilenGeht = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob()], "x.png", { type: "image/png" })] })); } catch (e) { /* kein Teilen */ }
+	if (teilenGeht) l.appendChild(symbolKnopf("teilen", "Teilen (z. B. an OneNote senden)", async () => {
+		try { const blob = await blobVon(); await navigator.share({ files: [new File([blob], dateiname() + ".png", { type: "image/png" })] }); }
+		catch (e) { if (e && e.name !== "AbortError") meldung("Teilen geht hier nicht, bitte speichern"); }
+	}));
+	l.appendChild(symbolKnopf("speichern", "Bild speichern", async () => {
+		const blob = await blobVon(), a = document.createElement("a");
+		a.href = URL.createObjectURL(blob); a.download = dateiname() + ".png";
+		document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+	}));
+	behaelter.insertBefore(l, behaelter.firstChild);
+}
+/* Canvas an die Breite anpassen; schmal: höher und größere Schrift */
+function bereite(c, verhaeltnisBreit, verhaeltnisSchmal) {
+	const w = c.clientWidth, schmal = w < 520, h = Math.round(w * (schmal ? verhaeltnisSchmal : verhaeltnisBreit));
+	const dpr = Math.max(1, window.devicePixelRatio || 1);
+	c.style.height = h + "px"; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+	const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+	return { x, w, h, schmal, f: schmal ? 13 : 14 };
+}
+const SCHRIFT = () => getComputedStyle(document.body).fontFamily;
+function text(x, t, px, py, groesse, farbe, ausr, basis, kursiv) {
+	x.font = (kursiv ? "italic " : "") + groesse + "px " + SCHRIFT();
+	x.fillStyle = farbe; x.textAlign = ausr || "left"; x.textBaseline = basis || "alphabetic"; x.fillText(t, px, py);
+}
+/* Formelzeichen mit Index: z. B. ("E", "pot") */
+function zeichen(x, haupt, index, px, py, g, farbe, ausr) {
+	x.font = "italic " + g + "px " + SCHRIFT(); const b1 = x.measureText(haupt).width;
+	x.font = Math.round(g * 0.72) + "px " + SCHRIFT(); const b2 = index ? x.measureText(index).width : 0;
+	let x0 = px; if (ausr === "right") x0 = px - b1 - b2; else if (ausr === "center") x0 = px - (b1 + b2) / 2;
+	text(x, haupt, x0, py, g, farbe, "left", "alphabetic", true);
+	if (index) text(x, index, x0 + b1 + 1, py + g * 0.28, Math.round(g * 0.72), farbe, "left", "alphabetic", false);
+	return b1 + b2;
+}
+/* Achsentitel rechtsbündig bei (px, py): Formelzeichen mit Index, dann Einheit; weiß hinterlegt */
+function titelRechts(x, sym, idx, rest, px, py, g, farbe) {
+	x.font = (g - 1) + "px " + SCHRIFT(); const br = x.measureText(rest).width;
+	x.font = "italic " + g + "px " + SCHRIFT(); const bs = x.measureText(sym).width;
+	x.font = Math.round(g * 0.72) + "px " + SCHRIFT(); const bi = idx ? x.measureText(idx).width + 1 : 0;
+	const ges = br + bs + bi;
+	x.fillStyle = "rgba(255,255,255,0.9)"; x.fillRect(px - ges - 3, py - g, ges + 6, g + 6);
+	zeichen(x, sym, idx, px - br, py, g, farbe, "right");
+	text(x, rest, px, py, g - 1, "#111", "right");
+}
+function titelLinks(x, sym, idx, rest, px, py, g, farbe) {
+	x.font = (g - 1) + "px " + SCHRIFT(); const br = x.measureText(rest).width;
+	x.font = "italic " + g + "px " + SCHRIFT(); const bs = x.measureText(sym).width;
+	x.font = Math.round(g * 0.72) + "px " + SCHRIFT(); const bi = idx ? x.measureText(idx).width + 1 : 0;
+	x.fillStyle = "rgba(255,255,255,0.9)"; x.fillRect(px - 3, py - g, br + bs + bi + 6, g + 6);
+	const w = zeichen(x, sym, idx, px, py, g, farbe);
+	text(x, rest, px + w + 1, py, g - 1, "#111");
+}
+function pfeil(x, x1, y1, x2, y2, farbe, dicke, spitze) {
+	const a = Math.atan2(y2 - y1, x2 - x1), s = spitze || 9;
+	x.strokeStyle = farbe; x.fillStyle = farbe; x.lineWidth = dicke;
+	x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2 - s * 0.8 * Math.cos(a), y2 - s * 0.8 * Math.sin(a)); x.stroke();
+	x.beginPath(); x.moveTo(x2, y2);
+	x.lineTo(x2 - s * Math.cos(a) + s * 0.45 * Math.sin(a), y2 - s * Math.sin(a) - s * 0.45 * Math.cos(a));
+	x.lineTo(x2 - s * Math.cos(a) - s * 0.45 * Math.sin(a), y2 - s * Math.sin(a) + s * 0.45 * Math.cos(a));
+	x.closePath(); x.fill();
+}
+/* Achsenkreuz mit Gitter: r = Rechts-Achse, e = Hochachse */
+function achsen(x, o) {
+	const { L, R, O, U, rmin, rmax, emin, emax, rstep, estep, rlabel, elabel, f, rtext } = o;
+	const px = r => L + (r - rmin) / (rmax - rmin) * (R - L), py = e => U - (e - emin) / (emax - emin) * (U - O);
+	x.lineWidth = 1;
+	for (let r = rmin; r <= rmax + 1e-9; r += rstep) { x.strokeStyle = "#e6e6e6"; x.beginPath(); x.moveTo(px(r), O); x.lineTo(px(r), U); x.stroke(); }
+	for (let e = emin; e <= emax + 1e-9; e += estep) { x.strokeStyle = "#e6e6e6"; x.beginPath(); x.moveTo(L, py(e)); x.lineTo(R, py(e)); x.stroke(); }
+	const y0 = (emin < 0 && emax > 0) ? py(0) : U;
+	pfeil(x, L, y0, R + 14, y0, "#111", 1.4, 8); pfeil(x, L, U, L, O - 14, "#111", 1.4, 8);
+	for (let r = rmin; r <= rmax + 1e-9; r += rstep) { if (r === rmin) continue; x.strokeStyle = "#111"; x.beginPath(); x.moveTo(px(r), y0 - 3); x.lineTo(px(r), y0 + 3); x.stroke();
+		text(x, rtext ? rtext(r) : komma(r, 0), px(r), y0 + 5, f - 1, "#333", "center", "top"); }
+	for (let e = emin; e <= emax + 1e-9; e += estep) { x.strokeStyle = "#111"; x.beginPath(); x.moveTo(L - 3, py(e)); x.lineTo(L + 3, py(e)); x.stroke();
+		text(x, komma(e, Number.isInteger(estep) ? 0 : 1), L - 6, py(e), f - 1, "#333", "right", "middle"); }
+	rlabel(R + 14, y0 - 6); elabel(L + 8, O - 10);
+	return { px, py, y0 };
+}
 
-const cK = document.getElementById("kugel-canvas"), gK = cK.getContext("2d");
-const cP = document.getElementById("planet-canvas"), gP = cP.getContext("2d");
-let WK = 370, HK = 300, WP = 370, HP = 300;
-
-function diagramm(g, W, H, fn, rMax, rR, a, b, einh, yGrenzen, titel) {
-	g.clearRect(0, 0, W, H);
-	const gr = zustand.groesse;
-	const u = P.achsen(g, { dx: 52, dy: 30, dw: W - 66, dh: H - 70, xMin: 0, xMax: rMax, yMin: yGrenzen[0], yMax: yGrenzen[1], xLabel: "r", xEinheit: einh.r, yLabel: einh.y[0], yEinheit: einh.y[1] });
-	P.text(g, titel, W / 2, 14, { ausrichtung: "center", groesse: 13, fett: true, farbe: P.FARBEN.blau });
-	/* Kugelinneres */
-	g.fillStyle = "rgba(0,0,0,0.05)"; g.fillRect(u.xPix(0), u.o.dy, u.xPix(rR) - u.xPix(0), u.o.dh);
-	P.text(g, "R", u.xPix(rR), u.o.dy + u.o.dh - 4, { ausrichtung: "center", groesse: 11, kursiv: true, farbe: "#777" });
-	if (gr === "F") {
-		const lo = Math.min(a, b), hi = Math.max(a, b);
-		g.fillStyle = "rgba(0,0,191,0.15)";
-		g.beginPath(); g.moveTo(u.xPix(lo), u.yPix(0));
-		for (let k = 0; k <= 200; k++) { const r = lo + (hi - lo) * k / 200; g.lineTo(u.xPix(r), u.yPix(Math.max(yGrenzen[0], Math.min(yGrenzen[1], fn(r).F)))); }
-		g.lineTo(u.xPix(hi), u.yPix(0)); g.closePath(); g.fill();
+/* ---------- Modus: Fläche (Kugel Q = 20 nC, Probeladung q = 1,0 nC wie auf dem Blatt) ---------- */
+const K = 8.9875517923e9, QF = 20e-9, qF = 1.0e-9;           // Coulomb-Konstante 1/(4 pi eps0) in Vm/As, Ladungen in C
+const Fmu = rcm => K * QF * qF / Math.pow(rcm / 100, 2) * 1e6;  // Kraft in µN, r in cm
+const Emu = rcm => K * QF * qF / (rcm / 100) * 1e6;             // potentielle Energie in µJ, r in cm
+const fl = { rE: 10, rA: 40, unendlich: false, zieht: null, geo: null };
+function zeichneFlaeche() {
+	const c = $("cf"), b = bereite(c, 0.86, 1.32), x = b.x, f = b.f;
+	x.fillStyle = "#fff"; x.fillRect(0, 0, b.w, b.h);
+	const L = b.schmal ? 40 : 52, R = b.w - (b.schmal ? 36 : 70), szene = b.schmal ? 62 : 74;
+	const hoehe = (b.h - szene - 40) / 2;
+	const oF = szene + 22, uF = oF + hoehe - 30, oE = uF + 72, uE = b.h - 26;
+	const rmax = 100;
+	// oben: Diagramm F(r)
+	const a1 = achsen(x, { L, R, O: oF, U: uF, rmin: 0, rmax, emin: 0, emax: 20, rstep: 10, estep: 5, f,
+		rlabel: (px, py) => titelRechts(x, "r", "", " in cm", px, py - 2, f, "#111"),
+		elabel: (px, py) => titelLinks(x, "F", "", " in µN", px, py + 4, f, "#BF0000") });
+	// unten: Diagramm E_pot(r)
+	const a2 = achsen(x, { L, R, O: oE, U: uE, rmin: 0, rmax, emin: 0, emax: 2.5, rstep: 10, estep: 0.5, f,
+		rlabel: (px, py) => titelRechts(x, "r", "", " in cm", px, py - 2, f, "#111"),
+		elabel: (px, py) => titelLinks(x, "E", "pot", " in µJ", px, py + 4, f, "#E03030") });
+	const rA = fl.unendlich ? rmax : fl.rA, rE = fl.rE;
+	// Fläche
+	x.fillStyle = "rgba(191,0,0,0.16)"; x.beginPath(); x.moveTo(a1.px(rE), a1.py(0));
+	for (let r = rE; r <= rA; r += 0.25) x.lineTo(a1.px(r), a1.py(Math.min(Fmu(r), 21)));
+	x.lineTo(a1.px(rA), a1.py(0)); x.closePath(); x.fill();
+	if (fl.unendlich) { text(x, "bis ∞", a1.px(rmax) - 4, a1.py(0) - 8, f, "#BF0000", "right"); }
+	// Kurven
+	const kurve = (a, fn, top, farbe) => { x.save(); x.beginPath(); x.rect(L, a.py(top) - 2, R - L + 2, a.py(0) - a.py(top) + 4); x.clip();
+		x.strokeStyle = farbe; x.lineWidth = 2.6; x.beginPath(); let erst = true;
+		for (let r = 8; r <= rmax; r += 0.25) { const X = a.px(r), Y = a.py(fn(r)); if (erst) { x.moveTo(X, Y); erst = false; } else x.lineTo(X, Y); } x.stroke(); x.restore(); };
+	kurve(a1, Fmu, 20, "#BF0000"); kurve(a2, Emu, 2.5, "#E03030");
+	// Marken r_E und r_A in beiden Diagrammen
+	const marke = (r, name, farbe) => {
+		x.strokeStyle = farbe; x.lineWidth = 1.2; x.setLineDash([5, 4]);
+		x.beginPath(); x.moveTo(a1.px(r), oF - 4); x.lineTo(a1.px(r), uE); x.stroke(); x.setLineDash([]);
+		const X = a1.px(r), Y = uF + 38;
+		x.fillStyle = "#fff"; x.strokeStyle = farbe; x.lineWidth = 2; x.beginPath(); x.arc(X, Y, 11, 0, 7); x.fill(); x.stroke();
+		zeichen(x, "r", name, X, Y + 4, f - 1, farbe, "center");
+	};
+	marke(rE, "E", "#0000BF"); if (!fl.unendlich) marke(rA, "A", "#0000BF");
+	// Höhenunterschied unten
+	const yE = a2.py(Emu(rE)), yA = fl.unendlich ? a2.py(0) : a2.py(Emu(rA));
+	x.strokeStyle = "#999"; x.lineWidth = 1; x.setLineDash([3, 3]);
+	x.beginPath(); x.moveTo(a2.px(rE), yE); x.lineTo(a2.px(rmax) + 4, yE); x.moveTo(a2.px(rA), yA); x.lineTo(a2.px(rmax) + 4, yA); x.stroke(); x.setLineDash([]);
+	const xk = a2.px(rmax) + (b.schmal ? 14 : 22);
+	pfeil(x, xk, yA, xk, yE, "#BF0000", 2.4, 9);
+	if (!b.schmal) zeichen(x, "W", "", xk + 7, (yA + yE) / 2 + 5, f + 1, "#BF0000");
+	x.fillStyle = "#E03030"; x.beginPath(); x.arc(a2.px(rE), yE, 4.5, 0, 7); x.fill();
+	if (!fl.unendlich) { x.beginPath(); x.arc(a2.px(rA), yA, 4.5, 0, 7); x.fill(); }
+	// Szene: Kugel bei r = 0, Probeladung bei r_A, Ziel bei r_E
+	const ys = szene / 2 + 4, rk = Math.max(13, a1.px(3) - a1.px(0));
+	const gk = x.createRadialGradient(L - rk * 0.35, ys - rk * 0.4, 1, L, ys, rk);
+	gk.addColorStop(0, "#fff"); gk.addColorStop(1, "#8a8a8a"); x.fillStyle = gk; x.beginPath(); x.arc(L, ys, rk, 0, 7); x.fill();
+	x.strokeStyle = "#555"; x.lineWidth = 1; x.stroke();
+	[[-0.45, -0.3], [0.35, -0.45], [0.1, 0.35], [-0.35, 0.35]].forEach(([u, v]) => { const X = L + u * rk, Y = ys + v * rk; x.strokeStyle = "#E03030"; x.lineWidth = 1.6; x.beginPath(); x.moveTo(X - 3, Y); x.lineTo(X + 3, Y); x.moveTo(X, Y - 3); x.lineTo(X, Y + 3); x.stroke(); });
+	zeichen(x, "Q", "", L, ys - rk - 6, f, "#111", "center");
+	x.strokeStyle = "#999"; x.lineWidth = 1.2; x.setLineDash([3, 3]); x.beginPath(); x.arc(a1.px(rE), ys, 7, 0, 7); x.stroke(); x.setLineDash([]);
+	if (fl.unendlich) { pfeil(x, R + 8, ys, a1.px(rE) + 12, ys, "#555", 2, 10); text(x, "aus großer Entfernung", (a1.px(rE) + R) / 2, ys - 10, f - 1, "#555", "center"); }
+	else {
+		const X = a1.px(rA); x.fillStyle = "#F8D0D0"; x.strokeStyle = "#E03030"; x.lineWidth = 1.6; x.beginPath(); x.arc(X, ys, 7, 0, 7); x.fill(); x.stroke();
+		x.beginPath(); x.moveTo(X - 3.5, ys); x.lineTo(X + 3.5, ys); x.moveTo(X, ys - 3.5); x.lineTo(X, ys + 3.5); x.stroke();
+		zeichen(x, "q", "", X, ys - 12, f, "#111", "center");
+		if (X - a1.px(rE) > 40) pfeil(x, X - 12, ys, a1.px(rE) + 12, ys, "#555", 2, 10);
 	}
-	P.kurve(g, u, r => fn(r)[gr], 0.001, rMax, P.FARBEN.rot, { punkte: 500 });
-	for (const [r, n] of [[a, "r₁"], [b, "r₂"]]) {
-		g.save(); g.strokeStyle = "#0000BF"; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(u.xPix(r), u.o.dy); g.lineTo(u.xPix(r), u.o.dy + u.o.dh); g.stroke(); g.restore();
-		P.text(g, n, u.xPix(r) + 3, u.o.dy + 12, { groesse: 11, farbe: P.FARBEN.blau });
+	fl.geo = { a1, L, R, oF, uE, rmax };
+	// Werte
+	const W = Emu(rE) - (fl.unendlich ? 0 : Emu(rA));
+	$("fW").innerHTML = "<i class='gr'>W</i> = " + komma(W, 2) + "&nbsp;µJ";
+	$("fE").textContent = komma(Emu(rE), 2) + " µJ";
+	$("fA").textContent = fl.unendlich ? "0 µJ" : komma(Emu(rA), 2) + " µJ";
+	$("fWerte").innerHTML = "<i class='gr'>r</i><sub>E</sub> = " + komma(rE, 1) + "&nbsp;cm, <i class='gr'>r</i><sub>A</sub> = " + (fl.unendlich ? "∞" : komma(rA, 1) + "&nbsp;cm");
+	$("fWeit").classList.toggle("aktiv", fl.unendlich);
+}
+function flaecheZiehen() {
+	const c = $("cf");
+	const rVon = e => { const g = fl.geo, bx = c.getBoundingClientRect(); const X = e.clientX - bx.left; return (X - g.L) / (g.R - g.L) * g.rmax; };
+	c.addEventListener("pointerdown", e => {
+		const r = rVon(e), dE = Math.abs(r - fl.rE), dA = fl.unendlich ? 1e9 : Math.abs(r - fl.rA);
+		fl.zieht = dE <= dA ? "E" : "A"; if (fl.zieht === "A" && fl.unendlich) fl.zieht = "E";
+		c.setPointerCapture(e.pointerId); bewege(e);
+	});
+	const bewege = e => { if (!fl.zieht) return; let r = Math.round(rVon(e) * 2) / 2;
+		if (fl.zieht === "E") fl.rE = Math.max(9.5, Math.min(r, (fl.unendlich ? 95 : fl.rA - 1)));
+		else fl.rA = Math.max(fl.rE + 1, Math.min(r, 100));
+		zeichneFlaeche(); };
+	c.addEventListener("pointermove", bewege);
+	const los = () => { fl.zieht = null; }; c.addEventListener("pointerup", los); c.addEventListener("pointercancel", los);
+	$("fWeit").addEventListener("click", () => { fl.unendlich = !fl.unendlich; if (!fl.unendlich && fl.rA <= fl.rE) fl.rA = Math.min(100, fl.rE + 10); zeichneFlaeche(); });
+}
+
+/* ---------- Modus: Potentialberg (Alphateilchen, Ladung 2e, Kern Ze; e^2/(4 pi eps0) = 1,44 MeV fm) ---------- */
+const KERNE = [{ n: "Gold", z: 79, R: 7.0, s: "Au" }, { n: "Silber", z: 47, R: 5.7, s: "Ag" }, { n: "Aluminium", z: 13, R: 3.6, s: "Al" }];
+const be = { kern: 0, E: 7.7, r: 150, v: 0, laeuft: false, rmin: null, zeit: 0, spur: [] };
+const Ebp = r => 2 * KERNE[be.kern].z * 1.44 / r;   // potentielle Energie in MeV, r in fm
+function zeichneBerg() {
+	const c = $("cb"), b = bereite(c, 0.62, 1.05), x = b.x, f = b.f;
+	x.fillStyle = "#fff"; x.fillRect(0, 0, b.w, b.h);
+	const L = b.schmal ? 40 : 52, R = b.w - (b.schmal ? 30 : 60), szene = b.schmal ? 58 : 66;
+	const a = achsen(x, { L, R, O: szene + 30, U: b.h - 28, rmin: 0, rmax: 150, emin: 0, emax: 30, rstep: b.schmal ? 50 : 25, estep: 5, f,
+		rlabel: (px, py) => titelRechts(x, "r", "", " in fm", px, py - 2, f, "#111"),
+		elabel: (px, py) => titelLinks(x, "E", "", " in MeV", px, py + 4, f, "#111") });
+	const kern = KERNE[be.kern];
+	// Kernradius als graue Zone
+	x.fillStyle = "rgba(128,128,128,0.15)"; x.fillRect(L, a.py(30), a.px(kern.R) - L, a.py(0) - a.py(30));
+	// Potentialberg
+	x.save(); x.beginPath(); x.rect(L, a.py(30), R - L, a.py(0) - a.py(30)); x.clip();
+	x.strokeStyle = "#E03030"; x.lineWidth = 2.6; x.beginPath();
+	for (let r = kern.R; r <= 150; r += 0.25) { const X = a.px(r), Y = a.py(Ebp(r)); r === kern.R ? x.moveTo(X, Y) : x.lineTo(X, Y); } x.stroke(); x.restore();
+	const lx = a.px(110), ly = a.py(Ebp(110)) - 10; zeichen(x, "E", "pot", lx, ly, f, "#E03030", "center");
+	// Gesamtenergie
+	const yG = a.py(be.E);
+	x.strokeStyle = "#0000BF"; x.lineWidth = 2; x.beginPath(); x.moveTo(L, yG); x.lineTo(R, yG); x.stroke();
+	const w = zeichen(x, "E", "ges", R - 4, yG - 7, f, "#0000BF", "right");
+	// aktuelle Lage: Punkt auf dem Berg und Balken für E_kin
+	if (be.r < 150) {
+		const X = a.px(be.r), Yp = a.py(Ebp(be.r));
+		x.strokeStyle = "#2E8B3A"; x.lineWidth = 6; x.beginPath(); x.moveTo(X, Yp); x.lineTo(X, yG); x.stroke();
+		x.fillStyle = "#E03030"; x.beginPath(); x.arc(X, Yp, 5, 0, 7); x.fill();
 	}
-}
-function grenzenKugel() {
-	const Qm = 40e-9, R = 0.02;
-	const gr = zustand.groesse;
-	const F = { F: [0, 900], E: [0, 900], Ep: [0, 36], phi: [0, 36] };
-	if (zustand.Q < 0) return gr === "F" || gr === "E" ? [-900, 0] : [-36, 0];
-	return F[gr];
-}
-function grenzenPlanet() {
-	const gr = zustand.groesse;
-	return { F: [0, 50], E: [0, 50], Ep: [-200, 0], phi: [-200, 0] }[gr];
-}
-
-function aktualisiere() {
-	const z = zustand;
-	document.getElementById("wert-q").innerHTML = z.Q + "&nbsp;nC";
-	document.getElementById("wert-rk").innerHTML = z.Rk + "&nbsp;cm";
-	document.getElementById("wert-r1").innerHTML = z.r1 + "&nbsp;cm";
-	document.getElementById("wert-r2").innerHTML = z.r2 + "&nbsp;cm";
-	document.getElementById("wert-m").innerHTML = P.de(z.M, 1) + "&nbsp;<i class='gr'>M</i><sub>E</sub>";
-	document.getElementById("wert-rp").innerHTML = P.de(z.Rp, 1) + "&nbsp;<i class='gr'>R</i><sub>E</sub>";
-	document.getElementById("wert-p1").innerHTML = P.de(z.p1, 1) + "&nbsp;<i class='gr'>R</i><sub>E</sub>";
-	document.getElementById("wert-p2").innerHTML = P.de(z.p2, 1) + "&nbsp;<i class='gr'>R</i><sub>E</sub>";
-	const gr = z.groesse;
-	diagramm(gK, WK, HK, kugel, 100, z.Rk, z.r1, z.r2, { r: "cm", y: EINHEIT.kugel[gr] }, grenzenKugel(), "Geladene Kugel");
-	diagramm(gP, WP, HP, planet, 10, z.Rp, z.p1, z.p2, { r: "Erdradien", y: EINHEIT.planet[gr] }, grenzenPlanet(), "Planet");
-	const Wk = (kugel(z.r2).Ep - kugel(z.r1).Ep);
-	document.getElementById("aw-kugel").innerHTML = "&Delta;<i class='gr'>E</i><sub>pot</sub> = <i class='gr'>q</i>(&phi;<sub>2</sub> &minus; &phi;<sub>1</sub>) = " + P.sig(Wk, 3) + "&nbsp;&micro;J<br>&phi;(<i class='gr'>R</i>) = " + P.sig(kugel(z.Rk).phi, 3) + "&nbsp;kV, <i class='gr'>E</i>(<i class='gr'>R</i>) = " + P.sig(kugel(z.Rk).E, 3) + "&nbsp;kV/m";
-	const Wp = (planet(z.p2).Ep - planet(z.p1).Ep);
-	const vFlucht = Math.sqrt(2 * G * z.M * ME / (z.Rp * RE));
-	document.getElementById("aw-planet").innerHTML = "&Delta;<i class='gr'>E</i><sub>pot</sub> = <i class='gr'>m</i>(&phi;<sub>G,2</sub> &minus; &phi;<sub>G,1</sub>) = " + P.sig(Wp, 3) + "&nbsp;MJ<br><i class='gr'>g</i>(<i class='gr'>R</i>) = " + P.sig(planet(z.Rp).E, 3) + "&nbsp;N/kg, Fluchtgeschwindigkeit " + P.sig(vFlucht / 1000, 3) + "&nbsp;km/s";
-	/* Rutherford */
-	document.getElementById("wert-ealpha").innerHTML = P.de(z.Ealpha, 1) + "&nbsp;MeV";
-	const rmin = KC * 2 * z.Z * E_LAD * E_LAD / (z.Ealpha * 1e6 * E_LAD);
-	document.getElementById("aw-rutherford").innerHTML = "Zentraler Sto&szlig;: <i class='gr'>E</i><sub>kin</sub> = <i class='gr'>q</i>&thinsp;&middot;&thinsp;&phi;(<i class='gr'>r</i><sub>min</sub>) &rArr; <i class='gr'>r</i><sub>min</sub> = " + P.sig(rmin * 1e15, 3) + "&nbsp;fm (Kernradius Gold etwa 7&nbsp;fm)";
-	document.getElementById("wert-phik").innerHTML = z.phiK + "&nbsp;kV";
-	const v = Math.sqrt(2 * z.phiK * 1e3 * E_LAD / 9.109e-31);
-	document.getElementById("aw-flucht").innerHTML = "Ein Elektron an der Oberfl&auml;che einer positiv geladenen Kugel braucht mindestens <i class='gr'>E</i><sub>kin</sub> = <i class='gr'>e</i>&thinsp;&middot;&thinsp;&phi;(<i class='gr'>R</i>) = " + z.phiK + "&nbsp;keV, um die Kugel endg&uuml;ltig zu verlassen.<br><span class='naeherung'>Klassisch w&auml;re das <i class='gr'>v</i> = " + P.sig(v / 1000, 3) + "&nbsp;km/s" + (v > 3e7 ? "; dieser Wert liegt &uuml;ber 0,1&thinsp;<i class='gr'>c</i>, relativistisch rechnen!" : "") + "</span>";
-}
-
-K.bindeKnopfgruppe("groesse-knoepfe", w => zustand.groesse = w, aktualisiere);
-K.bindeKnopfgruppe("kern-knoepfe", w => zustand.Z = +w, aktualisiere);
-[["regler-q", "Q"], ["regler-rk", "Rk"], ["regler-r1", "r1"], ["regler-r2", "r2"], ["regler-m", "M"], ["regler-rp", "Rp"], ["regler-p1", "p1"], ["regler-p2", "p2"], ["regler-ealpha", "Ealpha"], ["regler-phik", "phiK"]]
-	.forEach(([id, key]) => document.getElementById(id).addEventListener("input", ev => { zustand[key] = parseFloat(ev.target.value); if (key === "Q" && zustand.Q === 0) zustand.Q = 1; aktualisiere(); }));
-
-/* ---------- Aufgaben ---------- */
-const AUFGABEN = [
-	() => {
-		const Q = P.runde(P.zufall(10, 40), 1), r1 = P.runde(P.zufall(10, 25), 1), r2 = P.runde(P.zufall(40, 90), 5);
-		const W = KC * Q * 1e-9 * 1e-9 * (1 / (r1 / 100) - 1 / (r2 / 100)) * 1e6;
-		return { titel: "Aufgabe: Arbeit im Radialfeld", text: "Eine Kugel tr&auml;gt <i class='gr'>Q</i> = " + Q + "&nbsp;nC. Eine Probeladung <i class='gr'>q</i> = 1,0&nbsp;nC wird von <i class='gr'>r</i><sub>1</sub> = " + r1 + "&nbsp;cm nach <i class='gr'>r</i><sub>2</sub> = " + r2 + "&nbsp;cm gebracht. Welche Arbeit verrichtet das Feld an der Probeladung?", label: "<i class='gr'>W</i> =", einheit: "&micro;J", soll: W,
-			t1: "Die Arbeit des Feldes ist gleich der Abnahme der potentiellen Energie.", t2: "<i class='gr'>W</i> = <i class='gr'>q</i>&thinsp;<i class='gr'>Q</i>/(4&pi;&epsilon;<sub>0</sub>)&thinsp;&middot;&thinsp;(1/<i class='gr'>r</i><sub>1</sub> &minus; 1/<i class='gr'>r</i><sub>2</sub>)", t3: "<i class='gr'>W</i> &asymp; " + P.sig(W, 3) + "&nbsp;&micro;J" };
-	},
-	() => {
-		const M = P.runde(P.zufall(0.1, 5), 0.1), R = P.runde(P.zufall(0.3, 2.5), 0.1);
-		const v = Math.sqrt(2 * G * M * ME / (R * RE)) / 1000;
-		return { titel: "Aufgabe: Fluchtgeschwindigkeit", text: "Ein Planet hat die " + P.de(M, 1) + "-fache Erdmasse und den " + P.de(R, 1) + "-fachen Erdradius. Berechnen Sie die Fluchtgeschwindigkeit von seiner Oberfl&auml;che (ohne Atmosph&auml;re und Rotation). <i class='gr'>M</i><sub>E</sub> = 5,97&middot;10<sup>24</sup>&nbsp;kg, <i class='gr'>R</i><sub>E</sub> = 6371&nbsp;km.", label: "<i class='gr'>v</i> =", einheit: "km/s", soll: v,
-			t1: "Die kinetische Energie muss die Differenz der potentiellen Energie bis ins Unendliche aufbringen.", t2: "&frac12;&thinsp;<i class='gr'>m</i><i class='gr'>v</i><sup>2</sup> = <i class='gr'>G</i><i class='gr'>m</i><i class='gr'>M</i>/<i class='gr'>R</i>", t3: "<i class='gr'>v</i> &asymp; " + P.sig(v, 3) + "&nbsp;km/s" };
-	},
-	() => {
-		const E = P.runde(P.zufall(3, 9), 0.1), Z = [79, 47, 29][Math.floor(Math.random() * 3)];
-		const r = KC * 2 * Z * E_LAD / (E * 1e6) * 1e15;
-		const name = { 79: "Gold (Z = 79)", 47: "Silber (Z = 47)", 29: "Kupfer (Z = 29)" }[Z];
-		return { titel: "Aufgabe: Rutherford-Streuung", text: "Ein &alpha;-Teilchen mit <i class='gr'>E</i><sub>kin</sub> = " + P.de(E, 1) + "&nbsp;MeV fliegt zentral auf einen Kern von " + name + " zu. Berechnen Sie den kleinsten Abstand.", label: "<i class='gr'>r</i><sub>min</sub> =", einheit: "fm", soll: r,
-			t1: "Im Umkehrpunkt ist die gesamte kinetische Energie in potentielle Energie umgewandelt.", t2: "<i class='gr'>E</i><sub>kin</sub> = 2<i class='gr'>e</i>&thinsp;&middot;&thinsp;<i class='gr'>Z</i><i class='gr'>e</i>/(4&pi;&epsilon;<sub>0</sub><i class='gr'>r</i><sub>min</sub>); 1&nbsp;MeV = 1,602&middot;10<sup>&minus;13</sup>&nbsp;J", t3: "<i class='gr'>r</i><sub>min</sub> &asymp; " + P.sig(r, 3) + "&nbsp;fm" };
+	if (be.rmin !== null) {
+		const X = a.px(be.rmin);
+		x.strokeStyle = "#0000BF"; x.lineWidth = 1.2; x.setLineDash([4, 3]); x.beginPath(); x.moveTo(X, yG); x.lineTo(X, a.py(0)); x.stroke(); x.setLineDash([]);
+		x.fillStyle = "#0000BF"; x.beginPath(); x.arc(X, yG, 5, 0, 7); x.fill();
+		zeichen(x, "r", "min", X + 6, a.py(0) - 8, f, "#0000BF");
 	}
-];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	document.getElementById("box-szenarien").classList.toggle("verborgen", aufg);
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	const a = AUFGABEN[(aufgabe.nr - 1) % AUFGABEN.length]();
-	aufgabe.soll = a.soll;
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-titel").textContent = a.titel;
-	document.getElementById("aufgabe-text").innerHTML = a.text;
-	document.getElementById("antwort-label").innerHTML = a.label;
-	document.getElementById("antwort-einheit").innerHTML = a.einheit;
-	document.getElementById("tipp1").innerHTML = a.t1; document.getElementById("tipp2").innerHTML = a.t2; document.getElementById("tipp3").innerHTML = a.t3;
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
+	// Szene: Kern bei r = 0, Alphateilchen auf der r-Achse
+	const ys = szene / 2 + 6;
+	x.strokeStyle = "#ccc"; x.lineWidth = 1; x.beginPath(); x.moveTo(L, ys); x.lineTo(R, ys); x.stroke();
+	x.fillStyle = "#F8D0D0"; x.strokeStyle = "#E03030"; x.lineWidth = 1.6; x.beginPath(); x.arc(L, ys, 13, 0, 7); x.fill(); x.stroke();
+	text(x, kern.s, L, ys + 1, f - 2, "#BF0000", "center", "middle");
+	be.spur.forEach((r, i) => { x.fillStyle = "rgba(46,139,58," + (0.08 + 0.3 * i / be.spur.length) + ")"; x.beginPath(); x.arc(a.px(r), ys, 3, 0, 7); x.fill(); });
+	const X = a.px(Math.min(be.r, 150));
+	[[-4, -4, 1], [4, 4, 1], [4, -4, 0], [-4, 4, 0]].forEach(([u, v, p]) => { x.fillStyle = p ? "#F8D0D0" : "#ddd"; x.strokeStyle = p ? "#E03030" : "#888"; x.lineWidth = 1; x.beginPath(); x.arc(X + u, ys + v, 4.6, 0, 7); x.fill(); x.stroke(); });
+	text(x, "α", X, ys - 14, f, "#111", "center");
+	// Werte
+	$("bK").textContent = komma(Math.max(0, be.E - (be.r < 150 ? Ebp(be.r) : 0)), 2) + " MeV";
+	$("bP").textContent = komma(be.r < 150 ? Ebp(be.r) : 0, 2) + " MeV";
+	$("bR").innerHTML = be.rmin === null ? "?" : komma(be.rmin, 1) + "&nbsp;fm";
+	$("bEw").textContent = komma(be.E, 1) + " MeV";
 }
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, aufgabe.soll, 0.03, 0.1);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Richtig."); return; }
-	if (art === "knapp") { P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Pr&uuml;fen Sie Rundung und Konstanten."); return; }
-	const v = ein / aufgabe.soll;
-	if (Math.abs(v - Math.SQRT2) < 0.05 || Math.abs(v - 1 / Math.SQRT2) < 0.03) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor &radic;2: Haben Sie den Faktor &frac12; bei der kinetischen Energie beachtet?");
-	else if (Math.abs(v - 2) < 0.1 || Math.abs(v - 0.5) < 0.03) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Pr&uuml;fen Sie die Ladung des &alpha;-Teilchens oder den Faktor &frac12;.");
-	else if (v > 100 || v < 0.01) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten (cm, nC, MeV, fm).");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Stellen Sie die Energiebilanz sorgf&auml;ltig auf.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: " + document.getElementById("tipp3").innerHTML);
-});
+function bergStart() {
+	be.r = 150; be.v = -Math.sqrt(2 * Math.max(be.E - Ebp(150), 0.01)); be.rmin = null; be.spur = []; be.laeuft = true; be.zeit = performance.now(); be.umgekehrt = false;
+	$("bHinweis").textContent = ""; $("bHinweis").className = "hinweis";
+	const kern = KERNE[be.kern], tmass = 150 / Math.sqrt(2 * be.E) / 1.6;   // Zeitmaß: Anflug dauert etwa 1,6 s
+	let alt = performance.now(); const nr = be.nr = (be.nr || 0) + 1;   // nur der neueste Flug läuft
+	const schritt = jetzt => {
+		if (!be.laeuft || nr !== be.nr) return;
+		let dt = Math.max(0, Math.min(0.05, (jetzt - alt) / 1000)) * tmass; alt = jetzt;
+		const n = 200, h = dt / n;
+		for (let i = 0; i < n; i++) { const acc = 2 * kern.z * 1.44 / (be.r * be.r); be.v += acc * h; be.r += be.v * h;
+			if (be.v > 0 && !be.umgekehrt) { be.umgekehrt = true; be.rmin = 2 * kern.z * 1.44 / be.E; }
+			if (be.r <= kern.R) { be.r = kern.R; be.laeuft = false; be.rmin = kern.R;
+				$("bHinweis").textContent = "Das Alphateilchen erreicht den Kern. Dort reicht das Modell der Coulombkraft nicht mehr aus."; $("bHinweis").className = "hinweis warn"; break; } }
+		if (be.spur.length === 0 || Math.abs(be.spur[be.spur.length - 1] - be.r) > 3) { be.spur.push(be.r); if (be.spur.length > 40) be.spur.shift(); }
+		if (be.r >= 150 && be.umgekehrt) { be.r = 150; be.laeuft = false; }
+		zeichneBerg(); if (be.laeuft) requestAnimationFrame(schritt);
+	};
+	requestAnimationFrame(schritt);
+}
 
-function layout() {
-	({ W: WK, H: HK } = K.skaliereCanvas(cK, gK, 0.85));
-	({ W: WP, H: HP } = K.skaliereCanvas(cP, gP, 0.85));
-	aktualisiere();
+/* ---------- Modus: Potentialtopf (Erde, r in Erdradien, Energie pro kg in MJ/kg; G*M/R = 62,56 (km/s)^2) ---------- */
+const GMR = 6.674e-11 * 5.972e24 / 6.371e6 / 1e6;     // in MJ/kg bzw. (km/s)^2
+const to = { v0: 8, r: 1, v: 0, laeuft: false, ergebnis: null, spur: [], rmax: 10 };
+const phiG = r => -GMR / r;
+function zeichneTopf() {
+	const c = $("ct"), b = bereite(c, 0.62, 1.05), x = b.x, f = b.f;
+	x.fillStyle = "#fff"; x.fillRect(0, 0, b.w, b.h);
+	const L = b.schmal ? 40 : 52, R = b.w - (b.schmal ? 30 : 60), szene = b.schmal ? 58 : 66;
+	const Eg = to.v0 * to.v0 / 2 - GMR;
+	const a = achsen(x, { L, R, O: szene + 30, U: b.h - 28, rmin: 0, rmax: to.rmax, emin: -70, emax: 70, rstep: 1, estep: 20, f,
+		rtext: r => (b.schmal && r % 2) ? "" : komma(r, 0),
+		rlabel: (px, py) => titelRechts(x, "r", "", " in Erdradien", px, py - 2, f, "#111"),
+		elabel: (px, py) => titelLinks(x, "E", "", " pro kg in MJ/kg", px, py + 4, f, "#111") });
+	x.fillStyle = "rgba(48,80,224,0.10)"; x.fillRect(L, a.py(70), a.px(1) - L, a.py(-70) - a.py(70));
+	x.save(); x.beginPath(); x.rect(L, a.py(70), R - L, a.py(-70) - a.py(70)); x.clip();
+	x.strokeStyle = "#3050E0"; x.lineWidth = 2.6; x.beginPath();
+	for (let r = 1; r <= to.rmax; r += 0.02) { const X = a.px(r), Y = a.py(phiG(r)); r === 1 ? x.moveTo(X, Y) : x.lineTo(X, Y); } x.stroke();
+	// Gesamtenergie
+	const yG = a.py(Math.min(Eg, 69));
+	x.strokeStyle = "#0000BF"; x.lineWidth = 2; x.beginPath(); x.moveTo(a.px(1), yG); x.lineTo(R, yG); x.stroke(); x.restore();
+	zeichen(x, "E", "ges", R - 4, yG - 7, f, "#0000BF", "right");
+	const lx = a.px(to.rmax * 0.62); zeichen(x, "E", "pot", lx, a.py(phiG(to.rmax * 0.62)) + f + 6, f, "#3050E0", "center");
+	if (to.r > 1.0001 || to.laeuft) {
+		const X = a.px(Math.min(to.r, to.rmax)), Yp = a.py(phiG(Math.min(to.r, to.rmax)));
+		x.strokeStyle = "#2E8B3A"; x.lineWidth = 6; x.beginPath(); x.moveTo(X, Yp); x.lineTo(X, Math.max(yG, a.py(69))); x.stroke();
+		x.fillStyle = "#3050E0"; x.beginPath(); x.arc(X, Yp, 5, 0, 7); x.fill();
+	}
+	// Szene: Erde und Körper
+	const ys = szene / 2 + 6, re = a.px(1) - a.px(0);
+	x.strokeStyle = "#ccc"; x.lineWidth = 1; x.beginPath(); x.moveTo(L, ys); x.lineTo(R, ys); x.stroke();
+	const gE = x.createRadialGradient(L - re * 0.3, ys - re * 0.3, 1, L, ys, re); gE.addColorStop(0, "#7fb2ff"); gE.addColorStop(1, "#1d4fa0");
+	x.fillStyle = gE; x.beginPath(); x.arc(L, ys, Math.min(re, szene / 2 - 2), 0, 7); x.fill();
+	x.fillStyle = "#3f8f3f"; x.beginPath(); x.ellipse(L + re * 0.15, ys - re * 0.2, re * 0.3, re * 0.18, 0.5, 0, 7); x.fill();
+	to.spur.forEach((r, i) => { x.fillStyle = "rgba(46,139,58," + (0.08 + 0.3 * i / to.spur.length) + ")"; x.beginPath(); x.arc(a.px(r), ys, 3, 0, 7); x.fill(); });
+	const X = a.px(Math.min(to.r, to.rmax) ) + (to.r <= 1.0001 ? 6 : 0);
+	x.fillStyle = "#bbb"; x.strokeStyle = "#555"; x.lineWidth = 1; x.beginPath(); x.moveTo(X + 9, ys); x.lineTo(X - 5, ys - 5); x.lineTo(X - 5, ys + 5); x.closePath(); x.fill(); x.stroke();
+	// Werte
+	$("tG").textContent = komma(Eg, 1) + " MJ/kg";
+	$("tV").textContent = komma(Math.abs(to.v), 1) + " km/s";
+	$("tSw").textContent = komma(to.v0, 1) + " km/s";
+	$("tR").innerHTML = to.ergebnis || "?"; $("tRL").textContent = to.ergebnis ? to.ergebnisL : "Ergebnis";
 }
-window.addEventListener("resize", layout);
-SimUI.bildKnopf("btn-kugel-bild", cK, () => "Radialfeld_Kugel_" + zustand.groesse);
-SimUI.bildKnopf("btn-planet-bild", cP, () => "Radialfeld_Planet_" + zustand.groesse);
-SimUI.modusPerLink("modus-knoepfe");
-layout();
-K.nachFontLaden(aktualisiere);
+function topfStart() {
+	to.r = 1; to.v = to.v0; to.spur = []; to.laeuft = true; to.ergebnis = null; to.max = 1;
+	$("tHinweis").textContent = "";
+	const Eg = to.v0 * to.v0 / 2 - GMR; let alt = performance.now(); const nr = to.nr = (to.nr || 0) + 1;   // nur der neueste Flug läuft
+	const tmass = 0.9;   // Erdradien pro Sekunde Bildschirmzeit bei 1 km/s (nur Darstellung)
+	const schritt = jetzt => {
+		if (!to.laeuft || nr !== to.nr) return;
+		const dt = Math.max(0, Math.min(0.05, (jetzt - alt) / 1000)) * tmass; alt = jetzt;
+		const n = 200, h = dt / n;
+		for (let i = 0; i < n; i++) { to.v += -GMR / (to.r * to.r) * h; to.r += to.v * h; to.max = Math.max(to.max, to.r);
+			if (to.r <= 1 && to.v < 0) { to.r = 1; to.laeuft = false; to.v = 0; break; } }
+		if (to.spur.length === 0 || Math.abs(to.spur[to.spur.length - 1] - to.r) > 0.15) { to.spur.push(to.r); if (to.spur.length > 40) to.spur.shift(); }
+		if (to.r >= to.rmax) { to.r = to.rmax; to.laeuft = false; }
+		if (!to.laeuft) {
+			if (Eg >= 0 && to.r >= to.rmax) { to.ergebnisL = "entkommt, weit weg noch"; to.ergebnis = "<i class='gr'>v</i><sub>∞</sub> = " + komma(Math.sqrt(2 * Eg), 1) + "&nbsp;km/s"; }
+			else { const rm = GMR / -Eg; to.ergebnisL = "kehrt um bei"; to.ergebnis = "<i class='gr'>r</i> = " + komma(rm, rm < 10 ? 2 : 1) + "&nbsp;<i class='gr'>R</i>";
+				if (rm > to.rmax) $("tHinweis").textContent = "Der Umkehrpunkt liegt außerhalb des Bildes. Der Körper fällt später zurück."; }
+		}
+		zeichneTopf(); if (to.laeuft) requestAnimationFrame(schritt);
+	};
+	requestAnimationFrame(schritt);
+}
+
+/* ---------- Aufbau, Modus per Link ---------- */
+const TEILE = ["flaeche", "berg", "topf"];
+function zeigeTeil(t) {
+	document.querySelectorAll("section[data-teil]").forEach(s => s.hidden = s.dataset.teil !== t);
+	document.querySelectorAll("#modusleiste button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === t));
+	aktuell = t; neuZeichnen();
+}
+let aktuell = "flaeche";
+function neuZeichnen() { if (aktuell === "flaeche") zeichneFlaeche(); else if (aktuell === "berg") zeichneBerg(); else zeichneTopf(); }
+(function start() {
+	const p = new URLSearchParams(location.search), m = (p.get("modus") || "").split(",").filter(x => TEILE.includes(x));
+	const erlaubt = m.length ? m : TEILE;
+	document.querySelectorAll("#modusleiste button").forEach(b => { b.hidden = !erlaubt.includes(b.dataset.modus); b.addEventListener("click", () => zeigeTeil(b.dataset.modus)); });
+	if (erlaubt.length === 1) $("modusleiste").hidden = true;
+	KERNE.forEach((k, i) => { const b = document.createElement("button"); b.type = "button"; b.textContent = k.s; b.title = k.n + " (Z = " + k.z + ")"; b.setAttribute("aria-label", k.n);
+		b.addEventListener("click", () => { be.kern = i; be.laeuft = false; be.r = 150; be.rmin = null; be.spur = []; $("bHinweis").textContent = "";
+			document.querySelectorAll("#bKern button").forEach((x, j) => x.classList.toggle("aktiv", j === i)); zeichneBerg(); });
+		if (i === 0) b.classList.add("aktiv"); $("bKern").appendChild(b); });
+	$("bE").addEventListener("input", e => { be.E = +e.target.value; be.laeuft = false; be.r = 150; be.rmin = null; be.spur = []; $("bHinweis").textContent = ""; zeichneBerg(); });
+	$("bStart").addEventListener("click", bergStart);
+	$("tS").addEventListener("input", e => { to.v0 = +e.target.value; to.laeuft = false; to.r = 1; to.v = 0; to.ergebnis = null; to.spur = []; $("tHinweis").textContent = ""; zeichneTopf(); });
+	$("tStart").addEventListener("click", topfStart);
+	flaecheZiehen();
+	const zur = (fn) => symbolKnopf("zurueck", "Zurücksetzen", fn);
+	bildLeiste($("cf").parentNode, () => heftBild($("cf"), ["r_E = " + komma(fl.rE, 1) + " cm, r_A = " + (fl.unendlich ? "unendlich" : komma(fl.rA, 1) + " cm") + ":  W = " + komma(Emu(fl.rE) - (fl.unendlich ? 0 : Emu(fl.rA)), 2) + " µJ"]),
+		() => "Radialfeld_Arbeit_rE" + komma(fl.rE, 1) + "cm_rA" + (fl.unendlich ? "unendlich" : komma(fl.rA, 1) + "cm"),
+		[zur(() => { fl.rE = 10; fl.rA = 40; fl.unendlich = false; zeichneFlaeche(); })]);
+	bildLeiste($("cb").parentNode, () => heftBild($("cb"), [KERNE[be.kern].n + ", E_kin = " + komma(be.E, 1) + " MeV:  r_min = " + (be.rmin === null ? "noch nicht gemessen" : komma(be.rmin, 1) + " fm")]),
+		() => "Potentialberg_" + KERNE[be.kern].n + "_" + komma(be.E, 1) + "MeV",
+		[zur(() => { be.laeuft = false; be.r = 150; be.rmin = null; be.spur = []; $("bHinweis").textContent = ""; zeichneBerg(); })]);
+	bildLeiste($("ct").parentNode, () => heftBild($("ct"), ["v_0 = " + komma(to.v0, 1) + " km/s:  " + (to.ergebnis ? to.ergebnisL + " " + to.ergebnis.replace(/<[^>]+>/g, "").replace("&nbsp;", " ") : "noch nicht gestartet")]),
+		() => "Potentialtopf_Erde_v0_" + komma(to.v0, 1) + "kms",
+		[zur(() => { to.laeuft = false; to.r = 1; to.v = 0; to.ergebnis = null; to.spur = []; $("tHinweis").textContent = ""; zeichneTopf(); })]);
+	window.addEventListener("resize", neuZeichnen);
+	zeigeTeil(erlaubt[0]);
+	if (document.fonts && document.fonts.ready) document.fonts.ready.then(neuZeichnen);
+})();
 </script>
 </body>
 </html>
