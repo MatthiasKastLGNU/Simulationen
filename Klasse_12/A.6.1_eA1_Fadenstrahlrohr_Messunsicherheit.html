@@ -1827,6 +1827,7 @@ const tabelle = new P.Messtabelle("messtabelle-koerper");
 
 function zeichneRohr(g, W, H, mitMarken) {
 	g.clearRect(0, 0, W, H);
+	if (H < 80 || W < 80) return;                            /* Bild noch nicht ausgelegt */
 	const s = (H - 40) / 20;                                  /* px pro cm */
 	const cx = W / 2, cy = H / 2 + 6;
 	geo = { s, cx, cy };
