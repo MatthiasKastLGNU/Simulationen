@@ -211,7 +211,7 @@ footer { margin-top: 30px; color: var(--grau); font-size: 0.8em; text-align: cen
 	</nav>
 
 	<main id="liste"></main>
-	<footer>Simulationen für den Physikunterricht · <a href="https://github.com/MatthiasKastLGNU/Simulationen" style="color:inherit">Quelltext auf GitHub</a></footer>
+	<footer>Simulationen für den Physikunterricht</footer>
 </div>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="qrtitel">
@@ -311,7 +311,8 @@ function chipsBauen() {
 // Niveau-Filter (gA/eA): gA blendet eA-Simulationen aus, eA blendet reine gA-Fassungen aus; gemeinsame bleiben
 let niveau = /^(gA|eA)$/.test(param.get('niveau') || '') ? param.get('niveau') : '';
 function niveauBauen() {
-	const hatNiveau = DATEN.sims.some(s => (!aktiv || s.k === aktiv) && s.niveau);
+	/* nur bei einer gewählten Klasse, die überhaupt gA/eA kennt (nicht bei „Alle“, nicht bei Klasse 9/10) */
+	const hatNiveau = !!aktiv && DATEN.sims.some(s => s.k === aktiv && s.niveau);
 	$('niveaugruppe').hidden = !hatNiveau;
 	if (!hatNiveau) { niveau = ''; return; }
 	const c = $('niveauchips');
