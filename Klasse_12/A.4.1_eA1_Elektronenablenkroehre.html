@@ -1206,6 +1206,40 @@ window.SimUI = (function () {
 })();
 	</script>
 
+
+<style>
+/* Laborauftrag „Zielschießen“ (Kast 2026-11-04) */
+[hidden] { display: none !important; }  /* sonst schlägt .knopfleiste button das hidden-Attribut */
+:root { --gold: #C8A000; }
+.spielkopf { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-bottom: 0.4rem; }
+.sp-stand { flex: 1 1 14rem; }
+.sp-sterne { margin-left: auto; white-space: nowrap; }
+.kreise { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; vertical-align: middle; }
+.kreise i { width: 0.95rem; height: 0.95rem; border-radius: 50%; border: 1.5px solid #9AA3AD; background: #fff; display: inline-block; box-sizing: border-box; }
+.kreise i.jetzt { border-color: var(--blue-frame, #0000BF); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 6px var(--blue-title, #C9C9F2); }
+.kreise i.ja { background: #2E7D32; border-color: #1B5E20; }
+.kreise i.nein { background: #C62828; border-color: #7F1515; }
+.sterne { font-size: 1.35rem; letter-spacing: 0.12rem; color: var(--gold); white-space: nowrap; }
+.sterne .leer { color: #D8D8D8; }
+.sterne .voll { display: inline-block; }
+.sterne .voll.neu { animation: sternrein 0.65s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes sternrein { 0% { transform: scale(0) rotate(-140deg); opacity: 0; } 60% { transform: scale(1.9) rotate(12deg); opacity: 1; text-shadow: 0 0 14px #FFD34D; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.jubel { position: fixed; z-index: 1600; pointer-events: none; transform: translate(-50%, -100%); font-weight: bold; color: #8A5A00; background: #FFF6D6; border: 2px solid var(--gold); border-radius: 999px; padding: 0.1rem 0.65rem; font-size: 1rem; white-space: nowrap; box-shadow: 0 3px 10px rgba(200,160,0,0.35); animation: jubel 1.7s ease-out forwards; }
+.jubel.gross { font-size: 1.4rem; padding: 0.2rem 1rem; background: #FFE98A; }
+@keyframes jubel { 0% { opacity: 0; transform: translate(-50%, -60%) scale(0.5); } 14% { opacity: 1; transform: translate(-50%, -140%) scale(1.2); } 70% { opacity: 1; transform: translate(-50%, -175%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -230%) scale(0.95); } }
+.funke { position: fixed; z-index: 1500; pointer-events: none; font-size: 22px; color: var(--gold); animation: funke 1.1s ease-out forwards; }
+@keyframes funke { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(160deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sterne .voll.neu, .jubel { animation-duration: 0.01s; } }
+.sp-schritt { margin: 0.5rem 0 0.2rem; font-weight: bold; color: var(--green-frame); }
+.sp-gegeben { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.3rem 0 0.5rem; }
+.sp-chip { border: 1.5px solid #C8CCF0; background: #FBFBFF; border-radius: 999px; padding: 0.1rem 0.7rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sp-chip.ziel { border-color: #E3C25A; background: #FFF9E3; }
+#spiel .feld { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; margin-right: 0.6rem; }
+#spiel .feld input { font: inherit; width: 5.5em; padding: 0.22rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm; }
+.sp-eingabe { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; }
+.sp-rechenweg { font-size: 0.95rem; line-height: 1.6; margin-top: 0.5rem; }
+.sp-rechenweg:not(:empty) { border-left: 3px solid var(--green-frame); padding: 0.2rem 0 0.2rem 0.7rem; background: var(--green-title, #F5FAF3); }
+</style>
 </head>
 <body>
 <div class="blatt">
@@ -1216,41 +1250,35 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
+	<div class="modusleiste" id="modus-knoepfe">
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
+		<button data-modus="spiel">Laborauftrag</button>
 	</div>
 
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Ablenkspannung aus der Leuchtspur bestimmen</div>
+	<div class="tcb gruen verborgen" id="spiel">
+		<div class="tcb-title">Laborauftrag: Treffen Sie die Zielmarken</div>
 		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Die Elektronen werden mit <i class="gr">U</i><sub>B</sub> = <b id="aufgabe-ub"></b> beschleunigt, der Plattenabstand ist <i class="gr">d</i> = 5,7&nbsp;cm.
-				Die Ablenkspannung ist unbekannt. Klicken Sie Punkte der Spur an und bestimmen Sie <i class="gr">U</i><sub>A</sub>.
-			</p>
-			<div class="antwortzeile">
-				<label for="antwort"><i class="gr">U</i><sub>A</sub> =</label>
-				<input type="number" id="antwort" step="any" placeholder="?"><span>kV</span>
-				<span class="knopfleiste">
-					<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-					<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-					<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-				</span>
+			<div class="spielkopf">
+				<span class="sp-stand">Ziele: <span class="kreise" id="sp-kreise"></span></span>
+				<span class="sp-sterne" id="sp-sterne"></span>
 			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Was lesen Sie ab?</summary>
-				<p class="tipp">W&auml;hlen Sie f&uuml;nf bis acht Punkte der Spur, gut verteilt und m&ouml;glichst weit rechts, wo die Ablenkung gro&szlig; ist. Das Diagramm darunter zeigt <i class="gr">y</i> &uuml;ber <i class="gr">x</i><sup>2</sup>.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehung hilft?</summary>
-				<p class="formelzeile"><span><i class="gr">y</i> = <i class="gr">k</i>&thinsp;&middot;&thinsp;<i class="gr">x</i><sup>2</sup></span><span style="margin-left:1.2em"><i class="gr">k</i> =</span><span class="bruch"><span class="z"><i class="gr">U</i><sub>A</sub></span><span class="n">4&thinsp;&middot;&thinsp;<i class="gr">d</i>&thinsp;&middot;&thinsp;<i class="gr">U</i><sub>B</sub></span></span></p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="formelzeile"><span><i class="gr">U</i><sub>A</sub> = 4&thinsp;&middot;&thinsp;<i class="gr">d</i>&thinsp;&middot;&thinsp;<i class="gr">U</i><sub>B</sub>&thinsp;&middot;&thinsp;<i class="gr">k</i></span></p>
-				<p class="tipp">Rechnen Sie <i class="gr">k</i> in 1/m um, wenn Sie <i class="gr">d</i> in m einsetzen.</p>
-			</details>
+			<p style="margin:0.2rem 0">In dieser Röhre ist der <b>Plattenabstand <i class="gr">d</i> unbekannt</b>. Die Platten reichen wie immer von <i class="gr">x</i> = 0 bis 10&nbsp;cm.</p>
+			<div class="sp-schritt">Schritt 1: Leuchtspur vermessen</div>
+			<p style="margin:0.2rem 0">Die Röhre läuft gerade mit</p>
+			<div class="sp-gegeben"><span class="sp-chip"><i class="gr">U</i><sub>B</sub> = <b id="sp-ubref"></b></span><span class="sp-chip"><i class="gr">U</i><sub>A</sub> = <b id="sp-uaref"></b></span></div>
+			<p style="margin:0.2rem 0">Klicken Sie Punkte der Spur an und bestimmen Sie <i class="gr">d</i> mit dem Diagramm.</p>
+			<div class="sp-schritt">Schritt 2: Zielmarken treffen</div>
+			<p style="margin:0.2rem 0">Für jede Marke ist <i class="gr">U</i><sub>B</sub> fest eingestellt, Sie wählen <i class="gr">U</i><sub>A</sub> (höchstens ±4&nbsp;kV, das Vorzeichen gibt die Polung an). <b>Jede Marke hat nur einen Schuss.</b></p>
+			<div id="sp-ziel">
+				<div class="sp-gegeben" id="sp-zielchips"></div>
+				<div class="sp-eingabe">
+					<span class="feld"><label for="sp-ua"><i class="gr">U</i><sub>A</sub> =</label><input type="text" id="sp-ua" inputmode="decimal" autocomplete="off" placeholder="?"><span>kV</span></span>
+					<span class="knopfleiste"><button id="sp-schuss" class="haupt">Strahl einschalten</button></span>
+				</div>
+			</div>
+			<div class="rueckmeldung" id="sp-rueck"></div>
+			<span class="knopfleiste"><button id="sp-weiter" hidden>Nächste Marke</button><button id="sp-neu" hidden>Neue Röhre</button></span>
+			<div class="sp-rechenweg" id="sp-rechenweg"></div>
 		</div>
 	</div>
 
@@ -1319,9 +1347,8 @@ const E_LAD = 1.602e-19, M_E = 9.109e-31, C_L = 2.998e8, L_PLATTE = 0.10;
 /* Einheiten: UB, UA in kV; d in cm; B in mT */
 const STANDARD = { UB: 2.5, UA: 1.5, d: 5.7, B: 0, rand: false, rel: false, theo: false };
 const zustand = Object.assign({ modus: "erkunden" }, STANDARD);
-const aufgabe = { nr: 0, UB: 2.5, UA: 1.5 };
 
-function param() { return zustand.modus === "aufgabe" ? { UB: aufgabe.UB, UA: aufgabe.UA, d: 5.7, B: 0, rand: false, rel: false } : zustand; }
+function param() { return zustand.modus === "spiel" ? { UB: sp.ubRef, UA: sp.uaRef, d: sp.d, B: 0, rand: false, rel: false } : zustand; }
 /* Impuls p und Produkt p*v fuer Beschleunigung aus der Ruhe */
 function kinematik(UBkV, rel) {
 	const Ek = E_LAD * UBkV * 1e3, mc2 = M_E * C_L * C_L;
@@ -1362,7 +1389,7 @@ function zeichneSchirm(g, W, H, mitPunkten) {
 	g.clearRect(0, 0, W, H);
 	const z = param();
 	const s = Math.min((W - 40) / 11.5, (H - 30) / 11);
-	const ox = 30 + 0.5 * s, oy = H / 2;
+	const ox = Math.max(30 + 0.5 * s, (W - 10 * s) / 2), oy = H / 2;   /* Schirm mittig */
 	const px = x => ox + x * s, py = y => oy - y * s;
 	geo = { s, px, py, xw: X => (X - ox) / s, yw: Y => (oy - Y) / s };
 	g.fillStyle = "#101512"; g.fillRect(0, 0, W, H);
@@ -1380,16 +1407,21 @@ function zeichneSchirm(g, W, H, mitPunkten) {
 	P.text(g, "y in cm", px(0) + 6, py(5) + 12, { groesse: 11, farbe: "#BFE8C5" });
 	/* Plattenlage */
 	const dh = z.d / 2;
-	g.fillStyle = "rgba(180,180,180,0.35)";
-	g.fillRect(px(0), py(dh) - 4, 10 * s, 4); g.fillRect(px(0), py(-dh), 10 * s, 4);
+	if (zustand.modus !== "spiel") {
+		g.fillStyle = "rgba(180,180,180,0.35)";
+		g.fillRect(px(0), py(dh) - 4, 10 * s, 4); g.fillRect(px(0), py(-dh), 10 * s, 4);
+	}
 	/* Spur */
-	const b = bahn(z);
-	for (const [breite, farbe] of [[7, "rgba(90,255,120,0.18)"], [3.2, "rgba(120,255,140,0.55)"], [1.3, "#DFFFE3"]]) {
+	const spur = (b, staerke) => {
+	for (const [breite, farbe] of [[7, "rgba(90,255,120," + 0.18 * staerke + ")"], [3.2, "rgba(120,255,140," + 0.55 * staerke + ")"], [1.3, "rgba(223,255,227," + staerke + ")"]]) {
 		g.strokeStyle = farbe; g.lineWidth = breite; g.beginPath();
 		let start = true;
 		for (const p of b) { if (p.x < 0 || Math.abs(p.y * 100) > 5.2) { start = true; continue; } const X = px(p.x * 100), Y = py(p.y * 100); if (start) { g.moveTo(X, Y); start = false; } else g.lineTo(X, Y); }
 		g.stroke();
 	}
+	};
+	spur(bahn(z), zustand.modus === "spiel" ? 0.55 : 1);
+	if (zustand.modus === "spiel") zeichneZiele(g, px, py, spur);
 	if (zustand.theo && zustand.modus === "erkunden") {
 		const k = kTheo(z) / 100;
 		g.save(); g.setLineDash([5, 4]); g.strokeStyle = "#FFD24A"; g.lineWidth = 1.2; g.beginPath();
@@ -1466,44 +1498,139 @@ cS.addEventListener("click", ev => {
 });
 
 
-/* ---------- Aufgabe ---------- */
+/* ---------- Laborauftrag „Zielmarken treffen“ (Kast 2026-11-04) ----------
+   Unbekannt ist d. Schritt 1: Spur bei U_B,ref und U_A,ref vermessen -> k -> d.
+   Schritt 2: drei Marken (x|y), je mit festem U_B; gesucht U_A = 4·d·U_B·y/x² (cm, kV).
+   Ein Schuss pro Marke, kein Ausprobieren: der Strahl erscheint erst nach dem Einschalten.
+   Sterne = Treffer. Stand bleibt beim Neuladen erhalten. */
+const SPEICHER = "kast_ablenk_ziel_v1", TOL = 0.15;             /* Treffer: Spur höchstens 1,5 mm neben der Markenmitte */
+const runde = (v, s) => +(Math.round(v / s) * s).toFixed(4);
+const zuf = (a, b) => a + Math.random() * (b - a);
+function neueRoehre() {
+	const d = runde(zuf(4.2, 7.8), 0.1), ubRef = 2.5;
+	const uaRef = runde(4 * d * ubRef * (0.55 * d / 2) / 100, 0.05);   /* Spur endet sicher vor der Platte */
+	const ubs = [2, 2.5, 3, 3.5, 4, 4.5].sort(() => Math.random() - 0.5).slice(0, 3);
+	const neg = Math.floor(Math.random() * 3);
+	const ziele = [];
+	ubs.forEach((ub, i) => {
+		for (let t = 0; t < 400; t++) {
+			const x = runde(zuf(6, 9.5), 0.5), y = runde(zuf(1, Math.min(3.8, d / 2 - 0.4)), 0.1) * (i === neg ? -1 : 1);
+			const ua = 4 * d * ub * y / (x * x);
+			const frei = ziele.every(z => Math.hypot(z.x - x, z.y - y) >= 1.5);   /* Marken nicht übereinander */
+			if (frei && Math.abs(ua) <= 3.9 && Math.abs(ua) >= 0.4) { ziele.push({ x, y, ub, schuss: null }); return; }
+		}
+		ziele.push({ x: [6.5, 8, 9.5][i], y: i === neg ? -1 : 1, ub, schuss: null });
+	});
+	return { d, ubRef, uaRef, ziele, nr: 0 };
+}
+function laden() { try { const v = JSON.parse(localStorage.getItem(SPEICHER)); if (v && v.ziele && v.ziele.length === 3) return v; } catch (e) { /* ohne Speicher */ } return null; }
+function sichern() { try { localStorage.setItem(SPEICHER, JSON.stringify(sp)); } catch (e) { /* ohne Speicher */ } }
+let sp = laden() || neueRoehre();
+sichern();
+const yBei = (ua, ub, x) => ua * x * x / (4 * sp.d * ub);         /* cm, homogenes Feld */
+const treffer = () => sp.ziele.filter(z => z.schuss && z.schuss.treffer).length;
+
+function zeichneZiele(g, px, py, spur) {
+	sp.ziele.forEach((z, i) => {
+		if (z.schuss) spur(bahn({ UB: z.ub, UA: z.schuss.ua, d: sp.d, B: 0, rand: false, rel: false }), 1);
+		const X = px(z.x), Y = py(z.y), aktiv = i === sp.nr && !z.schuss;
+		const farbe = z.schuss ? (z.schuss.treffer ? "#7CFF8A" : "#FF6B6B") : aktiv ? "#FFD24A" : "rgba(255,210,74,0.45)";
+		g.strokeStyle = farbe; g.lineWidth = aktiv ? 2 : 1.4;
+		for (const r of [TOL * geo.s, TOL * geo.s * 2.2]) { g.beginPath(); g.arc(X, Y, r, 0, 2 * Math.PI); g.stroke(); }
+		g.beginPath(); g.moveTo(X - 14, Y); g.lineTo(X - 6, Y); g.moveTo(X + 6, Y); g.lineTo(X + 14, Y); g.moveTo(X, Y - 14); g.lineTo(X, Y - 6); g.moveTo(X, Y + 6); g.lineTo(X, Y + 14); g.stroke();
+		P.text(g, String(i + 1), X + 10, Y - 9, { groesse: 12, fett: true, farbe });
+	});
+}
+const $ = id => document.getElementById(id);
+function spielZeigen() {
+	const ende = sp.nr >= 3, n = treffer();
+	$("sp-ubref").innerHTML = P.de(sp.ubRef, 2) + "&nbsp;kV";
+	$("sp-uaref").innerHTML = P.de(sp.uaRef, 2) + "&nbsp;kV";
+	$("sp-kreise").innerHTML = sp.ziele.map((z, i) => '<i class="' + (z.schuss ? (z.schuss.treffer ? "ja" : "nein") : i === sp.nr ? "jetzt" : "") + '"></i>').join("");
+	$("sp-sterne").innerHTML = '<span class="sterne">' + [0, 1, 2].map(i => i < n ? '<span class="voll">★</span>' : '<span class="leer">★</span>').join("") + "</span>";
+	const z = sp.ziele[Math.min(sp.nr, 2)], geschossen = !ende && z.schuss;
+	$("sp-ziel").hidden = ende || !!geschossen;
+	if (!ende) $("sp-zielchips").innerHTML = '<span class="sp-chip ziel"><b>Marke ' + (sp.nr + 1) + '</b>: <i class="gr">x</i> = ' + P.de(z.x, 1) + "&nbsp;cm, <i class='gr'>y</i> = " + P.de(z.y, 1) + "&nbsp;cm</span>"
+		+ '<span class="sp-chip"><i class="gr">U</i><sub>B</sub> = ' + P.de(z.ub, 2) + "&nbsp;kV</span>";
+	$("sp-weiter").hidden = !geschossen || sp.nr >= 2;
+	$("sp-neu").hidden = !ende && !(geschossen && sp.nr === 2);
+	if (geschossen && sp.nr === 2) { sp.nr = 3; sichern(); return spielZeigen(); }
+	$("sp-rechenweg").innerHTML = ende ? "<b>" + schlusswort(n) + "</b><br>" + rechenweg() : "";
+}
+function schlusswort(n) {
+	return n === 3 ? "Alle drei Marken getroffen. Ausgezeichnet!" : n === 2 ? "Zwei von drei Marken getroffen." : n === 1 ? "Eine Marke getroffen." : "Keine Marke getroffen. Sehen Sie sich den Rechenweg an.";
+}
+function rechenweg() {
+	const k = sp.uaRef / (4 * sp.d * sp.ubRef);
+	let t = "<b>So geht es:</b> Aus der Spur folgt <i class='gr'>y</i> = <i class='gr'>k</i>&thinsp;·&thinsp;<i class='gr'>x</i><sup>2</sup> mit <i class='gr'>k</i> ≈ " + P.sig(k, 3) + "&nbsp;1/cm. "
+		+ "Wegen <i class='gr'>k</i> = <i class='gr'>U</i><sub>A</sub>&thinsp;/&thinsp;(4&thinsp;<i class='gr'>d</i>&thinsp;<i class='gr'>U</i><sub>B</sub>) ist <i class='gr'>d</i> = "
+		+ P.de(sp.uaRef, 2) + "&nbsp;kV&thinsp;/&thinsp;(4&thinsp;·&thinsp;" + P.sig(k, 3) + "&nbsp;1/cm&thinsp;·&thinsp;" + P.de(sp.ubRef, 2) + "&nbsp;kV) = <b>" + P.de(sp.d, 1) + "&nbsp;cm</b>.<br>"
+		+ "Für eine Marke gilt dann <i class='gr'>U</i><sub>A</sub> = 4&thinsp;<i class='gr'>d</i>&thinsp;<i class='gr'>U</i><sub>B</sub>&thinsp;<i class='gr'>y</i>&thinsp;/&thinsp;<i class='gr'>x</i><sup>2</sup>:";
+	sp.ziele.forEach((z, i) => {
+		const ua = 4 * sp.d * z.ub * z.y / (z.x * z.x);
+		t += "<br>Marke " + (i + 1) + ": <i class='gr'>U</i><sub>A</sub> = 4&thinsp;·&thinsp;" + P.de(sp.d, 1) + "&nbsp;cm&thinsp;·&thinsp;" + P.de(z.ub, 2) + "&nbsp;kV&thinsp;·&thinsp;(" + P.de(z.y, 1) + "&nbsp;cm)&thinsp;/&thinsp;(" + P.de(z.x, 1) + "&nbsp;cm)<sup>2</sup> = <b>" + P.de(ua, 2) + "&nbsp;kV</b>"
+			+ " (Ihr Wert: " + P.de(z.schuss.ua, 2) + "&nbsp;kV " + (z.schuss.treffer ? "✓" : "✗") + ")";
+	});
+	return t;
+}
+$("sp-schuss").addEventListener("click", () => {
+	const z = sp.ziele[sp.nr], el = $("sp-rueck");
+	if (!z || z.schuss) return;
+	const ua = P.leseZahl($("sp-ua"));
+	if (!isFinite(ua)) { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie <i class='gr'>U</i><sub>A</sub> als Zahl ein."); return; }
+	if (Math.abs(ua) > 4) { P.zeigeRueckmeldung(el, "falsch", "Das Netzgerät liefert höchstens ±4&nbsp;kV."); return; }
+	/* trifft die Spur vorher eine Platte? */
+	const xPlatte = Math.sqrt(Math.abs(4 * sp.d * z.ub * (sp.d / 2) / (ua || 1e-9)));
+	const yx = yBei(ua, z.ub, z.x);
+	const anPlatte = ua !== 0 && xPlatte < z.x;
+	const hit = !anPlatte && Math.abs(yx - z.y) <= TOL;
+	z.schuss = { ua, treffer: hit };
+	sichern();
+	if (hit) {
+		P.zeigeRueckmeldung(el, "gut", "Treffer! Marke " + (sp.nr + 1) + " sitzt.");
+		const n = treffer(); spielZeigen(); aktualisiere(); setTimeout(() => feiere(n), 250);
+	} else {
+		P.zeigeRueckmeldung(el, "falsch", anPlatte ? "Vorbei: Der Strahl trifft schon bei <i class='gr'>x</i> ≈ " + P.de(xPlatte, 1) + "&nbsp;cm eine Platte."
+			: "Vorbei: Ihre Spur läuft bei <i class='gr'>x</i> = " + P.de(z.x, 1) + "&nbsp;cm durch <i class='gr'>y</i> = " + P.de(yx, 1) + "&nbsp;cm.");
+		spielZeigen(); aktualisiere();
+	}
+});
+$("sp-ua").addEventListener("keydown", ev => { if (ev.key === "Enter") $("sp-schuss").click(); });
+$("sp-weiter").addEventListener("click", () => { sp.nr++; sichern(); $("sp-ua").value = ""; $("sp-rueck").innerHTML = ""; spielZeigen(); aktualisiere(); });
+$("sp-neu").addEventListener("click", () => { sp = neueRoehre(); sichern(); $("sp-ua").value = ""; $("sp-rueck").innerHTML = ""; tabelle.leeren(); spielZeigen(); aktualisiere(); });
+
+/* jeder Stern einzeln */
+function funken(ziel, n) {
+	const r = ziel.getBoundingClientRect();
+	for (let i = 0; i < n; i++) {
+		const f = document.createElement("div"); f.className = "funke"; f.textContent = "★";
+		const w = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+		f.style.left = (r.left + Math.min(r.width, 120) / 2) + "px"; f.style.top = (r.top + r.height / 2) + "px";
+		f.style.setProperty("--dx", Math.cos(w) * d + "px"); f.style.setProperty("--dy", Math.sin(w) * d - 30 + "px");
+		document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
+	}
+}
+function feiere(k) {
+	const st = $("sp-sterne").querySelectorAll(".sterne .voll")[k - 1];
+	if (!st) return;
+	st.classList.remove("neu"); void st.offsetWidth; st.classList.add("neu");
+	const ruhig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	if (!ruhig) funken(st, k === 3 ? 28 : 8);
+	const r = st.getBoundingClientRect(), j = document.createElement("div");
+	j.className = "jubel" + (k === 3 ? " gross" : ""); j.textContent = "Stern " + k + "!" + (k === 3 ? " Perfekt!" : "");
+	j.style.left = (r.left + r.width / 2) + "px"; j.style.top = r.top + "px";
+	document.body.appendChild(j); setTimeout(() => j.remove(), 1700);
+}
+
 const VERSTECKT = ["zeile-ub", "zeile-ua", "zeile-d", "zeile-b", "zeile-opt", "btn-standard"];
 P.bindeModus("modus-knoepfe", modus => {
 	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	VERSTECKT.forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
+	const spiel = modus === "spiel";
+	$("spiel").classList.toggle("verborgen", !spiel);
+	VERSTECKT.forEach(id => $(id).classList.toggle("verborgen", spiel));
 	tabelle.leeren();
+	if (spiel) spielZeigen();
 	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.UB = P.runde(P.zufall(2, 4.5), 0.05);
-	aufgabe.UA = P.runde(P.zufall(0.8, 2.8), 0.05) * (Math.random() < 0.3 ? -1 : 1);
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-ub").innerHTML = P.de(aufgabe.UB, 2) + "&nbsp;kV";
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	tabelle.leeren();
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(Math.abs(ein), Math.abs(aufgabe.UA), 0.04, 0.12);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Richtig: |<i class='gr'>U</i><sub>A</sub>| = " + P.de(Math.abs(aufgabe.UA), 2) + "&nbsp;kV." + (aufgabe.UA < 0 ? " Die Spur ist nach unten abgelenkt, die untere Platte ist also positiv." : "")); return; }
-	const v = Math.abs(ein / aufgabe.UA);
-	if (Math.abs(v - 4) < 0.3 || Math.abs(v - 0.25) < 0.02) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 4: Pr&uuml;fen Sie die Gleichung <i class='gr'>k</i> = <i class='gr'>U</i><sub>A</sub>/(4<i class='gr'>d</i><i class='gr'>U</i><sub>B</sub>).");
-	else if (Math.abs(v - 100) < 8 || Math.abs(v - 0.01) < 0.001) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 100: Rechnen Sie <i class='gr'>k</i> von 1/cm in 1/m um.");
-	else if (art === "knapp") P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Nutzen Sie mehr Punkte mit gro&szlig;em <i class='gr'>x</i>.");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie Ihre Steigung im Diagramm und die Einheiten.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	const kt = aufgabe.UA / (4 * 0.057 * aufgabe.UB);
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: <i class='gr'>k</i> &asymp; " + P.sig(kt, 3) + "&nbsp;1/m, also <i class='gr'>U</i><sub>A</sub> = 4&thinsp;&middot;&thinsp;0,057&nbsp;m&thinsp;&middot;&thinsp;" + P.de(aufgabe.UB, 2) + "&nbsp;kV&thinsp;&middot;&thinsp;<i class='gr'>k</i> = " + P.de(aufgabe.UA, 2) + "&nbsp;kV.");
 });
 
 function layout() {
@@ -1512,13 +1639,12 @@ function layout() {
 	aktualisiere();
 }
 window.addEventListener("resize", layout);
-SimUI.bildKnopf("btn-bild", cS, () => zustand.modus === "aufgabe" ? "Schirmbild_Aufgabe_" + aufgabe.nr : "Schirmbild_UB" + P.de(zustand.UB, 2) + "kV_UA" + P.de(zustand.UA, 2) + "kV");
+SimUI.bildKnopf("btn-bild", cS, () => zustand.modus === "spiel" ? "Schirmbild_Laborauftrag" : "Schirmbild_UB" + P.de(zustand.UB, 2) + "kV_UA" + P.de(zustand.UA, 2) + "kV");
 SimUI.bildKnopf("btn-dia-bild", cD, "Ablenkroehre_y_ueber_x2");
 SimUI.tabelleKnopf("btn-tab-bild", "mess-tab", "Ablenkroehre_Messpunkte", "Elektronenablenkröhre: Punkte der Leuchtspur");
 SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>
