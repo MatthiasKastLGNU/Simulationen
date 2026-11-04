@@ -795,7 +795,7 @@ window.SimUI = (function () {
 			<div class="knopfleiste" style="margin-top:0.5rem">
 				<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
 				<button id="btn-neu" data-icon="wuerfel" title="Neue Aufgabe"></button>
-				<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
+				<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen" hidden></button>
 			</div>
 			<div class="rueck" id="rueckmeldung"></div>
 			<details>
@@ -869,85 +869,89 @@ window.SimUI = (function () {
 	let W = 740, H = 420;
 	let orte = [];
 
-	function xAus(l) { return 40 + (l - LMIN) / (LMAX - LMIN) * (W - 80); }
+	/* Senkrechte Skala (2026-11): oben stark, unten schwach, Beschriftungen links (Natur, Mikrokosmos)
+	   und rechts (Technik, Grenzwerte, Unterricht), die einander ausweichen; am Handy genauso lesbar */
+	const LINKS = { natur: true, mikro: true };
+	function yAus(l) { return 34 + (LMAX - l) / (LMAX - LMIN) * (H - 64); }
+	function pille(x, y, t, farbe, ausr, fett, fs) {
+		ctx.font = (fett ? "bold " : "") + fs + "px " + K.SCHRIFT;
+		const w = ctx.measureText(t).width + (W < 520 ? 18 : 22), h = fs + 9;
+		const x0 = Math.max(2, Math.min(W - w - 2, ausr === "right" ? x - w : x));   /* nie über den Bildrand */
+		ctx.fillStyle = fett ? farbe : "#fff"; ctx.strokeStyle = farbe; ctx.lineWidth = 1.5;
+		ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, y - h / 2, w, h, h / 2); else ctx.rect(x0, y - h / 2, w, h); ctx.fill(); ctx.stroke();
+		ctx.fillStyle = fett ? "#fff" : farbe; ctx.beginPath(); ctx.arc(x0 + 9, y, 3.5, 0, 2 * Math.PI); ctx.fill();
+		ctx.fillStyle = fett ? "#fff" : "#222"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+		ctx.fillText(t, x0 + (W < 520 ? 14 : 16), y + 1);
+		return { x0, y0: y - h / 2, w, h };
+	}
 
 	function zeichne() {
 		ctx.clearRect(0, 0, W, H);
-		const yA = H * 0.52;
-		const klein = W < 520;
-		const fs = klein ? 12 : 13;
+		ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+		const klein = W < 520, fs = klein ? 12 : 14;
+		const xS = Math.round(W * (klein ? 0.53 : 0.5)), bS = klein ? 12 : 16;
 
-		/* Achse */
-		ctx.strokeStyle = "#111"; ctx.lineWidth = 1.5;
-		ctx.beginPath(); ctx.moveTo(xAus(LMIN) - 10, yA); ctx.lineTo(xAus(LMAX) + 18, yA); ctx.stroke();
-		ctx.beginPath(); ctx.moveTo(xAus(LMAX) + 22, yA); ctx.lineTo(xAus(LMAX) + 12, yA - 5); ctx.lineTo(xAus(LMAX) + 12, yA + 5); ctx.closePath(); ctx.fillStyle = "#111"; ctx.fill();
-		ctx.font = fs + "px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+		/* Skalenkörper mit Farbverlauf von schwach (grün) nach stark (rot) */
+		const y0 = yAus(LMAX) - 10, y1 = yAus(LMIN) + 10;
+		const gr = ctx.createLinearGradient(0, y1, 0, y0);
+		gr.addColorStop(0, "#CFE8C4"); gr.addColorStop(0.35, "#FFF1B8"); gr.addColorStop(0.65, "#FFD2A6"); gr.addColorStop(1, "#F4A3A3");
+		ctx.fillStyle = gr; ctx.strokeStyle = "#8A9099"; ctx.lineWidth = 1.2;
+		ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(xS - bS / 2, y0, bS, y1 - y0, bS / 2); else ctx.rect(xS - bS / 2, y0, bS, y1 - y0); ctx.fill(); ctx.stroke();
+		ctx.fillStyle = "#555"; ctx.font = "italic " + fs + "px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+		ctx.fillText("E in V/m", xS, y0 - 4);
+		/* Zehnerpotenzen im Skalenkörper */
+		ctx.textBaseline = "middle";
 		for (let l = LMIN; l <= LMAX; l++) {
-			const x = xAus(l);
-			ctx.beginPath(); ctx.moveTo(x, yA - 5); ctx.lineTo(x, yA + 5); ctx.stroke();
-			if (!klein || l % 2 === 0) {
-				ctx.fillStyle = "#111";
-				ctx.fillText("10", x - 3, yA + 9);
-				ctx.font = Math.round(fs * 0.75) + "px " + K.SCHRIFT;
-				ctx.textAlign = "left";
-				ctx.fillText(String(l).replace("-", "−"), x + 5, yA + 5);
-				ctx.textAlign = "center";
-				ctx.font = fs + "px " + K.SCHRIFT;
-			}
+			const y = yAus(l);
+			ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1;
+			ctx.beginPath(); ctx.moveTo(xS - bS / 2, y); ctx.lineTo(xS - bS / 2 + 4, y); ctx.moveTo(xS + bS / 2 - 4, y); ctx.lineTo(xS + bS / 2, y); ctx.stroke();
 		}
-		ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.font = "italic " + fs + "px " + K.SCHRIFT;
-		ctx.fillText("E in V/m", W - 8, 8);
+		/* Beschriftungen der Potenzen in eigener schmaler Spalte links neben der Skala */
+		const fsP = klein ? 10 : 11;
+		for (let l = LMIN; l <= LMAX; l += klein ? 2 : 1) {
+			const y = yAus(l);
+			ctx.fillStyle = "#666"; ctx.textAlign = "right"; ctx.font = fsP + "px " + K.SCHRIFT;
+			const hoch = String(l).replace("-", "−");
+			ctx.fillText("10", xS - bS / 2 - 6 - ctx.measureText(hoch).width * 0.8, y + 2);
+			ctx.font = Math.round(fsP * 0.8) + "px " + K.SCHRIFT; ctx.textAlign = "left";
+			ctx.fillText(hoch, xS - bS / 2 - 5 - ctx.measureText(hoch).width, y - 3);
+		}
 
-		/* Beschriftungen ohne Überlappung auf Zeilen oberhalb und unterhalb verteilen */
-		ctx.font = fs + "px " + K.SCHRIFT;
-		const zeilen = [];                                     // je Zeile Liste belegter Intervalle
-		const zeilenH = fs + 7;
-		const reihenfolge = [-1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7];
+		/* Einträge auf zwei Spalten verteilen, Abstände erzwingen (von unten nach oben) */
 		orte = [];
 		const sichtbar = EINTRAEGE.map((e, i) => ({ e, i })).filter(({ i }) => !(zustand.modus === "aufgabe" && i === zustand.aufgabe && !zustand.geloest));
-		sichtbar.sort((a, b) => a.e.wert - b.e.wert);
-		for (const { e, i } of sichtbar) {
-			const x = xAus(Math.log10(e.wert));
-			const breite = ctx.measureText(e.kurz).width + 8;
-			let lx = Math.min(Math.max(x, 4 + breite / 2), W - 4 - breite / 2);
-			let zeile = reihenfolge.find(z => !(zeilen[z] || []).some(([a, b]) => lx - breite / 2 < b && lx + breite / 2 > a));
-			if (zeile === undefined) zeile = 7;
-			(zeilen[zeile] = zeilen[zeile] || []).push([lx - breite / 2, lx + breite / 2]);
-			const ly = yA + (zeile < 0 ? -30 + (zeile + 1) * zeilenH : 34 + (zeile - 1) * zeilenH);
-			orte.push({ i, x, y: yA, lx, ly, oben: zeile < 0, breite });
+		const abstand = fs + 12;
+		for (const links of [true, false]) {
+			const spalte = sichtbar.filter(({ e }) => !!LINKS[e.art] === links).sort((a, b) => a.e.wert - b.e.wert);
+			let letzte = Infinity;
+			const plaetze = spalte.map(({ e, i }) => { const y = yAus(Math.log10(e.wert)); const ly = Math.min(y, letzte - abstand); letzte = ly; return { e, i, y, ly }; });
+			/* wenn oben kein Platz mehr ist: alles nach unten schieben */
+			const zuHoch = Math.max(0, 16 - Math.min(...plaetze.map(p => p.ly)));
+			plaetze.forEach(p => p.ly += zuHoch);
+			for (const p of plaetze) orte.push(Object.assign(p, { links }));
 		}
-		ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 1;
+		const xLab = (links) => links ? xS - bS / 2 - (klein ? 34 : 44) : xS + bS / 2 + (klein ? 14 : 24);
 		for (const o of orte) {
-			ctx.beginPath(); ctx.moveTo(o.x, yA + (o.oben ? -6 : 6)); ctx.lineTo(o.lx, o.ly + (o.oben ? 3 : -fs + 1)); ctx.stroke();
+			const x0 = o.links ? xS - bS / 2 : xS + bS / 2, x1 = xLab(o.links), xm = o.links ? x1 + 8 : x1 - 8;
+			ctx.strokeStyle = FARBE[o.e.art]; ctx.globalAlpha = 0.5; ctx.lineWidth = 1.2;
+			ctx.beginPath(); ctx.moveTo(x0, o.y); ctx.lineTo(xm, o.y); ctx.lineTo(xm, o.ly); ctx.lineTo(x1, o.ly); ctx.stroke(); ctx.globalAlpha = 1;
 		}
-		ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
 		for (const o of orte) {
-			const e = EINTRAEGE[o.i];
-			ctx.fillStyle = "#fff";
-			ctx.fillRect(o.lx - o.breite / 2, o.ly - fs, o.breite, fs + 4);
-			ctx.fillStyle = o.i === zustand.auswahl ? "#000" : FARBE[e.art];
-			ctx.font = (o.i === zustand.auswahl ? "bold " : "") + fs + "px " + K.SCHRIFT;
-			ctx.fillText(e.kurz, o.lx, o.ly);
-		}
-		ctx.font = fs + "px " + K.SCHRIFT;
-		for (const o of orte) {
-			const e = EINTRAEGE[o.i];
-			ctx.fillStyle = FARBE[e.art]; ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5;
-			ctx.beginPath(); ctx.arc(o.x, o.y, o.i === zustand.auswahl ? 7 : 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+			ctx.fillStyle = FARBE[o.e.art]; ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5;
+			ctx.beginPath(); ctx.arc(xS, o.y, o.i === zustand.auswahl ? 6.5 : 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+			o.rect = pille(xLab(o.links), o.ly, o.e.kurz, FARBE[o.e.art], o.links ? "right" : "left", o.i === zustand.auswahl, fs);
 		}
 
 		/* Schätzung im Aufgabenmodus */
 		if (zustand.modus === "aufgabe") {
 			const l = parseFloat(document.getElementById("regler-schaetz").value);
-			const x = xAus(l);
-			ctx.strokeStyle = "#0000BF"; ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
-			ctx.beginPath(); ctx.moveTo(x, 18); ctx.lineTo(x, H - 18); ctx.stroke(); ctx.setLineDash([]);
-			ctx.fillStyle = "#0000BF"; ctx.font = "bold " + fs + "px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top";
-			ctx.fillText("Ihre Schätzung", Math.min(Math.max(x, 60), W - 60), 2);
+			const y = yAus(l);
+			ctx.strokeStyle = "#0000BF"; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+			ctx.beginPath(); ctx.moveTo(8, y); ctx.lineTo(W - 8, y); ctx.stroke(); ctx.setLineDash([]);
+			pille(8, y - 14, "Ihre Schätzung", "#0000BF", "left", true, fs);
 			if (zustand.geloest) {
 				const e = EINTRAEGE[zustand.aufgabe];
-				const xr = xAus(Math.log10(e.wert));
-				ctx.fillStyle = "#295C06"; ctx.beginPath(); ctx.arc(xr, yA, 8, 0, 2 * Math.PI); ctx.fill();
+				ctx.fillStyle = "#295C06"; ctx.beginPath(); ctx.arc(xS, yAus(Math.log10(e.wert)), 8, 0, 2 * Math.PI); ctx.fill();
 			}
 		}
 	}
@@ -971,9 +975,11 @@ window.SimUI = (function () {
 	canvas.addEventListener("click", ev => {
 		const r = canvas.getBoundingClientRect();
 		const mx = ev.clientX - r.left, my = ev.clientY - r.top;
-		let best = -1, bestD = 22;
+		let best = -1, bestD = 16;
 		for (const o of orte) {
-			const d = Math.min(Math.hypot(mx - o.x, my - o.y), Math.hypot(mx - o.lx, my - o.ly + 5));
+			const r = o.rect;
+			if (r && mx >= r.x0 - 4 && mx <= r.x0 + r.w + 4 && my >= r.y0 - 3 && my <= r.y0 + r.h + 3) { best = o.i; bestD = 0; break; }
+			const d = Math.hypot(mx - W * (W < 520 ? 0.53 : 0.5), my - o.y);
 			if (d < bestD) { bestD = d; best = o.i; }
 		}
 		if (best >= 0 && zustand.modus === "erkunden") zeigeDetail(best);
@@ -989,6 +995,7 @@ window.SimUI = (function () {
 		let n;
 		do { n = Math.floor(Math.random() * EINTRAEGE.length); } while (n === zustand.aufgabe || EINTRAEGE[n].art === "unterricht");
 		zustand.aufgabe = n; zustand.geloest = false; zustand.auswahl = -1;
+		document.getElementById("btn-pruefen").disabled = false;
 		document.getElementById("aufgabe-name").textContent = EINTRAEGE[n].name;
 		document.getElementById("rueckmeldung").textContent = ""; document.getElementById("rueckmeldung").className = "rueck";
 		const l = Math.log10(EINTRAEGE[n].wert);
@@ -1003,9 +1010,11 @@ window.SimUI = (function () {
 		const e = EINTRAEGE[zustand.aufgabe];
 		const abw = parseFloat(regler.value) - Math.log10(e.wert);
 		const rm = document.getElementById("rueckmeldung");
+		document.getElementById("btn-pruefen").disabled = true;   /* ein Versuch je Aufgabe, danach steht der richtige Wert im Bild */
 		if (Math.abs(abw) <= 0.5) { rm.textContent = "Sehr gut! Richtige Größenordnung: " + e.text + "."; rm.className = "rueck gut"; zustand.geloest = true; }
 		else if (Math.abs(abw) <= 1.5) { rm.textContent = "Knapp daneben: Ihre Schätzung ist etwa " + (abw > 0 ? "zehnmal zu groß" : "zehnmal zu klein") + ". Vergleichen Sie mit einem Nachbarwert."; rm.className = "rueck naja"; }
 		else { rm.textContent = "Noch deutlich " + (abw > 0 ? "zu groß" : "zu klein") + " (um den Faktor " + potenz(Math.pow(10, Math.round(Math.abs(abw)))) + "). Denken Sie daran: Jeder Teilstrich ist ein Faktor 10."; rm.className = "rueck falsch"; }
+		if (!zustand.geloest) { rm.textContent += " Richtig wäre: " + e.text + " (grüner Punkt)."; zustand.geloest = true; }
 		zeichne();
 	});
 	document.getElementById("btn-neu").addEventListener("click", neueAufgabe);
@@ -1030,7 +1039,7 @@ window.SimUI = (function () {
 	});
 
 	function layout() {
-		({ W, H } = K.skaliereCanvas(canvas, ctx, w => (w < 520 ? 1.2 : 0.42)));
+		({ W, H } = K.skaliereCanvas(canvas, ctx, w => (w < 520 ? 1.75 : 0.85)));
 		zeichne();
 	}
 	window.addEventListener("resize", layout);
