@@ -786,7 +786,7 @@ p.auftrag { margin: 0 0 0.5rem; }
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Warum steht das Feld senkrecht auf einer Leiteroberfläche?</div>
 		<div class="tcb-body">
-			<p class="auftrag">Schalten Sie das Feld ein und beobachten Sie die Zerlegung von <i class="gr">E</i> am Messpunkt. Erklären Sie mit der Bewegung der Elektronen, warum <i class="gr">E</i> am Ende senkrecht auf der Oberfläche steht.</p>
+			<p class="auftrag">Das äußere Feld ist gerade eingeschaltet. Starten Sie mit &#9654; und beobachten Sie die Zerlegung von <i class="gr">E</i> am Messpunkt. Erklären Sie mit der Bewegung der Elektronen, warum <i class="gr">E</i> am Ende senkrecht auf der Oberfläche steht.</p>
 
 			<canvas id="o-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
@@ -804,8 +804,8 @@ p.auftrag { margin: 0 0 0.5rem; }
 				<div class="bgruppe">
 					<span class="btitel">Äußeres Feld</span>
 					<span class="knopfleiste" id="o-feld-knoepfe">
-						<button data-wert="0" class="aktiv gross" data-icon="platten_aus" title="Äußeres Feld aus"></button>
-						<button data-wert="1" class="gross" data-icon="platten_an" title="Äußeres Feld ein"></button>
+						<button data-wert="0" class="gross" data-icon="platten_aus" title="Äußeres Feld aus"></button>
+						<button data-wert="1" class="aktiv gross" data-icon="platten_an" title="Äußeres Feld ein"></button>
 					</span>
 				</div>
 				<div class="bgruppe" style="flex:1 1 12rem">
@@ -1014,9 +1014,9 @@ window.teilLayout = {};
 	const H_RAND = 0.1;          // Abstand der Randladungen, zugleich Gitterweite für das Elektronengas
 
 	const zustand = {
-		winkel: 40, feldAn: false,
+		winkel: 40, feldAn: true,  // Startbild wie auf dem Blatt: Feld gerade eingeschaltet, angehalten
 		p: 0,                    // Grad des Ladungsausgleichs, 0 bis 1
-		laeuft: true, t: 0,
+		laeuft: false, t: 0,
 		messX: -1.2,             // Lage des Messpunkts auf der Oberseite
 		zeigeLinien: true, zeigeZerlegung: true, zeigeInnen: false
 	};
@@ -1326,6 +1326,7 @@ window.teilLayout = {};
 		ctx.beginPath(); ctx.moveTo(MX, MY - k); ctx.lineTo(MX + k, MY); ctx.lineTo(MX, MY + k); ctx.lineTo(MX - k, MY); ctx.closePath(); ctx.fill(); ctx.stroke();
 
 		if (!an) LZ.text(ctx, "Schalten Sie das äußere Feld ein.", px(0.6), py(1.3), gS(), "#888", "center", "italic");
+		else if (ctx.canvas.clientWidth >= 560 && !zustand.laeuft && zustand.p === 0 && zustand.t === 0) LZ.text(ctx, "Feld gerade eingeschaltet: Starten Sie mit \u25B6.", px(1.4), py(2.55), gS(), "#0000BF", "center", "italic");
 
 		document.getElementById("o-parallel").textContent = an ? Math.round(100 * anteil) + " %" : "–";
 		document.getElementById("o-balken").style.width = Math.round(100 * anteil) + "%";
@@ -1356,6 +1357,7 @@ window.teilLayout = {};
 		btnPause.classList.toggle("laeuft", !an);
 	}
 	btnPause.addEventListener("click", () => setzeLaeuft(!zustand.laeuft));
+	setzeLaeuft(zustand.laeuft);
 	document.getElementById("o-regler-winkel").addEventListener("input", ev => {
 		zustand.winkel = +ev.target.value;
 		document.getElementById("o-wert-winkel").textContent = zustand.winkel + "°";
@@ -1366,11 +1368,11 @@ window.teilLayout = {};
 		el.addEventListener("change", () => { zustand[f] = el.checked; zeichne(); });
 	});
 	document.getElementById("o-standard").addEventListener("click", () => {
-		zustand.winkel = 40; zustand.messX = -1.2; zustand.feldAn = false;
+		zustand.winkel = 40; zustand.messX = -1.2; zustand.feldAn = true; zustand.p = 0; zustand.t = 0; linienP = -1;
 		document.getElementById("o-regler-winkel").value = 40;
 		document.getElementById("o-wert-winkel").textContent = "40°";
-		document.querySelectorAll("#o-feld-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === "0"));
-		neuerWinkel(); setzeLaeuft(true); zeichne();
+		document.querySelectorAll("#o-feld-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === "1"));
+		neuerWinkel(); setzeLaeuft(false); zeichne();
 	});
 
 	/* Messpunkt ziehen */
