@@ -1028,12 +1028,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1222,7 +1225,6 @@ window.SimUI = (function () {
 			</div>
 			<canvas id="v-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
-				<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 				<button id="btn-v-bild" class="neben" data-icon="download" title="Diagramm herunterladen"></button>
 			</div>
 			<div class="zweispaltig">
@@ -1351,17 +1353,6 @@ document.getElementById("btn-flugzeit").addEventListener("click", () => {
 	aktualisiere();
 });
 document.getElementById("btn-leeren").addEventListener("click", () => { zustand.messpunkte = []; aktualisiere(); });
-document.getElementById("btn-material").addEventListener("click", () => {
-	const mc = P.neuerCanvas(720, 300);
-	zeichneV(mc.ctx, 720, 300);
-	const pts = zustand.messpunkte.filter(p => p.t === zustand.teilchen);
-	P.zeigeMaterial({
-		titel: "Material: Geschwindigkeit von " + TEILCHEN[zustand.teilchen].name + "en",
-		text: "<p>Flugzeitmessung &uuml;ber 8,4&nbsp;m, Unsicherheit der Zeitmessung &plusmn;&nbsp;0,3&nbsp;ns. Ruheenergie " + TEILCHEN[zustand.teilchen].mc2 + "&nbsp;MeV.</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Geschwindigkeit in Abhängigkeit von der kinetischen Energie (blau klassisch, rot relativistisch, Kreuze Messwerte)" }],
-		tabelle: pts.length ? { kopf: ["<i class='gr'>E</i><sub>kin</sub> in MeV", "Flugzeit in ns"], zeilen: pts.map(p => [P.sig(p.E, 3), P.de(8.4 / (p.b * C_L) * 1e9, 2)]) } : undefined
-	});
-});
 
 /* ---------- Aufgaben: Protonentherapie ---------- */
 const AUFGABEN = [

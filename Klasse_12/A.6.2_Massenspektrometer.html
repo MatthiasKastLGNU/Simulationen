@@ -1028,12 +1028,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1219,7 +1222,6 @@ window.SimUI = (function () {
 			<div class="bildleiste knopfleiste">
 				<button id="btn-start" class="haupt" data-icon="play" title="Start"></button>
 				<button id="btn-leeren" class="neben" data-icon="muell" title="Detektor leeren"></button>
-				<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
 			</div>
 			<div class="steuerung">
@@ -1259,7 +1261,7 @@ function zeichne(g, W, H, ohneIonen) {
 	g.clearRect(0, 0, W, H);
 	const detL = 40;                                      /* Detektor 0..40 cm */
 	const s = (W - 60) / detL;
-	const ySpalt = H * 0.3, xSpalt = 30;
+	const eng = W < 560, ySpalt = H * (eng ? 0.4 : 0.3), xSpalt = 30;   /* am Handy mehr Platz über dem Detektor */
 	/* Quelle und Wienfilter (links oben, senkrecht nach unten) */
 	const fx0 = xSpalt, fy0 = 14, fy1 = ySpalt - 10;
 	g.fillStyle = "#EEF"; g.fillRect(fx0 - 16, fy0, 32, fy1 - fy0);
@@ -1270,7 +1272,8 @@ function zeichne(g, W, H, ohneIonen) {
 	g.fillStyle = "#2E4A9B"; g.fillRect(fx0 + 16, fy0, pd, fy1 - fy0);
 	for (let y = fy0 + 12; y < fy1 - 4; y += 20) P.text(g, "⊙", fx0, y + 4, { ausrichtung: "center", groesse: Math.round(7 + 14 * zustand.B1 / 0.5), farbe: "rgba(51,51,153," + (0.25 + 0.6 * zustand.B1 / 0.5) + ")" });
 	P.text(g, "Wienfilter", fx0 + 26, fy0 + 14, { groesse: 12, fett: true, farbe: "#339" });
-	P.text(g, "E, B₁", fx0 + 26, fy0 + 30, { groesse: 12, kursiv: true, farbe: "#339" });
+	if (eng) P.text(g, "E, B₁", fx0 + 98, fy0 + 14, { groesse: 12, kursiv: true, farbe: "#339" });   /* eine Zeile, damit die Skala frei bleibt */
+	else P.text(g, "E, B₁", fx0 + 26, fy0 + 30, { groesse: 12, kursiv: true, farbe: "#339" });
 	/* Umlenkfeld */
 	g.fillStyle = "rgba(0,0,191,0.05)"; g.fillRect(xSpalt, ySpalt, W - xSpalt - 10, H - ySpalt - 10);
 	for (let x = xSpalt + 20; x < W - 20; x += 40) for (let y = ySpalt + 24; y < H - 20; y += 40) P.text(g, "⊙", x, y, { ausrichtung: "center", groesse: Math.round(7 + 14 * zustand.B2 / 0.8), farbe: "rgba(80,80,170," + (0.2 + 0.6 * zustand.B2 / 0.8) + ")" });
@@ -1288,7 +1291,8 @@ function zeichne(g, W, H, ohneIonen) {
 	treffer.forEach(d => { const k = Math.floor(d * 10); if (k >= 0 && k < 400) bins[k]++; });
 	const maxBin = Math.max(1, ...bins);
 	g.fillStyle = P.FARBEN.rot;
-	bins.forEach((n, k) => { if (n) { const h = 60 * n / maxBin; g.fillRect(xSpalt + k / 10 * s, ySpalt - 36 - h, Math.max(1.5, s / 10), h); } });
+	const hMax = Math.min(60, ySpalt - 36 - 34);                 /* Balken enden unter den Beschriftungen */
+	bins.forEach((n, k) => { if (n) { const h = hMax * n / maxBin; g.fillRect(xSpalt + k / 10 * s, ySpalt - 36 - h, Math.max(1.5, s / 10), h); } });
 	/* Bahnen der aktuellen Sollgeschwindigkeit */
 	if (!ohneIonen) {
 		const v = vFilter();
@@ -1358,16 +1362,6 @@ K.bindeKnopfgruppe("streu-knoepfe", w => zustand.streu = parseFloat(w), aktualis
 P.regler("regler-e", "wert-e", v => v, v => { zustand.E = v; ionen = []; }, aktualisiere);
 P.regler("regler-b1", "wert-b1", v => v, v => { zustand.B1 = v; ionen = []; }, aktualisiere);
 P.regler("regler-b2", "wert-b2", v => v, v => { zustand.B2 = v; treffer = []; ionen = []; }, aktualisiere);
-document.getElementById("btn-material").addEventListener("click", () => {
-	if (treffer.length < 50) for (let k = 0; k < 3000; k++) { const io = neuesIon(geoAktuell); io.v = vFilter(); treffer.push(durchmesser(io.m, io.v) * (1 + 0.002 * P.gauss())); }
-	const mc = P.neuerCanvas(720, 420);
-	zeichne(mc.ctx, 720, 420, true);
-	P.zeigeMaterial({
-		titel: "Material: Massenspektrum",
-		text: "<p>Wienfilter: <i class='gr'>E</i> = " + P.de(zustand.E, 1) + "&nbsp;kV/m, <i class='gr'>B</i><sub>1</sub> = " + P.de(zustand.B1 * 1000, 0) + "&nbsp;mT. Umlenkfeld <i class='gr'>B</i><sub>2</sub> = " + P.de(zustand.B2 * 1000, 0) + "&nbsp;mT. Einfach positiv geladene Ionen.</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Aufbau und Häufigkeit der Treffer am Detektor (rot)" }]
-	});
-});
 P.bindeModus("modus-knoepfe", modus => {
 	zustand.modus = modus;
 	document.getElementById("aufgabenkarte").classList.toggle("verborgen", modus !== "aufgabe");

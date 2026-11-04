@@ -1028,12 +1028,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1235,7 +1238,6 @@ window.SimUI = (function () {
 		<div class="tcb-body">
 			<canvas id="wanne-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
-				<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
 			</div>
 			<div class="bedienleiste">
@@ -1526,18 +1528,6 @@ P.ziehbar(cW, (x, y) => {
 	zeichneWanne(gW, WW, HW, true);
 });
 
-document.getElementById("btn-material").addEventListener("click", () => {
-	const mc = P.neuerCanvas(720, 560);
-	zeichneWanne(mc.ctx, 720, 560, false);
-	P.zeigeMaterial({
-		titel: "Material: Potentialmessung in der Wasserwanne",
-		text: "<p>Draufsicht auf die Wanne, Raster 1&nbsp;cm. Spannung <i class='gr'>U</i> = " + P.de(Ug(), 1) + "&nbsp;V. Unsicherheiten: Ort &plusmn;&nbsp;1&nbsp;mm, Potential &plusmn;&nbsp;0,05&nbsp;V.</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Elektrodenanordnung mit Messpunkten" }],
-		tabelle: { kopf: ["Nr.", "<i class='gr'>x</i> in cm", "<i class='gr'>y</i> in cm", "&phi; in V"], zeilen: messpunkte.zeilen.map((p, k) => [k + 1, P.de(p.x, 1), P.de(p.y, 1), P.de(p.phi, 2)]) }
-	});
-	/* Karte wieder mit Sonde zeichnen, damit geo zur Bildschirmansicht passt */
-	zeichneWanne(gW, WW, HW, true);
-});
 
 /* ---------- Aufgabe ---------- */
 const VERSTECKT = ["zeile-anordnung", "zeile-u", "box-auswertung"];

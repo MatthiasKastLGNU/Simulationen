@@ -1028,12 +1028,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1230,7 +1233,6 @@ window.SimUI = (function () {
 			</div>
 			<canvas id="aufbau-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
-				<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
 			</div>
 			<div class="steuerung">
@@ -1424,21 +1426,6 @@ P.ziehbar(cA, (x, y) => (geo && Math.abs(y - geo.yA) < 30) ? "sonde" : null, (id
 });
 setInterval(() => zeichneAufbau(gA, WA, HA), 600);
 
-document.getElementById("btn-material").addEventListener("click", () => {
-	const art = aktArt(), bb = bereich();
-	const orte = art === "draht" ? [1, 1.5, 2, 3, 4, 6, 8, 10] : [-8, -6, -4, -2, 0, 2, 4, 6, 8];
-	const zeilen = orte.map(x => [P.de(x, 1), P.de(P.runde(Bwahr(x) * Math.cos(zustand.kipp * Math.PI / 180) + (zustand.nullabgleich ? 0 : ERDFELD) + 0.004 * P.gauss(), 0.001), 3)]);
-	const mc = P.neuerCanvas(720, 220);
-	zeichneAufbau(mc.ctx, 720, 220);
-	zeichneAufbau(gA, WA, HA);
-	const beschr = { lang: "lange Spule (l = 40 cm, N = 400)", helmholtz: "Helmholtz-Spulenpaar (R = 15,0 cm, N = 130 je Spule, Abstand a = " + P.de(zustand.a, 1) + " cm)", kurz: zustand.anzahl + " kurze Spule(n) (R = 5 cm, N = 100)", draht: "gerader Draht" }[art];
-	P.zeigeMaterial({
-		titel: "Material: Messreihe mit der Hall-Sonde",
-		text: "<p>Anordnung: " + beschr + ", Stromst&auml;rke <i class='gr'>I</i> = " + P.de(zustand.I, 2) + "&nbsp;A. Unsicherheiten: Ort &plusmn;&nbsp;1&nbsp;mm, Anzeige &plusmn;&nbsp;0,005&nbsp;mT." + (zustand.nullabgleich ? "" : " Ein Nullabgleich wurde nicht durchgef&uuml;hrt.") + "</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Anordnung (schematisch)" }],
-		tabelle: { kopf: [art === "draht" ? "<i class='gr'>r</i> in cm" : "<i class='gr'>x</i> in cm", "<i class='gr'>B</i> in mT"], zeilen }
-	});
-});
 
 /* ---------- Aufgabe ---------- */
 P.bindeModus("modus-knoepfe", modus => {

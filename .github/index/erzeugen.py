@@ -7,7 +7,8 @@ und das Layout aus .github/index/vorlage.html; schreibt index.html und Klasse_<n
 
 Simulationen mit <meta name="kast-auslauf" content="JJJJ-MM-TT"> erscheinen nicht in der
 Übersicht. Sie bleiben für alte QR-Codes erreichbar und werden ab diesem Datum von
-.github/index/aufraeumen.py gelöscht (Workflow aufraeumen.yml).
+.github/index/aufraeumen.py gelöscht (Workflow aufraeumen.yml). Weiterleitungen alter Adressen
+(<meta name="kast-weiterleitung">, erzeugt mit weiterleitung.py) erscheinen ebenfalls nicht.
 
 Quelle dieser Datei: Documents/0_Einstellungen/Skript/simulationen_index/ (dort bearbeiten,
 dann simulationen_index.py ausführen, das lädt sie hoch).
@@ -15,6 +16,7 @@ dann simulationen_index.py ausführen, das lädt sie hoch).
 import glob, html, json, os, re
 
 HIER = os.path.dirname(os.path.abspath(__file__))
+WEITERLEITUNG = re.compile(r'<meta\s+name="kast-weiterleitung"', re.I)
 AUSLAUF = re.compile(r'<meta\s+name="kast-auslauf"\s+content="(\d{4}-\d{2}-\d{2})"', re.I)
 
 
@@ -41,7 +43,7 @@ def simulationen():
         klasse, datei = m.groups()
         n = re.match(r"^([A-Z])\.(\d+)\.(\d+)(?:_(gA|eA\d*))?_(.+)$", datei)
         text = open(pfad, encoding="utf-8", errors="replace").read()
-        if auslaufdatum(text):
+        if auslaufdatum(text) or WEITERLEITUNG.search(text):
             continue
         sims.append({
             "k": klasse,

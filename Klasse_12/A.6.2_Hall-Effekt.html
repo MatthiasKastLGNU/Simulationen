@@ -1028,12 +1028,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1219,7 +1222,6 @@ window.SimUI = (function () {
 			<canvas id="hall-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
 				<button id="btn-start" data-icon="pause" title="Pause"></button>
-				<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
 			</div>
 			<div class="steuerung">
@@ -1355,18 +1357,6 @@ btn.addEventListener("click", () => {
 	zustand.laeuft = !zustand.laeuft;
 	SimUI.setzeIcon(btn, zustand.laeuft ? "pause" : "play", zustand.laeuft ? "Pause" : "Start");
 	if (zustand.laeuft) stopp = K.starteSchleife(dt => { bewege(Math.min(dt, 0.05)); zeichne(gH, WH, HH); return zustand.laeuft; });
-});
-document.getElementById("btn-material").addEventListener("click", () => {
-	const mc = P.neuerCanvas(720, 360);
-	zeichne(mc.ctx, 720, 360);
-	const h = hall();
-	const zeilen = [0.1, 0.2, 0.3, 0.4, 0.5].map(B => [P.de(B, 2), P.de((h.m.z * h.I * B / (h.m.n * E_LAD * h.d)) * 1e3 * (1 + 0.01 * P.gauss()), 3)]);
-	P.zeigeMaterial({
-		titel: "Material: Messreihe zum Hall-Effekt",
-		text: "<p>Hall-Pl&auml;ttchen aus " + h.m.name + ", Dicke " + P.de(h.d * 1e3, 2) + "&nbsp;mm, Breite 1,0&nbsp;cm, Stromst&auml;rke " + P.sig(h.I * 1e3, 3) + "&nbsp;mA. Unsicherheit der Spannungsmessung &plusmn;&nbsp;1&nbsp;%.</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Hall-Plättchen im Magnetfeld (schematisch)" }],
-		tabelle: { kopf: ["<i class='gr'>B</i> in T", "<i class='gr'>U</i><sub>H</sub> in mV"], zeilen }
-	});
 });
 
 P.bindeModus("modus-knoepfe", modus => {

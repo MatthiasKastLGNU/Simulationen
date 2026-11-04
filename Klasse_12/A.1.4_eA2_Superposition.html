@@ -1038,12 +1038,15 @@ window.SimUI = (function () {
 		return String(dateiname).replace(/[^A-Za-z0-9ÄÖÜäöüß_.,-]+/g, "_").replace(/_+/g, "_") + ".png";
 	}
 	/* Canvas mit weissem Grund als PNG-Blob (kein Text unter dem Bild, Kast 2026-10-03: die Bedingungen stehen nur im Dateinamen) */
-	function bildBlob(canvas) {
+	function bildBlob(canvas) { /* weisser Grund, darunter eigener Streifen mit "Kast" rechts (Kast 2026-10-15/22) */
+		const d = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), streifen = Math.round(22 * d);
 		const c = document.createElement("canvas");
-		c.width = canvas.width; c.height = canvas.height;
+		c.width = canvas.width; c.height = canvas.height + streifen;
 		const g = c.getContext("2d");
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
+		g.fillStyle = "#888"; g.font = Math.round(12 * d) + "px " + getComputedStyle(document.body).fontFamily;
+		g.textAlign = "right"; g.textBaseline = "bottom"; g.fillText("Kast", c.width - 8 * d, c.height - 4 * d);
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }
@@ -1245,7 +1248,6 @@ window.SimUI = (function () {
 			<canvas id="ebene-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste">
 				<span class="knopfleiste" id="zeile-standard">
-					<button id="btn-material" class="neben" data-icon="notieren" data-text="Material" title="Material erzeugen"></button>
 					<button id="btn-standard" class="neben" data-icon="reset" title="Standardwerte"></button>
 				</span>
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
@@ -1518,17 +1520,6 @@ P.ziehbar(cE, (x, y) => {
 	aktualisiere();
 });
 
-document.getElementById("btn-material").addEventListener("click", () => {
-	const mc = P.neuerCanvas(720, 500);
-	zeichneEbene(mc.ctx, 720, 500, true);
-	const zeilen = zustand.ladungen.filter(l => l.an).map((l, k) => ["<i class='gr'>Q</i><sub>" + (zustand.ladungen.indexOf(l) + 1) + "</sub>", P.de(l.q, 1), "(" + P.de(l.x, 1) + " | " + P.de(l.y, 1) + ")"]);
-	P.zeigeMaterial({
-		titel: "Material: Anordnung von Punktladungen",
-		text: "<p>Eine Einheit im Koordinatensystem entspricht 1&nbsp;cm. " + (zustand.Eh > 0 ? "Zus&auml;tzlich wirkt ein homogenes Feld mit " + P.de(zustand.Eh, 1) + "&nbsp;kV/m unter " + zustand.EhW + "&deg; zur <i class='gr'>x</i>-Achse." : "") + "</p>",
-		bilder: [{ canvas: mc.canvas, unterschrift: "Lage der Ladungen und des Punkts P" }],
-		tabelle: { kopf: ["Ladung", "Wert in nC", "Ort in cm"], zeilen }
-	});
-});
 
 /* ---------- Aufgabe ---------- */
 const VERSTECKT = ["steuerung", "ergebnis-wrap", "box-achse"];
@@ -1601,7 +1592,7 @@ function setzeStation(name) {
 	const st = STATIONEN[name];
 	if (!st) return false;
 	const aus = id => document.getElementById(id).classList.add("verborgen");
-	["modus-knoepfe", "zeile-hom", "zeile-homw", "zeile-mass", "btn-material", "chip-gitter", "chip-einrasten", "box-achse"].forEach(aus);
+	["modus-knoepfe", "zeile-hom", "zeile-homw", "zeile-mass", "chip-gitter", "chip-einrasten", "box-achse"].forEach(aus);
 	for (let k = st.ladungen; k < 4; k++) aus("zeile-l" + k);
 	document.querySelectorAll("#beispiel-knoepfe button").forEach(b => b.classList.toggle("verborgen", !st.beispiele.includes(b.dataset.wert)));
 	document.getElementById("titel-beispiele").textContent = "Anordnung";
