@@ -1414,7 +1414,11 @@ function zeichneWanne(g, W, H, mitSonde) {
 	const ox = (W - s * LAENGE) / 2, oy = rand;
 	const px = x => ox + x * s, py = y => oy + y * s;
 	geo = { s, px, py, xw: X => (X - ox) / s, yw: Y => (Y - oy) / s };
-	g.fillStyle = "#EEF6FF"; g.fillRect(px(0), py(0), s * LAENGE, s * BREITE);
+	/* Wanne: Kunststoffrand mit Schatten, darin Millimeterpapier unter Wasser */
+	g.save(); g.shadowColor = "rgba(0,0,0,0.22)"; g.shadowBlur = 10; g.shadowOffsetY = 3;
+	g.fillStyle = "#DCE3EA"; g.beginPath(); if (g.roundRect) g.roundRect(px(0) - 9, py(0) - 9, s * LAENGE + 18, s * BREITE + 18, 10); else g.rect(px(0) - 9, py(0) - 9, s * LAENGE + 18, s * BREITE + 18); g.fill(); g.restore();
+	g.strokeStyle = "#9AA6B2"; g.lineWidth = 1.2; g.beginPath(); if (g.roundRect) g.roundRect(px(0) - 9, py(0) - 9, s * LAENGE + 18, s * BREITE + 18, 10); else g.rect(px(0) - 9, py(0) - 9, s * LAENGE + 18, s * BREITE + 18); g.stroke();
+	g.fillStyle = "#F4F9FF"; g.fillRect(px(0), py(0), s * LAENGE, s * BREITE);
 	if (s / 10 >= 3) {
 		g.strokeStyle = "#DCE8F2"; g.lineWidth = 0.5;
 		for (let k = 0; k <= LAENGE * 10; k++) { if (k % 10) { g.beginPath(); g.moveTo(px(k / 10), py(0)); g.lineTo(px(k / 10), py(BREITE)); g.stroke(); } }
@@ -1425,7 +1429,11 @@ function zeichneWanne(g, W, H, mitSonde) {
 	for (let y = 0; y <= BREITE; y++) { g.beginPath(); g.moveTo(px(0), py(y)); g.lineTo(px(LAENGE), py(y)); g.stroke(); }
 	for (let x = 0; x <= LAENGE; x += 5) P.text(g, String(x), px(x) + 2, py(0) + 11, { groesse: 10, farbe: "#557" });
 	for (let y = 5; y <= BREITE; y += 5) P.text(g, String(y), px(0) + 2, py(y) - 2, { groesse: 10, farbe: "#557" });
-	g.strokeStyle = "#333"; g.lineWidth = 2; g.strokeRect(px(0), py(0), s * LAENGE, s * BREITE);
+	/* Wasser: bläulicher Schimmer mit Lichtreflex */
+	{ const wg = g.createLinearGradient(px(0), py(0), px(LAENGE), py(BREITE));
+	  wg.addColorStop(0, "rgba(120,180,235,0.22)"); wg.addColorStop(0.45, "rgba(150,200,245,0.12)"); wg.addColorStop(1, "rgba(90,150,220,0.26)");
+	  g.fillStyle = wg; g.fillRect(px(0), py(0), s * LAENGE, s * BREITE); }
+	g.strokeStyle = "#6E8296"; g.lineWidth = 1.5; g.strokeRect(px(0), py(0), s * LAENGE, s * BREITE);
 
 	/* Aequipotentiallinien (marching squares) */
 	if (zustand.aequi && !rechnet) {
@@ -1453,7 +1461,7 @@ function zeichneWanne(g, W, H, mitSonde) {
 		for (let y = 0; y < BREITE; y += 0.1) for (let x = 0; x < LAENGE; x += 0.1) {
 			const e = el(x + 0.05, y + 0.05);
 			if (e < 0) continue;
-			g.fillStyle = e === 1 ? "#B0463C" : "#555";
+			g.fillStyle = e === 1 ? ((Math.round(x * 10) % 4) === 1 ? "#D9786C" : "#B0463C") : ((Math.round(x * 10) % 4) === 1 ? "#9AA3AE" : "#5E6670");   /* Metallglanz: helle Kante */
 			g.fillRect(px(x), py(y), s * 0.1 + 0.6, s * 0.1 + 0.6);
 		}
 		const t1 = { platten: [3, 0.9], ring: [10, 7.5 - 0.9], dipol: [6, 7.5 - 1.4] }[zustand.anordnung];
@@ -1470,14 +1478,27 @@ function zeichneWanne(g, W, H, mitSonde) {
 	});
 	if (!mitSonde) return;
 	const sx = px(zustand.sonde.x), sy = py(zustand.sonde.y);
-	g.fillStyle = "#111"; g.beginPath(); g.arc(sx, sy, 6, 0, 2 * Math.PI); g.fill();
-	g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(sx, sy, 2, 0, 2 * Math.PI); g.stroke();
-	/* Voltmeteranzeige */
-	const bx = px(LAENGE) - 150, by = py(BREITE) - 50;
-	g.fillStyle = "rgba(20,20,20,0.9)"; g.fillRect(bx, by, 142, 42);
-	g.font = "bold 20px Consolas, monospace"; g.fillStyle = "#7CFC7C"; g.textAlign = "right";
-	g.fillText(rechnet ? "----" : P.de(messung(zustand.sonde.x, zustand.sonde.y), 2) + " V", bx + 134, by + 29);
-	g.textAlign = "left";
+	/* Voltmeter als Gerät unten rechts, Messkabel zur Sonde */
+	const kl = W < 560, vb = kl ? 104 : 148, vh = kl ? 38 : 50;
+	const bx = px(LAENGE) - vb - 8, by = py(BREITE) - vh - 8;
+	g.strokeStyle = "#C0392B"; g.lineWidth = 2; g.beginPath(); g.moveTo(bx + 10, by + 4);
+	g.bezierCurveTo(bx - 40, by - 30, sx + 70, sy - 70, sx + 22, sy - 34); g.stroke();
+	/* Sonde als Messstift: schräger Griff, Metallspitze im Wasser */
+	g.save(); g.lineCap = "round";
+	g.strokeStyle = "#2B2F36"; g.lineWidth = 9; g.beginPath(); g.moveTo(sx + 24, sy - 36); g.lineTo(sx + 7, sy - 11); g.stroke();
+	g.strokeStyle = "#C0392B"; g.lineWidth = 9; g.beginPath(); g.moveTo(sx + 26, sy - 39); g.lineTo(sx + 22, sy - 33); g.stroke();
+	g.strokeStyle = "#B5BDC9"; g.lineWidth = 3; g.beginPath(); g.moveTo(sx + 7, sy - 11); g.lineTo(sx, sy); g.stroke();
+	g.restore();
+	g.fillStyle = "rgba(255,255,255,0.7)"; g.beginPath(); g.arc(sx, sy, 5, 0, 2 * Math.PI); g.fill();
+	g.fillStyle = "#111"; g.beginPath(); g.arc(sx, sy, 2.2, 0, 2 * Math.PI); g.fill();
+	g.save(); g.shadowColor = "rgba(0,0,0,0.25)"; g.shadowBlur = 6; g.shadowOffsetY = 2;
+	const vg = g.createLinearGradient(0, by, 0, by + vh); vg.addColorStop(0, "#F4F6F9"); vg.addColorStop(1, "#C9CFD8");
+	g.fillStyle = vg; g.beginPath(); if (g.roundRect) g.roundRect(bx, by, vb, vh, 8); else g.rect(bx, by, vb, vh); g.fill(); g.restore();
+	g.strokeStyle = "#6B7380"; g.lineWidth = 1; g.beginPath(); if (g.roundRect) g.roundRect(bx, by, vb, vh, 8); else g.rect(bx, by, vb, vh); g.stroke();
+	g.fillStyle = "#1F2A33"; g.beginPath(); if (g.roundRect) g.roundRect(bx + 6, by + 6, vb - 12, vh - 12, 4); else g.rect(bx + 6, by + 6, vb - 12, vh - 12); g.fill();
+	g.font = "bold " + (kl ? 16 : 21) + "px " + K.SCHRIFT; g.fillStyle = "#7CFFB2"; g.textAlign = "right"; g.textBaseline = "middle";
+	g.fillText(rechnet ? "----" : P.de(messung(zustand.sonde.x, zustand.sonde.y), 2) + " V", bx + vb - 14, by + vh / 2 + 1);
+	g.textAlign = "left"; g.textBaseline = "alphabetic";
 }
 
 function abstand(p) {
