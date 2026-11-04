@@ -900,15 +900,23 @@ window.SimUI = (function () {
 		/* Platten */
 		const dick = 8;
 		for (const y of [0, YW]) {
-			ctx.fillStyle = "#D8D8D8"; ctx.strokeStyle = "#444"; ctx.lineWidth = 1.2;
 			const py = y === 0 ? Yp(0) : Yp(YW) - dick;
+			const gr = ctx.createLinearGradient(0, py, 0, py + dick);
+			gr.addColorStop(0, "#F1F3F6"); gr.addColorStop(0.5, "#D5DAE1"); gr.addColorStop(1, "#AEB5BF");
+			ctx.fillStyle = gr; ctx.strokeStyle = "#6B7380"; ctx.lineWidth = 1.2;
 			ctx.fillRect(X(0), py, LG * sx, dick);
 			ctx.strokeRect(X(0), py, LG * sx, dick);
+			/* Erdungszeichen am rechten Ende */
+			const xe = X(LG) - 14, ye = y === 0 ? Yp(0) + dick : Yp(YW) - dick, vz = y === 0 ? 1 : -1;
+			ctx.strokeStyle = "#444"; ctx.lineWidth = 1.4;
+			ctx.beginPath(); ctx.moveTo(xe, ye); ctx.lineTo(xe, ye + vz * 8);
+			for (let k = 0; k < 3; k++) { ctx.moveTo(xe - 8 + 2.5 * k, ye + vz * (8 + 3 * k)); ctx.lineTo(xe + 8 - 2.5 * k, ye + vz * (8 + 3 * k)); }
+			ctx.stroke();
 		}
 		ctx.fillStyle = "#333"; ctx.font = "12px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-		ctx.fillText("geerdete Niederschlagsplatte", X(LG / 2), Yp(YW) - dick - 6);
+		ctx.fillText(W < 560 ? "geerdete Platte" : "geerdete Niederschlagsplatte", X(LG / 2), Yp(YW) - dick - 6);
 		ctx.textBaseline = "top";
-		ctx.fillText("geerdete Niederschlagsplatte", X(LG / 2), Yp(0) + dick + 6);
+		ctx.textAlign = "left"; ctx.fillText(W < 560 ? "geerdete Platte" : "geerdete Niederschlagsplatte", X(0), Yp(0) + dick + 6); ctx.textAlign = "center";
 
 		/* Haftende Teilchen auf den Platten */
 		ctx.fillStyle = "#96470C";
@@ -931,12 +939,14 @@ window.SimUI = (function () {
 			ctx.strokeStyle = "#0000BF"; ctx.lineWidth = 2;
 			ctx.beginPath(); ctx.moveTo(X(xd) - 3.2, Yp(D_HALB)); ctx.lineTo(X(xd) + 3.2, Yp(D_HALB)); ctx.stroke();
 		}
-		ctx.font = "12px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top";
-		{	/* heller Grund, damit die Beschriftung über den Feldlinien lesbar bleibt */
-			const txt = W < 560 ? "Sprühdrähte (negativ geladen)" : "Sprühdrähte an negativer Hochspannung";
-			const bt = ctx.measureText(txt).width + 8;
-			ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.fillRect(X(LG / 2) - bt / 2, Yp(D_HALB) + 9, bt, 15);
-			ctx.fillStyle = "#333"; ctx.fillText(txt, X(LG / 2), Yp(D_HALB) + 10);
+		{	/* Legende unter der unteren Platte (rechts), nie quer über die Feldlinien */
+			const t = W < 560 ? "Sprühdraht (−)" : "Sprühdraht an negativer Hochspannung";
+			ctx.font = "12px " + K.SCHRIFT; ctx.textAlign = "right"; ctx.textBaseline = "top";
+			const xr = X(LG) - 30, yt = Yp(0) + dick + 6, w = ctx.measureText(t).width;
+			ctx.fillStyle = "#0000BF"; ctx.fillText(t, xr, yt);
+			const xi = xr - w - 10, yi = yt + 7;
+			ctx.fillStyle = "#fff"; ctx.strokeStyle = "#111"; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(xi, yi, 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+			ctx.strokeStyle = "#0000BF"; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(xi - 2.6, yi); ctx.lineTo(xi + 2.6, yi); ctx.stroke();
 		}
 
 		/* Strömungspfeil */
@@ -947,8 +957,10 @@ window.SimUI = (function () {
 
 		/* Teilchen */
 		for (const t of zustand.teilchen) {
-			ctx.fillStyle = t.geladen ? "#96470C" : "#C9A188";
-			ctx.beginPath(); ctx.arc(X(t.x), Yp(t.y), rTeilchen(), 0, 2 * Math.PI); ctx.fill();
+			const rt = rTeilchen() * 1.35, gx = X(t.x), gy = Yp(t.y);
+			const gt = ctx.createRadialGradient(gx - rt * 0.35, gy - rt * 0.35, rt * 0.1, gx, gy, rt);
+			gt.addColorStop(0, t.geladen ? "#D08A55" : "#EAD5C4"); gt.addColorStop(1, t.geladen ? "#6E3209" : "#B08870");
+			ctx.fillStyle = gt; ctx.beginPath(); ctx.arc(gx, gy, rt, 0, 2 * Math.PI); ctx.fill();
 		}
 
 		/* Markiertes Teilchen mit Pfeilen */
