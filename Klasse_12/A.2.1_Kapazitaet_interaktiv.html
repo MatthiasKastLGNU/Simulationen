@@ -1091,7 +1091,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		let g = r.dataset.groesse || null;
 		if (g === "-") g = null;
 		/* <html data-groessenfarben="aus">: Blätter dieser Stufe zeichnen noch nicht im TikZ-Farbschema → Regler bleiben blau */
-		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung/i.test(txt.split(" ")[0])) { g = k; break; }
+		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung|winkel|richtung|zeit|abstand|l[äa]nge|masse|unsicherheit|leistung/i.test(txt.split(" ")[0])) { g = k; break; }
 		r.dataset.kdFarbe = g || "-";
 		if (!g) return;
 		r.style.setProperty("--spur", "var(--f-" + g + ")");
@@ -3221,6 +3221,9 @@ KI.seite({
 		let a = document.getElementById("wert-" + suf) || document.getElementById(r.id + "-wert");
 		const n = r.nextElementSibling;
 		if (!a && n && /(^|\s)(wert|wertanz)(\s|$)/.test(n.className)) a = n;
+		/* u-regler -> u-wert; sonst Anzeige .zahl/.wert in derselben Reglerzeile (2026-11-04, Röntgenspektrum) */
+		if (!a && /-(regler|slider)$/.test(r.id)) a = document.getElementById(r.id.replace(/-(regler|slider)$/, "-wert"));
+		if (!a && r.parentElement) a = [...r.parentElement.querySelectorAll(":scope > .zahl, :scope > .wert, :scope > .wertanz")].find(x => x !== r) || null;
 		return a;
 	};
 	/* bei „1 cm ≙ 1,75 mN“ oder „k = 2,5“ zählt die Zahl dahinter */

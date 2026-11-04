@@ -267,7 +267,7 @@
 		let g = r.dataset.groesse || null;
 		if (g === "-") g = null;
 		/* <html data-groessenfarben="aus">: Blätter dieser Stufe zeichnen noch nicht im TikZ-Farbschema → Regler bleiben blau */
-		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung/i.test(txt.split(" ")[0])) { g = k; break; }
+		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung|winkel|richtung|zeit|abstand|l[äa]nge|masse|unsicherheit|leistung/i.test(txt.split(" ")[0])) { g = k; break; }
 		r.dataset.kdFarbe = g || "-";
 		if (!g) return;
 		r.style.setProperty("--spur", "var(--f-" + g + ")");

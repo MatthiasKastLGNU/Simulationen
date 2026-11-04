@@ -873,6 +873,608 @@ function tabellenBild(kopf, zeilen) {
 }
 </script>
 
+<style id="kast-design">
+/* ==========================================================================
+   Kast-Design 2026-11 (Klasse 12): ein Bediensystem für alle Simulationen
+   Gilt für SimUI-, KI- und Einzeldateien gleichermaßen. Rollen statt Einzelstile:
+   Modus · Hauptaktion · Auswahl · Schalter · Werkzeug | Hauptwert · Nebenwert · Hinweis
+   Farben der Größen wie im TikZ-Farbschema der Arbeitsblätter (2026-10-18).
+   ========================================================================== */
+:root {
+	--ui: #0000BF; --ui-dunkel: #00008F; --ui-hell: #EEF0FF; --ui-zart: #F7F8FF;
+	--rand: #C9CDD6; --rand-zart: #E3E6EC; --flaeche: #F2F3F6; --flaeche2: #E8EAEF;
+	--text2: #4A4F59; --text3: #737884;
+	--gut: #2E7D32; --gut-hg: #EEF7EE; --falsch: #C62828; --falsch-hg: #FDF0F0; --gold: #E0A100;
+	/* Farbschema der Blätter */
+	--f-plus: #E03030; --f-minus: #3050E0; --f-F: #BF0000; --f-E: #D46A00; --f-B: #00838F;
+	--f-v: #2E8B3A; --f-p: #8D5524; --f-a: #C2185B; --f-I: #6A3D9A; --f-hilfe: #808080;
+	--f-phi-n: #3050E0; --f-phi-m: #8A3FB0; --f-phi-h: #E03030;
+	--r-knopf: 6px; --r-karte: 8px;
+}
+/* Formelzeichen in der Farbe ihrer Größe (wie im Blatt) */
+html.kd i.gF, html.kd .gF { color: var(--f-F); } html.kd i.gE, html.kd .gE { color: var(--f-E); }
+html.kd i.gB, html.kd .gB { color: var(--f-B); } html.kd i.gv, html.kd .gv { color: var(--f-v); }
+html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { color: var(--f-a); }
+html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
+html.kd .gphi { color: var(--f-phi-m); }
+
+/* ---------- Auftrag: was ist zu tun? (oben im Kasten, normale Schrift) ---------- */
+html.kd p.auftrag, html.kd .auftrag-text, html.kd p.hinweis#auftrag {
+	font-size: 1rem; color: #111; margin: 0 0 0.6rem; line-height: 1.45;
+}
+
+/* ---------- 1 Modus: Leiste über dem Kasten (Segmentleiste) ---------- */
+html.kd .modusleiste {
+	display: flex; flex-wrap: wrap; gap: 3px; width: fit-content; max-width: 100%;
+	padding: 3px; margin: 0 0 0.75rem; background: var(--ui-hell); border-radius: 9px;
+	border: 1px solid #D9DDF7;
+}
+html.kd .modusleiste button {
+	font: inherit; font-size: 0.95rem; line-height: 1.2; min-height: 2.15rem;
+	padding: 0.3rem 0.95rem; border: none !important; border-radius: var(--r-knopf);
+	background: transparent; color: var(--ui); cursor: pointer; box-shadow: none !important;
+	display: inline-flex; align-items: center; gap: 0.4rem; font-weight: normal;
+}
+html.kd .modusleiste button:hover:not(.aktiv) { background: rgba(0,0,191,0.07); }
+html.kd .modusleiste button.aktiv { background: var(--ui) !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,80,0.3) !important; }
+html.kd .modusleiste button svg { width: auto; height: 1.15rem; max-width: 2rem; flex: none; }
+
+/* ---------- Bediengruppen: kleiner Titel über den Elementen ---------- */
+html.kd .bedienleiste, html.kd div.gruppen {
+	display: flex; flex-wrap: wrap; gap: 0.7rem 1.4rem; align-items: flex-end; margin-top: 0.7rem;
+}
+html.kd .bgruppe, html.kd div.gruppen > div.gr, html.kd div.gk { display: inline-flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+html.kd .btitel, html.kd .gtitel, html.kd div.gt, html.kd .gk-titel {
+	font-size: 0.78rem; color: var(--text3); letter-spacing: 0.01em; line-height: 1.2; font-weight: normal;
+}
+html.kd .knopfleiste, html.kd .knopfreihe, html.kd div.kn, html.kd .ik-leiste { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+
+/* ---------- 3 Auswahl (eins aus mehreren): Segmente in einer grauen Schale ---------- */
+html.kd .k-wahl {
+	display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; width: fit-content; max-width: 100%;
+	background: var(--flaeche); border: 1px solid var(--rand-zart); border-radius: 8px;
+}
+html.kd .k-wahl > button {
+	font: inherit; font-size: 0.9rem; line-height: 1.2; min-height: 2.15rem; min-width: 2.4rem;
+	padding: 0.25rem 0.7rem; border: 1px solid transparent !important; border-radius: var(--r-knopf);
+	background: transparent !important; color: #2B2F36 !important; box-shadow: none !important; font-weight: normal;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; cursor: pointer;
+}
+html.kd .k-wahl > button:hover:not(.aktiv):not(:disabled) { background: rgba(0,0,0,0.05) !important; }
+html.kd .k-wahl > button.aktiv {
+	background: #fff !important; color: var(--ui) !important; border-color: var(--ui) !important;
+	box-shadow: 0 1px 3px rgba(0,0,60,0.18) !important;
+}
+html.kd .k-wahl > button:disabled { opacity: 0.4; cursor: default; }
+html.kd .k-wahl > button svg { width: auto; height: 1.3rem; max-width: 2.2rem; flex: none; }
+html.kd .k-wahl > button.gross svg, html.kd .k-wahl > button.ik.gross svg { width: auto; height: 1.6rem; max-width: 2.6rem; }
+
+/* einzelne Knöpfe ohne Rolle (z. B. Polung tauschen): ruhig, grau */
+html.kd .k-einzel {
+	font: inherit; font-size: 0.9rem; min-height: 2.15rem; min-width: 2.4rem; padding: 0.25rem 0.7rem;
+	border: 1px solid var(--rand) !important; border-radius: var(--r-knopf); background: #fff !important;
+	color: #2B2F36 !important; box-shadow: 0 1px 1px rgba(0,0,0,0.05) !important;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; cursor: pointer;
+}
+html.kd .k-einzel:hover:not(:disabled) { background: var(--flaeche) !important; }
+html.kd .k-einzel.aktiv { border-color: var(--ui) !important; color: var(--ui) !important; background: var(--ui-hell) !important; }
+
+/* ---------- 4 Schalter (an/aus): Pille mit Leuchtpunkt ---------- */
+html.kd label.chip {
+	display: inline-flex; align-items: center; gap: 0; position: relative; flex: 0 0 auto !important;
+	min-height: 2.15rem; padding: 0.2rem 0.85rem 0.2rem 0.6rem; border-radius: 999px;
+	border: 1px solid var(--rand) !important; background: #fff !important; color: #2B2F36 !important;
+	box-shadow: none !important; font-size: 0.9rem; cursor: pointer; min-width: 0 !important; white-space: nowrap;
+}
+html.kd label.chip::before {
+	content: ""; flex: none; width: 0.62rem; height: 0.62rem; border-radius: 50%;
+	border: 1.5px solid #A3A8B3; background: #fff; margin-right: 0.45rem; transition: background 0.15s, border-color 0.15s;
+}
+html.kd label.chip:hover { background: var(--flaeche) !important; }
+html.kd label.chip:has(input:checked) { background: var(--ui-hell) !important; border-color: var(--ui) !important; color: var(--ui) !important; }
+html.kd label.chip:has(input:checked)::before { background: var(--ui); border-color: var(--ui); box-shadow: 0 0 0 2px rgba(0,0,191,0.15); }
+html.kd label.chip:has(input:disabled) { opacity: 0.4; cursor: default; }
+html.kd label.chip:has(input:focus-visible) { outline: 2px solid #6B7BFF; outline-offset: 2px; }
+html.kd label.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+html.kd label.chip span[data-chipicon] { margin-right: 0.3rem; }
+html.kd span[data-chipicon] svg { width: 1.15rem; height: 1.15rem; display: block; }
+/* Umschaltknöpfe (aria-pressed), z. B. Pfeile ein/aus: wie Schalter, Pille mit Leuchtpunkt */
+html.kd .k-schaltgruppe { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+html.kd button.k-schalt {
+	font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto;
+	min-height: 2.15rem; padding: 0.2rem 0.8rem 0.2rem 0.6rem; border-radius: 999px; cursor: pointer;
+	border: 1px solid var(--rand) !important; background: #fff !important; color: #2B2F36 !important; box-shadow: none !important;
+}
+html.kd button.k-schalt::before {
+	content: ""; flex: none; width: 0.62rem; height: 0.62rem; border-radius: 50%;
+	border: 1.5px solid #A3A8B3; background: #fff; transition: background 0.15s, border-color 0.15s;
+}
+html.kd button.k-schalt:hover:not(:disabled) { background: var(--flaeche) !important; }
+html.kd button.k-schalt[aria-pressed="true"] { background: var(--ui-hell) !important; border-color: var(--ui) !important; color: var(--ui) !important; }
+html.kd button.k-schalt[aria-pressed="true"]::before { background: var(--ui); border-color: var(--ui); box-shadow: 0 0 0 2px rgba(0,0,191,0.15); }
+html.kd button.k-schalt:disabled { opacity: 0.4; cursor: default; }
+html.kd button.k-schalt svg { width: auto; height: 1.3rem; max-width: 2.2rem; flex: none; }
+/* gewöhnliche Häkchen außerhalb von Chips */
+html.kd input[type="checkbox"] { accent-color: var(--ui); width: 1.05rem; height: 1.05rem; }
+
+/* ---------- 2 Hauptaktion: blau gefüllt, fett, eine pro Kasten ---------- */
+html.kd button.haupt {
+	font: inherit; font-size: 1rem; font-weight: bold; line-height: 1.2; min-height: 2.5rem;
+	padding: 0.35rem 1.15rem; border: 1px solid var(--ui) !important; border-radius: var(--r-knopf);
+	background: var(--ui) !important; color: #fff !important; cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0,0,80,0.25), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+}
+html.kd button.haupt:hover:not(:disabled) { background: var(--ui-dunkel) !important; }
+html.kd button.haupt:active:not(:disabled) { transform: translateY(1px); }
+html.kd button.haupt:disabled { opacity: 0.45; cursor: default; }
+html.kd button.haupt.an, html.kd button.haupt.aktiv, html.kd button.haupt.laeuft { background: #fff !important; color: var(--ui) !important; }
+html.kd button.haupt svg { width: auto; height: 1.25rem; max-width: 2rem; flex: none; }
+/* Start/Pause als runder Knopf (nur Symbol) */
+html.kd button.haupt.k-rund { width: 2.6rem; height: 2.6rem; min-height: 0; padding: 0; border-radius: 50%; }
+html.kd button.haupt.k-rund svg { width: 1.45rem; height: 1.45rem; }
+
+/* Gerät ein/aus (Strom, Quelle): bernstein wie eine Kontrollleuchte */
+html.kd .schalter-an { background: #FFF4D6 !important; border-color: #E0A100 !important; color: #8A5A00 !important; box-shadow: 0 0 0 1px #E0A100 inset !important; }
+/* Bewegung (Tempo, Schritt): dunkel wie ein Gerät */
+html.kd button.beweg, html.kd button.ik.pfeil {
+	min-height: 2.15rem; border-radius: var(--r-knopf); background: #2E3238 !important; border: 1px solid #2E3238 !important;
+	color: #fff !important; box-shadow: none !important;
+}
+html.kd button.beweg:hover:not(:disabled), html.kd button.ik.pfeil:hover:not(:disabled) { background: #474C54 !important; }
+html.kd button.ik.pfeil { min-width: 2.9rem; min-height: 2.4rem; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+html.kd button.ik.pfeil svg { width: auto; height: 1.4rem; }
+html.kd .gk-hinweis { font-size: 0.75rem; color: var(--text3); line-height: 1.15; margin-left: 0.25rem; }
+html.kd button.beweg.aktiv { color: #FFD34D !important; border-color: #FFD34D !important; }
+
+/* ---------- 5 Werkzeug: kleine graue Symbole unter dem Bild rechts ---------- */
+html.kd .bildrahmen { position: relative; }
+html.kd .bildleiste {
+	position: static !important; display: flex; justify-content: flex-end; align-items: center;
+	gap: 2px; margin: 3px 0 0.35rem; flex-wrap: wrap; background: none; padding: 0;
+}
+html.kd .bildleiste button, html.kd button.neben, html.kd button.symbol {
+	font: inherit; font-size: 0.8rem; min-height: 2rem; min-width: 2rem; padding: 0.2rem 0.35rem;
+	border: 1px solid transparent !important; border-radius: var(--r-knopf); background: transparent !important;
+	color: var(--text3) !important; box-shadow: none !important; font-weight: normal;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; cursor: pointer;
+}
+html.kd .bildleiste button:hover:not(:disabled), html.kd button.neben:hover:not(:disabled), html.kd button.symbol:hover:not(:disabled) {
+	background: var(--flaeche) !important; color: #222 !important; border-color: var(--rand-zart) !important;
+}
+html.kd .bildleiste button:disabled, html.kd button.neben:disabled { opacity: 0.35; cursor: default; }
+html.kd .bildleiste button svg, html.kd button.neben svg, html.kd button.symbol svg { width: 1.1rem; height: 1.1rem; }
+/* Pause/Start eines laufenden Diagramms bleibt kenntlich */
+html.kd .bildleiste button:not(.neben):not(.symbol)[data-icon="play"], html.kd .bildleiste button:not(.neben):not(.symbol)[data-icon="pause"] { color: var(--ui) !important; }
+
+/* ---------- Regler: Beschriftung · Schiene · Wert ---------- */
+html.kd input[type="range"] {
+	-webkit-appearance: none; appearance: none; background: transparent; height: 1.6rem; margin: 0;
+	min-width: 110px; cursor: pointer; --anteil: 50%; --spur: var(--ui);
+}
+html.kd input[type="range"]:focus { outline: none; }
+html.kd input[type="range"]::-webkit-slider-runnable-track {
+	height: 5px; border-radius: 3px;
+	background: linear-gradient(to right, var(--spur) 0, var(--spur) var(--anteil), #D5D8E0 var(--anteil), #D5D8E0 100%);
+}
+html.kd input[type="range"]::-moz-range-track { height: 5px; border-radius: 3px; background: #D5D8E0; }
+html.kd input[type="range"]::-moz-range-progress { height: 5px; border-radius: 3px; background: var(--spur); }
+html.kd input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none; width: 1.15rem; height: 1.15rem; margin-top: calc(2.5px - 0.575rem); border-radius: 50%;
+	background: #fff; border: 2px solid var(--spur); box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+html.kd input[type="range"]::-moz-range-thumb {
+	width: 0.95rem; height: 0.95rem; border-radius: 50%; background: #fff; border: 2px solid var(--spur); box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+html.kd input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(0,0,191,0.18); }
+html.kd input[type="range"]:disabled { opacity: 0.35; cursor: default; }
+/* Wert neben dem Regler: ruhige Pille, antippbar (regler_tippen) */
+html.kd input[type="range"] ~ .wert, html.kd input[type="range"] ~ .wertanz, html.kd .wert-tippbar, html.kd .regler .wert {
+	display: inline-block; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right;
+	min-width: 4.6em; padding: 0.1rem 0.45rem; border-radius: 5px; background: var(--flaeche);
+	color: #1D2027; font-size: 0.92rem; font-weight: 600; text-decoration: none !important; border: none !important;
+}
+html.kd .wert-tippbar:hover { background: var(--ui-hell); color: var(--ui); cursor: text; box-shadow: inset 0 0 0 1px #B8BFF2; }
+html.kd .zeile > label, html.kd .steuerung .zeile > label { font-size: 0.92rem; color: var(--text2); }
+
+/* ---------- Werte: Hauptwert · Nebenwerte (Wertkarten) ---------- */
+html.kd .wertkarten, html.kd div.werte { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0.2rem; }
+html.kd .wertkarte, html.kd div.werte > .karte {
+	flex: 1 1 8.5rem; min-width: 0; border: 1px solid var(--rand-zart) !important; border-radius: var(--r-karte);
+	padding: 0.35rem 0.7rem 0.4rem; background: #FAFBFC !important; box-shadow: none !important;
+}
+html.kd .wertkarte .wk-titel, html.kd .wertkarte .wk-t, html.kd div.werte > .karte > .klein {
+	font-size: 0.76rem; overflow-wrap: break-word; color: var(--text3); line-height: 1.25; white-space: normal;
+}
+html.kd .wertkarte .wk-wert, html.kd .wertkarte .wk-w, html.kd div.werte > .karte > .gross {
+	font-size: 1.3rem; font-weight: 600; color: #15181E; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.3;
+}
+html.kd .wertkarte .wk-text { font-size: 0.85rem; color: var(--text2); }
+/* Hauptwert: worum es geht */
+html.kd .wertkarte.betont, html.kd div.werte > .karte.haupt {
+	flex: 2 1 12rem; border: 2px solid var(--ui) !important; background: var(--ui-zart) !important;
+}
+html.kd .wertkarte.betont .wk-titel, html.kd .wertkarte.betont .wk-t, html.kd div.werte > .karte.haupt > .klein { color: var(--ui); }
+html.kd .wertkarte.betont .wk-wert, html.kd .wertkarte.betont .wk-w, html.kd div.werte > .karte.haupt > .gross { font-size: 1.6rem; font-weight: bold; color: #0A0C40; }
+html.kd .kd-werte { border-top: none !important; padding-top: 0 !important; line-height: 1.45 !important; }
+html.kd .wertkarte.klein { flex: 0 1 auto; }
+html.kd .wertkarte.klein .wk-wert { font-size: 1.05rem; }
+html.kd p.urteil { margin: 0.45rem 0 0; padding: 0.35rem 0.7rem; border-radius: 0 6px 6px 0; font-weight: 600; font-size: 0.95rem; }
+html.kd p.urteil.gut { border-left: 4px solid var(--gut); background: var(--gut-hg); color: #1B5E20; }
+html.kd p.urteil.schlecht { border-left: 4px solid var(--falsch); background: var(--falsch-hg); color: #8E1B1B; }
+html.kd p.urteil.neutral { border-left: 4px solid var(--ui); background: var(--ui-zart); color: #0A0C40; }
+/* Nebenwerte als ruhige Zeile */
+html.kd .auswertung { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid var(--rand-zart); font-size: 0.95rem; line-height: 1.65; color: #1D2027; }
+html.kd .auswertung .naeherung { color: var(--text3); font-size: 0.88rem; }
+
+/* ---------- Hinweise: klein, grau, am Ende; Modell einklappbar ---------- */
+html.kd .fussnote, html.kd p.hinweis:not(#auftrag), html.kd div.hinweis { font-size: 0.86rem; color: var(--text3); line-height: 1.45; margin: 0.5rem 0 0; }
+html.kd details.mehr { margin: 0.55rem 0 0; font-size: 0.86rem; color: var(--text3); }
+html.kd details.mehr > summary {
+	cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 0.35rem;
+	color: var(--text3); font-size: 0.84rem; padding: 0.15rem 0.5rem 0.15rem 0.3rem; border-radius: 999px; user-select: none;
+}
+html.kd details.mehr > summary::-webkit-details-marker { display: none; }
+html.kd details.mehr > summary::before {
+	content: "i"; display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%;
+	border: 1.3px solid currentColor; font: italic bold 0.72rem/1 Georgia, serif;
+}
+html.kd details.mehr > summary:hover { background: var(--flaeche); color: #333; }
+html.kd details.mehr[open] > summary { color: #333; }
+html.kd details.mehr > .mehr-inhalt { padding: 0.35rem 0 0 0.3rem; line-height: 1.45; }
+html.kd details.mehr > .mehr-inhalt > p { margin: 0 0 0.35rem; }
+
+/* ---------- Eingabelücken (Spiele, Aufträge): deutlich, Einheit dahinter ---------- */
+html.kd input[type="number"], html.kd input[type="text"].eingabe, html.kd input.eingabe, html.kd .eingabe input {
+	font: inherit; font-size: 1.05rem; font-variant-numeric: tabular-nums; text-align: right;
+	padding: 0.25rem 0.5rem; min-height: 2.2rem; border: 1.5px solid #9EA5B5; border-radius: var(--r-knopf);
+	background: #fff; color: #111; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+}
+html.kd input[type="number"]:focus, html.kd input.eingabe:focus, html.kd .eingabe input:focus { outline: none; border-color: var(--ui); box-shadow: 0 0 0 3px rgba(0,0,191,0.15); }
+html.kd input.richtig, html.kd .eingabe.richtig input { border-color: var(--gut) !important; background: var(--gut-hg) !important; }
+html.kd input.falsch, html.kd .eingabe.falsch input { border-color: var(--falsch) !important; background: var(--falsch-hg) !important; }
+html.kd .einheit { color: var(--text2); margin-left: 0.25rem; white-space: nowrap; }
+
+/* Rückmeldung nach dem Prüfen */
+html.kd .rueckmeldung.gut, html.kd .meldung.gut { border-left: 4px solid var(--gut); background: var(--gut-hg); padding: 0.4rem 0.7rem; border-radius: 0 6px 6px 0; }
+html.kd .rueckmeldung.schlecht, html.kd .meldung.schlecht { border-left: 4px solid var(--falsch); background: var(--falsch-hg); padding: 0.4rem 0.7rem; border-radius: 0 6px 6px 0; }
+
+/* ---------- Messtabelle ---------- */
+html.kd table.messtabelle, html.kd table.mess { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+html.kd table.messtabelle thead th, html.kd table.mess thead th { font-weight: 600; color: #222; background: #FAFBFC; }
+html.kd table.messtabelle td:first-child, html.kd table.mess td:first-child { color: var(--text3); }
+html.kd tr.messzeile.neu td:not(.weg) { animation: kd-neu 1.2s ease-out; }
+@keyframes kd-neu { from { background: #FFF3C4; } to { background: transparent; } }
+
+/* ---------- Bild ---------- */
+html.kd canvas.sim { border-radius: 4px; }
+
+/* ---------- Handy: größere Tippflächen ---------- */
+@media (max-width: 560px) {
+	html.kd .modusleiste { width: 100%; }
+	html.kd .zeile:has(> input[type="range"]) { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.6rem; align-items: center; }
+	html.kd .zeile:has(> input[type="range"]) > label { grid-column: 1 / -1; flex: none !important; }
+	html.kd .zeile > input[type="range"] { min-width: 0; width: 100%; }
+	html.kd .modusleiste button { flex: 1 1 auto; justify-content: center; padding: 0.3rem 0.6rem; }
+	html.kd .bedienleiste, html.kd div.gruppen { gap: 0.6rem 0.9rem; }
+	html.kd .k-wahl > button, html.kd label.chip, html.kd .k-einzel { min-height: 2.4rem; }
+	html.kd .bildleiste button { min-height: 2.3rem; min-width: 2.3rem; }
+	html.kd .wertkarte, html.kd div.werte > .karte { flex-basis: 7rem; }
+	html.kd .wertkarte .wk-wert, html.kd .wertkarte .wk-w, html.kd div.werte > .karte > .gross { font-size: 1.15rem; }
+	html.kd .wertkarte.betont .wk-wert, html.kd .wertkarte.betont .wk-w, html.kd div.werte > .karte.haupt > .gross { font-size: 1.4rem; }
+}
+@media print { html.kd .bildleiste, html.kd details.mehr > summary::before { display: none; } }
+/* Wertkarten: leere Karten ausblenden, Karten nicht über die ganze Zeile ziehen */
+html.kd .wertkarte:has(> .wk-wert:empty) { display: none; }
+html.kd .wertkarte { max-width: 17rem; }
+html.kd .wertkarte.betont { max-width: 24rem; }
+</style>
+<script id="kast-design-js">
+/* Kast-Design 2026-11: Rollen zuweisen, Reglerschiene füllen, einheitliches Messgerät */
+(() => {
+	document.documentElement.classList.add("kd");
+
+	/* ---------------- Digitalmessgerät für Canvas-Bilder ----------------
+	   KastMessgeraet.digital(ctx, x, y, {text, einheit, titel, groesse, farbe, aus, buchsen, anker})
+	   (x, y) ist die Mitte (anker "mitte"), sonst "links"/"rechts" an der Gehäusekante.
+	   Gibt {x, y, b, h} des Gehäuses zurück. */
+	const SEG = { "0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc", "5": "afgcd", "6": "afgedc",
+		"7": "abc", "8": "abcdefg", "9": "abcfgd", "-": "g", "−": "g", " ": "", "E": "afged", "r": "eg", "o": "cdeg",
+		"L": "fed", "A": "abcefg", "H": "bcefg", "P": "abefg", "U": "bcdef", "n": "ceg", "t": "fged", "F": "aefg", "C": "adef" };
+	function segmente(ctx, x, y, h, zeichen, farbe, geist) {
+		const w = h * 0.54, t = Math.max(1.5, h * 0.13), g = Math.max(0.6, t * 0.12), k = 0.1;
+		const quer = yc => { const x0 = t / 2 + g, x1 = w - t / 2 - g;
+			return [[x0, yc], [x0 + t / 2, yc - t / 2], [x1 - t / 2, yc - t / 2], [x1, yc], [x1 - t / 2, yc + t / 2], [x0 + t / 2, yc + t / 2]]; };
+		const hoch = (xc, y0, y1) => { y0 += g; y1 -= g;
+			return [[xc, y0], [xc + t / 2, y0 + t / 2], [xc + t / 2, y1 - t / 2], [xc, y1], [xc - t / 2, y1 - t / 2], [xc - t / 2, y0 + t / 2]]; };
+		const o = t / 2, m = h / 2, u = h - t / 2, l = t / 2, r = w - t / 2;
+		const S = { a: quer(o), g: quer(m), d: quer(u), f: hoch(l, o, m), b: hoch(r, o, m), e: hoch(l, m, u), c: hoch(r, m, u) };
+		ctx.save(); ctx.translate(x, y); ctx.transform(1, 0, -k, 1, k * h, 0);
+		const male = (s, f) => { ctx.fillStyle = f; ctx.beginPath(); S[s].forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); ctx.fill(); };
+		if (geist) for (const s of "abcdefg") male(s, geist);
+		for (const s of (SEG[zeichen] || "")) male(s, farbe);
+		ctx.restore();
+		return w;
+	}
+	function rr(ctx, x, y, b, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, b, h, r); else ctx.rect(x, y, b, h); }
+	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
+	function digital(ctx, x, y, o) {
+		o = o || {};
+		const h = o.groesse || 22, text = String(o.text == null ? "" : o.text).replace(/−/g, "-");
+		const einheit = o.einheit || "", aus = !!o.aus;
+		const pad = h * 0.32, w = h * 0.54, sp = h * 0.2, komma = h * 0.2;
+		/* Zeichen zerlegen: Komma/Punkt hängt am vorigen Ziffernfeld */
+		const z = []; for (const c of text) { if ((c === "," || c === ".") && z.length) z[z.length - 1].k = true; else z.push({ c, k: false }); }
+		const stellen = Math.max(o.stellen || 0, z.length);
+		while (z.length < stellen) z.unshift({ c: " ", k: false });
+		const zifB = stellen * (w + sp) - sp + komma * 0.4;
+		ctx.save();
+		const fE = Math.round(h * 0.5);
+		ctx.font = "600 " + fE + "px " + SCHRIFT;
+		const eB = einheit ? ctx.measureText(einheit).width + pad * 0.7 : 0;
+		const lB = zifB + eB + pad * 2 + h * 0.1, lH = h + pad * 2;
+		const fT = Math.max(10, Math.round(h * 0.42));
+		const nackt = !!o.ohneGehaeuse, rand = nackt ? 0 : h * 0.3, kopf = nackt ? 0 : o.titel ? Math.max(h * 0.62, fT * 1.45) : rand;
+		let tB = 0; if (o.titel && !nackt) { ctx.font = fT + "px " + SCHRIFT; tB = ctx.measureText(o.titel).width + h * 0.5; }
+		const gB = Math.max(lB + rand * 2, tB), gH = lH + kopf + rand + (o.buchsen && !nackt ? h * 0.75 : 0);
+		let gx = x - gB / 2; if (o.anker === "links") gx = x; else if (o.anker === "rechts") gx = x - gB;
+		const gy = o.oben ? y : y - (kopf + lH / 2);
+		/* Gehäuse */
+		if (!nackt) {
+		ctx.shadowColor = "rgba(0,0,0,0.28)"; ctx.shadowBlur = h * 0.35; ctx.shadowOffsetY = h * 0.08;
+		const gg = ctx.createLinearGradient(0, gy, 0, gy + gH); gg.addColorStop(0, "#474D56"); gg.addColorStop(1, "#272B31");
+		ctx.fillStyle = gg; rr(ctx, gx, gy, gB, gH, h * 0.32); ctx.fill();
+		ctx.shadowColor = "transparent";
+		ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1; rr(ctx, gx + 0.5, gy + 0.5, gB - 1, gH - 1, h * 0.3); ctx.stroke();
+		if (o.farbe) { ctx.fillStyle = o.farbe; rr(ctx, gx + h * 0.25, gy + gH - h * 0.13, gB - h * 0.5, h * 0.07, h * 0.04); ctx.fill(); }
+		if (o.titel) {
+			ctx.fillStyle = "#D9DEE5"; ctx.font = fT + "px " + SCHRIFT; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+			ctx.fillText(o.titel, gx + Math.max(rand, h * 0.25), gy + kopf * 0.55);
+		}
+		}
+		/* Anzeige (reflektierendes LCD) */
+		const lx = gx + (gB - lB) / 2, ly = gy + kopf;
+		const lg = ctx.createLinearGradient(0, ly, 0, ly + lH);
+		if (aus) { lg.addColorStop(0, "#9AA493"); lg.addColorStop(1, "#8C9685"); } else { lg.addColorStop(0, "#D3DEC3"); lg.addColorStop(1, "#BBC9A6"); }
+		ctx.fillStyle = lg; rr(ctx, lx, ly, lB, lH, h * 0.14); ctx.fill();
+		ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.lineWidth = 1; rr(ctx, lx + 0.5, ly + 0.5, lB - 1, lH - 1, h * 0.13); ctx.stroke();
+		ctx.fillStyle = "rgba(255,255,255,0.22)"; ctx.fillRect(lx + 2, ly + 2, lB - 4, lH * 0.18);
+		const tinte = "#141C0E", geist = aus ? null : "rgba(20,28,14,0.06)";
+		let cx = lx + pad;
+		const cy = ly + pad;
+		for (const e of z) {
+			if (!aus) {
+				if (SEG[e.c] !== undefined) segmente(ctx, cx, cy, h, e.c, tinte, geist);
+				else { ctx.fillStyle = tinte; ctx.font = "bold " + Math.round(h) + "px " + SCHRIFT; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(e.c, cx, cy); }
+				if (e.k) { ctx.fillStyle = tinte; ctx.beginPath(); ctx.arc(cx + w + sp * 0.35, cy + h - h * 0.07, h * 0.08, 0, 7); ctx.fill(); }
+			}
+			cx += w + sp;
+		}
+		if (einheit && !aus) {
+			ctx.fillStyle = tinte; ctx.font = "600 " + fE + "px " + SCHRIFT; ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+			ctx.fillText(einheit, lx + lB - pad * 0.8, cy + h - h * 0.02);
+		}
+		/* Buchsen */
+		if (o.buchsen && !nackt) {
+			const by = ly + lH + h * 0.48;
+			for (const [bx, f] of [[gx + gB * 0.3, "#C62828"], [gx + gB * 0.7, "#1A1A1A"]]) {
+				ctx.fillStyle = f; ctx.beginPath(); ctx.arc(bx, by, h * 0.2, 0, 7); ctx.fill();
+				ctx.fillStyle = "#0B0B0B"; ctx.beginPath(); ctx.arc(bx, by, h * 0.08, 0, 7); ctx.fill();
+			}
+		}
+		ctx.restore();
+		return { x: gx, y: gy, b: gB, h: gH, lcd: { x: lx, y: ly, b: lB, h: lH } };
+	}
+	/* Digitalwaage: (x, y) = Mitte der Telleroberseite; {text, einheit, breite, titel, stellen} */
+	function waage(ctx, x, y, o) {
+		o = o || {};
+		const b = o.breite || 140, th = Math.max(4, b * 0.045), tb = b * 0.62, hb = Math.max(26, b * 0.27), yk = y + th + Math.max(3, b * 0.03);
+		ctx.save();
+		/* Teller */
+		const gt = ctx.createLinearGradient(0, y, 0, y + th);
+		gt.addColorStop(0, "#F1F3F6"); gt.addColorStop(1, "#A9B0BA");
+		ctx.fillStyle = gt; ctx.strokeStyle = "#7A828D"; ctx.lineWidth = 1;
+		rr(ctx, x - tb / 2, y, tb, th, th / 2); ctx.fill(); ctx.stroke();
+		ctx.fillStyle = "#8A929C"; ctx.fillRect(x - b * 0.05, y + th, b * 0.1, yk - y - th);
+		/* Gehäuse */
+		ctx.shadowColor = "rgba(0,0,0,0.22)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+		const gg = ctx.createLinearGradient(0, yk, 0, yk + hb);
+		gg.addColorStop(0, "#F5F6F8"); gg.addColorStop(1, "#C6CCD4");
+		ctx.fillStyle = gg; rr(ctx, x - b / 2, yk, b, hb, Math.min(8, hb * 0.25)); ctx.fill();
+		ctx.shadowColor = "transparent"; ctx.strokeStyle = "#7A828D"; ctx.lineWidth = 1; rr(ctx, x - b / 2 + 0.5, yk + 0.5, b - 1, hb - 1, Math.min(8, hb * 0.25)); ctx.stroke();
+		ctx.fillStyle = "#3C4148"; ctx.fillRect(x - b / 2 + 3, yk + hb - 3, b - 6, 1.2);
+		const gr = Math.round(Math.min(hb * 0.42, b * 0.13));
+		const m = digital(ctx, x - b * 0.06, yk + hb * 0.48, { text: o.text, einheit: o.einheit, groesse: gr, stellen: o.stellen, ohneGehaeuse: true, aus: o.aus });
+		/* Tara-Taste */
+		const tx = Math.min(x + b / 2 - hb * 0.32, m.x + m.b + (x + b / 2 - m.x - m.b) / 2);
+		ctx.fillStyle = "#3C4148"; ctx.beginPath(); ctx.arc(tx, yk + hb * 0.48, Math.max(3.5, hb * 0.13), 0, 7); ctx.fill();
+		ctx.fillStyle = "#E8EAED"; ctx.font = "bold " + Math.max(7, Math.round(hb * 0.15)) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+		ctx.fillText("T", tx, yk + hb * 0.49);
+		if (o.titel) { ctx.fillStyle = "#555B63"; ctx.font = "12px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(o.titel, x, yk + hb + 5); }
+		ctx.restore();
+		return { x: x - b / 2, y: y, b: b, h: yk + hb - y, unten: yk + hb };
+	}
+	/* Zeigermessgerät: KastMessgeraet.analog(ctx, x, y, {wert, min, max, teile, fein, beschrift, einheit, titel, breite, farbe, unten, buchsen, anker, oben})
+	   Skala von min bis max (bei min = −max Nullpunkt in der Mitte), teile Hauptstriche, fein Zwischenstriche je Teil,
+	   beschrift(w) liefert die Zahl an einem Hauptstrich (Standard: Betrag, deutsch). unten: kleine Zeile unter der Skala (z. B. „Messbereich 30 mV“).
+	   (x, y) ist die Mitte (anker "mitte"), sonst "links"/"rechts" an der Gehäusekante; oben: y ist die Oberkante. Gibt {x, y, b, h, buchsen} zurück. */
+	function analog(ctx, x, y, o) {
+		o = o || {};
+		const b = o.breite || 150, min = o.min == null ? -1 : o.min, max = o.max == null ? 1 : o.max, sp = max - min || 1;
+		const teile = o.teile || 4, fein = o.fein || 5;
+		const fT = Math.max(10, Math.round(b * 0.075)), rand = b * 0.06;
+		const kopf = o.titel ? Math.max(b * 0.13, fT * 1.6) : rand;
+		const fB = b - 2 * rand, fH = b * 0.5;
+		const fuss = (o.unten ? Math.max(b * 0.1, fT * 1.5) : rand) + (o.buchsen ? b * 0.14 : 0) + (o.farbe ? b * 0.03 : 0);
+		const gH = kopf + fH + fuss;
+		let gx = x - b / 2; if (o.anker === "links") gx = x; else if (o.anker === "rechts") gx = x - b;
+		const gy = o.oben ? y : y - gH / 2;
+		ctx.save();
+		/* Gehäuse wie beim Digitalgerät */
+		ctx.shadowColor = "rgba(0,0,0,0.28)"; ctx.shadowBlur = b * 0.06; ctx.shadowOffsetY = b * 0.015;
+		const gg = ctx.createLinearGradient(0, gy, 0, gy + gH); gg.addColorStop(0, "#474D56"); gg.addColorStop(1, "#272B31");
+		ctx.fillStyle = gg; rr(ctx, gx, gy, b, gH, b * 0.06); ctx.fill();
+		ctx.shadowColor = "transparent";
+		ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1; rr(ctx, gx + 0.5, gy + 0.5, b - 1, gH - 1, b * 0.055); ctx.stroke();
+		if (o.titel) { ctx.fillStyle = "#D9DEE5"; ctx.font = fT + "px " + SCHRIFT; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(o.titel, gx + rand, gy + kopf * 0.52); }
+		/* Skalenblatt */
+		const fx = gx + rand, fy = gy + kopf;
+		const fg = ctx.createLinearGradient(0, fy, 0, fy + fH); fg.addColorStop(0, "#FDFCF7"); fg.addColorStop(1, "#ECE8DC");
+		ctx.fillStyle = fg; rr(ctx, fx, fy, fB, fH, b * 0.03); ctx.fill();
+		ctx.strokeStyle = "rgba(0,0,0,0.4)"; rr(ctx, fx + 0.5, fy + 0.5, fB - 1, fH - 1, b * 0.028); ctx.stroke();
+		const px = fx + fB / 2, py = fy + fH * 0.9, R = fH * 0.72, halb = 0.30 * Math.PI;
+		const winkel = w => -Math.PI / 2 - halb + (w - min) / sp * 2 * halb;
+		ctx.save(); rr(ctx, fx, fy, fB, fH, b * 0.03); ctx.clip();
+		/* Spiegelband */
+		ctx.strokeStyle = "rgba(150,160,175,0.35)"; ctx.lineWidth = R * 0.05;
+		ctx.beginPath(); ctx.arc(px, py, R * 0.86, winkel(min), winkel(max)); ctx.stroke();
+		/* Skalenbogen und Striche */
+		ctx.strokeStyle = "#1E2228"; ctx.lineWidth = Math.max(1, b * 0.007);
+		ctx.beginPath(); ctx.arc(px, py, R, winkel(min), winkel(max)); ctx.stroke();
+		const n = teile * fein, deu = v => (Math.round(v * 1000) / 1000).toString().replace(".", ",");
+		const beschrift = o.beschrift || (v => deu(Math.abs(v)));
+		ctx.fillStyle = "#1E2228"; ctx.font = Math.max(9, Math.round(b * 0.068)) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+		for (let i = 0; i <= n; i++) {
+			const v = min + sp * i / n, a = winkel(v), haupt = i % fein === 0, mitte = !haupt && fein % 2 === 0 && i % (fein / 2) === 0;
+			const l = haupt ? R * 0.13 : mitte ? R * 0.09 : R * 0.055;
+			ctx.lineWidth = haupt ? Math.max(1.2, b * 0.009) : Math.max(0.8, b * 0.005);
+			ctx.beginPath(); ctx.moveTo(px + Math.cos(a) * R, py + Math.sin(a) * R); ctx.lineTo(px + Math.cos(a) * (R - l), py + Math.sin(a) * (R - l)); ctx.stroke();
+			if (haupt) ctx.fillText(beschrift(v), px + Math.cos(a) * R * 1.13, py + Math.sin(a) * R * 1.13);
+		}
+		/* Einheit rechts unten im Blatt: dort kommt der Zeiger nie hin */
+		if (o.einheit) { ctx.font = "600 " + Math.max(10, Math.round(b * 0.085)) + "px " + SCHRIFT; ctx.fillText(o.einheit, px + R * 0.7, py - R * 0.12); }
+		/* Zeiger mit Schatten */
+		const wv = Math.max(min - sp * 0.04, Math.min(max + sp * 0.04, +o.wert || 0)), az = winkel(wv), lz = R * 1.02;
+		ctx.lineCap = "round";
+		ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = Math.max(1.6, b * 0.013);
+		ctx.beginPath(); ctx.moveTo(px + 1.5, py + 2); ctx.lineTo(px + 1.5 + Math.cos(az) * lz, py + 2 + Math.sin(az) * lz); ctx.stroke();
+		ctx.strokeStyle = "#C62828";
+		ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(az) * lz, py + Math.sin(az) * lz); ctx.stroke();
+		const kg = ctx.createRadialGradient(px - b * 0.01, py - b * 0.01, 0, px, py, b * 0.045);
+		kg.addColorStop(0, "#6B7380"); kg.addColorStop(1, "#1E2228");
+		ctx.fillStyle = kg; ctx.beginPath(); ctx.arc(px, py, b * 0.04, 0, 7); ctx.fill();
+		/* Glas */
+		const glas = ctx.createLinearGradient(0, fy, 0, fy + fH * 0.45); glas.addColorStop(0, "rgba(255,255,255,0.5)"); glas.addColorStop(1, "rgba(255,255,255,0)");
+		ctx.fillStyle = glas; ctx.fillRect(fx, fy, fB, fH * 0.45);
+		ctx.restore();
+		let yy = fy + fH;
+		if (o.unten) { ctx.fillStyle = "#C9CFD8"; ctx.font = fT + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(o.unten, gx + b / 2, yy + Math.max(b * 0.1, fT * 1.5) / 2); yy += Math.max(b * 0.1, fT * 1.5); } else yy += rand;
+		const buchsen = [];
+		if (o.buchsen) {
+			const by = yy + b * 0.06;
+			for (const [bx, f] of [[gx + b * 0.3, "#C62828"], [gx + b * 0.7, "#1A1A1A"]]) {
+				ctx.fillStyle = f; ctx.beginPath(); ctx.arc(bx, by, b * 0.04, 0, 7); ctx.fill();
+				ctx.fillStyle = "#0B0B0B"; ctx.beginPath(); ctx.arc(bx, by, b * 0.016, 0, 7); ctx.fill();
+				buchsen.push([bx, by]);
+			}
+		}
+		if (o.farbe) { ctx.fillStyle = o.farbe; rr(ctx, gx + b * 0.05, gy + gH - b * 0.035, b * 0.9, b * 0.014, b * 0.008); ctx.fill(); }
+		ctx.restore();
+		return { x: gx, y: gy, b: b, h: gH, buchsen };
+	}
+	window.KastMessgeraet = { digital, waage, analog };
+
+	/* ---------------- Wertkarten aus Code ----------------
+	   KastWerte.karten(el, [{titel, wert, betont, klein}], mehrHtml, mehrTitel)
+	   Hauptwert betont, Nebenwerte normal; Zusatzinfos in einem einklappbaren „Mehr“,
+	   dessen Zustand beim ständigen Neuzeichnen erhalten bleibt. */
+	function karten(el, liste, mehr, mehrTitel, nach) {
+		if (!el) return;
+		el.classList.add("kd-werte");
+		let reihe = el.querySelector(":scope > .wertkarten"), det = el.querySelector(":scope > details.mehr");
+		if (!reihe) { el.innerHTML = ""; reihe = document.createElement("div"); reihe.className = "wertkarten"; el.appendChild(reihe); det = null; }
+		const html = liste.filter(Boolean).map(k => '<div class="wertkarte' + (k.betont ? " betont" : "") + (k.klein ? " klein" : "") + '"><div class="wk-titel">' + k.titel + '</div><div class="wk-wert">' + k.wert + "</div></div>").join("");
+		if (reihe.innerHTML !== html) reihe.innerHTML = html;
+		let na = el.querySelector(":scope > .kd-nach");
+		if (nach) { if (!na) { na = document.createElement("div"); na.className = "kd-nach"; reihe.after(na); } if (na.innerHTML !== nach) na.innerHTML = nach; }
+		else if (na) na.remove();
+		if (mehr) {
+			if (!det) { det = document.createElement("details"); det.className = "mehr"; det.innerHTML = '<summary></summary><div class="mehr-inhalt"></div>'; el.appendChild(det); }
+			const t = mehrTitel || "Details";
+			if (det.firstChild.textContent !== t) det.firstChild.textContent = t;
+			if (det.lastChild.innerHTML !== mehr) det.lastChild.innerHTML = mehr;
+		} else if (det) det.remove();
+	}
+	window.KastWerte = { karten };
+
+	/* ---------------- Rollen der Knöpfe ---------------- */
+	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
+	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
+	function rollen(wurzel) {
+		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
+		behaelter.forEach(k => {
+			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
+			const kinder = Array.from(k.children);
+			const bs = kinder.filter(e => e.tagName === "BUTTON" && !hatRolle(e));
+			const fremd = kinder.filter(e => !(e.tagName === "BUTTON" && !hatRolle(e)) && !(e.tagName === "SPAN" && !e.textContent.trim()));
+			const schalt = bs.filter(b => b.hasAttribute("aria-pressed"));
+			const wahl = bs.length >= 2 && fremd.length === 0 && schalt.length === 0 && bs.some(b => b.classList.contains("aktiv") || b.dataset.wert !== undefined || b.dataset.modus !== undefined);
+			k.classList.toggle("k-wahl", wahl);
+			k.classList.toggle("k-schaltgruppe", schalt.length > 0 && schalt.length === bs.length);
+			bs.forEach(b => { const s = b.hasAttribute("aria-pressed"); b.classList.toggle("k-schalt", s); b.classList.toggle("k-einzel", !wahl && !s); });
+		});
+		wurzel.querySelectorAll("button.wahl").forEach(b => {
+			const k = b.parentElement;
+			if (k && !k.classList.contains("k-wahl") && Array.from(k.children).every(e => e.tagName === "BUTTON" && e.classList.contains("wahl"))) k.classList.add("k-wahl");
+		});
+		wurzel.querySelectorAll("button.haupt").forEach(b => b.classList.toggle("k-rund", !b.textContent.trim() && b.querySelectorAll("svg").length === 1));
+	}
+	/* ---------------- Reglerfarbe nach Größe (TikZ-Farbschema) ----------------
+	   Nur Größen mit eigener Farbe; Spannung, Länge, Masse, Zeit bleiben im Bedienblau. */
+	const GROESSE = [
+		[/flussdichte|magnetfeld|umlenkfeld|filter-magnetfeld|\bB\b/i, "B"],
+		[/stromst[äa]rke|spulenstrom|\bI\b/i, "I"],
+		[/feldst[äa]rke|\bE-feld/i, "E"],
+		[/geschwindigkeit|str[öo]mung/i, "v"],
+		[/kraft\b/i, "F"]];
+	function reglerText(r) {
+		const z = r.closest(".zeile"), lb = z && z.querySelector(":scope > label");
+		const gr = r.closest(".bgruppe, div.gr, .regler");
+		const t = gr && gr.querySelector(".btitel, .gtitel, .gt");
+		return [lb && lb.textContent, t && t.textContent, r.getAttribute("aria-label")].filter(Boolean).join(" ");
+	}
+	function reglerFarbe(r) {
+		if (r.dataset.kdFarbe) return;
+		const txt = reglerText(r).replace(/\s+/g, " ");
+		let g = r.dataset.groesse || null;
+		if (g === "-") g = null;
+		/* <html data-groessenfarben="aus">: Blätter dieser Stufe zeichnen noch nicht im TikZ-Farbschema → Regler bleiben blau */
+		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung|winkel|richtung|zeit|abstand|l[äa]nge|masse|unsicherheit|leistung/i.test(txt.split(" ")[0])) { g = k; break; }
+		r.dataset.kdFarbe = g || "-";
+		if (!g) return;
+		r.style.setProperty("--spur", "var(--f-" + g + ")");
+		const z = r.closest(".zeile"), gr = r.closest(".bgruppe, div.gr, .regler");
+		const ort = (z && z.querySelector(":scope > label")) || (gr && gr.querySelector(".btitel, .gtitel, .gt"));
+		if (ort) ort.querySelectorAll("i.gr").forEach(i => { if (i.textContent.trim() === g) i.classList.add("g" + g); });
+	}
+	/* ---------------- Reglerschiene ---------------- */
+	function schiene(r) {
+		const a = +r.min || 0, b = r.max === "" ? 100 : +r.max, v = +r.value;
+		const p = b > a ? (v - a) / (b - a) * 100 : 0;
+		const s = p.toFixed(2) + "%"; if (r.style.getPropertyValue("--anteil") !== s) r.style.setProperty("--anteil", s);
+	}
+	const alleSchienen = () => document.querySelectorAll('input[type="range"]').forEach(r => { reglerFarbe(r); schiene(r); });
+	function los() {
+		rollen(document);
+		alleSchienen();
+		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);
+		setInterval(alleSchienen, 400);
+		let warte = null;
+		new MutationObserver(ms => {
+			if (ms.every(m => m.target.closest && m.target.closest("table"))) return;
+			clearTimeout(warte); warte = setTimeout(() => { rollen(document); alleSchienen(); }, 30);
+		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "aria-pressed"] });
+		const start = Date.now();
+		new MutationObserver(ms => {
+			if (Date.now() - start < 2000) return;
+			for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1 && n.matches && n.matches("tr.messzeile")) {
+				n.classList.add("neu"); setTimeout(() => n.classList.remove("neu"), 1300);
+			}
+		}).observe(document.body, { childList: true, subtree: true });
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", los); else los();
+})();
+</script>
 </head>
 
 <body>
@@ -1398,6 +2000,162 @@ updPhi(); updN(); updU();
 window.addEventListener("resize", groesse);
 groesse();
 K.nachFontLaden(zeichne);
+</script>
+<script>
+/* Reglerwert antippen und eintippen (Kast 2026-11-04)
+   Tippt man auf den angezeigten Wert neben einem Regler, öffnet sich ein Zahlfeld.
+   Der Regler sucht dann selbst die Stellung, deren Anzeige der eingegebenen Zahl am
+   nächsten kommt. So stimmen Einheiten (mT statt T, kV statt V) und nichtlineare
+   Regler automatisch. Liegt die Zahl außerhalb, landet der Regler am Rand. */
+(() => {
+	const zahl = t => {
+		t = String(t).replace(/[−–]/g, "-").replace(/[\s   ]/g, "");
+		const m = t.match(/(-?\d+(?:[.,]\d+)?|-?[.,]\d+)(?:(?:[·⋅×x*]10\^?|e)(-?\d+))?/i);
+		if (!m) return NaN;
+		return parseFloat(m[1].replace(",", ".")) * (m[2] ? Math.pow(10, +m[2]) : 1);
+	};
+	const anzeigeVon = r => {
+		const suf = r.id.includes("-") ? r.id.slice(r.id.indexOf("-") + 1) : r.id;
+		let a = document.getElementById("wert-" + suf) || document.getElementById(r.id + "-wert");
+		const n = r.nextElementSibling;
+		if (!a && n && /(^|\s)(wert|wertanz)(\s|$)/.test(n.className)) a = n;
+		/* u-regler -> u-wert; sonst Anzeige .zahl/.wert in derselben Reglerzeile (2026-11-04, Röntgenspektrum) */
+		if (!a && /-(regler|slider)$/.test(r.id)) a = document.getElementById(r.id.replace(/-(regler|slider)$/, "-wert"));
+		if (!a && r.parentElement) a = [...r.parentElement.querySelectorAll(":scope > .zahl, :scope > .wert, :scope > .wertanz")].find(x => x !== r) || null;
+		return a;
+	};
+	/* bei „1 cm ≙ 1,75 mN“ oder „k = 2,5“ zählt die Zahl dahinter */
+	const kern = t => { const i = Math.max(t.lastIndexOf("\u2259"), t.lastIndexOf("=")); return i >= 0 ? t.slice(i + 1) : t; };
+	const lies = a => zahl(kern(a.textContent));
+	const bild = () => new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+	/* Stellung suchen, deren Anzeige am nächsten an ziel liegt (Halbierung; Anzeige muss monoton sein).
+	   Aktualisiert die Simulation ihre Anzeige erst im nächsten Bild, wird jeweils darauf gewartet. */
+	async function stelle(r, a, ziel) {
+		const min = +r.min || 0, max = r.max === "" ? 100 : +r.max;
+		const schritt = r.step === "any" || !(+r.step > 0) ? (max - min) / 1000 : +r.step;
+		const n = Math.max(1, Math.round((max - min) / schritt));
+		const alt = r.value;
+		let warten = false;
+		const setze = i => { r.value = String(Math.min(max, min + i * schritt)); r.dispatchEvent(new Event("input", { bubbles: true })); };
+		const wert = async i => { setze(i); if (warten) await bild(); return lies(a); };
+		let fLo = await wert(0), fHi = await wert(n);
+		if (fLo === fHi) { warten = true; fLo = await wert(0); fHi = await wert(n); }
+		if (!isFinite(fLo) || !isFinite(fHi) || fLo === fHi) { r.value = alt; r.dispatchEvent(new Event("input", { bubbles: true })); return; }
+		const steigt = fHi > fLo;
+		let lo = 0, hi = n;
+		while (hi - lo > 1) {
+			const mid = (lo + hi) >> 1, f = await wert(mid);
+			if ((f < ziel) === steigt) lo = mid; else hi = mid;
+		}
+		const best = Math.abs(await wert(lo) - ziel) <= Math.abs(await wert(hi) - ziel) ? lo : hi;
+		await wert(best);
+		r.dispatchEvent(new Event("change", { bubbles: true }));
+	}
+	function oeffne(r, a) {
+		if (r.disabled || a.dataset.tippt) return;
+		a.dataset.tippt = "1";
+		const ein = document.createElement("input");
+		ein.type = "text"; ein.inputMode = "decimal"; ein.className = "regler-eingabe";
+		const roh = kern(a.textContent), treffer = (roh.match(/[−\-]?[\d\s   .,]*\d/) || [""])[0];
+		ein.value = treffer.replace(/−/g, "-").trim();
+		ein.setAttribute("aria-label", "Wert eintippen");
+		a.style.display = "none";
+		a.parentNode.insertBefore(ein, a);
+		const einheit = document.createElement("span"); einheit.className = "regler-einheit";
+		einheit.textContent = treffer ? roh.slice(roh.indexOf(treffer) + treffer.length).trim() : "";
+		if (einheit.textContent) a.parentNode.insertBefore(einheit, a);
+		ein.focus(); ein.select();
+		let fertig = false;
+		const schliesse = uebernehmen => {
+			if (fertig) return; fertig = true;
+			const z = zahl(kern(ein.value));
+			ein.remove(); einheit.remove(); a.style.display = ""; delete a.dataset.tippt;
+			if (uebernehmen && isFinite(z)) stelle(r, a, z);
+		};
+		ein.addEventListener("keydown", ev => {
+			if (ev.key === "Enter") { ev.preventDefault(); schliesse(true); }
+			else if (ev.key === "Escape") schliesse(false);
+		});
+		ein.addEventListener("blur", () => schliesse(true));
+	}
+	function einrichten() {
+		const st = document.createElement("style");
+		st.textContent = ".wert-tippbar { cursor: text; text-decoration: underline dotted #A8A8A8; text-underline-offset: 3px; }"
+			+ ".wert-tippbar:hover { text-decoration-color: currentColor; }"
+			+ "input.regler-eingabe { font: inherit; font-variant-numeric: tabular-nums; width: 5.5em; text-align: right; padding: 0.1rem 0.3rem; border: 1.5px solid var(--blue-frame, #0000BF); border-radius: 1mm; background: #fff; }"
+			+ "span.regler-einheit { margin-left: 0.3em; white-space: nowrap; }"
+			+ "@media print { .wert-tippbar { text-decoration: none; } }";
+		document.head.appendChild(st);
+		document.querySelectorAll('input[type="range"]').forEach(r => {
+			const a = anzeigeVon(r);
+			if (!a || a.classList.contains("wert-tippbar")) return;
+			a.classList.add("wert-tippbar");
+			a.title = "Antippen: Wert eintippen";
+			a.addEventListener("click", () => oeffne(r, a));
+		});
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", einrichten); else einrichten();
+})();
+</script>
+<script>
+/* Zuletzt gewählt (Kast 2026-11-04): Modus, Auswahlknöpfe, Regler, Häkchen und Messtabellen
+   werden im Sitzungsspeicher des Tabs gesichert. Lädt das Tablet die Seite nach dem Wechsel
+   zu OneNote neu, ist alles wieder da. Ein neuer Tab beginnt frisch, damit in der nächsten
+   Stunde keine alten Werte auftauchen. Laborauftrag/Spiel sind ausgenommen (eigener Speicher). */
+(() => {
+	const SCHLUESSEL = "kast_zustand:" + location.pathname + location.search;
+	const ausgenommen = el => !!el.closest("#spiel, .spiel, [data-nicht-merken]");
+	let laedt = true, uhr = null;
+	const gruppen = () => Array.from(new Set(Array.from(document.querySelectorAll("button.aktiv")).map(b => b.parentElement)))
+		.concat(Array.from(document.querySelectorAll(".modusleiste, .knopfleiste")))
+		.filter((g, i, a) => a.indexOf(g) === i && g.querySelectorAll(":scope > button").length >= 2 && !ausgenommen(g));
+	const gruppenName = g => g.id || "g" + Array.from(document.querySelectorAll("*")).indexOf(g);
+	function sichern() {
+		if (laedt) return;
+		try {
+			const z = { g: {}, r: {}, c: {}, t: {} };
+			for (const g of gruppen()) {
+				const bs = Array.from(g.querySelectorAll(":scope > button")), i = bs.findIndex(b => b.classList.contains("aktiv"));
+				if (i >= 0 && bs.filter(b => b.classList.contains("aktiv")).length === 1) z.g[gruppenName(g)] = i;
+			}
+			document.querySelectorAll('input[type="range"][id]').forEach(r => { if (!ausgenommen(r)) z.r[r.id] = r.value; });
+			document.querySelectorAll('input[type="checkbox"][id]').forEach(c => { if (!ausgenommen(c)) z.c[c.id] = c.checked; });
+			(window.kastMesstabellen || []).forEach(t => { if (t.koerper.id && !ausgenommen(t.koerper)) z.t[t.koerper.id] = t.sichern(); });
+			sessionStorage.setItem(SCHLUESSEL, JSON.stringify(z));
+		} catch (e) { /* Speicher gesperrt: dann eben ohne */ }
+	}
+	const spaeter = () => { clearTimeout(uhr); uhr = setTimeout(sichern, 300); };
+	function laden() {
+		let z = null;
+		try { z = JSON.parse(sessionStorage.getItem(SCHLUESSEL) || "null"); } catch (e) { z = null; }
+		if (z) {
+			try {
+				/* zuerst die Modusleiste, dann die übrigen Gruppen (ein Moduswechsel kann Gruppen ein- und ausblenden) */
+				const alle = gruppen().sort((a, b) => (b.classList.contains("modusleiste") ? 1 : 0) - (a.classList.contains("modusleiste") ? 1 : 0));
+				for (const g of alle) {
+					const i = z.g[gruppenName(g)];
+					const b = i === undefined ? null : g.querySelectorAll(":scope > button")[i];
+					if (b && !b.classList.contains("aktiv") && !b.disabled) b.click();
+				}
+				for (const [id, v] of Object.entries(z.r)) {
+					const r = document.getElementById(id);
+					if (r && r.value !== v && !r.disabled) { r.value = v; r.dispatchEvent(new Event("input", { bubbles: true })); r.dispatchEvent(new Event("change", { bubbles: true })); }
+				}
+				for (const [id, v] of Object.entries(z.c)) {
+					const c = document.getElementById(id);
+					if (c && c.checked !== v && !c.disabled) { c.checked = v; c.dispatchEvent(new Event("change", { bubbles: true })); }
+				}
+				(window.kastMesstabellen || []).forEach(t => { const d = z.t[t.koerper.id]; if (d && d.length) t.wiederherstellen(d); });
+			} catch (e) { /* lieber frisch als kaputt */ }
+		}
+		laedt = false;
+		["input", "change", "click"].forEach(ev => document.addEventListener(ev, spaeter, true));
+		document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sichern(); });
+		window.addEventListener("pagehide", sichern);
+	}
+	/* erst nach dem Aufbau der Simulation (inklusive ?modus=…) wiederherstellen */
+	if (document.readyState === "complete") setTimeout(laden, 0); else window.addEventListener("load", () => setTimeout(laden, 0));
+})();
 </script>
 </body>
 </html>
