@@ -1226,14 +1226,30 @@ let WV = 760, HV = 300, WD = 370, HD = 300, WB = 370, HB = 300;
 function zeichneV(g, W, H) {
 	g.clearRect(0, 0, W, H);
 	const t = zustand.teilchen, Emax = zustand.bereich;
-	const u = P.achsen(g, { dx: 56, dy: 22, dw: W - 80, dh: H - 62, xMin: 0, xMax: Emax, yMin: 0, yMax: 2, ySchritt: 0.25, xLabel: "E_kin", xEinheit: "MeV", yLabel: "v/c", yEinheit: "" });
+	const u = P.achsen(g, { dx: 56, dy: 22, dw: W - 80, dh: H - 62, xMin: 0, xMax: Emax, yMin: 0, yMax: 2, ySchritt: 0.5, yStellen: 1, xLabel: "E_kin", xEinheit: "MeV", yLabel: "v/c", yEinheit: "" });
 	g.save(); g.setLineDash([6, 4]); g.strokeStyle = "#333"; g.beginPath(); g.moveTo(u.xPix(0), u.yPix(1)); g.lineTo(u.xPix(Emax), u.yPix(1)); g.stroke(); g.restore();
 	P.text(g, "Lichtgeschwindigkeit", u.xPix(Emax) - 4, u.yPix(1) - 5, { ausrichtung: "right", groesse: 11, farbe: "#333" });
 	P.kurve(g, u, E => werte(E, t).bKl, 0, Emax, P.FARBEN.blau);
 	P.kurve(g, u, E => werte(E, t).b, 0, Emax, P.FARBEN.rot);
 	const E = Ekin(), w = werte(E, t);
 	g.save(); g.strokeStyle = "#999"; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(u.xPix(E), u.yPix(0)); g.lineTo(u.xPix(E), u.yPix(2)); g.stroke(); g.restore();
-	P.punkte(g, u, [{ x: E, y: Math.min(2, w.bKl) }], P.FARBEN.blau, { r: 4 });
+	/* Kurvennamen: relativistisch rechts an der Kurve, klassisch dort, wo die Kurve noch im Bild ist */
+	P.text(g, "relativistisch", u.xPix(Emax) - 4, u.yPix(werte(Emax, t).b) + 16, { ausrichtung: "right", groesse: 12, fett: true, farbe: P.FARBEN.rot });
+	if (w.bKl <= 2 || W >= 560) {
+		let Ek = Emax; while (Ek > Emax * 0.01 && werte(Ek, t).bKl > 1.85) Ek *= 0.97;
+		const xk = u.xPix(Ek), yk = u.yPix(werte(Ek, t).bKl);
+		P.text(g, "klassisch", Math.min(xk + 8, u.xPix(Emax) - 70), Math.max(yk + 4, u.yPix(2) + 14), { groesse: 12, fett: true, farbe: P.FARBEN.blau });
+	}
+	if (w.bKl <= 2) P.punkte(g, u, [{ x: E, y: w.bKl }], P.FARBEN.blau, { r: 4 });
+	else {
+		/* klassischer Wert außerhalb des Bilds: Pfeil nach oben mit Zahl statt eines Punkts am Rand */
+		const xE = u.xPix(E), yT = u.yPix(2);
+		P.pfeil(g, xE, yT + 26, xE, yT + 2, P.FARBEN.blau, 2, 8);
+		g.font = "bold 12px " + K.SCHRIFT; const tx = "klassisch v/c = " + P.de(w.bKl, w.bKl < 10 ? 2 : 1), tw = g.measureText(tx).width;
+		const x0 = Math.min(xE + 8, u.xPix(Emax) - tw - 6);
+		g.fillStyle = "rgba(255,255,255,0.92)"; g.fillRect(x0 - 3, yT + 6, tw + 6, 17);
+		P.text(g, tx, x0, yT + 19, { groesse: 12, fett: true, farbe: P.FARBEN.blau });
+	}
 	P.punkte(g, u, [{ x: E, y: w.b }], P.FARBEN.rot, { r: 4 });
 	P.punkte(g, u, zustand.messpunkte.filter(p => p.t === t && p.E <= Emax).map(p => ({ x: p.E, y: p.b, uy: p.ub })), "#111", { kreuz: true });
 }
