@@ -1288,75 +1288,123 @@ let W = 760, H = 280;
 const X0_CM = 1.2, BREITE_CM = 12.6;
 function xPix(xcm) { return 20 + xcm / BREITE_CM * (W - 40); }
 function xCm(px) { return (px - 20) / (W - 40) * BREITE_CM; }
-function yLinie() { return Math.max(60, H - 118); }
+function yLinie() { return Math.max(84, Math.round(H * 0.4)); }
 
+/* Kugel mit Glanz auf Isolierstativ (wie Coulomb-Messlabor); der Betrag der Ladung zeigt sich in der Größe */
+function radius(q) { return (W < 560 ? 9 : 11) + (W < 560 ? 2 : 2.8) * Math.abs(q); }
+function zeichneStativ(x, y, yFuss) {
+	const gr = ctx.createLinearGradient(x - 3, 0, x + 3, 0);
+	gr.addColorStop(0, "#C9B98F"); gr.addColorStop(0.5, "#F2E8C9"); gr.addColorStop(1, "#B5A47A");
+	ctx.fillStyle = gr; ctx.fillRect(x - 3, y, 6, yFuss - y);
+	ctx.fillStyle = "#6B7380"; ctx.beginPath();
+	if (ctx.roundRect) ctx.roundRect(x - 22, yFuss, 44, 8, 3); else ctx.rect(x - 22, yFuss, 44, 8);
+	ctx.fill();
+}
 function zeichneLadung(x, y, q, name) {
-	/* Der Betrag der Ladung zeigt sich in der Größe der Kugel */
-	const rk = 8 + 2.6 * Math.abs(q);
-	ctx.beginPath(); ctx.arc(x, y, rk, 0, 2 * Math.PI);
-	ctx.fillStyle = farbe(q); ctx.fill();
-	/* Vorzeichen als gezeichnete Striche genau in der Mitte */
+	const rk = radius(q);
+	ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, rk + 2.5, 0, 2 * Math.PI); ctx.fill();
+	const gr = ctx.createRadialGradient(x - rk * 0.35, y - rk * 0.35, rk * 0.12, x, y, rk);
+	if (q > 0) { gr.addColorStop(0, "#FF9C9C"); gr.addColorStop(1, "#B01818"); }
+	else if (q < 0) { gr.addColorStop(0, "#9CB0FF"); gr.addColorStop(1, "#1A35B0"); }
+	else { gr.addColorStop(0, "#F4F6F9"); gr.addColorStop(1, "#8A9099"); }
+	ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rk, 0, 2 * Math.PI); ctx.fill();
 	const k = Math.max(4, 0.45 * rk);
-	ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.6;
+	ctx.strokeStyle = "#fff"; ctx.lineWidth = Math.max(2.4, rk * 0.17); ctx.lineCap = "round";
 	ctx.beginPath();
 	if (q !== 0) { ctx.moveTo(x - k, y); ctx.lineTo(x + k, y); }
 	if (q > 0) { ctx.moveTo(x, y - k); ctx.lineTo(x, y + k); }
-	ctx.stroke();
-	P.symbol(ctx, "Q", name, x - 8, y - rk - 9, { groesse: 15, farbe: farbe(q) });
+	ctx.stroke(); ctx.lineCap = "butt";
+	const farbeQ = name === "1" ? "#BF0000" : "#0000BF";
+	/* wie auf dem Blatt: Q1 links, Q2 rechts neben der Kugel (oben und unten liegen die Kraftpfeile) */
+	P.symbol(ctx, "Q", name, name === "1" ? x - rk - 26 : x + rk + 6, y + 6, { groesse: 16, farbe: farbeQ });
 }
 
 /* Länge des Maßstabpfeils in px (am Handy kürzer, damit die Kraftpfeile ins Bild passen) */
 function legendeLaenge() { return W < 560 ? 30 : 60; }
+/* Kraftpfeil wie auf dem Blatt: F1 rot, F2 blau, gefüllt, mit dunkler Kontur */
+function blockpfeil(x1, y, x2, farbe) {
+	const l = Math.abs(x2 - x1), r = Math.sign(x2 - x1), b = 3.2, k = Math.min(14, l * 0.6), kb = 8;
+	ctx.beginPath();
+	ctx.moveTo(x1, y - b); ctx.lineTo(x2 - r * k, y - b); ctx.lineTo(x2 - r * k, y - kb); ctx.lineTo(x2, y);
+	ctx.lineTo(x2 - r * k, y + kb); ctx.lineTo(x2 - r * k, y + b); ctx.lineTo(x1, y + b); ctx.closePath();
+	ctx.fillStyle = farbe; ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,0.55)"; ctx.lineWidth = 0.8; ctx.stroke();
+}
 function zeichneKraftpfeil(x, y, richtung, F, name, oben) {
 	const lPix = Math.abs(F) / zustand.massstab * legendeLaenge();
 	if (lPix < 0.5) return;
-	const maxPix = W * 0.42;
-	const l = Math.min(lPix, maxPix);
-	const yy = y + (oben ? -7 : 7);
-	P.pfeil(ctx, x, yy, x + richtung * l, yy, "#111", 3, 12);
-	/* Beschriftung F nie über dem Namen der Ladung: mindestens Kugelradius plus Abstand zur Seite */
-	const rk = 8 + 2.6 * Math.abs(name === "1" ? zustand.q1 : zustand.q2);
-	const tx = x + richtung * Math.max(l * 0.55, rk + 16);
-	P.symbol(ctx, "F", name, tx - 8, oben ? yy - 10 : yy + 24, { groesse: 15 });
-	if (lPix > maxPix) P.text(ctx, "(Pfeil gekürzt)", x + richtung * l, yy + (oben ? -12 : 26), { groesse: 11, farbe: "#555", ausrichtung: richtung > 0 ? "right" : "left" });
+	const rk = radius(name === "1" ? zustand.q1 : zustand.q2);
+	const maxPix = W * 0.38, l = Math.min(lPix, maxPix);
+	const farbeF = name === "1" ? "#BF0000" : "#0000BF";
+	/* Pfeil setzt am Kugelmittelpunkt an (Angriffspunkt), liegt aber vor bzw. hinter der Kugel, damit beide sichtbar bleiben */
+	const yy = y + (oben ? -rk - 14 : rk + 14);
+	ctx.save(); ctx.strokeStyle = farbeF; ctx.globalAlpha = 0.35; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+	ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, yy); ctx.stroke(); ctx.restore();
+	blockpfeil(x, yy, x + richtung * l, farbeF);
+	const tx = x + richtung * l * 0.5;
+	P.symbol(ctx, "F", name, tx - 8, oben ? yy - 12 : yy + 26, { groesse: 16, farbe: farbeF });
+	if (lPix > maxPix) P.text(ctx, "(gekürzt)", x + richtung * l, yy + (oben ? -12 : 26), { groesse: 11, farbe: "#555", ausrichtung: richtung > 0 ? "right" : "left" });
 }
 
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
+	ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
 	const y = yLinie();
 	const x1 = xPix(X0_CM), x2 = xPix(X0_CM + zustand.r);
 
-	/* Lineal in cm */
-	const yL = H - 38;
-	ctx.strokeStyle = "#111"; ctx.lineWidth = 1;
-	ctx.beginPath(); ctx.moveTo(xPix(0), yL); ctx.lineTo(xPix(BREITE_CM), yL); ctx.stroke();
-	for (let k = 0; k <= 12; k++) {
-		const px = xPix(k);
-		ctx.beginPath(); ctx.moveTo(px, yL); ctx.lineTo(px, yL + 6); ctx.stroke();
-		P.text(ctx, String(k), px, yL + 19, { groesse: 11, ausrichtung: "center", farbe: "#555" });
+	/* Lineal als Gegenstand: Holzleiste mit mm-Teilung */
+	const yL = H - 40, lx0 = xPix(0) - 8, lx1 = xPix(BREITE_CM) + 8;
+	const lg = ctx.createLinearGradient(0, yL, 0, yL + 30);
+	lg.addColorStop(0, "#FFF6D8"); lg.addColorStop(1, "#EADBA8");
+	ctx.fillStyle = lg; ctx.strokeStyle = "#B59F5E"; ctx.lineWidth = 1;
+	ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(lx0, yL, lx1 - lx0, 30, 4); else ctx.rect(lx0, yL, lx1 - lx0, 30); ctx.fill(); ctx.stroke();
+	ctx.strokeStyle = "#5A4A1A";
+	for (let mm = 0; mm <= BREITE_CM * 10; mm++) {
+		const px = xPix(mm / 10), l = mm % 10 === 0 ? 10 : mm % 5 === 0 ? 7 : 4;
+		if (W < 560 && mm % 5 !== 0) continue;
+		ctx.lineWidth = mm % 10 === 0 ? 1.2 : 0.7;
+		ctx.beginPath(); ctx.moveTo(px, yL); ctx.lineTo(px, yL + l); ctx.stroke();
+		if (mm % 10 === 0 && (W >= 560 || mm % 20 === 0)) P.text(ctx, String(mm / 10), px, yL + 23, { groesse: 11, ausrichtung: "center", farbe: "#5A4A1A" });
 	}
-	P.text(ctx, "cm", xPix(BREITE_CM) - 2, yL + (W < 560 ? 33 : 19), { groesse: 11, ausrichtung: "right", farbe: "#555" });
+	if (W >= 560) P.text(ctx, "cm", lx1 - 6, yL + 23, { groesse: 11, ausrichtung: "right", farbe: "#5A4A1A" });
 
-	/* Abstand r als Maßpfeil */
-	const yM = yL - 18;
-	ctx.strokeStyle = "#808080"; ctx.setLineDash([3, 3]);
-	ctx.beginPath(); ctx.moveTo(x1, y + 17); ctx.lineTo(x1, yM + 4); ctx.moveTo(x2, y + 17); ctx.lineTo(x2, yM + 4); ctx.stroke();
-	ctx.setLineDash([]);
-	P.pfeil(ctx, (x1 + x2) / 2, yM, x1, yM, "#808080", 1.2, 7);
-	P.pfeil(ctx, (x1 + x2) / 2, yM, x2, yM, "#808080", 1.2, 7);
-	P.text(ctx, "r = " + P.de(zustand.r, 1) + " cm", (x1 + x2) / 2, yM - 5, { groesse: 12, ausrichtung: "center", farbe: "#555", kursiv: false });
+	/* Stative bis zum Lineal */
+	zeichneStativ(x1, y + radius(zustand.q1) - 2, yL - 8);
+	zeichneStativ(x2, y + radius(zustand.q2) - 2, yL - 8);
 
-	/* Kraefte: F > 0 abstossend, F < 0 anziehend */
+	/* Abstand r wie auf dem Blatt: grauer Maßpfeil mit Begrenzungsstrichen */
+	const yM = yL - 22;
+	ctx.strokeStyle = "#808080"; ctx.lineWidth = 1;
+	ctx.beginPath(); ctx.moveTo(x1 + 5, yM - 6); ctx.lineTo(x1 + 5, yM + 6); ctx.moveTo(x2 - 5, yM - 6); ctx.lineTo(x2 - 5, yM + 6); ctx.stroke();
+	P.pfeil(ctx, (x1 + x2) / 2, yM, x1 + 5, yM, "#808080", 1.2, 7);
+	P.pfeil(ctx, (x1 + x2) / 2, yM, x2 - 5, yM, "#808080", 1.2, 7);
+	{
+		const t = "r = " + P.de(zustand.r, 1) + " cm";
+		ctx.font = "italic 13px " + K.SCHRIFT; const w = ctx.measureText(t).width;
+		ctx.fillStyle = "#fff"; ctx.fillRect((x1 + x2) / 2 - w / 2 - 4, yM - 9, w + 8, 18);
+		P.text(ctx, t, (x1 + x2) / 2, yM + 4, { groesse: 13, ausrichtung: "center", farbe: "#555" });
+	}
+
+	/* Kräfte: F > 0 abstoßend, F < 0 anziehend */
 	const F = kraft(zustand.q1, zustand.q2, zustand.r);
 	const abstossend = F > 0;
+	zeichneLadung(x1, y, zustand.q1, "1");
+	zeichneLadung(x2, y, zustand.q2, "2");
 	zeichneKraftpfeil(x1, y, abstossend ? -1 : 1, F, "1", true);
 	zeichneKraftpfeil(x2, y, abstossend ? 1 : -1, F, "2", false);
 
-	zeichneLadung(x1, y, zustand.q1, "1");
-	zeichneLadung(x2, y, zustand.q2, "2");
+	/* Plakette mit dem Betrag der Kraft */
+	{
+		const t = F === 0 ? "keine Kraft" : "|F| = " + formatKraft(Math.abs(F)) + (abstossend ? ", abstoßend" : ", anziehend");
+		ctx.font = "bold 14px " + K.SCHRIFT; const w = ctx.measureText(t).width;
+		const px = 14, py = 12;
+		ctx.fillStyle = F === 0 ? "#F4F4F4" : abstossend ? "#FFF2F2" : "#F2F2FF";
+		ctx.strokeStyle = F === 0 ? "#BBB" : abstossend ? "#BF0000" : "#0000BF"; ctx.lineWidth = 1.5;
+		ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(px, py, w + 20, 26, 13); else ctx.rect(px, py, w + 20, 26); ctx.fill(); ctx.stroke();
+		P.text(ctx, t, px + 10, py + 18, { groesse: 14, fett: true, farbe: ctx.strokeStyle });
+	}
 
-	/* Legende zum Pfeilmassstab */
-	const lx = W - 20 - legendeLaenge(), ly = 22;
+	/* Legende zum Pfeilmaßstab */
+	const lx = W - 20 - legendeLaenge(), ly = 25;
 	ctx.strokeStyle = "#111"; ctx.lineWidth = 3;
 	ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + legendeLaenge(), ly); ctx.stroke();
 	P.text(ctx, "≙ " + formatKraft(zustand.massstab), lx - 6, ly + 5, { groesse: 12, ausrichtung: "right" });
@@ -1436,7 +1484,7 @@ P.ziehbar(canvas,
 	});
 
 function layout() {
-	({ W, H } = K.skaliereCanvas(canvas, ctx, w => w < 560 ? 0.62 : 0.28));
+	({ W, H } = K.skaliereCanvas(canvas, ctx, w => w < 560 ? 0.8 : 0.42));
 	({ W: DW, H: DH } = K.skaliereCanvas(dCanvas, dctx, w => w < 560 ? 0.7 : 0.44));
 	zeichne();
 }

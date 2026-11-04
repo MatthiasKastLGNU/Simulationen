@@ -1373,7 +1373,7 @@ function xWert(px) { return ((px - 20) / (W - 40)) * (2 * X_MAX) - X_MAX; }
 function yWert(py) { return Y_MAX - ((py - 20) / (H - 40)) * (2 * Y_MAX); }
 
 function zeichneGitter() {
-	ctx.strokeStyle = "#DDD"; ctx.lineWidth = 1;
+	ctx.strokeStyle = "#E6E8EE"; ctx.lineWidth = 1;
 	for (let x = Math.ceil(-X_MAX); x <= Math.floor(X_MAX); x++) {
 		ctx.beginPath(); ctx.moveTo(xPix(x), yPix(-Y_MAX)); ctx.lineTo(xPix(x), yPix(Y_MAX)); ctx.stroke();
 	}
@@ -1392,21 +1392,27 @@ function zeichneGitter() {
 }
 
 function zeichneLadung(L) {
-	const px = xPix(L.x), py = yPix(L.y);
-	const farbe = L.q > 0 ? P.FARBEN.rot : (L.q < 0 ? P.FARBEN.blau : "#888");
-	ctx.beginPath(); ctx.arc(px, py, 11, 0, 2 * Math.PI);
-	ctx.fillStyle = farbe; ctx.fill();
-	/* Vorzeichen als gezeichnete Striche genau in der Mitte */
-	ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.4;
+	const px = xPix(L.x), py = yPix(L.y), r = W < 560 ? 10 : 12;
+	/* Kugel mit Glanz wie in den übrigen Klasse-12-Simulationen, weißer Rand trennt sie von den Feldlinien */
+	ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(px, py, r + 2.5, 0, 2 * Math.PI); ctx.fill();
+	const gr = ctx.createRadialGradient(px - r * 0.35, py - r * 0.35, r * 0.12, px, py, r);
+	if (L.q > 0) { gr.addColorStop(0, "#FF9C9C"); gr.addColorStop(1, "#B01818"); }
+	else if (L.q < 0) { gr.addColorStop(0, "#9CB0FF"); gr.addColorStop(1, "#1A35B0"); }
+	else { gr.addColorStop(0, "#F4F6F9"); gr.addColorStop(1, "#8A9099"); }
+	ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(px, py, r, 0, 2 * Math.PI); ctx.fill();
+	ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.6; ctx.lineCap = "round";
 	ctx.beginPath();
-	if (L.q !== 0) { ctx.moveTo(px - 5, py); ctx.lineTo(px + 5, py); }
-	if (L.q > 0) { ctx.moveTo(px, py - 5); ctx.lineTo(px, py + 5); }
-	ctx.stroke();
-	P.text(ctx, "(" + P.de(L.x, 0) + "|" + P.de(L.y, 0) + ")", px, py + 27, { ausrichtung: "center", groesse: 11, farbe: "#555" });
+	if (L.q !== 0) { ctx.moveTo(px - 5.5, py); ctx.lineTo(px + 5.5, py); }
+	if (L.q > 0) { ctx.moveTo(px, py - 5.5); ctx.lineTo(px, py + 5.5); }
+	ctx.stroke(); ctx.lineCap = "butt";
+	const t = "(" + P.de(L.x, 0) + " | " + P.de(L.y, 0) + ")";
+	ctx.font = "12px " + P.SCHRIFT; const w = ctx.measureText(t).width;
+	ctx.fillStyle = "rgba(255,255,255,0.88)"; ctx.fillRect(px - w / 2 - 3, py + r + 5, w + 6, 16);
+	P.text(ctx, t, px, py + r + 17, { ausrichtung: "center", groesse: 12, farbe: "#444" });
 }
 
 function zeichneLinienliste(linien, farbe, pfeile) {
-	ctx.strokeStyle = farbe; ctx.lineWidth = 1.6;
+	ctx.strokeStyle = farbe; ctx.lineWidth = 1.9;
 	for (const linie of linien) {
 		if (linie.length < 2) continue;
 		ctx.beginPath();
@@ -1474,17 +1480,26 @@ function zeichne() {
 
 /* Hinweis bei leerem Feld: im linken oberen Viertel auf weissem Grund, damit er keine Achse ueberdeckt */
 function zeichneStarthinweis() {
-	const zeilen = ["Setzen Sie zuerst die", "Ladungen aus der Aufgabe."];
-	const links = xPix(-X_MAX + 0.4), rechts = xPix(-0.6);
-	let groesse = 15;
-	ctx.font = groesse + "px " + P.SCHRIFT;
-	const breiteste = () => Math.max(...zeilen.map(z => ctx.measureText(z).width));
-	while (groesse > 10 && breiteste() > rechts - links - 16) { groesse--; ctx.font = groesse + "px " + P.SCHRIFT; }
-	const b = breiteste() + 16, h = zeilen.length * groesse * 1.35 + 12;
-	const mx = (links + rechts) / 2, oben = yPix(5.6);
-	ctx.fillStyle = "#fff"; ctx.strokeStyle = "#BBB"; ctx.lineWidth = 1;
-	ctx.fillRect(mx - b / 2, oben, b, h); ctx.strokeRect(mx - b / 2, oben, b, h);
-	zeilen.forEach((z, i) => P.text(ctx, z, mx, oben + 6 + groesse * (1.05 + 1.35 * i), { ausrichtung: "center", groesse, farbe: "#444" }));
+	/* Karte im linken oberen Viertel: zeigt die beiden Werkzeuge als kleine Kugeln, verdeckt keine Achse */
+	const links = xPix(-X_MAX + 0.3), rechts = xPix(-0.5), oben = yPix(Y_MAX - 0.4);
+	const g = Math.max(13, Math.min(16, Math.round((rechts - links) / 17)));
+	const zeilen = ["Setzen Sie die Ladungen", "aus der Aufgabe:", "Werkzeug wählen, ins Bild tippen."];
+	ctx.font = g + "px " + P.SCHRIFT;
+	const b = Math.min(rechts - links, Math.max(...zeilen.map(z => ctx.measureText(z).width)) + 28), h = zeilen.length * g * 1.4 + 52;
+	const x0 = links;
+	ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.15)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
+	ctx.fillStyle = "#FBFBFF"; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, oben, b, h, 8); else ctx.rect(x0, oben, b, h); ctx.fill(); ctx.restore();
+	ctx.strokeStyle = "#C8CCF0"; ctx.lineWidth = 1.5; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, oben, b, h, 8); else ctx.rect(x0, oben, b, h); ctx.stroke();
+	zeilen.forEach((z, i) => P.text(ctx, z, x0 + 14, oben + 10 + g * (1.05 + 1.4 * i), { groesse: g, farbe: "#333", fett: i === 0 }));
+	const yK = oben + h - 22;
+	zeichneLadungBild(x0 + 26, yK, 1); zeichneLadungBild(x0 + 62, yK, -1);
+}
+function zeichneLadungBild(px, py, q) {
+	const r = 10, gr = ctx.createRadialGradient(px - 3.5, py - 3.5, 1.2, px, py, r);
+	gr.addColorStop(0, q > 0 ? "#FF9C9C" : "#9CB0FF"); gr.addColorStop(1, q > 0 ? "#B01818" : "#1A35B0");
+	ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(px, py, r, 0, 2 * Math.PI); ctx.fill();
+	ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.beginPath();
+	ctx.moveTo(px - 4.5, py); ctx.lineTo(px + 4.5, py); if (q > 0) { ctx.moveTo(px, py - 4.5); ctx.lineTo(px, py + 4.5); } ctx.stroke(); ctx.lineCap = "butt";
 }
 
 /* ---------- Bedienung ---------- */
