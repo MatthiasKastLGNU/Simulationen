@@ -1185,6 +1185,51 @@ window.SimUI = (function () {
 })();
 	</script>
 
+<style>
+/* Spiel „Ionen sortieren und wiegen“ (Kast 2026-11) */
+:root { --gold: #C8A000; }
+.spielkopf { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; margin-bottom: 0.4rem; }
+.sp-stand { flex: 1 1 14rem; }
+.sp-sterne { margin-left: auto; white-space: nowrap; }
+.kreise { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; vertical-align: middle; }
+.kreise i { width: 0.95rem; height: 0.95rem; border-radius: 50%; border: 1.5px solid #9AA3AD; background: #fff; display: inline-block; box-sizing: border-box; }
+.kreise i.jetzt { border-color: var(--blue-frame, #0000BF); box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 6px var(--blue-title, #C9C9F2); }
+.kreise i.ja { background: #2E7D32; border-color: #1B5E20; }
+.kreise i.nein { background: #C62828; border-color: #7F1515; }
+.sterne { font-size: 1.35rem; letter-spacing: 0.12rem; color: var(--gold); white-space: nowrap; }
+.sterne .leer { color: #D8D8D8; }
+.sterne .voll { display: inline-block; }
+.sterne .voll.neu { animation: sternrein 0.65s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes sternrein { 0% { transform: scale(0) rotate(-140deg); opacity: 0; } 60% { transform: scale(1.9) rotate(12deg); opacity: 1; text-shadow: 0 0 14px #FFD34D; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.jubel { position: fixed; z-index: 1600; pointer-events: none; transform: translate(-50%, -100%); font-weight: bold; color: #8A5A00; background: #FFF6D6; border: 2px solid var(--gold); border-radius: 999px; padding: 0.1rem 0.65rem; font-size: 1rem; white-space: nowrap; box-shadow: 0 3px 10px rgba(200,160,0,0.35); animation: jubel 1.7s ease-out forwards; }
+.jubel.gross { font-size: 1.4rem; padding: 0.2rem 1rem; background: #FFE98A; }
+@keyframes jubel { 0% { opacity: 0; transform: translate(-50%, -60%) scale(0.5); } 14% { opacity: 1; transform: translate(-50%, -140%) scale(1.2); } 70% { opacity: 1; transform: translate(-50%, -175%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -230%) scale(0.95); } }
+.funke { position: fixed; z-index: 1500; pointer-events: none; font-size: 22px; color: var(--gold); animation: funke 1.1s ease-out forwards; }
+@keyframes funke { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(160deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sterne .voll.neu, .jubel { animation-duration: 0.01s; } }
+.sp-auftrag { margin: 0.2rem 0 0.4rem; }
+.sp-gegeben { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.5rem; }
+#spiel .feld { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; margin-right: 0.6rem; }
+#spiel .feld input { font: inherit; width: 5.5em; padding: 0.22rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm; }
+#spiel .sp-ergebnis { margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px solid #DDD; }
+#spiel .sp-ergebnis .btitel { font-size: 0.8rem; color: #808080; }
+#spiel td.weg { width: 1.8rem; border: none !important; text-align: center !important; }
+button.zeile-weg { min-width: 0; width: 1.6rem; height: 1.6rem; padding: 0; border: 1px solid #ccc; border-radius: 50%; background: #fff; color: #999; font-size: 1rem; line-height: 1; cursor: pointer; }
+button.zeile-weg:hover { color: #BF0000; border-color: #BF0000; }
+.sp-chip { border: 1.5px solid #C8CCF0; background: #FBFBFF; border-radius: 999px; padding: 0.1rem 0.7rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sp-zeile { margin-top: 0.5rem; }
+.sp-zeile .btitel { display: block; font-size: 0.8rem; color: #808080; }
+.sp-zeile .zeile { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.sp-zeile input[type=range] { flex: 1 1 8rem; }
+@media (max-width: 560px) { .sp-zeile input[type=range] { flex: 1 1 100%; order: -1; } #sp-u-wert { margin-left: auto; } }
+#sp-antwort .feld { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+button.feinknopf { font: inherit; font-size: 0.9rem; min-width: 2.6rem; min-height: 2rem; padding: 0.15rem 0.45rem; border: 1.5px solid var(--blue-frame); border-radius: 1mm; background: #fff; color: var(--blue-frame); cursor: pointer; }
+button.feinknopf:hover { background: var(--blue-title); }
+.sp-markewert { font-weight: bold; color: #7A5A00; min-width: 8.5em; text-align: center; font-variant-numeric: tabular-nums; }
+#sp-antwort input[type=text] { font: inherit; width: 6em; padding: 0.22rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm; }
+.sp-rechenweg { font-size: 0.95rem; line-height: 1.6; margin-top: 0.3rem; }
+.sp-rechenweg:not(:empty) { border-left: 3px solid var(--green-frame); padding: 0.2rem 0 0.2rem 0.7rem; background: var(--green-title, #F5FAF3); }
+</style>
 </head>
 <body>
 <div class="blatt">
@@ -1198,6 +1243,61 @@ window.SimUI = (function () {
 	<div class="modusleiste" id="modus-knoepfe">
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
 		<button data-modus="aufgabe">Aufgabe</button>
+		<button data-modus="spiel">Spiel</button>
+	</div>
+
+	<!-- ===================== Spiel: Laborauftrag Massenspektrometer (Kast 2026-11) ===================== -->
+	<div id="spiel" class="verborgen">
+	<div class="tcb gruen">
+		<div class="tcb-title">Laborauftrag: Welche Ionen enthält die Probe?</div>
+		<div class="tcb-body">
+			<div class="spielkopf">
+				<span class="kreise" id="sp-kreise" aria-label="Fortschritt"></span>
+				<span class="sp-stand" id="sp-stand"></span>
+				<span class="sp-sterne" id="sp-sterne"></span>
+			</div>
+			<p class="sp-auftrag" id="sp-auftrag"></p>
+
+			<canvas id="sp-canvas" class="sim"></canvas>
+			<div class="bildleiste knopfleiste">
+				<button id="sp-strahl" class="haupt" data-icon="play" title="Strahl ein"></button>
+				<button id="sp-leeren" class="neben" data-icon="muell" title="Detektor leeren"></button>
+			</div>
+
+			<div class="sp-regler">
+				<div class="sp-zeile" data-groesse="U">
+					<span class="btitel">Spannung am Wienfilter <i class="gr">U</i> (Plattenabstand <i class="gr">d</i> = 2,0 cm)</span>
+					<div class="zeile"><button type="button" class="feinknopf" data-d="-10">−10</button><button type="button" class="feinknopf" data-d="-1">−1</button><input type="range" min="0" max="4000" step="1" aria-label="Spannung U"><button type="button" class="feinknopf" data-d="1">+1</button><button type="button" class="feinknopf" data-d="10">+10</button><span class="wert"></span></div>
+				</div>
+				<div class="sp-zeile" data-groesse="B1">
+					<span class="btitel">Magnetfeld im Wienfilter <i class="gr">B</i><sub>1</sub></span>
+					<div class="zeile"><button type="button" class="feinknopf" data-d="-0.01">−</button><input type="range" min="0.05" max="0.5" step="0.01" aria-label="B1"><button type="button" class="feinknopf" data-d="0.01">+</button><span class="wert"></span></div>
+				</div>
+				<div class="sp-zeile" data-groesse="B2">
+					<span class="btitel">Umlenkfeld <i class="gr">B</i><sub>2</sub></span>
+					<div class="zeile"><button type="button" class="feinknopf" data-d="-0.01">−</button><input type="range" min="0.05" max="0.6" step="0.01" aria-label="B2"><button type="button" class="feinknopf" data-d="0.01">+</button><span class="wert"></span></div>
+				</div>
+				<div class="sp-zeile">
+					<span class="btitel">Messmarke am Detektor (im Bild ziehen oder fein verstellen)</span>
+					<div class="zeile"><button type="button" class="feinknopf" id="sp-m-runter" title="1 mm tiefer">▼ 1 mm</button><span class="sp-markewert" id="sp-marke">Marke: 10,0 cm</span><button type="button" class="feinknopf" id="sp-m-hoch" title="1 mm höher">▲ 1 mm</button><button type="button" class="feinknopf" id="sp-notieren" title="Einstellung und Marke in das Protokoll schreiben">Notieren</button></div>
+				</div>
+			</div>
+
+			<div class="tabelle-wrap" id="sp-protokoll-wrap" hidden>
+				<table class="messtabelle"><thead><tr><th>Nr.</th><th><i class="gr">U</i> in V</th><th><i class="gr">B</i><sub>1</sub> in T</th><th><i class="gr">B</i><sub>2</sub> in T</th><th>Marke in cm</th></tr></thead><tbody id="sp-protokoll"></tbody></table>
+			</div>
+
+			<div class="sp-ergebnis">
+				<span class="btitel">Ihre Ergebnisse: Massen der Ionensorten in u</span>
+				<div class="antwortzeile" id="sp-massen"></div>
+				<div class="antwortzeile"><button type="button" class="feinknopf" id="sp-plus" title="weitere Ionensorte">+ Ionensorte</button><button type="button" id="sp-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button></div>
+			</div>
+			<div class="rueckmeldung" id="sp-rueck"></div>
+			<div class="sp-rechenweg" id="sp-rechenweg"></div>
+			<div class="antwortzeile"><button type="button" id="sp-weiter" class="haupt" hidden>Zur nächsten Probe</button><button type="button" id="sp-neu" class="haupt" hidden>Neue Proben</button></div>
+			<p class="fussnote">Einfach positiv geladene Ionen, <i class="gr">q</i> = <i class="gr">e</i> = 1,602&thinsp;·&thinsp;10<sup>−19</sup>&nbsp;C; 1&nbsp;u = 1,661&thinsp;·&thinsp;10<sup>−27</sup>&nbsp;kg. Der Wienfilter lässt nur Ionen durch, deren Geschwindigkeit auf etwa 1&nbsp;% passt. Wienfilter schematisch (Ablenkung stark vergrößert), Umlenkfeld und Detektor im Maßstab der cm-Skala; Ionen mit zu großem Bahnradius verfehlen den Detektor. Jeder Fehlversuch beim Prüfen kostet einen Stern.</p>
+		</div>
+	</div>
 	</div>
 
 	<div class="tcb gruen verborgen" id="aufgabenkarte">
@@ -1215,7 +1315,7 @@ window.SimUI = (function () {
 		</div>
 	</div>
 
-	<div class="tcb blau">
+	<div class="tcb blau" id="box-sim">
 		<div class="tcb-title">Simulation: Wienfilter und Umlenkfeld</div>
 		<div class="tcb-body">
 			<canvas id="ms-canvas" class="sim"></canvas>
@@ -1403,6 +1503,359 @@ SimUI.bildKnopf("btn-bild", cM, () => "Massenspektrometer_" + (zustand.modus ===
 SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
+</script>
+<script>
+/* ==========================================================================
+   Laborauftrag Massenspektrometer (Kast 2026-11, nach dem Vorbild der Leifi-Aufgabe
+   „Bestimmungen am Massenspektrometer“, aber eigen gebaut): eine große Aufgabe statt vieler kleiner.
+   Probe A: mehrere Isotope eines Elements, alle gleich schnell (Geschwindigkeit unbekannt).
+   Probe B: drei Ionensorten verschiedener Elemente, jede mit eigener Geschwindigkeit.
+   Man stellt U, B₁ und B₂ selbst ein: erst den Wienfilter so, dass Ionen durchkommen
+   (qE = qvB₁), dann B₂ so, dass sie auf dem Detektor landen (r = mv/(qB₂)), misst und rechnet.
+   Schummelschutz: Massen nur durch Rechnen, Anzahl der Sorten wird nicht verraten,
+   Prüfen nennt nur, wie viele Massen passen, nie welche; jeder Fehlversuch kostet einen
+   Stern; Lösung wird nie gezeigt; Stand übersteht Neuladen; neue Proben erst nach dem Ende.
+   ========================================================================== */
+(() => {
+	"use strict";
+	const K = window.SimKit, P = window.SimPlus;
+	const QE = 1.602e-19, UKG = 1.6605e-27, D = 0.020, DURCHLASS = 0.01, TOL = 0.025, DET = 30;
+	const ELEMENTE = {
+		Li: [["⁶Li⁺", 6.015], ["⁷Li⁺", 7.016]], B: [["¹⁰B⁺", 10.013], ["¹¹B⁺", 11.009]], Ne: [["²⁰Ne⁺", 19.992], ["²²Ne⁺", 21.991]],
+		Mg: [["²⁴Mg⁺", 23.985], ["²⁵Mg⁺", 24.986], ["²⁶Mg⁺", 25.983]], Cl: [["³⁵Cl⁺", 34.969], ["³⁷Cl⁺", 36.966]], K: [["³⁹K⁺", 38.964], ["⁴¹K⁺", 40.962]],
+		Cu: [["⁶³Cu⁺", 62.930], ["⁶⁵Cu⁺", 64.928]], N: [["¹⁴N⁺", 14.003]], O: [["¹⁶O⁺", 15.995]], Ar: [["⁴⁰Ar⁺", 39.962]]
+	};
+	const SPEICHER = "kast_ms_labor_v1";
+	const zufall = (a, b) => a + Math.random() * (b - a), wahl = a => a[Math.floor(Math.random() * a.length)];
+	const de = (z, n) => P.de(z, n), ZW = "&thinsp;·&thinsp;";
+	/* messbar: es gibt ein B₂ (0,05 … 0,60 T), bei dem 2r zwischen 4 und 26 cm liegt */
+	const messbar = o => { const k = 2 * o.m * UKG * o.v / QE; return k / 0.6 < 0.26 && k / 0.05 > 0.04; };
+
+	function probeA() {
+		for (;;) {
+			const el = wahl(["Li", "B", "Ne", "Mg", "Cl", "K", "Cu"]), v = Math.round(zufall(1.4, 3.2) * 100) / 100 * 1e5;
+			const ionen = ELEMENTE[el].map(([name, m]) => ({ name, m, v }));
+			if (ionen.every(messbar)) return { name: "Probe A", ionen };
+		}
+	}
+	function probeB() {
+		for (;;) {
+			const els = Object.keys(ELEMENTE).sort(() => Math.random() - 0.5).slice(0, 3);
+			const ionen = els.map(e => { const [name, m] = wahl(ELEMENTE[e]); return { name, m, v: Math.round(zufall(1.0, 3.4) * 100) / 100 * 1e5 }; });
+			const vs = ionen.map(o => o.v).sort((a, b) => a - b);
+			const ms = ionen.map(o => o.m).sort((a, b) => a - b);
+			if (ionen.every(messbar) && vs[1] / vs[0] > 1.15 && vs[2] / vs[1] > 1.15 && ms[1] / ms[0] > 1.08 && ms[2] / ms[1] > 1.08) return { name: "Probe B", ionen };
+		}
+	}
+
+	/* ---------- Spielstand ---------- */
+	let sp = null;
+	function laden() { try { const s = JSON.parse(localStorage.getItem(SPEICHER)); if (s && s.proben && s.proben.length === 2) return s; } catch (e) { /* ohne Speicher */ } return null; }
+	function sichern() { try { localStorage.setItem(SPEICHER, JSON.stringify(sp)); } catch (e) { /* ohne Speicher */ } }
+	function neuesSpiel(durchgang) {
+		sp = { durchgang, nr: 0, proben: [probeA(), probeB()], fehler: [0, 0], geloest: [false, false], protokoll: [[], []], eingaben: [["", ""], ["", ""]], weg: ["", ""] };
+		sichern();
+	}
+	sp = laden(); if (!sp) neuesSpiel(1);
+	const PR = () => sp.proben[sp.nr];
+
+	/* ---------- Laborzustand ---------- */
+	const lauf = { U: 400, B1: 0.20, B2: 0.30, strahl: false, ionen: [], treffer: [], marke: 10, takt: 0 };
+
+	/* ---------- Zeichnen ---------- */
+	const cv = document.getElementById("sp-canvas"), g = cv.getContext("2d");
+	let W = 760, H = 460, geo = null;
+	function geometrie() {
+		const eng = W < 560, s = Math.min((W * (eng ? 0.56 : 0.42) - 20) / 15, (H - 62) / DET);
+		const xs = Math.round(W - 15 * s - 12), yb = H - 32, gap = eng ? 30 : 40;
+		return { eng, s, xs, yb, gap, xq: 8, xf0: eng ? 48 : 70, xf1: xs - 16, schlitz: gap / 6 };
+	}
+	function kreuzFeld(x0, y0, x1, y1, abstand, farbe, gr) {
+		g.save(); g.strokeStyle = farbe; g.lineWidth = 1.2;
+		for (let x = x0 + abstand / 2; x < x1; x += abstand) for (let y = y0 + abstand / 2; y < y1; y += abstand) {
+			g.beginPath(); g.arc(x, y, gr, 0, 2 * Math.PI); g.stroke();
+			const k = gr * 0.6; g.beginPath(); g.moveTo(x - k, y - k); g.lineTo(x + k, y + k); g.moveTo(x - k, y + k); g.lineTo(x + k, y - k); g.stroke();
+		}
+		g.restore();
+	}
+	function platte(x, y, w, h, plus) {
+		const gr = g.createLinearGradient(0, y, 0, y + h);
+		gr.addColorStop(0, plus ? "#F3B8B8" : "#B8C4F3"); gr.addColorStop(0.5, plus ? "#FBE3E3" : "#E3E8FB"); gr.addColorStop(1, plus ? "#EBA8A8" : "#A8B6EE");
+		g.fillStyle = gr; g.fillRect(x, y, w, h); g.strokeStyle = plus ? "#B02424" : "#2440B0"; g.lineWidth = 1; g.strokeRect(x, y, w, h);
+		g.strokeStyle = plus ? "#BF0000" : "#0000BF"; g.lineWidth = 2; g.lineCap = "round";
+		const n = Math.max(3, Math.round(w / 40));
+		for (let i = 0; i < n; i++) { const xm = x + w * (i + 0.5) / n, ym = y + h / 2, k = Math.min(4, h * 0.32); g.beginPath(); g.moveTo(xm - k, ym); g.lineTo(xm + k, ym); if (plus) { g.moveTo(xm, ym - k); g.lineTo(xm, ym + k); } g.stroke(); }
+		g.lineCap = "butt";
+	}
+	function ion(x, y, r) {
+		const gr = g.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+		gr.addColorStop(0, "#fff"); gr.addColorStop(0.3, "#E05050"); gr.addColorStop(1, "#8F1B1B");
+		g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 2 * Math.PI); g.fill();
+	}
+	function text(t, x, y, gr, farbe, ausr, stil) { P.text(g, t, x, y, { groesse: gr, farbe: farbe || "#333", ausrichtung: ausr || "left", fett: stil === "fett", kursiv: stil === "kursiv" }); }
+
+	/* Bahn eines Ions: im Filter gerade (passend) oder abgelenkt, dann Halbkreis im Umlenkfeld */
+	function bahn(o) {
+		const G = geo, vSoll = lauf.U / (lauf.B1 * D);
+		const delta = lauf.U > 0 ? (o.v - vSoll) / vSoll : 9;              /* > 0: zu schnell, Magnetkraft überwiegt: nach oben */
+		const durch = Math.random() < 1 - Math.pow(delta / DURCHLASS, 2);
+		let aus = durch ? delta / DURCHLASS * G.schlitz * 0.8 : Math.sign(delta || 1) * Math.max(G.schlitz + 3, (G.gap / 2) * Math.abs(delta) / (3 * DURCHLASS));
+		const L = G.xf1 - G.xf0, pfad = [[G.xq + 30, G.yb]];
+		for (let i = 0; i <= 40; i++) {
+			const x = G.xf0 + L * i / 40, dy = aus * (i / 40) * (i / 40);
+			if (Math.abs(dy) >= G.gap / 2 - 3) { pfad.push([x, G.yb - Math.sign(dy) * (G.gap / 2 - 3)]); return { pfad, durch: false }; }
+			pfad.push([x, G.yb - dy]);
+		}
+		if (!durch) { pfad.push([G.xs - 5, G.yb - aus * 1.1]); return { pfad, durch: false }; }
+		const d2 = 2 * o.m * UKG * o.v / (QE * lauf.B2) * 100, rp = d2 / 2 * G.s;
+		for (let i = 0; i <= 70; i++) {
+			const w = -Math.PI / 2 + Math.PI * i / 70, x = G.xs + rp * Math.cos(w), y = G.yb - rp - rp * Math.sin(w);
+			pfad.push([x, y]);
+			if (x > W + 10 || y < -10) return { pfad, durch: false };            /* verlässt das Bild: verfehlt den Detektor */
+		}
+		return { pfad, durch: d2 >= 2 && d2 <= DET, d2 };
+	}
+
+	function zeichne() {
+		if (!geo) return;
+		const G = geo, pr = PR();
+		g.clearRect(0, 0, W, H); g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+		/* Umlenkfeld */
+		const fx0 = G.xs, fy0 = 8, fy1 = G.yb + 26;
+		g.fillStyle = "rgba(0,0,191,0.045)"; g.fillRect(fx0, fy0, W - fx0 - 6, fy1 - fy0);
+		kreuzFeld(fx0, fy0, W - 6, fy1, Math.max(22, 2 * G.s), "rgba(70,70,140," + (0.15 + 0.5 * lauf.B2 / 0.6) + ")", G.eng ? 4 : 5);
+		{ const t = "B₂ = " + de(lauf.B2, 2) + " T"; g.font = "italic 15px " + K.SCHRIFT; const w = g.measureText(t).width;
+		  g.fillStyle = "rgba(255,255,255,0.92)"; g.fillRect(W - 18 - w, fy0 + 3, w + 10, 22); text(t, W - 12, fy0 + 19, 15, "#3A3A8C", "right", "kursiv"); }
+		/* Quelle */
+		g.fillStyle = "#E9ECF2"; g.strokeStyle = "#8A9099"; g.lineWidth = 1.2;
+		g.beginPath(); if (g.roundRect) g.roundRect(G.xq, G.yb - 13, 30, 26, 4); else g.rect(G.xq, G.yb - 13, 30, 26); g.fill(); g.stroke();
+		ion(G.xq + 15, G.yb, 5);
+		text(pr ? pr.name : "", G.xq, G.yb + 26, 12, "#666");
+		/* Wienfilter: Plattenladung und Feldsymbole werden mit U bzw. B₁ kräftiger */
+		const pd = 9;
+		platte(G.xf0, G.yb - G.gap / 2 - pd, G.xf1 - G.xf0, pd, true);
+		platte(G.xf0, G.yb + G.gap / 2, G.xf1 - G.xf0, pd, false);
+		kreuzFeld(G.xf0, G.yb - G.gap / 2, G.xf1, G.yb + G.gap / 2, G.gap / 2, "rgba(90,90,90," + (0.15 + 0.6 * lauf.B1 / 0.5) + ")", 4);
+		const uText = "U = " + Math.round(lauf.U) + " V, B₁ = " + de(lauf.B1, 2) + " T";
+		if (G.eng) {
+			const y0 = G.yb - G.gap / 2 - pd;
+			text("Wienfilter", G.xq, y0 - 40, 13, "#333", "left", "fett");
+			text("U = " + Math.round(lauf.U) + " V", G.xq, y0 - 24, 13, "#333");
+			text("B₁ = " + de(lauf.B1, 2) + " T", G.xq, y0 - 8, 13, "#333");
+		} else {
+			text("Wienfilter:  " + uText, G.xf0, G.yb - G.gap / 2 - pd - 10, 14, "#333");
+			text("d = 2,0 cm", G.xf0, G.yb + G.gap / 2 + pd + 14, 12, "#666");
+		}
+		/* Anzeigetafel (nicht am Handy) */
+		if (!G.eng) {
+			const x0 = 14, y0 = 14, b = Math.min(260, G.xs - 90), h = 92;
+			g.fillStyle = "#1F2A33"; g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, b, h, 8); else g.rect(x0, y0, b, h); g.fill();
+			[["Ionenstrahl", lauf.strahl ? "ein" : "aus"], ["Treffer am Detektor", String(lauf.treffer.length)], ["Messmarke", de(lauf.marke, 1) + " cm"]]
+				.forEach(([a, w], i) => { text(a, x0 + 12, y0 + 24 + i * 26, 13, "#9FB3C8"); text(w, x0 + b - 12, y0 + 24 + i * 26, 16, "#7CFFB2", "right", "fett"); });
+		}
+		/* Spaltwand und Detektor */
+		g.fillStyle = "#222";
+		g.fillRect(G.xs - 5, G.yb + G.schlitz, 5, 24 - G.schlitz);
+		g.fillRect(G.xs - 5, G.yb - 24, 5, 24 - G.schlitz);
+		const yv = c => G.yb - c * G.s;
+		g.fillStyle = "#CFE8C4"; g.strokeStyle = "#295C06"; g.lineWidth = 1;
+		g.fillRect(G.xs - 6, yv(DET), 6, yv(2) - yv(DET)); g.strokeRect(G.xs - 6, yv(DET), 6, yv(2) - yv(DET));
+		g.strokeStyle = "#333";
+		for (let c = 2; c <= DET; c++) {
+			const y = yv(c), l = c % 5 === 0 ? 11 : 6;
+			g.beginPath(); g.moveTo(G.xs - 6, y); g.lineTo(G.xs - 6 - l, y); g.stroke();
+			if (c % 5 === 0) text(String(c), G.xs - 20, y + 4, 11, "#333", "right");
+		}
+		text(G.eng ? "Detektor (cm)" : "Detektor: Abstand vom Spalt in cm", G.xs - 8, Math.max(12, yv(DET) - 8), 12, "#295C06", "right");
+		for (const t of lauf.treffer) {
+			const y = yv(t.d2) + t.j;
+			g.fillStyle = "rgba(220,30,30,0.16)"; g.beginPath(); g.arc(G.xs - 3, y, 6, 0, 2 * Math.PI); g.fill();
+			g.fillStyle = "#C00000"; g.beginPath(); g.arc(G.xs - 3, y, 2.2, 0, 2 * Math.PI); g.fill();
+		}
+		for (const o of lauf.ionen) {
+			const k = Math.min(o.pfad.length - 1, Math.floor(o.t));
+			g.save(); g.strokeStyle = "rgba(191,0,0,0.22)"; g.lineWidth = 1.6; g.beginPath();
+			for (let i = 0; i <= k; i++) { const [x, y] = o.pfad[i]; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+			g.stroke(); g.restore();
+			const [x, y] = o.pfad[k]; ion(x, y, 4.2);
+		}
+		/* Messmarke rechts am Detektor */
+		const y = yv(lauf.marke);
+		g.save(); g.strokeStyle = "#B8860B"; g.setLineDash([5, 3]); g.lineWidth = 1.4;
+		g.beginPath(); g.moveTo(G.xs - 18, y); g.lineTo(G.xs + 30, y); g.stroke(); g.restore();
+		g.fillStyle = "#FFD400"; g.strokeStyle = "#7A5A00"; g.lineWidth = 1.2;
+		g.beginPath(); g.moveTo(G.xs + 30, y); g.lineTo(G.xs + 44, y - 9); g.lineTo(G.xs + 44, y + 9); g.closePath(); g.fill(); g.stroke();
+		const t = de(lauf.marke, 1) + " cm";
+		g.font = "bold 14px " + K.SCHRIFT; const w = g.measureText(t).width;
+		g.fillStyle = "rgba(255,255,255,0.94)"; g.fillRect(G.xs + 47, y - 11, w + 8, 22);
+		text(t, G.xs + 51, y + 5, 14, "#7A5A00", "left", "fett");
+	}
+
+	function schritt(dt) {
+		if (document.getElementById("spiel").classList.contains("verborgen") || !PR()) return true;
+		dt = Math.min(dt, 0.05);
+		if (lauf.strahl) { lauf.takt += dt; if (lauf.takt > 0.22) { lauf.takt = 0; const b = bahn(wahl(PR().ionen)); lauf.ionen.push(Object.assign(b, { t: 0 })); } }
+		for (const o of lauf.ionen) o.t += dt * 75;
+		lauf.ionen = lauf.ionen.filter(o => {
+			if (o.t < o.pfad.length - 1) return true;
+			if (o.durch) { lauf.treffer.push({ d2: o.d2, j: (Math.random() - 0.5) * 2.5 }); if (lauf.treffer.length > 200) lauf.treffer.shift(); }
+			return false;
+		});
+		zeichne();
+		return true;
+	}
+
+	/* ---------- Oberfläche ---------- */
+	const $ = id => document.getElementById(id);
+	const sterneVon = i => Math.max(0, 3 - sp.fehler[i]);
+	function kopf() {
+		$("sp-kreise").innerHTML = sp.proben.map((_, i) => '<i class="' + (sp.geloest[i] ? (sp.fehler[i] ? "nein" : "ja") : i === sp.nr ? "jetzt" : "") + '"></i>').join("");
+		const n = sp.nr < 2 ? sterneVon(sp.nr) : 0;
+		$("sp-sterne").innerHTML = sp.nr < 2 ? (sp.durchgang > 1 ? "<b>" + sp.durchgang + ". Durchgang</b> " : "") + '<span class="sterne">' + [0, 1, 2].map(i => i < n ? '<span class="voll">★</span>' : '<span class="leer">★</span>').join("") + "</span>" : "";
+	}
+	function massenfelder() {
+		const e = sp.eingaben[sp.nr];
+		$("sp-massen").innerHTML = e.map((w, i) => '<span class="feld"><label for="sp-m' + i + '"><i class="gr">m</i><sub>' + (i + 1) + '</sub> =</label><input type="text" inputmode="decimal" id="sp-m' + i + '" autocomplete="off" value="' + String(w).replace(/"/g, "") + '"><span>u</span>'
+			+ (e.length > 1 ? '<button type="button" class="zeile-weg" data-i="' + i + '" title="Feld entfernen" aria-label="Feld entfernen">×</button>' : "") + "</span>").join("");
+		$("sp-massen").querySelectorAll("input").forEach((inp, i) => inp.addEventListener("input", () => { sp.eingaben[sp.nr][i] = inp.value; sichern(); }));
+		$("sp-massen").querySelectorAll("button.zeile-weg").forEach(b => b.addEventListener("click", () => { sp.eingaben[sp.nr].splice(+b.dataset.i, 1); sichern(); massenfelder(); }));
+	}
+	function protokoll() {
+		const z = sp.protokoll[sp.nr] || [];
+		$("sp-protokoll-wrap").hidden = !z.length;
+		$("sp-protokoll").innerHTML = z.map((r, i) => "<tr><td>" + (i + 1) + "</td><td>" + r[0] + "</td><td>" + de(r[1], 2) + "</td><td>" + de(r[2], 2) + "</td><td>" + de(r[3], 1) + '</td><td class="weg"><button type="button" class="zeile-weg" data-i="' + i + '" title="Zeile entfernen" aria-label="Zeile entfernen">×</button></td></tr>').join("");
+		$("sp-protokoll").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { sp.protokoll[sp.nr].splice(+b.dataset.i, 1); sichern(); protokoll(); }));
+	}
+	function zeige() {
+		kopf();
+		const ende = sp.nr >= 2;
+		document.querySelectorAll("#spiel .sp-regler, #spiel .sp-ergebnis, #sp-strahl, #sp-leeren").forEach(e => e.hidden = ende);
+		$("sp-neu").hidden = !ende;
+		if (ende) {
+			$("sp-stand").innerHTML = "<b>Auftrag erledigt!</b>";
+			$("sp-auftrag").innerHTML = "Probe A: " + "★".repeat(sterneVon(0)) + "☆".repeat(3 - sterneVon(0)) + ", Probe B: " + "★".repeat(sterneVon(1)) + "☆".repeat(3 - sterneVon(1)) + ". Neue Proben bringen neue Ionen und neue Geschwindigkeiten.";
+			$("sp-rueck").innerHTML = ""; $("sp-rechenweg").innerHTML = ""; $("sp-weiter").hidden = true; $("sp-protokoll-wrap").hidden = true;
+			lauf.strahl = false; strahlKnopf(); zeichne(); return;
+		}
+		const pr = PR(), geloest = sp.geloest[sp.nr];
+		$("sp-stand").innerHTML = "<b>" + pr.name + "</b>" + (sp.nr === 0 ? ": ein Element, alle Ionen gleich schnell" : ": mehrere Elemente, jede Ionensorte mit eigener Geschwindigkeit");
+		$("sp-auftrag").innerHTML = sp.nr === 0
+			? "Die Probe enthält die Isotope eines Elements (einfach positiv geladen). Ihre Geschwindigkeit kennen Sie nicht. Stellen Sie den Wienfilter so ein, dass Ionen durchkommen, und das Umlenkfeld so, dass sie auf dem Detektor landen. Bestimmen Sie die Massen <b>aller</b> Ionensorten."
+			: "Jetzt hat jede Ionensorte ihre eigene Geschwindigkeit. Der Wienfilter lässt immer nur eine Sorte durch. Suchen Sie alle Sorten, messen Sie jede einzeln aus und bestimmen Sie ihre Massen. Wie viele Sorten es sind, müssen Sie selbst herausfinden.";
+		massenfelder(); protokoll();
+		$("sp-pruefen").disabled = geloest; $("sp-plus").disabled = geloest;
+		$("sp-massen").querySelectorAll("input, button").forEach(e => e.disabled = geloest);
+		$("sp-weiter").hidden = !geloest;
+		$("sp-rechenweg").innerHTML = geloest ? sp.weg[sp.nr] : "";
+		if (!geloest) { $("sp-rueck").innerHTML = ""; $("sp-rueck").className = "rueckmeldung"; }
+		zeichne();
+	}
+	function strahlKnopf() { const b = $("sp-strahl"); SimUI.setzeIcon(b, lauf.strahl ? "pause" : "play", lauf.strahl ? "Strahl aus" : "Strahl ein"); b.classList.toggle("laeuft", lauf.strahl); }
+
+	/* ---------- Prüfen ---------- */
+	function pruefen() {
+		const i = sp.nr, pr = PR();
+		const werte = sp.eingaben[i].map(w => parseFloat(String(w).replace(",", "."))).filter(isFinite);
+		if (!werte.length) { P.zeigeRueckmeldung($("sp-rueck"), "falsch", "Bitte tragen Sie mindestens eine Masse ein."); return; }
+		/* jede eingetragene Masse darf genau eine Sorte belegen */
+		const frei = pr.ionen.map(o => o.m);
+		let passend = 0;
+		for (const w of werte) { const k = frei.findIndex(m => Math.abs(w - m) / m <= TOL); if (k >= 0) { passend++; frei.splice(k, 1); } }
+		const ok = passend === pr.ionen.length && werte.length === pr.ionen.length;
+		if (!ok) {
+			sp.fehler[i]++; sichern(); kopf();
+			let t = passend + " von " + werte.length + " eingetragenen Massen passen zu einer Ionensorte der Probe.";
+			if (passend === werte.length) t += " Es fehlt noch mindestens eine Ionensorte.";
+			t += sterneVon(i) > 0 ? " Das kostet einen Stern." : "";
+			P.zeigeRueckmeldung($("sp-rueck"), "falsch", t);
+			return;
+		}
+		sp.geloest[i] = true;
+		sp.weg[i] = "So passt es zusammen:<br>" + pr.ionen.map(o => {
+			const B2 = Math.min(0.6, Math.max(0.05, Math.round(2 * o.m * UKG * o.v / (QE * 0.2) * 100) / 100)), d2 = 2 * o.m * UKG * o.v / (QE * B2) * 100;
+			return "<b>" + o.name + "</b>: <i>v</i> = <i>U</i>/(<i>d</i>" + ZW + "<i>B</i><sub>1</sub>) = " + de(o.v / 1e5, 2) + ZW + "10<sup>5</sup> m/s (z. B. <i>U</i> = " + de(o.v * 0.2 * D, 0) + " V bei <i>B</i><sub>1</sub> = 0,20 T); bei <i>B</i><sub>2</sub> = " + de(B2, 2) + " T Auftreffpunkt " + de(d2, 1) + " cm, <i>m</i> = <i>qB</i><sub>2</sub><i>r</i>/<i>v</i> = " + de(o.m, 1) + " u";
+		}).join("<br>");
+		sichern();
+		P.zeigeRueckmeldung($("sp-rueck"), "gut", "Richtig! Alle Ionensorten gefunden." + (sp.fehler[i] ? " (Fehlversuche: " + sp.fehler[i] + ")" : ""));
+		zeige();
+		const n = sterneVon(i);
+		for (let k = 1; k <= n; k++) setTimeout(() => feiere(k, n), 300 + (k - 1) * 700);
+		if (!n) funken($("sp-rueck"), 6);
+	}
+
+	/* ---------- Jubel: jeder Stern einzeln ---------- */
+	function funken(ziel, n) {
+		const r = ziel.getBoundingClientRect();
+		for (let i = 0; i < n; i++) {
+			const f = document.createElement("div"); f.className = "funke"; f.textContent = "★";
+			const w = Math.random() * Math.PI * 2, d = 60 + Math.random() * 90;
+			f.style.left = (r.left + Math.min(r.width, 120) / 2) + "px"; f.style.top = (r.top + r.height / 2) + "px";
+			f.style.setProperty("--dx", Math.cos(w) * d + "px"); f.style.setProperty("--dy", Math.sin(w) * d - 30 + "px");
+			document.body.appendChild(f); setTimeout(() => f.remove(), 1200);
+		}
+	}
+	function feiere(k, n) {
+		const st = $("sp-sterne").querySelectorAll(".sterne .voll")[k - 1];
+		if (!st) return;
+		st.classList.remove("neu"); void st.offsetWidth; st.classList.add("neu");
+		const ruhig = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		if (!ruhig) funken(st, k === n ? 10 + 6 * n : 8);
+		const r = st.getBoundingClientRect(), j = document.createElement("div");
+		j.className = "jubel" + (k === 3 ? " gross" : ""); j.textContent = "Stern " + k + "!" + (k === n ? (n === 3 ? " Perfekt!" : n === 2 ? " Stark!" : " Geschafft!") : "");
+		j.style.left = (r.left + r.width / 2) + "px"; j.style.top = r.top + "px";
+		document.body.appendChild(j); setTimeout(() => j.remove(), 1700);
+	}
+
+	/* ---------- Bedienung ---------- */
+	const FORMAT = { U: v => Math.round(v) + " V", B1: v => de(v, 2) + " T", B2: v => de(v, 2) + " T" };
+	const GRENZE = { U: [0, 4000], B1: [0.05, 0.5], B2: [0.05, 0.6] };
+	document.querySelectorAll("#spiel .sp-zeile[data-groesse]").forEach(z => {
+		const gr = z.dataset.groesse, r = z.querySelector("input"), w = z.querySelector(".wert");
+		const setze = v => { v = Math.max(GRENZE[gr][0], Math.min(GRENZE[gr][1], v)); v = gr === "U" ? Math.round(v) : Math.round(v * 100) / 100; lauf[gr] = v; r.value = v; w.textContent = FORMAT[gr](v); lauf.ionen = []; zeichne(); };
+		r.addEventListener("input", () => setze(+r.value));
+		z.querySelectorAll(".feinknopf").forEach(b => b.addEventListener("click", () => setze(lauf[gr] + +b.dataset.d)));
+		setze(lauf[gr]);
+	});
+	const marke = d => { lauf.marke = Math.max(2, Math.min(DET, Math.round((lauf.marke + d) * 10) / 10)); $("sp-marke").textContent = "Marke: " + de(lauf.marke, 1) + " cm"; zeichne(); };
+	$("sp-m-runter").addEventListener("click", () => marke(-0.1));
+	$("sp-m-hoch").addEventListener("click", () => marke(0.1));
+	$("sp-notieren").addEventListener("click", () => { sp.protokoll[sp.nr].push([Math.round(lauf.U), lauf.B1, lauf.B2, lauf.marke]); sichern(); protokoll(); });
+	$("sp-strahl").addEventListener("click", () => { lauf.strahl = !lauf.strahl; strahlKnopf(); });
+	$("sp-leeren").addEventListener("click", () => { lauf.treffer = []; zeichne(); });
+	$("sp-plus").addEventListener("click", () => { if (sp.eingaben[sp.nr].length < 6) { sp.eingaben[sp.nr].push(""); sichern(); massenfelder(); } });
+	$("sp-pruefen").addEventListener("click", pruefen);
+	$("sp-weiter").addEventListener("click", () => { sp.nr++; sichern(); lauf.treffer = []; lauf.ionen = []; lauf.strahl = false; strahlKnopf(); $("sp-rueck").innerHTML = ""; zeige(); });
+	$("sp-neu").addEventListener("click", () => { neuesSpiel((sp.durchgang || 1) + 1); lauf.treffer = []; zeige(); });
+	let zieht = false;
+	const markeAus = ev => { const b = cv.getBoundingClientRect(); return (geo.yb - (ev.clientY - b.top)) / geo.s; };
+	const setzeMarke = ev => { lauf.marke = Math.max(2, Math.min(DET, Math.round(markeAus(ev) * 10) / 10)); marke(0); };
+	cv.addEventListener("pointerdown", ev => { if (!geo) return; const b = cv.getBoundingClientRect(), x = ev.clientX - b.left; if (x > geo.xs - 70 && x < geo.xs + 110) { zieht = true; cv.setPointerCapture(ev.pointerId); setzeMarke(ev); } });
+	cv.addEventListener("pointermove", ev => { if (zieht) setzeMarke(ev); });
+	cv.addEventListener("pointerup", () => zieht = false);
+	cv.addEventListener("pointercancel", () => zieht = false);
+
+	function layout() { ({ W, H } = K.skaliereCanvas(cv, g, b => b < 560 ? 0.95 : 0.6)); geo = geometrie(); zeichne(); }
+	window.addEventListener("resize", () => { if (!$("spiel").classList.contains("verborgen")) layout(); });
+	window.spielLayout = layout;
+	strahlKnopf();
+	zeige();
+	K.starteSchleife(schritt);
+})();
+</script>
+<script>
+/* Modus „Spiel“: eigener Kasten, die Simulation darunter ruht (?modus=spiel) */
+(() => {
+	const leiste = document.getElementById("modus-knoepfe");
+	function setze(m) {
+		const spiel = m === "spiel";
+		document.getElementById("spiel").classList.toggle("verborgen", !spiel);
+		document.getElementById("box-sim").classList.toggle("verborgen", spiel);
+		if (spiel) { document.getElementById("aufgabenkarte").classList.add("verborgen"); window.spielLayout(); }
+	}
+	leiste.addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) setze(b.dataset.modus); });
+	const aktiv = leiste.querySelector("button.aktiv");
+	if (aktiv) setze(aktiv.dataset.modus);
+})();
 </script>
 </body>
 </html>
