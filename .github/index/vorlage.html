@@ -56,6 +56,9 @@ body {
 }
 a.chip { display: inline-block; text-align: center; text-decoration: none; }
 .chip:hover { border-color: var(--blue-frame); }
+button.chip.gA[aria-pressed="true"] { border-color: var(--green-frame); background: var(--green-frame); color: #fff; }
+button.chip.eA[aria-pressed="true"] { border-color: var(--red-frame); background: var(--red-frame); color: #fff; }
+button.chip[aria-pressed="true"]:not(.gA):not(.eA) { border-color: var(--blue-frame); background: var(--blue-frame); color: #fff; }
 .chip[aria-current="page"] {
 	border-color: var(--blue-frame); background: var(--blue-frame); color: #fff;
 	box-shadow: inset 0 0 0 1px rgba(255,255,255,.25);
@@ -192,6 +195,10 @@ footer { margin-top: 30px; color: var(--grau); font-size: 0.8em; text-align: cen
 			<span>Klasse</span>
 			<div class="chips" id="chips"></div>
 		</div>
+		<div class="gruppe" id="niveaugruppe" hidden>
+			<span>Niveau</span>
+			<div class="chips" id="niveauchips"></div>
+		</div>
 		<div class="gruppe suche" id="suchfeld">
 			<span>Suche</span>
 			<div style="position:relative">
@@ -295,22 +302,44 @@ function chipsBauen() {
 		a.textContent = k ? nr(k) : 'Alle';
 		a.title = k ? 'Klasse ' + nr(k) : 'Alle Klassen';
 		a.href = PRAEFIX + (k ? 'Klasse_' + k + '/' : '');
-		a.onclick = () => { const q = $('suche').value.trim(); if (q) a.href += '?suche=' + encodeURIComponent(q); };
+		a.onclick = () => { const q = $('suche').value.trim(), sp = new URLSearchParams(); if (q) sp.set('suche', q); if (niveau) sp.set('niveau', niveau); if (sp.toString()) a.href += '?' + sp; };
 		if (k === aktiv) a.setAttribute('aria-current', 'page');
 		c.appendChild(a);
 	}
 }
 
+// Niveau-Filter (gA/eA): gA blendet eA-Simulationen aus, eA blendet reine gA-Fassungen aus; gemeinsame bleiben
+let niveau = /^(gA|eA)$/.test(param.get('niveau') || '') ? param.get('niveau') : '';
+function niveauBauen() {
+	const hatNiveau = DATEN.sims.some(s => (!aktiv || s.k === aktiv) && s.niveau);
+	$('niveaugruppe').hidden = !hatNiveau;
+	if (!hatNiveau) { niveau = ''; return; }
+	const c = $('niveauchips');
+	c.innerHTML = '';
+	for (const [n, text, titel] of [['', 'Alle', 'Alle Simulationen'], ['gA', 'gA', 'grundlegendes Anforderungsniveau: ohne eA-Simulationen'], ['eA', 'eA', 'erhöhtes Anforderungsniveau: ohne reine gA-Fassungen']]) {
+		const b = document.createElement('button');
+		b.type = 'button'; b.className = 'chip' + (n ? ' ' + n : ''); b.textContent = text; b.title = titel;
+		b.setAttribute('aria-pressed', String(n === niveau));
+		b.onclick = () => { niveau = n; niveauBauen(); zeigen(); };
+		c.appendChild(b);
+	}
+}
+const passtNiveau = s => !niveau || !s.niveau || s.niveau.slice(0, 2) === niveau;
+
 function zeigen() {
 	const q = $('suche').value.trim();
 	$('suchfeld').classList.toggle('voll', !!q);
 	const woerter = norm(q).split(/\s+/).filter(Boolean);
-	history.replaceState(null, '', location.pathname + (q ? '?suche=' + encodeURIComponent(q) : ''));
+	const sp = new URLSearchParams();
+	if (q) sp.set('suche', q);
+	if (niveau) sp.set('niveau', niveau);
+	history.replaceState(null, '', location.pathname + (sp.toString() ? '?' + sp : ''));
 	$('ueberschrift').textContent = aktiv ? 'Physik-Simulationen · Klasse ' + nr(aktiv) : 'Physik-Simulationen';
 	document.title = aktiv ? 'Simulationen Klasse ' + nr(aktiv) : 'Physik-Simulationen';
 
 	const treffer = DATEN.sims.filter(s => {
 		if (aktiv && s.k !== aktiv) return false;
+		if (!passtNiveau(s)) return false;
 		if (!woerter.length) return true;
 		const kn = DATEN.klassen[s.k];
 		const heu = norm([s.titel, s.ab, s.niveau, s.pfad, kn[s.kap] || '', kn[s.abs] || '', kn[s.ab] || '', 'klasse ' + nr(s.k)].join(' '));
@@ -433,6 +462,7 @@ $('loeschen').onclick = () => { $('suche').value = ''; zeigen(); $('suche').focu
 if (param.get('klasse') === 'alle') aktiv = '';
 
 chipsBauen();
+niveauBauen();
 zeigen();
 </script>
 </body>
