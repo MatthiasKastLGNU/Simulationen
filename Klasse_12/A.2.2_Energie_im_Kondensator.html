@@ -1397,7 +1397,17 @@ function zeichneKugel() {
 		c.fillRect(x1, y1, x2 - x1, y0 - y1);
 		c.strokeStyle = "#0000BF"; c.lineWidth = 1; c.strokeRect(x1, y1, x2 - x1, y0 - y1);
 	}
-	P.kurve(c, u, q => q * 1e-9 / C_K, 0, 200, P.FARBEN.rot, { breite: 2 });
+	/* Die Ursprungsgerade nimmt das Ergebnis vorweg (Kast 2026-11-04): während der Überfahrten nur die erreichten
+	   Zustände (Q|U) als Punkte; erst nach der letzten Überfahrt erscheint die Gerade mit der Dreiecksfläche ½·Q·U. */
+	const punkte = [];
+	for (let k = 0; k <= kugel.schritte; k++) { const q = Q0 - k * dQ; punkte.push({ x: q * 1e9, y: q / C_K }); }
+	const fertig = kugel.schritte >= kugel.n && !kugel.anim;
+	if (fertig) {
+		c.fillStyle = "rgba(191,0,0,0.10)"; c.beginPath(); c.moveTo(u.xPix(0), u.yPix(0)); c.lineTo(u.xPix(200), u.yPix(200)); c.lineTo(u.xPix(200), u.yPix(0)); c.closePath(); c.fill();
+		P.kurve(c, u, q => q * 1e-9 / C_K, 0, 200, P.FARBEN.rot, { breite: 2 });
+		P.text(c, "Dreiecksfläche: W = ½·Q·U", u.xPix(110), u.yPix(30), { groesse: 13, fett: true, farbe: P.FARBEN.rot });
+	}
+	P.punkte(c, u, punkte, "#7A0000", { r: 3.5 });
 	P.punkte(c, u, [{ x: Q * 1e9, y: Q / C_K }], P.FARBEN.rot, { r: 5 });
 
 	/* Auswertung */
