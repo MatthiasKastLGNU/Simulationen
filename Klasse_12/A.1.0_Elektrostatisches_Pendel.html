@@ -1389,19 +1389,33 @@ function zeichnePendel() {
 	/* Platten: Innenflaeche genau bei +-d/2 */
 	const zeichnePlatte = (xInnen, aussen, vz) => {
 		const x0 = aussen < 0 ? xInnen - 12 : xInnen;
-		const vl = gP.createLinearGradient(x0, 0, x0 + 12, 0);
-		vl.addColorStop(0, "#9AA3AE"); vl.addColorStop(0.5, "#DDE2E8"); vl.addColorStop(1, "#8C95A0");
+		const vl = gP.createLinearGradient(x0, 0, x0 + 12, 0), geladen = Math.abs(st.U) > 200 && vz !== 0;
+		if (!geladen) { vl.addColorStop(0, "#9AA3AE"); vl.addColorStop(0.5, "#DDE2E8"); vl.addColorStop(1, "#8C95A0"); }
+		else if (vz > 0) { vl.addColorStop(0, "#EBA8A8"); vl.addColorStop(0.5, "#FBE3E3"); vl.addColorStop(1, "#E49A9A"); }
+		else { vl.addColorStop(0, "#A8B6EE"); vl.addColorStop(0.5, "#E3E8FB"); vl.addColorStop(1, "#9AAAE8"); }
 		gP.fillStyle = vl; gP.fillRect(x0, gm.yO, 12, gm.yU - gm.yO);
-		gP.strokeStyle = "#555"; gP.lineWidth = 1; gP.strokeRect(x0, gm.yO, 12, gm.yU - gm.yO);
+		gP.strokeStyle = !geladen ? "#555" : vz > 0 ? "#B02424" : "#2440B0"; gP.lineWidth = 1; gP.strokeRect(x0, gm.yO, 12, gm.yU - gm.yO);
 		const n = Math.min(12, Math.round(Math.abs(st.U) / 1000 * 0.6));
 		for (let k = 0; k < n; k++) ladungsZeichen(gP, x0 + 6, gm.yO + (k + 0.5) * (gm.yU - gm.yO) / n, vz > 0, 10);
 	};
 	if (platte) zeichnePlatte(gm.xR, 1, Math.sign(st.U));
 	else { zeichnePlatte(gm.xL, -1, 1); zeichnePlatte(gm.xR, 1, -1); }
 
-	/* Aufhaengung, Faden, Kugel */
+	/* Tisch und Stativ (Stange links, Ausleger zur Aufhängung), damit der Aufbau als Gerät erkennbar ist */
 	const px = gm.cx + st.xA * s;
-	gP.fillStyle = "#555"; gP.fillRect(px - 40, gm.yA - 10, 80, 8);
+	{
+		const yT = HP - 8, xSt = Math.max(16, gm.xL - (WP < 560 ? 70 : 110));
+		gP.fillStyle = "#D9C9A3"; gP.fillRect(0, yT, WP, 8); gP.fillStyle = "#BFA97A"; gP.fillRect(0, yT, WP, 1.5);
+		const st1 = gP.createLinearGradient(xSt - 4, 0, xSt + 4, 0);
+		st1.addColorStop(0, "#8C95A0"); st1.addColorStop(0.5, "#E6EAEF"); st1.addColorStop(1, "#7D8691");
+		gP.fillStyle = st1; gP.fillRect(xSt - 4, gm.yA - 14, 8, yT - gm.yA + 14);
+		gP.fillStyle = "#59616B"; gP.beginPath(); if (gP.roundRect) gP.roundRect(xSt - 26, yT - 9, 52, 9, 3); else gP.rect(xSt - 26, yT - 9, 52, 9); gP.fill();
+		const st2 = gP.createLinearGradient(0, gm.yA - 14, 0, gm.yA - 6);
+		st2.addColorStop(0, "#E6EAEF"); st2.addColorStop(1, "#7D8691");
+		gP.fillStyle = st2; gP.fillRect(xSt - 4, gm.yA - 14, px + 30 - xSt, 8);
+		gP.fillStyle = "#59616B"; gP.fillRect(xSt - 7, gm.yA - 17, 14, 14);
+	}
+	gP.fillStyle = "#555"; gP.fillRect(px - 3, gm.yA - 8, 6, 8);
 	const Lp = M.L * s, bx = px + Lp * Math.sin(st.theta), by = gm.yA + Lp * Math.cos(st.theta), rp = M.r * s;
 	const ux = (bx - px) / Lp, uy = (by - gm.yA) / Lp;
 	gP.strokeStyle = "#444"; gP.lineWidth = 1.2;
@@ -1442,10 +1456,19 @@ function zeichnePendel() {
 		linie(boxX, yL, ex, yL); linie(ex, yL, ex, yL + 8);
 		for (let k = 0; k < 3; k++) linie(ex - 9 + 3 * k, yL + 8 + 4 * k, ex + 9 - 3 * k, yL + 8 + 4 * k);
 	}
-	gP.fillStyle = "#fff"; gP.fillRect(boxX, yL - boxH / 2, boxB, boxH); gP.strokeRect(boxX, yL - boxH / 2, boxB, boxH);
+	/* Hochspannungsquelle als Gerät mit Anzeige; die Leitungen enden an zwei Buchsen (kein Batteriesymbol) */
+	{
+		const gq = gP.createLinearGradient(0, yL - boxH / 2 - 6, 0, yL + boxH / 2 + 6);
+		gq.addColorStop(0, "#F4F6F9"); gq.addColorStop(1, "#C9CFD8");
+		gP.fillStyle = gq; gP.strokeStyle = "#6B7380"; gP.lineWidth = 1.2;
+		gP.beginPath(); if (gP.roundRect) gP.roundRect(boxX - 8, yL - boxH / 2 - 6, boxB + 16, boxH + 12, 5); else gP.rect(boxX - 8, yL - boxH / 2 - 6, boxB + 16, boxH + 12); gP.fill(); gP.stroke();
+		gP.fillStyle = "#1F2A33"; gP.fillRect(boxX + 8, yL - boxH / 2 + 1, boxB - 16, boxH - 2);
+		for (const [bx2, f] of [[boxX - 8, platte ? "#333" : "#BF0000"], [boxX + boxB + 8, platte ? "#333" : "#0000BF"]]) { gP.fillStyle = "#fff"; gP.strokeStyle = f; gP.lineWidth = 2; gP.beginPath(); gP.arc(bx2, yL, 4.5, 0, 2 * Math.PI); gP.fill(); gP.stroke(); }
+		gP.strokeStyle = "#333"; gP.lineWidth = 1.5;
+	}
 	const uAnz = zustand.an ? zustand.U : 0;
 	const txt = !zustand.an ? "0 kV" : platte ? (uAnz < 0 ? "−" : "+") + P.de(Math.abs(uAnz), 1) + " kV" : P.de(uAnz, 1) + " kV";
-	P.text(gP, txt, boxX + boxB / 2, yL + 5, { ausrichtung: "center", groesse: 13, fett: true, farbe: zustand.quelle ? "#111" : "#999" });
+	P.text(gP, txt, boxX + boxB / 2, yL + 5, { ausrichtung: "center", groesse: 13, fett: true, farbe: zustand.quelle ? "#7CFFB2" : "#6B7A86" });
 	/* Strommessgeraet */
 	gP.fillStyle = "#fff"; gP.strokeStyle = "#333"; gP.lineWidth = 1.5;
 	gP.beginPath(); gP.arc(xRS, yM, 11, 0, 2 * Math.PI); gP.fill(); gP.stroke();
