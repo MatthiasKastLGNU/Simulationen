@@ -48,6 +48,7 @@ body {
 	padding: 12px 0 10px; border-bottom: 1px solid var(--hell);
 }
 .gruppe { display: flex; flex-direction: column; gap: 3px; }
+[hidden] { display: none !important; }  /* sonst schlägt display:flex das hidden-Attribut (Niveau-Filter) */
 .gruppe > span { font-size: 0.72em; color: var(--grau); letter-spacing: .02em; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
