@@ -1127,7 +1127,7 @@ window.SimUI = (function () {
 		if (typeof tabelle === "string") tabelle = document.getElementById(tabelle);
 		if (typeof zeilen === "function") zeilen = zeilen();
 		const reihen = Array.from(tabelle.querySelectorAll("tr")).filter(tr => tr.offsetParent !== null || !tabelle.offsetParent)
-			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => z.offsetParent !== null || !tabelle.offsetParent).map(zellText) }))
+			.map(tr => ({ kopf: !!tr.closest("thead"), zellen: Array.from(tr.children).filter(z => !z.classList.contains("weg") && (z.offsetParent !== null || !tabelle.offsetParent)).map(zellText) }))
 			.filter(r => r.zellen.length);
 		const f = 2, schrift = "'Libertinus Sans', 'Segoe UI', sans-serif";
 		const m = document.createElement("canvas").getContext("2d");
@@ -1491,8 +1491,29 @@ function zeichneMotorDiagramm() {
 	}
 	document.getElementById("regression").textContent = text;
 }
+/* einzelnen Messwert entfernen (Kast 2026-11-04): × am Zeilenende, entfernen(i) mit i = Nummer der Datenzeile */
+function wegKnoepfe(koerper, entfernen) {
+	if (!document.getElementById("stil-zeile-weg")) {
+		const st = document.createElement("style"); st.id = "stil-zeile-weg";
+		st.textContent = "td.weg { width: 1.8rem; padding: 0 0.1rem !important; border: none !important; text-align: center !important; }"
+			+ "button.zeile-weg { min-width: 0; width: 1.6rem; height: 1.6rem; padding: 0; border: 1px solid #ccc; border-radius: 50%; background: #fff; color: #999; font-size: 1rem; line-height: 1; cursor: pointer; }"
+			+ "button.zeile-weg:hover { color: #BF0000; border-color: #BF0000; }"
+			+ "@media print { td.weg { display: none; } }";
+		document.head.appendChild(st);
+	}
+	const daten = () => Array.from(koerper.querySelectorAll("tr")).filter(tr => !tr.querySelector("th, td.leer"));
+	daten().forEach(tr => {
+		if (tr.querySelector("td.weg")) return;
+		const td = document.createElement("td"); td.className = "weg";
+		const b = document.createElement("button"); b.type = "button"; b.className = "zeile-weg"; b.textContent = "\u00d7";
+		b.title = "Diesen Messwert entfernen"; b.setAttribute("aria-label", "Diesen Messwert entfernen");
+		b.addEventListener("click", () => entfernen(daten().indexOf(tr)));
+		td.appendChild(b); tr.appendChild(td);
+	});
+}
 function baueTabelle() {
 	document.getElementById("tabelle").innerHTML = motor.liste.map((m, i) => "<tr><td>" + (i + 1) + "</td><td>" + P.de(m.C * 1000, 0) + "</td><td>" + P.de(m.U, 1) + "</td><td>" + P.de(m.U * m.U, 2) + "</td><td>" + P.de(m.h * 100, 1) + "</td></tr>").join("");
+	wegKnoepfe(document.getElementById("tabelle"), i => { motor.liste.splice(i, 1); baueTabelle(); zeichneMotorDiagramm(); });
 }
 P.regler("regler-u", "wert-u", v => P.de(v, 1) + "&nbsp;V", v => motor.U = v, () => { if (!motor.anim) { motor.h = 0; motor.lauf = null; motor.uAnz = motor.U; zeichneMotor(); } })();
 K.bindeKnopfgruppe("c-knoepfe", w => motor.C = +w, () => { if (!motor.anim) { motor.h = 0; motor.lauf = null; zeichneMotor(); } });
