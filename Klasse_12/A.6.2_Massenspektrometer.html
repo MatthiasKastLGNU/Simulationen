@@ -1799,5 +1799,98 @@ K.nachFontLaden(aktualisiere);
 	if (aktiv) setze(aktiv.dataset.modus);
 })();
 </script>
+<script>
+/* Reglerwert antippen und eintippen (Kast 2026-11-04)
+   Tippt man auf den angezeigten Wert neben einem Regler, öffnet sich ein Zahlfeld.
+   Der Regler sucht dann selbst die Stellung, deren Anzeige der eingegebenen Zahl am
+   nächsten kommt. So stimmen Einheiten (mT statt T, kV statt V) und nichtlineare
+   Regler automatisch. Liegt die Zahl außerhalb, landet der Regler am Rand. */
+(() => {
+	const zahl = t => {
+		t = String(t).replace(/[−–]/g, "-").replace(/[\s   ]/g, "");
+		const m = t.match(/(-?\d+(?:[.,]\d+)?|-?[.,]\d+)(?:(?:[·⋅×x*]10\^?|e)(-?\d+))?/i);
+		if (!m) return NaN;
+		return parseFloat(m[1].replace(",", ".")) * (m[2] ? Math.pow(10, +m[2]) : 1);
+	};
+	const anzeigeVon = r => {
+		const suf = r.id.includes("-") ? r.id.slice(r.id.indexOf("-") + 1) : r.id;
+		let a = document.getElementById("wert-" + suf) || document.getElementById(r.id + "-wert");
+		const n = r.nextElementSibling;
+		if (!a && n && /(^|\s)(wert|wertanz)(\s|$)/.test(n.className)) a = n;
+		return a;
+	};
+	/* bei „1 cm ≙ 1,75 mN“ oder „k = 2,5“ zählt die Zahl dahinter */
+	const kern = t => { const i = Math.max(t.lastIndexOf("\u2259"), t.lastIndexOf("=")); return i >= 0 ? t.slice(i + 1) : t; };
+	const lies = a => zahl(kern(a.textContent));
+	const bild = () => new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+	/* Stellung suchen, deren Anzeige am nächsten an ziel liegt (Halbierung; Anzeige muss monoton sein).
+	   Aktualisiert die Simulation ihre Anzeige erst im nächsten Bild, wird jeweils darauf gewartet. */
+	async function stelle(r, a, ziel) {
+		const min = +r.min || 0, max = r.max === "" ? 100 : +r.max;
+		const schritt = r.step === "any" || !(+r.step > 0) ? (max - min) / 1000 : +r.step;
+		const n = Math.max(1, Math.round((max - min) / schritt));
+		const alt = r.value;
+		let warten = false;
+		const setze = i => { r.value = String(Math.min(max, min + i * schritt)); r.dispatchEvent(new Event("input", { bubbles: true })); };
+		const wert = async i => { setze(i); if (warten) await bild(); return lies(a); };
+		let fLo = await wert(0), fHi = await wert(n);
+		if (fLo === fHi) { warten = true; fLo = await wert(0); fHi = await wert(n); }
+		if (!isFinite(fLo) || !isFinite(fHi) || fLo === fHi) { r.value = alt; r.dispatchEvent(new Event("input", { bubbles: true })); return; }
+		const steigt = fHi > fLo;
+		let lo = 0, hi = n;
+		while (hi - lo > 1) {
+			const mid = (lo + hi) >> 1, f = await wert(mid);
+			if ((f < ziel) === steigt) lo = mid; else hi = mid;
+		}
+		const best = Math.abs(await wert(lo) - ziel) <= Math.abs(await wert(hi) - ziel) ? lo : hi;
+		await wert(best);
+		r.dispatchEvent(new Event("change", { bubbles: true }));
+	}
+	function oeffne(r, a) {
+		if (r.disabled || a.dataset.tippt) return;
+		a.dataset.tippt = "1";
+		const ein = document.createElement("input");
+		ein.type = "text"; ein.inputMode = "decimal"; ein.className = "regler-eingabe";
+		const roh = kern(a.textContent), treffer = (roh.match(/[−\-]?[\d\s   .,]*\d/) || [""])[0];
+		ein.value = treffer.replace(/−/g, "-").trim();
+		ein.setAttribute("aria-label", "Wert eintippen");
+		a.style.display = "none";
+		a.parentNode.insertBefore(ein, a);
+		const einheit = document.createElement("span"); einheit.className = "regler-einheit";
+		einheit.textContent = treffer ? roh.slice(roh.indexOf(treffer) + treffer.length).trim() : "";
+		if (einheit.textContent) a.parentNode.insertBefore(einheit, a);
+		ein.focus(); ein.select();
+		let fertig = false;
+		const schliesse = uebernehmen => {
+			if (fertig) return; fertig = true;
+			const z = zahl(kern(ein.value));
+			ein.remove(); einheit.remove(); a.style.display = ""; delete a.dataset.tippt;
+			if (uebernehmen && isFinite(z)) stelle(r, a, z);
+		};
+		ein.addEventListener("keydown", ev => {
+			if (ev.key === "Enter") { ev.preventDefault(); schliesse(true); }
+			else if (ev.key === "Escape") schliesse(false);
+		});
+		ein.addEventListener("blur", () => schliesse(true));
+	}
+	function einrichten() {
+		const st = document.createElement("style");
+		st.textContent = ".wert-tippbar { cursor: text; text-decoration: underline dotted #A8A8A8; text-underline-offset: 3px; }"
+			+ ".wert-tippbar:hover { text-decoration-color: currentColor; }"
+			+ "input.regler-eingabe { font: inherit; font-variant-numeric: tabular-nums; width: 5.5em; text-align: right; padding: 0.1rem 0.3rem; border: 1.5px solid var(--blue-frame, #0000BF); border-radius: 1mm; background: #fff; }"
+			+ "span.regler-einheit { margin-left: 0.3em; white-space: nowrap; }"
+			+ "@media print { .wert-tippbar { text-decoration: none; } }";
+		document.head.appendChild(st);
+		document.querySelectorAll('input[type="range"]').forEach(r => {
+			const a = anzeigeVon(r);
+			if (!a || a.classList.contains("wert-tippbar")) return;
+			a.classList.add("wert-tippbar");
+			a.title = "Antippen: Wert eintippen";
+			a.addEventListener("click", () => oeffne(r, a));
+		});
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", einrichten); else einrichten();
+})();
+</script>
 </body>
 </html>
