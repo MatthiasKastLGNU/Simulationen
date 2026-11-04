@@ -404,9 +404,8 @@ window.SimKit = (function () {
 		<span class="nummer platzhalter">12</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe">
+	<div class="modusleiste" id="modus-knoepfe" style="display:none">
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-		<button data-modus="aufgabe">Aufgabe</button>
 	</div>
 
 	<!-- ===================== Aufgabenkarte ===================== -->
@@ -1372,7 +1371,7 @@ window.SimKit = (function () {
 	/* Modus per Link: ?modus=erkunden bzw. ?modus=aufgabe (dann ohne Modusleiste) */
 	(function () {
 		const m = new URLSearchParams(location.search).get("modus");
-		if (m === "erkunden" || m === "aufgabe") {
+		if (m === "erkunden") {  /* Aufgabenmodus entfernt (Kast 2026-11-04) */
 			setzeModus(m);
 			document.getElementById("modus-knoepfe").classList.add("verborgen");
 		}
@@ -1390,5 +1389,6 @@ window.SimKit = (function () {
 	layout();
 	K.nachFontLaden(zeichne);
 </script>
+<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

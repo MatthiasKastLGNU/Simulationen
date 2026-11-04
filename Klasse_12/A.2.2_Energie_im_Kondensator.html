@@ -1228,7 +1228,7 @@ window.SimUI = (function () {
 				</div>
 				<div class="bgruppe" style="flex:1 1 16rem">
 					<span class="btitel">Kugelgröße</span>
-					<div class="zeile"><input type="range" id="regler-n" min="2" max="40" step="1" value="8" aria-label="Kugelgröße"><span class="wert" id="wert-n" style="min-width:10.5em"></span></div>
+					<div class="zeile"><input type="range" id="regler-n" min="2" max="100" step="1" value="8" aria-label="Kugelgröße"><span class="wert" id="wert-n" style="min-width:10.5em"></span></div>
 				</div>
 			</div>
 			<div class="auswertung" id="kugel-auswertung"></div>
@@ -1395,19 +1395,13 @@ function zeichneKugel() {
 		const x1 = u.xPix((qVor - dQ) * 1e9), x2 = u.xPix(qVor * 1e9), y1 = u.yPix(uVor), y0 = u.yPix(0);
 		c.fillStyle = k % 2 ? "rgba(0,0,191,0.22)" : "rgba(0,0,191,0.34)";
 		c.fillRect(x1, y1, x2 - x1, y0 - y1);
-		c.strokeStyle = "#0000BF"; c.lineWidth = 1; c.strokeRect(x1, y1, x2 - x1, y0 - y1);
+		if (kugel.n <= 40) { c.strokeStyle = "#0000BF"; c.lineWidth = 1; c.strokeRect(x1, y1, x2 - x1, y0 - y1); }
 	}
-	/* Die Ursprungsgerade nimmt das Ergebnis vorweg (Kast 2026-11-04): während der Überfahrten nur die erreichten
-	   Zustände (Q|U) als Punkte; erst nach der letzten Überfahrt erscheint die Gerade mit der Dreiecksfläche ½·Q·U. */
+	/* Keine Ursprungsgerade (Kast 2026-11-04): sie nähme das Ergebnis vorweg. Nur die erreichten Zustände (Q|U)
+	   als Punkte; bei sehr vielen Überfahrten zeigt die Treppe von selbst, dass die Fläche ein Dreieck wird. */
 	const punkte = [];
 	for (let k = 0; k <= kugel.schritte; k++) { const q = Q0 - k * dQ; punkte.push({ x: q * 1e9, y: q / C_K }); }
-	const fertig = kugel.schritte >= kugel.n && !kugel.anim;
-	if (fertig) {
-		c.fillStyle = "rgba(191,0,0,0.10)"; c.beginPath(); c.moveTo(u.xPix(0), u.yPix(0)); c.lineTo(u.xPix(200), u.yPix(200)); c.lineTo(u.xPix(200), u.yPix(0)); c.closePath(); c.fill();
-		P.kurve(c, u, q => q * 1e-9 / C_K, 0, 200, P.FARBEN.rot, { breite: 2 });
-		P.text(c, "Dreiecksfläche: W = ½·Q·U", u.xPix(110), u.yPix(30), { groesse: 13, fett: true, farbe: P.FARBEN.rot });
-	}
-	P.punkte(c, u, punkte, "#7A0000", { r: 3.5 });
+	P.punkte(c, u, punkte, "#7A0000", { r: kugel.n > 40 ? 2 : 3.5 });
 	P.punkte(c, u, [{ x: Q * 1e9, y: Q / C_K }], P.FARBEN.rot, { r: 5 });
 
 	/* Auswertung */
@@ -1422,7 +1416,7 @@ function ueberfahrt(danach) {
 	if (kugel.anim || kugel.schritte >= kugel.n) return;
 	kugel.richtung = kugel.schritte % 2 === 0 ? 1 : -1;
 	kugel.phase = 0;
-	const dauer = kugel.n > 15 ? 0.25 : 0.6;
+	const dauer = kugel.n > 50 ? 0.08 : kugel.n > 15 ? 0.25 : 0.6;
 	kugel.anim = K.starteSchleife(dt => {
 		kugel.phase += dt / dauer;
 		if (kugel.phase >= 1) { kugel.anim = null; kugel.schritte++; zeichneKugel(); if (danach) danach(); return false; }
@@ -1434,7 +1428,7 @@ document.getElementById("btn-schritt").addEventListener("click", () => ueberfahr
 document.getElementById("btn-alle").addEventListener("click", alleSchritte);
 function neuLaden() { if (kugel.anim) { kugel.anim(); kugel.anim = null; } kugel.schritte = 0; zeichneKugel(); }
 document.getElementById("btn-zurueck").addEventListener("click", neuLaden);
-P.regler("regler-n", "wert-n", v => (v <= 4 ? "groß" : v <= 12 ? "mittel" : "klein") + " (" + v + " Überfahrten)", v => kugel.n = v, neuLaden)();
+P.regler("regler-n", "wert-n", v => (v <= 4 ? "groß" : v <= 12 ? "mittel" : v <= 40 ? "klein" : "winzig") + " (" + v + " Überfahrten)", v => kugel.n = v, neuLaden)();
 
 /* ---------- Versuch Motor ---------- */
 /* Einheiten: C in F, U in V, h in m */

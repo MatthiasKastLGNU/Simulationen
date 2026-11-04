@@ -1203,9 +1203,8 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe">
+	<div class="modusleiste" id="modus-knoepfe" style="display:none">
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-		<button data-modus="aufgabe">Aufgabe</button>
 	</div>
 
 	<div class="knopfleiste" id="ansicht-knoepfe" style="margin-bottom:0.3rem">
@@ -1543,13 +1542,15 @@ let h0 = location.hash.replace("#", "");
 /* Modus per Link: ?modus=euler | modell | energie | aufgabe zeigt nur diesen Teil */
 if (!h0) {
 	try { h0 = new URLSearchParams(location.search).get("modus") || ""; } catch (e) { h0 = ""; }
+	if (h0 === "aufgabe") h0 = "";
 	if (h0) { document.getElementById("modus-knoepfe").classList.add("per-link-aus"); document.getElementById("ansicht-knoepfe").classList.add("per-link-aus"); }
 }
 SimUI.bildKnopf("btn-bild", canvas, () => "RC_DGL_" + zustand.ansicht + "_R" + zustand.R + "kOhm_C" + zustand.C + "uF");
-if (h0 === "aufgabe") document.querySelector("#modus-knoepfe button[data-modus=aufgabe]").click();
-else { if (TITEL[h0]) zustand.ansicht = h0; zeigeAnsicht(); }
+/* Aufgabenmodus entfernt (Kast 2026-11-04): ?modus=aufgabe landet beim Erkunden */
+if (TITEL[h0]) zustand.ansicht = h0; zeigeAnsicht();
 layout();
 K.nachFontLaden(zeichne);
 </script>
+<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>
