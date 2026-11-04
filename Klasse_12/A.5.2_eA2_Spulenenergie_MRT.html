@@ -1277,23 +1277,42 @@ function zeichne(g, W, H) {
 	const s = Math.min(sx / z.l, sy / z.r / 1);
 	const cx = W * 0.36, cy = H / 2 - 10;
 	const hl = z.l / 2 * s, hr = z.r * s;
-	g.fillStyle = farbe(f.rho); g.fillRect(cx - hl, cy - hr, 2 * hl, 2 * hr);
-	if (z.kern !== "luft") { g.fillStyle = "rgba(90,90,90,0.25)"; g.fillRect(cx - hl, cy - hr * 0.8, 2 * hl, 1.6 * hr); P.text(g, KERNE[z.kern].name, cx, cy + 4, { ausrichtung: "center", groesse: 12, farbe: "#fff", fett: true }); }
-	/* Die Windungszahl zeigt sich im Bild: mehr Windungen = dichtere Wicklung und mehr Lagen (Drahtbündel) */
+	/* Spule als Zylinder: Innenraum in der Farbe der Energiedichte, Schattierung für die Rundung */
 	const lagen = z.N >= 4000 ? 3 : z.N >= 1500 ? 2 : 1;
 	const n = Math.max(4, Math.min(Math.round(2 * hl / 6.6), Math.round(4 + 56 * Math.log10(z.N / 100) / 2)));
+	const ew = Math.max(4, hr * 0.35);                 /* Breite der Endellipsen */
+	/* hintere Windungshälften (blass, hinter dem Innenraum) */
+	for (let k = 0; k < n; k++) {
+		const x = cx - hl + (k + 0.5) * 2 * hl / n, d = Math.min(3, hl / n * 0.4);
+		g.strokeStyle = "rgba(150,95,30,0.45)"; g.lineWidth = 2;
+		g.beginPath(); g.moveTo(x + d, cy - hr - 4); g.lineTo(x - d, cy + hr + 4); g.stroke();
+	}
+	g.fillStyle = farbe(f.rho); g.fillRect(cx - hl, cy - hr, 2 * hl, 2 * hr);
+	if (z.kern !== "luft") { g.fillStyle = "rgba(90,90,90,0.25)"; g.fillRect(cx - hl, cy - hr * 0.8, 2 * hl, 1.6 * hr); }
+	{ const sch = g.createLinearGradient(0, cy - hr, 0, cy + hr);
+	  sch.addColorStop(0, "rgba(255,255,255,0.45)"); sch.addColorStop(0.35, "rgba(255,255,255,0.05)"); sch.addColorStop(1, "rgba(0,0,0,0.3)");
+	  g.fillStyle = sch; g.fillRect(cx - hl, cy - hr, 2 * hl, 2 * hr); }
+	g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 1;
+	g.beginPath(); g.ellipse(cx - hl, cy, ew, hr, 0, 0, 2 * Math.PI); g.stroke();
+	g.fillStyle = farbe(f.rho); g.beginPath(); g.ellipse(cx + hl, cy, ew, hr, 0, 0, 2 * Math.PI); g.fill();
+	g.fillStyle = "rgba(255,255,255,0.18)"; g.fill(); g.stroke();
+	if (z.kern !== "luft") P.text(g, KERNE[z.kern].name, cx, cy + 4, { ausrichtung: "center", groesse: 12, farbe: "#fff", fett: true });
+	/* vordere Windungshälften: Kupfer mit Glanz; mehr Windungen = dichter und mehr Lagen */
 	for (let lage = 0; lage < lagen; lage++) {
-		const ab = 4 + lage * 6.2;
+		const ab = 2 + lage * 4.5;
 		for (let k = 0; k < n; k++) {
-			const x = cx - hl + (k + 0.5) * 2 * hl / n;
-			g.fillStyle = lage % 2 ? "#9A5E12" : "#B8741A";
-			g.beginPath(); g.arc(x, cy - hr - ab, 3.2, 0, 2 * Math.PI); g.fill(); g.beginPath(); g.arc(x, cy + hr + ab, 3.2, 0, 2 * Math.PI); g.fill();
+			const x = cx - hl + (k + 0.5) * 2 * hl / n, d = Math.min(3, hl / n * 0.4);
+			const kg = g.createLinearGradient(x - 2, 0, x + 2, 0);
+			kg.addColorStop(0, lage % 2 ? "#8A5410" : "#A8661A"); kg.addColorStop(0.5, "#F2C27A"); kg.addColorStop(1, lage % 2 ? "#7A4A0E" : "#94591A");
+			g.strokeStyle = kg; g.lineWidth = Math.max(2, Math.min(4, 2 * hl / n * 0.55)); g.lineCap = "round";
+			g.beginPath(); g.moveTo(x - d, cy - hr - ab); g.lineTo(x + d, cy + hr + ab); g.stroke();
 		}
 	}
+	g.lineCap = "butt";
 	/* Feldpfeil: Dicke wächst mit B */
 	P.pfeil(g, cx - hl * 0.6, cy, cx + hl * 0.6, cy, "rgba(255,255,255,0.9)", 1.5 + 3 * Math.min(1, Math.log10(1 + f.B * 1000) / 4), 10);
-	P.text(g, "I = " + P.sig(I, 3) + " A, N = " + z.N, cx, cy + hr + 8 + lagen * 6.2 + 14, { ausrichtung: "center", groesse: 12, farbe: "#555" });
-	P.text(g, "B = " + P.sig(f.B, 3) + " T", cx, cy - hr - 10 - lagen * 6.2, { ausrichtung: "center", groesse: 13, fett: true });
+	P.text(g, "I = " + P.sig(I, 3) + " A, N = " + z.N, cx, cy + hr + 8 + lagen * 4.5 + 14, { ausrichtung: "center", groesse: 12, farbe: "#555" });
+	P.text(g, "B = " + P.sig(f.B, 3) + " T", cx, cy - hr - 10 - lagen * 4.5, { ausrichtung: "center", groesse: 13, fett: true });
 	/* Farbskala */
 	const lx = W * 0.72, ly = 30, lh = H - 110;
 	for (let k = 0; k <= 100; k++) { g.fillStyle = farbe(Math.pow(10, -1 + 8 * (1 - k / 100))); g.fillRect(lx, ly + k * lh / 100, 16, lh / 100 + 1); }
