@@ -1340,27 +1340,48 @@ function zeichneKugel() {
 	const eng = KW < 560, breiteL = eng ? KW : KW * 0.4, hoeheL = eng ? Math.round(KH * 0.46) : KH;
 	/* Kondensator mit Kugel */
 	const cx = breiteL / 2, yo = 50, yu = hoeheL - 50, xl = cx - 90, xr = cx + 90;
-	c.fillStyle = "#9A9A9A"; c.fillRect(xl - 8, yo, 8, yu - yo); c.fillRect(xr, yo, 8, yu - yo);
-	const Q = qAktuell(), nz = Math.round(Q / Q0 * 16);
-	for (let k = 0; k < nz; k++) {
-		const y = yo + (k + 0.5) * (yu - yo) / nz;
-		P.text(c, "+", xl - 16, y + 4, { groesse: 13, farbe: P.FARBEN.rot, ausrichtung: "center", fett: true });
-		P.text(c, "−", xr + 16, y + 4, { groesse: 13, farbe: P.FARBEN.blau, ausrichtung: "center", fett: true });
+	/* Platten getönt nach Ladung (je leerer, desto blasser), Ladungszeichen auf den Platten */
+	const Q = qAktuell(), nz = Math.round(Q / Q0 * 16), anteil = Q / Q0;
+	const platte = (x, plus) => {
+		const gr = c.createLinearGradient(x, 0, x + 10, 0);
+		const a1 = 0.25 + 0.75 * anteil;
+		gr.addColorStop(0, plus ? "rgba(235,168,168," + a1 + ")" : "rgba(168,182,238," + a1 + ")");
+		gr.addColorStop(0.5, plus ? "#FBE3E3" : "#E3E8FB");
+		gr.addColorStop(1, plus ? "rgba(228,154,154," + a1 + ")" : "rgba(154,170,232," + a1 + ")");
+		c.fillStyle = "#E6E8EE"; c.fillRect(x, yo, 10, yu - yo);
+		c.fillStyle = gr; c.fillRect(x, yo, 10, yu - yo);
+		c.strokeStyle = plus ? "#B02424" : "#2440B0"; c.lineWidth = 1; c.strokeRect(x, yo, 10, yu - yo);
+		c.strokeStyle = plus ? P.FARBEN.rot : P.FARBEN.blau; c.lineWidth = 1.8; c.lineCap = "round";
+		for (let k = 0; k < nz; k++) {
+			const y = yo + (k + 0.5) * (yu - yo) / Math.max(nz, 1), xm = x + 5;
+			c.beginPath(); c.moveTo(xm - 3, y); c.lineTo(xm + 3, y); if (plus) { c.moveTo(xm, y - 3); c.lineTo(xm, y + 3); } c.stroke();
+		}
+		c.lineCap = "butt";
+	};
+	platte(xl - 10, true); platte(xr, false);
+	/* Feldlinien, blasser mit sinkender Ladung */
+	if (anteil > 0.02) {
+		for (let k = 0; k < 5; k++) {
+			const y = yo + (k + 0.5) * (yu - yo) / 5;
+			P.pfeil(c, xl + 4, y, xr - 4, y, "rgba(128,128,128," + (0.15 + 0.45 * anteil) + ")", 1.2, 7);
+		}
 	}
-	/* Kugel am Faden: Pendel um Aufhängepunkt */
+	/* Kugel am Faden: Pendel um Aufhängepunkt (Isolierfaden an einem Stativausleger) */
 	const ax = cx, ay = 18, L = (yu - yo) * 0.72;
 	const auslenkung = 76;
 	let px;
 	if (kugel.anim) px = cx + kugel.richtung * auslenkung * (2 * kugel.phase - 1);
 	else px = kugel.schritte === 0 ? cx : cx + (kugel.schritte % 2 === 1 ? auslenkung : -auslenkung);
 	const winkel = Math.asin((px - ax) / L), py = ay + L * Math.cos(winkel);
+	{ const gs = c.createLinearGradient(0, ay - 5, 0, ay + 3); gs.addColorStop(0, "#E6EAEF"); gs.addColorStop(1, "#7D8691"); c.fillStyle = gs; c.fillRect(cx - 50, ay - 5, 100, 7); }
 	c.strokeStyle = "#555"; c.lineWidth = 1;
-	c.beginPath(); c.moveTo(cx - 40, ay); c.lineTo(cx + 40, ay); c.stroke();
 	c.beginPath(); c.moveTo(ax, ay); c.lineTo(px, py); c.stroke();
-	let fuellung = "#DDD", zeichen = "";
-	if (kugel.anim) { fuellung = kugel.richtung > 0 ? "#F4B4B4" : "#B4B4F4"; zeichen = kugel.richtung > 0 ? "+" : "−"; }
-	c.beginPath(); c.arc(px, py, 13, 0, 2 * Math.PI); c.fillStyle = fuellung; c.fill(); c.strokeStyle = "#333"; c.stroke();
-	if (zeichen) P.text(c, zeichen, px, py + 5, { groesse: 15, ausrichtung: "center", fett: true, farbe: kugel.richtung > 0 ? P.FARBEN.rot : P.FARBEN.blau });
+	/* Metallkugel mit Glanz; unterwegs geladen: rot (+) bzw. blau (−) getönt */
+	const r = 14, ladung = kugel.anim ? kugel.richtung : 0;
+	const gk = c.createRadialGradient(px - r * 0.35, py - r * 0.35, r * 0.12, px, py, r);
+	gk.addColorStop(0, "#fff"); gk.addColorStop(1, ladung > 0 ? "#B01818" : ladung < 0 ? "#1A35B0" : "#8A9099");
+	c.beginPath(); c.arc(px, py, r, 0, 2 * Math.PI); c.fillStyle = gk; c.fill();
+	if (ladung) { c.strokeStyle = "#fff"; c.lineWidth = 2.4; c.lineCap = "round"; c.beginPath(); c.moveTo(px - 6, py); c.lineTo(px + 6, py); if (ladung > 0) { c.moveTo(px, py - 6); c.lineTo(px, py + 6); } c.stroke(); c.lineCap = "butt"; }
 	P.text(c, "U = " + P.de(Q / C_K, 0) + " V", cx, hoeheL - 18, { groesse: 13, ausrichtung: "center" });
 	P.text(c, "schematisch", 6, hoeheL - 4, { groesse: 10, farbe: "#888" });
 
