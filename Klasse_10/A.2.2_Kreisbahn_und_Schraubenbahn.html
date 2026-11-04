@@ -765,6 +765,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -881,8 +886,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button data-wert="normal" class="aktiv" type="button" title="normal" aria-label="normal"><span class="tempo">›››</span></button>
 				</div></div>
 				<div class="gr" data-st="2 f"><div class="gt">Ansicht</div><div class="kn" id="ansicht">
-					<button data-wert="schraeg" class="aktiv" type="button" title="Ansicht schräg von oben" aria-label="schräg"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23L9 16H34L27 23Z" fill="#E6E9FF" stroke="#9aa3d6" stroke-width="0.8"/><path d="M10 20.5H28" stroke="#4058E0" stroke-width="1.2"/><path d="M29 20.5l-3-1.8v3.6z" fill="#4058E0"/><path d="M5 11c1-7 5-7 5.5 0s4.5 7 5.5 0 4.5-7 5.5 0 4.5 7 5.5 0" fill="none" stroke="#7B1FA2" stroke-width="1.8" transform="translate(1 -1) skewX(-12)"/></svg></button>
-					<button data-wert="seite" type="button" title="Ansicht von der Seite" aria-label="von der Seite"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23H31" stroke="#4058E0" stroke-width="1.3"/><path d="M34 23l-4-2.4v4.8z" fill="#4058E0"/><path d="M3 11q3-9 6 0t6 0 6 0 6 0 6 0" fill="none" stroke="#7B1FA2" stroke-width="1.9"/></svg></button>
+					<button data-wert="schraeg" class="aktiv" type="button" title="Ansicht schräg von oben" aria-label="schräg"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23L9 16H34L27 23Z" fill="#E6E9FF" stroke="#9aa3d6" stroke-width="0.8"/><path d="M10 20.5H28" stroke="#00838F" stroke-width="1.2"/><path d="M29 20.5l-3-1.8v3.6z" fill="#00838F"/><path d="M5 11c1-7 5-7 5.5 0s4.5 7 5.5 0 4.5-7 5.5 0 4.5 7 5.5 0" fill="none" stroke="#7B1FA2" stroke-width="1.8" transform="translate(1 -1) skewX(-12)"/></svg></button>
+					<button data-wert="seite" type="button" title="Ansicht von der Seite" aria-label="von der Seite"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><path d="M2 23H31" stroke="#00838F" stroke-width="1.3"/><path d="M34 23l-4-2.4v4.8z" fill="#00838F"/><path d="M3 11q3-9 6 0t6 0 6 0 6 0 6 0" fill="none" stroke="#7B1FA2" stroke-width="1.9"/></svg></button>
 					<button data-wert="feld" type="button" title="Blick in Feldrichtung" aria-label="in Feldrichtung"><svg width="44" height="32" viewBox="0 0 36 26" aria-hidden="true"><rect x="2" y="1" width="32" height="24" rx="1.5" fill="#F0F2FF"/><path d="M5 4l3 3M8 4l-3 3M28 4l3 3M31 4l-3 3M5 19l3 3M8 19l-3 3M28 19l3 3M31 19l-3 3" stroke="#6070E0" stroke-width="1"/><circle cx="18" cy="13" r="8" fill="none" stroke="#7B1FA2" stroke-width="1.9"/></svg></button>
 				</div></div>
 				<div class="gr" data-st="f"><div class="gt">Teilchen</div><div class="kn" id="ladung">
@@ -1145,7 +1150,7 @@ const FAKTOR_V = 1.6;        /* Pfeillänge je Geschwindigkeitseinheit (fester M
 const FAKTOR_F = 1.0;        /* Pfeillänge je Krafteinheit |q| · v⊥ · b (fester Maßstab) */
 const ABSTAND = 30;          /* Abstand der Kamera (Perspektive im Schrägbild) */
 const BH = [1, 0, 0];        /* Richtung des Magnetfelds */
-const FARBE = { feld: "#0000BF", v: "#111111", F: "#D00000", bahn: "#7B1FA2", par: "#E07000", senk: "#00897B" };
+const FARBE = { feld: "#00838F", v: "#2E8B3A", F: "#BF0000", bahn: "#7B1FA2", par: "#E07000", senk: "#00897B" };
 
 const STANDARD = {
 	"1": { b: 1.0, alpha: 90, v: 1, q: -1, ansicht: "feld" },
@@ -1345,7 +1350,7 @@ function bahnpunkte(m, umlaeufe) {
    Station 1: Blick in Feldrichtung (eben)
    ========================================================================== */
 function feldKreuze(eb) {
-	ctx.save(); ctx.strokeStyle = ctx.fillStyle = "rgba(60,80,230," + (0.3 + 0.6 * Math.min(1, zustand.b / 2.5)) + ")"; ctx.lineWidth = 1.4;
+	ctx.save(); ctx.strokeStyle = ctx.fillStyle = "rgba(0,131,143," + (0.3 + 0.6 * Math.min(1, zustand.b / 2.5)) + ")"; ctx.lineWidth = 1.4;
 	for (let y = -8; y <= 8; y++) for (let z = -14; z <= 14; z++) {
 		const [x, yy] = P([0, y, z]);
 		if (x < 6 || x > W - 6 || yy < 32 || yy > H - 6) continue;
@@ -1405,9 +1410,9 @@ function zeichneBoden() {
 		ctx.save(); ctx.globalAlpha = 0.35 + 0.55 * Math.min(1, zustand.b / 2.5);
 		[-3.2, 3.2].forEach(y => {
 			const [x1, y1] = P([-XL - 1.4, y, 0]), [x2, y2] = P([XL + 1.4, y, 0]);
-			pfeil(x1, y1, x2, y2, "#4058E0", 1.8);
+			pfeil(x1, y1, x2, y2, "#00838F", 1.8);
 			const [xa, ya] = P([-0.4, y, 0]), [xb, yb] = P([0.4, y, 0]);
-			pfeil(xa, ya, xb, yb, "#4058E0", 1.8);
+			pfeil(xa, ya, xb, yb, "#00838F", 1.8);
 		});
 		ctx.restore();
 		const [xl, yl] = P([XL + 1.4, 3.2, 0]);
@@ -1428,9 +1433,9 @@ function zeichneBoden() {
 	ctx.save(); ctx.globalAlpha = deckung;
 	[-2.4, 0, 2.4].forEach(z => {
 		const [x1, y1] = P([-XL - 1.4, BODEN, z]), [x2, y2] = P([XL + 1.4, BODEN, z]);
-		pfeil(x1, y1, x2, y2, "#4058E0", 1.8);
+		pfeil(x1, y1, x2, y2, "#00838F", 1.8);
 		const [xa, ya] = P([-0.4, BODEN, z]), [xb, yb] = P([0.4, BODEN, z]);
-		pfeil(xa, ya, xb, yb, "#4058E0", 1.8);
+		pfeil(xa, ya, xb, yb, "#00838F", 1.8);
 	});
 	ctx.restore();
 	const [xl, yl] = P([XL + 1.4, BODEN, 2.4]);
@@ -1524,7 +1529,7 @@ function zeichneKreisbild(m) {
 	ctx.clearRect(0, 0, WK, HK);
 	ctx.fillStyle = "#F7F8FF"; ctx.fillRect(0, 0, WK, HK);
 	if (zustand.b > 0.01) {
-		ctx.save(); ctx.strokeStyle = "rgba(60,80,230,0.4)"; ctx.lineWidth = 1;
+		ctx.save(); ctx.strokeStyle = "rgba(0,131,143,0.4)"; ctx.lineWidth = 1;
 		for (let y = -6; y <= 6; y++) for (let z = -8; z <= 8; z++) {
 			const [x, yy] = Q([0, y, z]);
 			if (x < 4 || x > WK - 4 || yy < 4 || yy > HK - 4) continue;
@@ -1556,7 +1561,7 @@ function zeichneLinienbild(m) {
 	ctx.fillStyle = "#F7F8FF"; ctx.fillRect(0, 0, WL, HL);
 	if (zustand.b > 0.01) {
 		ctx.save(); ctx.globalAlpha = 0.6;
-		[-0.32, 0.32].forEach(k => { const y = cy + k * HL; pfeil(X(-XL - 1.3), y, X(XL + 1.3), y, "#4058E0", 1.6); });
+		[-0.32, 0.32].forEach(k => { const y = cy + k * HL; pfeil(X(-XL - 1.3), y, X(XL + 1.3), y, "#00838F", 1.6); });
 		ctx.restore();
 		vektorname("B", "", Math.min(X(XL + 1.3) + 10, WL - 10), cy - 0.32 * HL - 12, FARBE.feld, 16);
 	}

@@ -752,6 +752,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -875,7 +880,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 						<button data-wert="0.01">0,01&nbsp;K</button>
 					</span></div>
 				<div class="gr aus" id="z-verd"><span class="gt">Verdunstung und Wind</span>
-					<span class="kn"><button id="btn-verd" class="an" title="Verdunstung und Wind k&uuml;hlen das Wasser (an/aus)" aria-label="Verdunstung und Wind an oder aus"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.5 17c0 1.65-1.35 3-3 3s-3-1.35-3-3h2c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1H2v-2h9.5c1.65 0 3 1.35 3 3zM19 6.5C19 4.57 17.43 3 15.5 3S12 4.57 12 6.5h2c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S16.33 8 15.5 8H2v2h13.5c1.93 0 3.5-1.57 3.5-3.5zm-.5 4.5H2v2h16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5v2c1.93 0 3.5-1.57 3.5-3.5S20.43 11 18.5 11z"/></svg></button></span></div>
+					<span class="kn"><button id="btn-verd" data-schalter class="an" title="Verdunstung und Wind k&uuml;hlen das Wasser (an/aus)" aria-label="Verdunstung und Wind an oder aus"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.5 17c0 1.65-1.35 3-3 3s-3-1.35-3-3h2c0 .55.45 1 1 1s1-.45 1-1-.45-1-1-1H2v-2h9.5c1.65 0 3 1.35 3 3zM19 6.5C19 4.57 17.43 3 15.5 3S12 4.57 12 6.5h2c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5S16.33 8 15.5 8H2v2h13.5c1.93 0 3.5-1.57 3.5-3.5zm-.5 4.5H2v2h16.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5v2c1.93 0 3.5-1.57 3.5-3.5S20.43 11 18.5 11z"/></svg></button></span></div>
 				<div class="gr"><span class="gt">Zeitraffer</span>
 					<span class="kn" id="tempo-knoepfe">
 						<button data-wert="1" title="Echtzeit" aria-label="Echtzeit"><span class="tempo">&rsaquo;</span></button>
@@ -883,15 +888,15 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 						<button data-wert="12" title="12-mal schneller" aria-label="12-mal schneller"><span class="tempo">&rsaquo;&rsaquo;&rsaquo;</span></button>
 					</span></div>
 				<div class="gr"><span class="gt">Lupe: Teilchen</span>
-					<span class="kn"><button id="btn-lupe" title="Lupe: Teilchenbewegung zeigen" aria-label="Lupe: Teilchenbewegung zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><circle cx="8" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="11" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="9.5" cy="11.1" r="1.2" fill="#BF0000"/></svg></button></span></div>
+					<span class="kn"><button id="btn-lupe" data-schalter title="Lupe: Teilchenbewegung zeigen" aria-label="Lupe: Teilchenbewegung zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><circle cx="8" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="11" cy="8.4" r="1.2" fill="#BF0000"/><circle cx="9.5" cy="11.1" r="1.2" fill="#BF0000"/></svg></button></span></div>
 			</div>
 
-			<div class="ergebnis">
-				<span><span id="l-dt-ideal">berechnet (ohne Verluste): </span><b class="ideal" id="a-dt-ideal">&Delta;&vartheta; = 0,00&nbsp;K</b></span>
-				<span><span id="l-dt-real">&bdquo;gemessen&ldquo;: </span><b class="real" id="a-dt-real">&Delta;&vartheta; = 0,00&nbsp;K</b></span>
+			<div class="wertkarten">
+				<div class="wertkarte betont"><div class="wk-titel" id="l-dt-real">&bdquo;gemessen&ldquo;</div><div class="wk-wert" id="a-dt-real">&Delta;&vartheta; = 0,00&nbsp;K</div></div>
+				<div class="wertkarte"><div class="wk-titel" id="l-dt-ideal">berechnet (ohne Verluste)</div><div class="wk-wert" id="a-dt-ideal">&Delta;&vartheta; = 0,00&nbsp;K</div></div>
 			</div>
 
-			<p class="fussnote" id="fussnote"></p>
+			<div id="fussnote"></div>
 
 			<div class="messblock">
 				<div class="gruppen">
@@ -1340,41 +1345,17 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		const s = stellen();
 		const dTg = dTgemessen();
 		const hoehe = 150;
-
-		ctx.fillStyle = "#F4F4F4"; ctx.strokeStyle = "#555"; ctx.lineWidth = 1.6;
-		rundRect(x, y, b, hoehe, 4); ctx.fill(); ctx.stroke();
-
-		ctx.textAlign = "center"; ctx.font = "bold 12px " + K.SCHRIFT; ctx.fillStyle = "#555";
-		ctx.fillText("Thermometer", x + b / 2, y + 17);
-
-		ctx.textAlign = "left"; ctx.font = "12px " + K.SCHRIFT;
-		ctx.fillStyle = "#0000BF"; ctx.fillText("oben", x + 10, y + 40);
-		ctx.fillStyle = "#BF0000"; ctx.fillText("unten", x + 10, y + 64);
-		ctx.textAlign = "right"; ctx.font = "bold 14px " + K.SCHRIFT;
-		ctx.fillStyle = "#0000BF"; ctx.fillText(de(z.mess.oben, s) + " °C",  x + b - 10, y + 41);
-		ctx.fillStyle = "#BF0000"; ctx.fillText(de(z.mess.unten, s) + " °C", x + b - 10, y + 65);
-
-		ctx.strokeStyle = "#BBB"; ctx.lineWidth = 1;
-		ctx.beginPath(); ctx.moveTo(x + 8, y + 78); ctx.lineTo(x + b - 8, y + 78); ctx.stroke();
-
-		ctx.textAlign = "center"; ctx.font = "12px " + K.SCHRIFT; ctx.fillStyle = "#555";
-		ctx.fillText("Unterschied", x + b / 2, y + 96);
-		ctx.font = "bold 20px " + K.SCHRIFT;
-		ctx.fillStyle = Math.abs(dTg) < 1e-9 ? "#555" : (dTg > 0 ? "#BF0000" : "#0000BF");
-		ctx.fillText((dTg > 0 ? "+" : "") + de(dTg, s) + " K", x + b / 2, y + 120);
-		ctx.font = "11px " + K.SCHRIFT; ctx.fillStyle = "#777";
-		ctx.fillText("Auflösung " + de(z.aufl, s) + " K", x + b / 2, y + 140);
-
-		/* Sollwert zum Vergleich */
-		ctx.font = "12px " + K.SCHRIFT; ctx.textAlign = "center"; ctx.fillStyle = "#0000BF";
-		ctx.fillText("berechnet ohne Verluste:", x + b / 2, y + hoehe + 22);
-		ctx.font = "bold 13px " + K.SCHRIFT;
-		ctx.fillText("Δϑ = " + de(dTideal(), 3) + " K", x + b / 2, y + hoehe + 40);
+		/* zwei Digitalthermometer (gemeinsames Messgerät, Kast-Design); Unterschied und berechneter Wert stehen in den Wertkarten */
+		const gr = b < 150 ? 13 : 15;
+		KastMessgeraet.digital(ctx, x + b / 2, y + hoehe * 0.27, { text: de(z.mess.oben, s), einheit: "°C", titel: "Thermometer oben", groesse: gr, stellen: 5, farbe: "#3050E0" });
+		KastMessgeraet.digital(ctx, x + b / 2, y + hoehe * 0.75, { text: de(z.mess.unten, s), einheit: "°C", titel: "Thermometer unten", groesse: gr, stellen: 5, farbe: "#E03030" });
+		ctx.textAlign = "center"; ctx.font = "11px " + K.SCHRIFT; ctx.fillStyle = "#777";
+		ctx.fillText("Auflösung " + de(z.aufl, s) + " K", x + b / 2, y + hoehe + 14);
 		if (z.verdunstung) {
 			ctx.font = "12px " + K.SCHRIFT; ctx.fillStyle = "#555";
-			ctx.fillText("Verdunstung kühlt um", x + b / 2, y + hoehe + 64);
-			ctx.fillText(de(V_KUEHL, 2) + " K", x + b / 2, y + hoehe + 80);
+			ctx.fillText("Verdunstung: −" + de(V_KUEHL, 2) + " K", x + b / 2, y + hoehe + 32);
 		}
+		void dTg;
 	}
 
 	/* ---------------- Thermometer ---------------- */
@@ -1748,9 +1729,9 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 
 		/* --- Beschriftung --- */
 		ctx.font = "bold 13px " + K.SCHRIFT; ctx.textAlign = "left"; ctx.fillStyle = "#0000BF";
-		ctx.fillText("oben:  ϑ = " + de(z.mess.oben, stellen()) + " °C", li + 2, yFluss - 30);
+		ctx.fillText("Thermometer oben", li + 2, yFluss - 30);
 		ctx.textAlign = "center"; ctx.fillStyle = "#BF0000";
-		ctx.fillText("unten:  ϑ = " + de(z.mess.unten, stellen()) + " °C", o.x + o.b / 2, o.y + o.h - 18);
+		ctx.fillText("Thermometer unten", o.x + o.b / 2, o.y + o.h - 18);
 		ctx.font = "12px " + K.SCHRIFT; ctx.fillStyle = "#555";
 		ctx.fillText("Wasser,  c = 4186 J/(kg·K)", o.x + o.b / 2, o.y + o.h);
 	}
@@ -1866,8 +1847,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		document.getElementById("a-w").textContent  = energieText(arbeit()) + je;
 		document.getElementById("a-du").textContent = energieText(dU()) + je;
 		document.getElementById("a-q").textContent  = energieText(qAb()) + je;
-		document.getElementById("l-dt-ideal").textContent = fall ? "berechnet: " : "berechnet (ohne Verluste): ";
-		document.getElementById("l-dt-real").textContent  = fall ? "abgelesen: " : "„gemessen“: ";
+		document.getElementById("l-dt-ideal").textContent = fall ? "berechnet" : "berechnet (ohne Verluste)";
+		document.getElementById("l-dt-real").textContent  = fall ? "abgelesen" : "„gemessen“";
 		document.getElementById("a-dt-ideal").textContent = "Δϑ = " + de(dTideal(), fall ? 3 : 2) + " K";
 		document.getElementById("a-dt-real").textContent  =
 			"Δϑ = " + de(fall ? dTgemessen() : dTreal(), fall ? stellen() : 2) + " K";
@@ -1915,7 +1896,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		"die innere Energie (<i class='gr'>c</i><sub>Wasser</sub> = 4186&nbsp;J/(kg&middot;K)). Zugleich k\u00fchlt Verdunstung das Wasser " +
 		"um etwa 0,15&nbsp;K ab. Daf\u00fcr m\u00fcssen nur rund 0,3&nbsp;Promille des Wassers verdunsten. " +
 		"Jede Ablesung streut zus\u00e4tzlich um &plusmn;0,08&nbsp;K (Str\u00f6mung, Sonne, Durchmischung) und wird auf die " +
-		"eingestellte Aufl\u00f6sung gerundet. Miss mehrfach und bilde den Mittelwert: Gelingt der Nachweis?";
+		"eingestellte Aufl\u00f6sung gerundet.";
 
 	const KOPF_ROHR = '<tr><th>Nr.</th><th>Stoff</th><th><i class="gr">m</i> in g</th>' +
 		'<th><i class="gr">h</i> in m</th><th><i class="gr">n</i></th><th><i class="gr">W</i> in J</th>' +
@@ -1939,7 +1920,9 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		document.getElementById("g-auto").classList.toggle("aus", !rohr);
 		document.getElementById("btn-schritt").disabled = !rohr;
 		document.getElementById("btn-start").disabled = !rohr;
-		document.getElementById("fussnote").innerHTML = rohr ? FUSS_ROHR : FUSS_FALL;
+		/* Modell eingeklappt (Kast-Design), Bedienhinweis sichtbar */
+		document.getElementById("fussnote").innerHTML = (rohr ? "" : "<p class='fussnote'>Miss mehrfach und bilde den Mittelwert: Gelingt der Nachweis?</p>") +
+			"<details class='mehr'><summary>Modell</summary><div class='mehr-inhalt'><p>" + (rohr ? FUSS_ROHR.replace(/^Modell: /, "") : FUSS_FALL) + "</p></div></details>";
 		document.getElementById("messtabelle-kopf").innerHTML = rohr ? KOPF_ROHR : KOPF_FALL;
 		tabelleLeeren();
 		zuruecksetzen();

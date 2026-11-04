@@ -1457,6 +1457,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1782,12 +1787,11 @@ function zeichneSeite() {
 	t("Graphitplättchen", X(0), Y(-8) + fs + 2, { ausrichtung: "center" });
 	t("Leuchtschirm", X(L_MM * Math.cos(wMax)) - 6, Y(38), { ausrichtung: "right", farbe: "#1E8A1E" });
 	t("Glasröhre (Vakuum)", X(-60), Y(W < 520 ? 34 : 24) - 5, { ausrichtung: "center", farbe: glas });
-	/* Spannungsanzeige wie an einem Netzgeraet */
-	const bx = 8, by = H - 34, bw = 118, bh = 26;
-	g.fillStyle = "#2b3346"; g.fillRect(bx, by, bw, bh);
-	g.fillStyle = "#101010"; g.fillRect(bx + 5, by + 4, bw - 10, bh - 8);
-	P.text(g, P.de(zustand.U, 2) + " kV", bx + bw - 10, by + bh - 8, { groesse: 15, fett: true, ausrichtung: "right", farbe: "#FF5050" });
-	P.symbol(g, "U", "B", bx + 9, by + bh - 8, { groesse: 13, farbe: "#ddd" });
+	/* Beschleunigungsspannung am Netzgerät: gemeinsames Digitalmessgerät (Kast-Design) */
+	const mg = { text: P.de(zustand.U, 2), einheit: "kV", titel: "Beschleunigungsspannung", groesse: 14, stellen: 4, buchsen: true, anker: "links" };
+	const mh = KastMessgeraet.digital(document.createElement("canvas").getContext("2d"), 0, 0, mg).h;
+	/* Desktop: frei oben links unter der Bildzeile; Handy: unten links unter der Röhre */
+	KastMessgeraet.digital(g, 8, W >= 520 ? fs + 14 + mh / 2 : H - 4 - mh / 2, mg);
 	if (W >= 520) t("Seitenansicht, schematisch; hinter dem Plättchen maßstäblich (l = 125 mm)", 6, fs + 2, { groesse: fs - 1, farbe: "#666" });
 }
 
@@ -1848,13 +1852,15 @@ function zeichneSchirm(gZiel, WZ, HZ, mitMarken) {
 function zeichneAblesung() {
 	const [a, b] = zustand.marken;
 	const links = Math.min(a, b) + 50, rechts = Math.max(a, b) + 50;
-	let html = "Ablesung: links <span class='wert'>" + P.de(links, 1) + "&nbsp;mm</span>, rechts <span class='wert'>" + P.de(rechts, 1) +
-		"&nbsp;mm</span><span class='trenner'>|</span>Durchmesser 2<i class='gr'>r</i> = <span class='kennzahl'>" + P.de(rechts - links, 1) + "&nbsp;mm</span>";
+	const karten = [
+		{ titel: "Durchmesser 2<i class='gr'>r</i>", wert: P.de(rechts - links, 1) + "&nbsp;mm", betont: true },
+		{ titel: "Marke links", wert: P.de(links, 1) + "&nbsp;mm" },
+		{ titel: "Marke rechts", wert: P.de(rechts, 1) + "&nbsp;mm" }];
 	if (zustand.tempo && zustand.modus === "messen") {
 		const v = geschwindigkeit(zustand.U);
-		html += "<br>Geschwindigkeit der Elektronen: <i class='gr'>v</i> = <span class='wert'>" + P.sig(v, 3) + "&nbsp;m/s</span> <span class='naeherung'>(" + P.de(v / C_L * 100, 1) + "&nbsp;% der Lichtgeschwindigkeit)</span>";
+		karten.push({ titel: "Geschwindigkeit <i class='gr gv'>v</i>", wert: P.sig(v, 3) + "&nbsp;m/s <span style='font-weight:400;font-size:0.8em'>(" + P.de(v / C_L * 100, 1) + "&nbsp;% von <i>c</i>)</span>" });
 	}
-	document.getElementById("ablesung").innerHTML = html;
+	KastWerte.karten(document.getElementById("ablesung"), karten);
 }
 
 /* ---------- Auswertung: lambda ueber 1/p ---------- */
@@ -1931,7 +1937,8 @@ const tabellenZeilen = () => vollstaendig().map((m, i) => [String(i + 1), P.de(m
 const updU = P.regler("regler-u", "wert-u", v => P.de(v, 2) + "&nbsp;kV", v => zustand.U = v, zeichne);
 function schalter(id, feld) {
 	const b = document.getElementById(id);
-	b.addEventListener("click", () => { zustand[feld] = !zustand[feld]; b.classList.toggle("aktiv", zustand[feld]); zeichne(); });
+	b.setAttribute("aria-pressed", String(!!zustand[feld]));
+	b.addEventListener("click", () => { zustand[feld] = !zustand[feld]; b.classList.toggle("aktiv", zustand[feld]); b.setAttribute("aria-pressed", String(zustand[feld])); zeichne(); });
 }
 schalter("btn-wege", "wege");
 schalter("btn-tempo", "tempo");
@@ -2012,7 +2019,7 @@ function tabelleLeeren() {
 function standardwerte() {
 	Object.assign(zustand, JSON.parse(JSON.stringify(STANDARD)));
 	document.getElementById("regler-u").value = zustand.U;
-	document.getElementById("btn-wege").classList.remove("aktiv"); document.getElementById("btn-tempo").classList.remove("aktiv");
+	for (const id of ["btn-wege", "btn-tempo"]) { const b = document.getElementById(id); b.classList.remove("aktiv"); b.setAttribute("aria-pressed", "false"); }
 	document.querySelectorAll("#ring-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === "aussen"));
 	updU();
 }

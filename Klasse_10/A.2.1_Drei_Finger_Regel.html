@@ -746,6 +746,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1164,7 +1169,7 @@ function neueAufgabe() {
 const canvas = document.getElementById("sim-canvas");
 const ctx = canvas.getContext("2d");
 let W = 740, H = 440;
-const BLAU = "#0000BF", ROT = "#BF0000", KUPFER = "#b0682c";
+const BLAU = "#00838F", ROT = "#BF0000", KUPFER = "#b0682c";   /* BLAU = Farbe von B (Farbschema) */
 function schrift() { return getComputedStyle(document.body).fontFamily; }
 
 function pfeil(x1, y1, x2, y2, farbe, dicke, gestrichelt) {
@@ -1280,7 +1285,7 @@ function zeichne() {
 	else if (!senkrecht(z.B)) seite = normale(bild(z.B));
 	const gegen = [-seite[0], -seite[1]];
 	const stromBekannt = z.gesucht !== "I" || loes, kraftBekannt = z.gesucht !== "F" || loes;
-	const farbeI = z.gesucht === "I" ? "#555" : "#111";
+	const farbeI = z.gesucht === "I" ? "#555" : "#6A3D9A";
 
 	/* Lage aller Teile vorab, damit die Feldsymbole ihnen Platz lassen */
 	const frei = [[mx, my, mx, my, r * 1.5]];

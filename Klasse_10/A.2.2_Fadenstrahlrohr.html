@@ -749,6 +749,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1213,7 +1218,7 @@ function zeichneVorne(pkt, p) {
 	/* Magnetfeld in die Zeichenebene hinein */
 	if (p.B > 0) {
 		const d = R * s / 3.2, st = Math.min(1, 0.35 + p.B / 0.002);
-		ctx.save(); ctx.strokeStyle = "rgba(120,140,255," + st + ")"; ctx.lineWidth = 1.4;
+		ctx.save(); ctx.strokeStyle = "rgba(77,208,215," + st + ")"; ctx.lineWidth = 1.4;
 		for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) {
 			const x = cx + i * d, y = cy + j * d;
 			if (Math.hypot(x - cx, y - cy) > R * s - 12) continue;
@@ -1233,7 +1238,7 @@ function zeichneVorne(pkt, p) {
 	ctx.restore();
 
 	elektronPunkt(pkt);
-	beschriftung("Magnetfeld B: in die Zeichenebene hinein", 12, 18, BLAU, 14, false, "left");
+	beschriftung("Magnetfeld B: in die Zeichenebene hinein", 12, 18, "#00838F", 14, false, "left");
 }
 
 function zeichneSeite(pkt, p) {
@@ -1250,9 +1255,9 @@ function zeichneSeite(pkt, p) {
 		ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R * s - 3, 0, 2 * Math.PI); ctx.clip();
 		for (let k = -3; k <= 3; k++) {
 			const y = cy + k * R * s / 3.4;
-			ctx.strokeStyle = "rgba(120,140,255,0.75)"; ctx.lineWidth = 1.4;
+			ctx.strokeStyle = "rgba(77,208,215,0.75)"; ctx.lineWidth = 1.4;
 			ctx.beginPath(); ctx.moveTo(cx - R * s, y); ctx.lineTo(cx + R * s, y); ctx.stroke();
-			pfeil(cx + 0.35 * R * s, y, cx + 0.5 * R * s, y, "rgba(120,140,255,0.9)", 1.6);
+			pfeil(cx + 0.35 * R * s, y, cx + 0.5 * R * s, y, "rgba(77,208,215,0.9)", 1.6);
 		}
 		ctx.restore();
 	}
@@ -1267,7 +1272,7 @@ function zeichneSeite(pkt, p) {
 	ctx.beginPath(); ctx.moveTo(gx - ux * 6, gy - uy * 6); ctx.lineTo(gx - ux * 0.045 * s, gy - uy * 0.045 * s); ctx.stroke(); ctx.restore();
 	elektronPunkt(pkt);
 	pfeil(14, 48, 104, 48, BLAU, 2.2);
-	beschriftung("Magnetfeld B", 14, 34, BLAU, 14, false, "left");
+	beschriftung("Magnetfeld B", 14, 34, "#00838F", 14, false, "left");
 	beschriftung("Blick schräg von der Seite", 14, 14, "#555", 13, false, "left");
 }
 

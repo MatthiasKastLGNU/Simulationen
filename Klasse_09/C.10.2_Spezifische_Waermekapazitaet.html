@@ -708,6 +708,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -830,15 +835,15 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 						<span class="zeit-anzeige" id="zeit-anzeige"><i class="gr">t</i> = 0,0&nbsp;s</span>
 					</span></div>
 				<div class="gr"><span class="gt">Energie</span>
-					<span class="kn"><button id="btn-energie" title="Energiesymbole zeigen (1 Symbol = 1 kJ)" aria-label="Energiesymbole zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="#F5C518" stroke="#8A6D00" stroke-width="1.5"/><text x="12" y="17" text-anchor="middle" font-size="13" font-weight="bold" font-style="italic" fill="#5A4700" font-family="Libertinus Sans, Segoe UI, sans-serif">E</text></svg></button></span></div>
+					<span class="kn"><button id="btn-energie" data-schalter title="Energiesymbole zeigen (1 Symbol = 1 kJ)" aria-label="Energiesymbole zeigen"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3.5" fill="#F5C518" stroke="#8A6D00" stroke-width="1.5"/><text x="12" y="17" text-anchor="middle" font-size="13" font-weight="bold" font-style="italic" fill="#5A4700" font-family="Libertinus Sans, Segoe UI, sans-serif">E</text></svg></button></span></div>
 			</div>
-			<p class="fussnote">
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>
 				Beide Ger&auml;te arbeiten mit derselben Leistung <i class="gr">P</i>, die
 				Bechergl&auml;ser sind ideal isoliert. Beim Erw&auml;rmen startet die Messung bei
 				20&nbsp;&deg;C und endet f&uuml;r ein Becherglas bei 100&nbsp;&deg;C, beim
 				Abk&uuml;hlen startet sie bei 80&nbsp;&deg;C und endet bei 20&nbsp;&deg;C
 				(h&ouml;chstens 120&nbsp;s). Jedes Energiesymbol steht f&uuml;r 1&nbsp;kJ.
-			</p>
+			</p></div></details>
 
 			<div class="messblock">
 				<div class="gruppen">

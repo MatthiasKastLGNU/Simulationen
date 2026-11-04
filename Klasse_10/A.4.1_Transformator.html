@@ -736,6 +736,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1048,7 +1053,7 @@ const zustand = {
 };
 const WINDUNGEN = [300, 600, 1200];
 const F_AC = 0.4, K_U = 0.35, TAU_AN = 0.5, TAU_AUS = 0.3;
-const BLAU = "#1F3FBF", ROT = "#C62828", FELD = "#3355DD", KUPFER = "#B8622A", ORANGE = "#E07000";
+const BLAU = "#1F3FBF", ROT = "#C62828", FELD = "#00838F", KUPFER = "#B8622A", ORANGE = "#E07000";
 
 function werte() {
 	const z = zustand, ue = z.NS / z.NP;

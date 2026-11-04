@@ -709,6 +709,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -874,7 +879,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<div>
 						<div class="bildtitel"><b>Schnittbild</b> durch den Kern (gedreht, ohne Achsen)</div>
 						<div class="leinwand" id="t-leinwand"><canvas id="t-canvas" class="sim"></canvas>
-							<div class="bildleiste"><div class="kn"><button id="t-lupe" title="Lupe: Bereich um den Kern vierfach vergrößert" aria-label="Lupe"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.8"/></svg>4×</button></div></div></div>
+							<div class="bildleiste"><div class="kn"><button id="t-lupe" data-schalter title="Lupe: Bereich um den Kern vierfach vergrößert" aria-label="Lupe"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M15 15l6 6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M7 10h6M10 7v6" stroke="currentColor" stroke-width="1.8"/></svg>4×</button></div></div></div>
 					</div>
 					<div class="eingaben">
 						<div class="eingabe-zeile"><span class="ez-text">Anzahl der <b>kugelförmigen</b> Knotenflächen</span><input type="number" min="0" max="9" step="1" class="zahlfeld" id="t-kugel" inputmode="numeric" aria-label="Anzahl kugelförmiger Knotenflächen"></div>

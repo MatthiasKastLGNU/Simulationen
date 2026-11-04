@@ -1401,6 +1401,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1499,13 +1504,13 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				</div></div>
 				<div class="gr" id="zeile-spur"><div class="gt">Drehen</div><div class="kn">
 					<button class="dunkel" id="btn-drehen" title="Kristall langsam drehen" aria-label="Kristall langsam drehen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.01 5.32c1.16.9 2.51 1.44 3.9 1.61V17.9c-.87-.15-1.71-.49-2.46-1.03L7.1 18.32zM13 4.07V1L8.45 5.55 13 10V6.09c2.84.48 5 2.94 5 5.91s-2.16 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93s-3.05-7.44-7-7.93z"/></svg></button>
-					<button class="aktiv" id="btn-spur" title="Spur der Leuchtpunkte zeichnen" aria-label="Spur der Leuchtpunkte zeichnen"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><circle cx="5.6" cy="16.4" r="2.2" fill="rgba(60,170,60,0.18)"/><circle cx="5.2" cy="11.3" r="2.2" fill="rgba(60,170,60,0.28)"/><circle cx="7.3" cy="6.6" r="2.2" fill="rgba(60,170,60,0.40)"/><circle cx="11.6" cy="3.6" r="2.2" fill="rgba(60,170,60,0.55)"/><circle cx="16.7" cy="3.2" r="2.2" fill="rgba(60,170,60,0.70)"/><circle cx="21.4" cy="5.3" r="2.2" fill="rgba(60,170,60,0.85)"/><circle cx="24.4" cy="9.6" r="3.3" fill="#2E9E2E"/></svg></button>
+					<button class="aktiv" id="btn-spur" data-schalter title="Spur der Leuchtpunkte zeichnen" aria-label="Spur der Leuchtpunkte zeichnen"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><circle cx="5.6" cy="16.4" r="2.2" fill="rgba(60,170,60,0.18)"/><circle cx="5.2" cy="11.3" r="2.2" fill="rgba(60,170,60,0.28)"/><circle cx="7.3" cy="6.6" r="2.2" fill="rgba(60,170,60,0.40)"/><circle cx="11.6" cy="3.6" r="2.2" fill="rgba(60,170,60,0.55)"/><circle cx="16.7" cy="3.2" r="2.2" fill="rgba(60,170,60,0.70)"/><circle cx="21.4" cy="5.3" r="2.2" fill="rgba(60,170,60,0.85)"/><circle cx="24.4" cy="9.6" r="3.3" fill="#2E9E2E"/></svg></button>
 					<button class="symbol" id="btn-spur-loeschen" title="Spur löschen" aria-label="Spur löschen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
 				</div></div>
 				<div class="gr"><div class="gt">Anzeigen</div><div class="kn">
-					<button id="btn-farbe" title="Schirmbild in den Farben der Netzebenen" aria-label="Schirmbild in den Farben der Netzebenen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="#2B2B31"/><circle cx="14" cy="14" r="6" fill="none" stroke="rgb(210,80,210)" stroke-width="2.4"/><circle cx="14" cy="14" r="10.5" fill="none" stroke="rgb(60,210,90)" stroke-width="2.4"/><circle cx="14" cy="14" r="1.6" fill="#fff"/></svg></button>
-					<button class="aktiv" id="btn-vergleich" title="Abstände und Radien vergleichen" aria-label="Abstände und Radien vergleichen"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="3" y="6" width="17" height="5" fill="rgba(190,40,190,0.85)"/><rect x="3" y="15" width="25" height="5" fill="rgba(30,150,50,0.85)"/><path d="M3 3V23" stroke="#555" stroke-width="1.2"/></svg></button>
-					<button id="btn-ordnung" title="Lage der 2. Ordnung zu d1 einzeichnen" aria-label="Lage der 2. Ordnung zu d1 einzeichnen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="#2B2B31"/><circle cx="14" cy="14" r="5" fill="none" stroke="#7CFF6E" stroke-width="2"/><circle cx="14" cy="14" r="8.5" fill="none" stroke="#7CFF6E" stroke-width="2"/><circle cx="14" cy="14" r="11.3" fill="none" stroke="#fff" stroke-width="1.3" stroke-dasharray="2.6 2"/></svg></button>
+					<button id="btn-farbe" data-schalter title="Schirmbild in den Farben der Netzebenen" aria-label="Schirmbild in den Farben der Netzebenen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="#2B2B31"/><circle cx="14" cy="14" r="6" fill="none" stroke="rgb(210,80,210)" stroke-width="2.4"/><circle cx="14" cy="14" r="10.5" fill="none" stroke="rgb(60,210,90)" stroke-width="2.4"/><circle cx="14" cy="14" r="1.6" fill="#fff"/></svg></button>
+					<button class="aktiv" id="btn-vergleich" data-schalter title="Abstände und Radien vergleichen" aria-label="Abstände und Radien vergleichen"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="3" y="6" width="17" height="5" fill="rgba(190,40,190,0.85)"/><rect x="3" y="15" width="25" height="5" fill="rgba(30,150,50,0.85)"/><path d="M3 3V23" stroke="#555" stroke-width="1.2"/></svg></button>
+					<button id="btn-ordnung" data-schalter title="Lage der 2. Ordnung zu d1 einzeichnen" aria-label="Lage der 2. Ordnung zu d1 einzeichnen"><svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="#2B2B31"/><circle cx="14" cy="14" r="5" fill="none" stroke="#7CFF6E" stroke-width="2"/><circle cx="14" cy="14" r="8.5" fill="none" stroke="#7CFF6E" stroke-width="2"/><circle cx="14" cy="14" r="11.3" fill="none" stroke="#fff" stroke-width="1.3" stroke-dasharray="2.6 2"/></svg></button>
 				</div></div>
 			</div>
 			<div class="steuerung">
@@ -1514,7 +1519,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<div class="zeile"><label>Beschleunigung <i class="gr">U</i><sub>B</sub></label><input type="range" id="regler-u" min="1" max="5" step="0.01" value="3"><span class="wert" id="wert-u"></span></div>
 			</div>
 			<p class="hinweis verborgen" id="hinweis-ordnung">Die 2. Ordnung zu <i class="gr">d</i><sub>1</sub> gibt es tatsächlich. Sie ist aber sehr lichtschwach und liegt weiter außen als der helle äußere Ring.</p>
-			<p class="fussnote">Gitter und Schirmbild in Strahlrichtung gesehen. Bindungslänge <i class="gr">a</i> = 142&nbsp;pm, Abstand Plättchen bis Schirm <i class="gr">l</i> = 125&nbsp;mm.</p>
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Gitter und Schirmbild in Strahlrichtung gesehen. Bindungslänge <i class="gr">a</i> = 142&nbsp;pm, Abstand Plättchen bis Schirm <i class="gr">l</i> = 125&nbsp;mm.</p></div></details>
 		</div>
 	</div>
 

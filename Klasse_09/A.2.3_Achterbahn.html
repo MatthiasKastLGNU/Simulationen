@@ -1094,6 +1094,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1540,10 +1545,10 @@ window.KI = (function () {
 	};
 	/* Feldgebiet (Kreuze: Feld in die Zeichenebene) */
 	S.feld = function (x, y, b, h, abstand = 14) {
-		let s = '<rect x="' + x + '" y="' + y + '" width="' + b + '" height="' + h + '" fill="#DDE6FF" fill-opacity="0.75"/>';
+		let s = '<rect x="' + x + '" y="' + y + '" width="' + b + '" height="' + h + '" fill="#DDF1F2" fill-opacity="0.75"/>';
 		for (let xx = x + abstand / 2; xx < x + b; xx += abstand)
 			for (let yy = y + abstand / 2; yy < y + h; yy += abstand)
-				s += '<path d="M' + (xx - 2.6) + " " + (yy - 2.6) + "l5.2 5.2M" + (xx + 2.6) + " " + (yy - 2.6) + 'l-5.2 5.2" stroke="#4A63C8" stroke-width="1.1"/>';
+				s += '<path d="M' + (xx - 2.6) + " " + (yy - 2.6) + "l5.2 5.2M" + (xx + 2.6) + " " + (yy - 2.6) + 'l-5.2 5.2" stroke="#00838F" stroke-width="1.1"/>';
 		return s;
 	};
 	/* Pendelkörper: art "platte" | "kamm" | "ring" | "schlitzring" ; Mitte (x,y), Größe g */
@@ -3143,7 +3148,7 @@ BAU.bahn = function (b) {
 	const canvas = KI.el("canvas", "sim"); canvas.setAttribute("aria-label", "Achterbahn mit Energiesäulen"); rahmen.appendChild(canvas);
 	const mess = KI.el("div", "messzeile"); b.appendChild(mess);
 	const leiste = KI.el("div", "bedienleiste"); b.appendChild(leiste);
-	b.appendChild(KI.el("p", "fussnote", "Zug: <i class=\"gr\">m</i> = 16&nbsp;t, &nbsp;<i class=\"gr\">g</i> = 9,81&nbsp;m/s<sup>2</sup>. Nullniveau: tiefster Punkt (Position&nbsp;3). Die Höhen sind im Bild überhöht gezeichnet."));
+	b.appendChild(KI.el("details", "mehr", "<summary>Modell</summary><div class='mehr-inhalt'><p>Zug: <i class=\"gr\">m</i> = 16&nbsp;t, &nbsp;<i class=\"gr\">g</i> = 9,81&nbsp;m/s<sup>2</sup>. Nullniveau: tiefster Punkt (Position&nbsp;3). Die Höhen sind im Bild überhöht gezeichnet.</p></div>"));
 
 	const bahn = erzeugeBahn(SILVER.pkte);
 	const z = { laeuft: false, tempo: 1, reibung: false, halt: new Set(), letzterHalt: -1, blink: -1 };
@@ -3216,12 +3221,8 @@ BAU.bahn = function (b) {
 		zeichneLandschaft(c, rB, D, A, bahn, { schmal, bremseAb: SILVER.bremseAb });
 		SILVER.pos.forEach((x, i) => kreisNummer(c, A.px(x), A.py(bahn.h(x)) - (schmal ? 26 : 32), i + 1, z.halt.has(i + 1), schmal));
 		zeichneWagen(c, A, bahn, L.x, schmal);
-		/* Messwerte oben links */
+		/* Messwerte stehen in den Wertkarten unter dem Bild (Kast-Design, kein Wert doppelt) */
 		const h = bahn.h(L.x), v = Math.sqrt(2 * ekin(L, bahn));
-		const bx = schmal ? rB.w - 176 : rB.x + 4;
-		c.fillStyle = "rgba(255,255,255,0.85)"; c.fillRect(bx, 4, schmal ? 172 : 230, 24);
-		c.font = (schmal ? 13 : 15) + "px " + SCHRIFT; c.fillStyle = "#111"; c.textAlign = "left"; c.textBaseline = "middle";
-		c.fillText("h = " + zahl(h, 1) + " m     v = " + zahl(v * 3.6, 0) + " km/h", bx + 6, 16);
 		/* Säulen */
 		if (!schmal) { c.strokeStyle = "#DDD"; c.beginPath(); c.moveTo(rS.x - 4, 46); c.lineTo(rS.x - 4, H - 8); c.stroke(); }
 		KI.text(c, "Energie des Zugs", rS.x + rS.w / 2, rS.y + 10, schmal ? 13 : 14, "#333", "center", "bold");
@@ -3233,7 +3234,9 @@ BAU.bahn = function (b) {
 			{ name: "ges", wert: m * L.E0, farbe: "#BDBDBD", rand: FARBE.ges }
 		];
 		zeichneSaeulen(c, rS, werte, m * L.E0, "MJ", schmal);
-		mess.innerHTML = "<span>Höhe: <b>" + zahl(h, 1) + "&nbsp;m</b></span><span>Geschwindigkeit: <b>" + zahl(v, 1) + "&nbsp;m/s = " + zahl(v * 3.6, 0) + "&nbsp;km/h</b></span>" + (L.fertig ? "<span><b>Ziel: Der Zug steht.</b></span>" : "");
+		KastWerte.karten(mess, [
+			{ titel: "Geschwindigkeit <i class='gr gv'>v</i>", wert: zahl(v, 1) + "&nbsp;m/s = " + zahl(v * 3.6, 0) + "&nbsp;km/h", betont: true },
+			{ titel: "Höhe <i class='gr'>h</i>", wert: zahl(h, 1) + "&nbsp;m" }], "", "", L.fertig ? "<p class='urteil gut'>Ziel: Der Zug steht.</p>" : "");
 	}
 	masse(); neu();
 	window.addEventListener("resize", () => { masse(); zeichne(); });

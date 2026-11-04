@@ -732,6 +732,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1081,7 +1086,7 @@ const REIB_LIN = 0.4, REIB_QUAD = 0.15, REIB_HAFT = 0.45;
 const LUECKE = 7 * Math.PI / 180;   /* halbe Breite der Lücke zwischen den Kommutatorteilen */
 const R_SCHLEIFE = 1.45, R1 = 1.25; /* 3D-Maße wie auf dem Arbeitsblatt; R1: Radius im Bild von vorne */
 const ROT = [215, 40, 35], GRUEN = [0, 145, 65], KUPFER = [200, 120, 55];
-const FARBE_SEITE = ["#E17300", "#7D3CAF", "#00838F", "#8D5A3B"];   /* Seiten 1, 2 (Schleife 1) und 3, 4 (Schleife 2) */
+const FARBE_SEITE = ["#E17300", "#7D3CAF", "#546E7A", "#8D5A3B"];   /* Seiten 1, 2 (Schleife 1) und 3, 4 (Schleife 2) */
 const BLAU = "#0000BF", KRAFTROT = "#BF0000", LACK = "#8B1E1E";
 const STELLUNGEN = [["a", 0], ["b", -45], ["c", -90], ["d", -135]];
 
@@ -1298,9 +1303,9 @@ function zeichneSchraeg() {
 	/* Feldrichtung: Pfeile hinter der Schleife */
 	FELDLINIEN[zustand.magnet].filter((_, i, l) => l.length < 6 || i % 2 === 0).forEach(y => {
 		const a = P(-2.6, y * 0.8 + 0.1, -1.6), b = P(2.6, y * 0.8 + 0.1, -1.6);
-		if (zustand.nordLinks) pfeil(ctx, a[0], a[1], b[0], b[1], "rgba(0,0,191,0.55)", 1.8); else pfeil(ctx, b[0], b[1], a[0], a[1], "rgba(0,0,191,0.55)", 1.8);
+		if (zustand.nordLinks) pfeil(ctx, a[0], a[1], b[0], b[1], "rgba(0,131,143,0.65)", 1.8); else pfeil(ctx, b[0], b[1], a[0], a[1], "rgba(0,131,143,0.65)", 1.8);
 	});
-	const m = P(0, 1.25, -1.6); text(ctx, "B", m[0], m[1] - s3 * 0.25, s3 * 0.36, BLAU, "center", "italic bold");
+	const m = P(0, 1.25, -1.6); text(ctx, "B", m[0], m[1] - s3 * 0.25, s3 * 0.36, "#00838F", "center", "italic bold");
 	if (klammer()) { klammerLager3d(false); klammerAchse3d(false); }
 	else linie([[0, 0, -2.4], [0, 0, mitKommutator() ? 2.1 : 2.5]], "#999", Math.max(2, s3 * 0.05));
 	/* Schleifenhälften von hinten nach vorne */

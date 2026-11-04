@@ -726,6 +726,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1188,7 +1193,7 @@ function feldlinien(art) {
 const canvas = document.getElementById("sim-canvas");
 const ctx = canvas.getContext("2d");
 let W = 740, H = 470, s = 50, ox = 0, oy = 0;
-const BLAU = "#0000BF", ROT_F = "#BF0000", NORD = "rgb(215,40,35)", SUED = "rgb(0,145,65)";
+const BLAU = "#00838F", ROT_F = "#BF0000", NORD = "rgb(215,40,35)", SUED = "rgb(0,145,65)";
 function schrift() { return getComputedStyle(document.body).fontFamily; }
 function Q(x, y) { return [ox + x * s, oy - y * s]; }
 function balken() { return Math.max(s * 0.55, 15); }   /* Dicke der Polbalken, am Handy nicht zu dünn */

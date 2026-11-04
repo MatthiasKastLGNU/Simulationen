@@ -1024,6 +1024,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1491,10 +1496,10 @@ window.KI = (function () {
 	};
 	/* Feldgebiet (Kreuze: Feld in die Zeichenebene) */
 	S.feld = function (x, y, b, h, abstand = 14) {
-		let s = '<rect x="' + x + '" y="' + y + '" width="' + b + '" height="' + h + '" fill="#DDE6FF" fill-opacity="0.75"/>';
+		let s = '<rect x="' + x + '" y="' + y + '" width="' + b + '" height="' + h + '" fill="#DDF1F2" fill-opacity="0.75"/>';
 		for (let xx = x + abstand / 2; xx < x + b; xx += abstand)
 			for (let yy = y + abstand / 2; yy < y + h; yy += abstand)
-				s += '<path d="M' + (xx - 2.6) + " " + (yy - 2.6) + "l5.2 5.2M" + (xx + 2.6) + " " + (yy - 2.6) + 'l-5.2 5.2" stroke="#4A63C8" stroke-width="1.1"/>';
+				s += '<path d="M' + (xx - 2.6) + " " + (yy - 2.6) + "l5.2 5.2M" + (xx + 2.6) + " " + (yy - 2.6) + 'l-5.2 5.2" stroke="#00838F" stroke-width="1.1"/>';
 		return s;
 	};
 	/* Pendelkörper: art "platte" | "kamm" | "ring" | "schlitzring" ; Mitte (x,y), Größe g */
@@ -3617,7 +3622,7 @@ BAU.tippen = function (b) {
 	const OR = "#E65100";
 	/* Bildchen 200 x 130: Feld links bis x = 100 (Feldrand), Körper (Mitte x = 120) schwingt nach links hinein */
 	function strombild(art, strom, roh) {
-		let t = S.feld(0, 4, 100, 122, 13) + '<line x1="100" y1="4" x2="100" y2="126" stroke="#4A63C8" stroke-width="1.2" stroke-dasharray="4 3"/>';
+		let t = S.feld(0, 4, 100, 122, 13) + '<line x1="100" y1="4" x2="100" y2="126" stroke="#00838F" stroke-width="1.2" stroke-dasharray="4 3"/>';
 		t += S.pendelkoerper(120, 65, 90, art, "rgba(158,167,176,0.8)", art.includes("ring") ? "#B4BAC1" : S.ALU_D);
 		t += S.pfeil(198, 65, 174, 65, "#111", 2.6);
 		/* Stromschleife (Ellipse) mit Pfeilspitzen: gegen den Uhrzeigersinn (oben nach links, unten nach rechts) */
@@ -3694,8 +3699,8 @@ BAU.tippen = function (b) {
 		const g = B < 560 ? 12 : 14;
 		c.fillStyle = "#fff"; c.fillRect(0, 0, B, H);
 		function feld(x, y, w, h) {
-			c.fillStyle = "#DDE6FF"; c.fillRect(x, y, w, h);
-			c.strokeStyle = "#4A63C8"; c.lineWidth = 1.1;
+			c.fillStyle = "#DDF1F2"; c.fillRect(x, y, w, h);
+			c.strokeStyle = "#00838F"; c.lineWidth = 1.1;
 			const a = Math.max(12, Math.min(18, B / 40));
 			for (let xx = x + a / 2; xx < x + w; xx += a) for (let yy = y + a / 2; yy < y + h; yy += a) {
 				c.beginPath(); c.moveTo(xx - 3, yy - 3); c.lineTo(xx + 3, yy + 3); c.moveTo(xx + 3, yy - 3); c.lineTo(xx - 3, yy + 3); c.stroke();

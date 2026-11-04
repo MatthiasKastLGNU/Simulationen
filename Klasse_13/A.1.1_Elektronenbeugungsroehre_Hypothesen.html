@@ -1432,6 +1432,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1546,7 +1551,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			<div class="leinwand" id="seite-leinwand"><canvas id="seite-canvas" class="sim"></canvas></div>
 			<div class="leinwand" id="schirm-leinwand" style="margin-top:0.5rem"><canvas id="schirm-canvas" class="sim"></canvas></div>
 			<div class="gruppen">
-				<div class="gr"><div class="gt">Hochspannung</div><div class="kn"><button id="btn-hv" class="an" title="Hochspannung ein- und ausschalten" aria-label="Hochspannung ein- und ausschalten"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></svg><span id="hv-text" style="min-width:2em">ein</span></button></div></div>
+				<div class="gr"><div class="gt">Hochspannung</div><div class="kn"><button id="btn-hv" class="an schalter-an" title="Hochspannung ein- und ausschalten" aria-label="Hochspannung ein- und ausschalten"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></svg><span id="hv-text" style="min-width:2em">ein</span></button></div></div>
 				<div class="gr"><div class="gt">Dauerbetrieb</div><div class="kn"><button id="btn-zeitraffer" title="Zeitraffer: 30 Minuten Betrieb" aria-label="Zeitraffer: 30 Minuten Betrieb"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg><span class="zahl">30 min</span></button><button id="btn-uhr" title="Uhr auf null" aria-label="Uhr auf null"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg><span class="zahl">0</span></button></div></div>
 				<div class="gr"><div class="gt">Magnet</div><div class="kn" id="magnet-knoepfe">
 					<button data-wert="kein" class="aktiv" title="kein Magnet" aria-label="kein Magnet"><svg width="30" height="26" viewBox="0 0 30 26" aria-hidden="true"><rect x="6" y="4" width="18" height="18" fill="none" stroke="#888" stroke-width="1.4" stroke-dasharray="3 2.5"/></svg></button>
@@ -1846,7 +1851,7 @@ const updU = P.regler("regler-u", "wert-u", v => P.de(v, 2) + "&nbsp;kV", v => z
 const updI = P.regler("regler-i", "wert-i", v => v + "&nbsp;µA", v => zustand.I = v, zeichne);
 const updN = P.regler("regler-naehe", "wert-naehe", v => v + "&nbsp;%", v => zustand.naehe = v, zeichne);
 const btnHv = document.getElementById("btn-hv");
-function zeigeHv() { btnHv.classList.toggle("an", zustand.hv === "ein"); document.getElementById("hv-text").textContent = zustand.hv === "ein" ? "ein" : "aus"; }
+function zeigeHv() { btnHv.classList.toggle("an", zustand.hv === "ein"); btnHv.classList.toggle("schalter-an", zustand.hv === "ein"); document.getElementById("hv-text").textContent = zustand.hv === "ein" ? "ein" : "aus"; }
 btnHv.addEventListener("click", () => { zustand.hv = zustand.hv === "ein" ? "aus" : "ein"; zeigeHv(); zeichne(); });
 K.bindeKnopfgruppe("magnet-knoepfe", w => {
 	zustand.magnet = w;

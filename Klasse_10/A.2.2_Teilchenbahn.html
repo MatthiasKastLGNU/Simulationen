@@ -749,6 +749,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1178,7 +1183,7 @@ function neueAufgabe() {
 const canvas = document.getElementById("sim-canvas");
 const ctx = canvas.getContext("2d");
 let W = 740, H = 440;
-const BLAU = "#0000BF", ROT = "#BF0000", VIOLETT = "#6a1b9a";
+const BLAU = "#00838F", ROT = "#BF0000", VIOLETT = "#6a1b9a";   /* BLAU = Farbe von B (Farbschema) */
 function schrift() { return getComputedStyle(document.body).fontFamily; }
 
 function pfeil(x1, y1, x2, y2, farbe, dicke, gestrichelt) {
@@ -1210,7 +1215,7 @@ function symbol(x, y, r, richtung, farbe, dicke) {
 /* Teilchen: Plus und Minus als gezeichnete Striche (Textzeichen sitzen nicht mittig) */
 function teilchen(x, y, r, q) {
 	ctx.save();
-	const farbe = q === "+" ? ROT : q === "-" ? "#111" : "#555";
+	const farbe = q === "+" ? "#E03030" : q === "-" ? "#3050E0" : "#555";
 	ctx.fillStyle = q === "+" ? "#fde3e3" : q === "-" ? "#e9e9e9" : "#fff";
 	ctx.strokeStyle = farbe; ctx.lineWidth = 2.4;
 	ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
@@ -1324,7 +1329,7 @@ function zeichne() {
 		ctx.beginPath(); ctx.arc(px + u[0] * R, py + u[1] * R, R, 0, 2 * Math.PI); ctx.stroke(); ctx.restore();
 	}
 
-	if (bekannt("v")) { pfeil(vPfeil[0], vPfeil[1], vPfeil[2], vPfeil[3], "#111", 3.4, z.gesucht === "v"); schild("v", vSchild[0], vSchild[1], "#111", gr, true); }
+	if (bekannt("v")) { pfeil(vPfeil[0], vPfeil[1], vPfeil[2], vPfeil[3], "#2E8B3A", 3.4, z.gesucht === "v"); schild("v", vSchild[0], vSchild[1], "#2E8B3A", gr, true); }
 	if (bekannt("F")) {
 		const gestr = z.gesucht === "F";
 		if (z.F === "null") schild("keine Kraft", fSchild[0], fSchild[1], ROT, gr, false);

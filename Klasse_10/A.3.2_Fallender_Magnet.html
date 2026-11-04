@@ -748,6 +748,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1180,7 +1185,7 @@ function zuruecksetzen() {
 const canvas = document.getElementById("sim-canvas"), ctx = canvas.getContext("2d");
 let W = 740, H = 460, schrift = "sans-serif", breit = true;
 let rohrBereich = { x: 0, y: 0, w: 0, h: 0 }, lupe = { x: 0, y: 0, w: 0, h: 0 };
-const ROT = "#D72823", GRUEN = "#009141", BLAU = "#0000BF", STROM = "#143CBE";
+const ROT = "#D72823", GRUEN = "#009141", BLAU = "#0000BF", STROM = "#6A3D9A";   /* I im Farbschema */
 function text(c, t, x, y, g, f, ausr = "center", stil = "") { c.font = stil + " " + Math.round(g) + "px " + schrift; c.fillStyle = f; c.textAlign = ausr; c.textBaseline = "middle"; c.fillText(t, x, y); }
 function pfeil(c, x1, y1, x2, y2, f, d) {
 	const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy); if (l < 2) return;
@@ -1268,10 +1273,10 @@ function zeichneLupe() {
 			ctx.beginPath(); ctx.ellipse(cx, yy, rx, ry, 0, 0, Math.PI); ctx.stroke();
 			if (r.stoff === "geschlitzt") { ctx.fillStyle = "#fafafa"; ctx.fillRect(cx + rx * 0.3, yy + ry * 0.75, rx * 0.12, ry * 0.6); }
 			if (a > 0.04) {
-				ctx.strokeStyle = "rgba(20,60,190," + (0.25 + 0.75 * a) + ")"; ctx.lineWidth = 2 + 3 * a;
+				ctx.strokeStyle = "rgba(106,61,154," + (0.25 + 0.75 * a) + ")"; ctx.lineWidth = 2 + 3 * a;
 				ctx.beginPath(); ctx.ellipse(cx, yy, rx, ry, 0, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
 				const nachRechts = g.I > 0;   /* gegen den Uhrzeigersinn von oben: vorne nach rechts */
-				pfeil(ctx, cx + (nachRechts ? -1 : 1) * rx * 0.25, yy + ry, cx + (nachRechts ? 1 : -1) * rx * 0.35, yy + ry, "rgba(20,60,190," + (0.3 + 0.7 * a) + ")", 2 + 2 * a);
+				pfeil(ctx, cx + (nachRechts ? -1 : 1) * rx * 0.25, yy + ry, cx + (nachRechts ? 1 : -1) * rx * 0.35, yy + ry, "rgba(106,61,154," + (0.3 + 0.7 * a) + ")", 2 + 2 * a);
 			}
 			const seite = g.u > 0 ? "oben" : "unten";
 			if (!staerkster[seite] || Math.abs(g.I) > Math.abs(staerkster[seite].I)) staerkster[seite] = g;

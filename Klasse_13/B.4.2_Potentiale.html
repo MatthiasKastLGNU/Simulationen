@@ -644,6 +644,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -831,7 +836,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<div class="wertkarte welle"><div class="wk-titel">Unterschied zum einzelnen Atom</div><div class="wk-wert" id="b-dE"></div></div>
 			</div>
 			<div class="leinwand" id="b-kurve-leinwand" style="margin-top:0.7rem"><canvas id="b-kurve" class="sim"></canvas></div>
-			<p class="fussnote">Modell: zwei Rechtecktöpfe (je 0,3 nm breit, 6 eV tief) für die beiden Atome. Gezeigt ist nur die Energie des Elektrons, ohne die Abstoßung der Kerne.</p>
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Modell: zwei Rechtecktöpfe (je 0,3 nm breit, 6 eV tief) für die beiden Atome. Gezeigt ist nur die Energie des Elektrons, ohne die Abstoßung der Kerne.</p></div></details>
 		</div>
 	</div>
 

@@ -729,6 +729,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -857,8 +862,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<div class="zeile" data-st="1 2">
 					<label>Blende</label>
 					<span class="kn">
-						<button id="btn-spalt1"></button>
-						<button id="btn-spalt2"></button>
+						<button id="btn-spalt1" data-schalter></button>
+						<button id="btn-spalt2" data-schalter></button>
 					</span>
 				</div>
 				<div class="zeile" data-st="3">
@@ -909,11 +914,9 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					</span>
 				</div>
 			</div>
-			<p class="fussnote">
-				Helles Laserlicht: Die Kamera zeigt die Intensit&auml;t des Lichts. Stark abgeschw&auml;cht: Die Kamera weist jedes Photon einzeln nach;
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Helles Laserlicht: Die Kamera zeigt die Intensit&auml;t des Lichts. Stark abgeschw&auml;cht: Die Kamera weist jedes Photon einzeln nach;
 				zwischen Laser und Schirm zeigt die Simulation deshalb keine Bahn. Abstand zwischen Doppelspalt und Schirm <i class="gr">a</i>&nbsp;=&nbsp;1,00&nbsp;m.
-				Die Detektoren sind ein vereinfachtes Messmodell: Sie zeigen an, durch welchen Spalt ein Photon gegangen ist, ohne es aufzuhalten.
-			</p>
+				Die Detektoren sind ein vereinfachtes Messmodell: Sie zeigen an, durch welchen Spalt ein Photon gegangen ist, ohne es aufzuhalten.</p></div></details>
 		</div>
 	</div>
 
@@ -1283,12 +1286,12 @@ function zeichneFotos(ctx) {
 
 /* ---------------- Anzeigen und Bedienung ---------------- */
 function aktualisiereZaehler() {
-	$("zaehler").innerHTML = zustand.hell
-		? "Helles Laserlicht: sehr viele Photonen gleichzeitig unterwegs"
-		: "Gesendet: <b>" + tausender(gesendet) + "</b> &nbsp;&middot;&nbsp; im gezeigten Ausschnitt: <b>" + tausender(treffer.n) + "</b>" +
-		(ausserhalb ? " &nbsp;&middot;&nbsp; au&szlig;erhalb des Ausschnitts: <b>" + tausender(ausserhalb) + "</b>" : "") +
-		(abgefangen ? " &nbsp;&middot;&nbsp; an der Blende abgefangen: <b>" + tausender(abgefangen) + "</b>" : "") +
-		(treffer.n >= MAX_TREFFER ? " &nbsp;(Speicher voll, bitte Schirm l&ouml;schen)" : "");
+	if (zustand.hell) KastWerte.karten($("zaehler"), [{ titel: "Lichtquelle", wert: "helles Laserlicht", betont: true }, { titel: "Photonen", wert: "sehr viele gleichzeitig" }]);
+	else KastWerte.karten($("zaehler"), [
+		{ titel: "gesendet", wert: tausender(gesendet), betont: true },
+		{ titel: "im gezeigten Ausschnitt", wert: tausender(treffer.n) },
+		ausserhalb ? { titel: "au&szlig;erhalb des Ausschnitts", wert: tausender(ausserhalb), klein: true } : null,
+		abgefangen ? { titel: "an der Blende abgefangen", wert: tausender(abgefangen), klein: true } : null], "", "", treffer.n >= MAX_TREFFER ? "<p class='urteil neutral'>Speicher voll, bitte Schirm l&ouml;schen.</p>" : "");
 }
 function spaltSymbol(nr, offen) {
 	const y = nr === 1 ? 6 : 15, rest = nr === 1 ? 15 : 6;

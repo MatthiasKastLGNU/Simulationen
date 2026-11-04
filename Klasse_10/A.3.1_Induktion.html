@@ -762,6 +762,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1577,7 +1582,7 @@ const canvas = document.getElementById("sim-canvas"), ctx = canvas.getContext("2
 const dCanvas = document.getElementById("diagramm"), dctx = dCanvas.getContext("2d");
 let W = 740, H = 330, DW = 740, DH = 220, schrift = "sans-serif";
 let sz = 14, ox = 0, oy = 0, mess = { x: 0, y: 0, r: 60 }, breit = true, szeneRechts = 600;
-const BLAU = "#0000BF", ROT = "#D72823", GRUEN = "#009141", KUPFER = [200, 120, 55], FELD = "rgba(40,90,215,";
+const BLAU = "#0000BF", ROT = "#D72823", GRUEN = "#009141", KUPFER = [200, 120, 55], FELD = "rgba(0,131,143,";   /* B im Farbschema */
 
 function text(c, t, x, y, g, f, ausr = "center", stil = "") {
 	c.font = stil + " " + Math.round(g) + "px " + schrift; c.fillStyle = f; c.textAlign = ausr; c.textBaseline = "middle"; c.fillText(t, x, y);
@@ -1714,7 +1719,7 @@ function zeichnePP() {
 	ctx.clearRect(0, 0, W, H);
 	ctx.save(); ctx.beginPath(); ctx.rect(0, 0, szeneRechts, H); ctx.clip();
 	/* Feldbereich zart getönt, damit "im Feld" und "außerhalb" auch ohne Feldlinien erkennbar sind */
-	ctx.fillStyle = "rgba(40,90,215,0.06)"; ctx.fillRect(X(-XP), Y(HP), X(XP) - X(-XP), Y(-HP) - Y(HP));
+	ctx.fillStyle = "rgba(0,131,143,0.06)"; ctx.fillRect(X(-XP), Y(HP), X(XP) - X(-XP), Y(-HP) - Y(HP));
 	ppSpule(false);
 	if (zustand.zeigeFeld) {
 		const radius = Math.hypot(PP.L / 2, PP.R) + 0.6;

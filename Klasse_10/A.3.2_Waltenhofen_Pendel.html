@@ -748,6 +748,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -847,8 +852,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button data-wert="schlitzring" title="geschlitzter Ring" aria-label="geschlitzter Ring"><svg width="26" height="22" viewBox="0 0 26 22"><path d="M15 18.2A7.5 7.5 0 1 1 18.5 15.5" fill="none" stroke="#5E666E" stroke-width="5"/></svg></button>
 				</div></div>
 				<div class="gr"><div class="gt">Polschuhe</div><div class="kn" id="polschuh-knoepfe">
-					<button data-wert="schmal" class="aktiv" title="schmale Polschuhe" aria-label="schmal"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="9.0" y="0" width="8" height="4" fill="#666"/><rect x="9.0" y="18" width="8" height="4" fill="#666"/><rect x="9.0" y="4" width="8" height="14" fill="#DDE6FF"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#4A63C8" stroke-width="1"/></svg></button>
-					<button data-wert="breit" title="breite Polschuhe" aria-label="breit"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="2.0" y="0" width="22" height="4" fill="#666"/><rect x="2.0" y="18" width="22" height="4" fill="#666"/><rect x="2.0" y="4" width="22" height="14" fill="#DDE6FF"/><path d="M6 7l4 4M10 7l-4 4M6 13l4 4M10 13l-4 4" stroke="#4A63C8" stroke-width="1"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#4A63C8" stroke-width="1"/><path d="M16 7l4 4M20 7l-4 4M16 13l4 4M20 13l-4 4" stroke="#4A63C8" stroke-width="1"/></svg></button>
+					<button data-wert="schmal" class="aktiv" title="schmale Polschuhe" aria-label="schmal"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="9.0" y="0" width="8" height="4" fill="#666"/><rect x="9.0" y="18" width="8" height="4" fill="#666"/><rect x="9.0" y="4" width="8" height="14" fill="#DDF1F2"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#00838F" stroke-width="1"/></svg></button>
+					<button data-wert="breit" title="breite Polschuhe" aria-label="breit"><svg width="26" height="22" viewBox="0 0 26 22"><rect x="2.0" y="0" width="22" height="4" fill="#666"/><rect x="2.0" y="18" width="22" height="4" fill="#666"/><rect x="2.0" y="4" width="22" height="14" fill="#DDF1F2"/><path d="M6 7l4 4M10 7l-4 4M6 13l4 4M10 13l-4 4" stroke="#00838F" stroke-width="1"/><path d="M11 7l4 4M15 7l-4 4M11 13l4 4M15 13l-4 4" stroke="#00838F" stroke-width="1"/><path d="M16 7l4 4M20 7l-4 4M16 13l4 4M20 13l-4 4" stroke="#00838F" stroke-width="1"/></svg></button>
 				</div></div>
 				<div class="gr"><div class="gt">Stromstärke in den Spulen</div><div class="kn"><input type="range" id="regler-b" min="0.2" max="1" step="0.05" value="1" aria-label="Stromstärke in den Spulen"><span class="wert" id="wert-b"></span></div></div>
 			</div>
@@ -1368,11 +1373,11 @@ function zeichne() {
 	const p = POL[zustand.polschuh];
 	/* Polschuh mit Feld */
 	const a = P(-p.ax, -LP + p.ay), b = P(p.ax, -LP - p.ay);
-	ctx.fillStyle = zustand.spulen ? "rgba(40,90,215," + (0.08 + 0.14 * zustand.B0) + ")" : "rgba(150,150,150,0.12)";
+	ctx.fillStyle = zustand.spulen ? "rgba(0,131,143," + (0.08 + 0.14 * zustand.B0) + ")" : "rgba(150,150,150,0.12)";
 	ctx.fillRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
 	ctx.strokeStyle = "#888"; ctx.lineWidth = 1; ctx.strokeRect(a[0], a[1], b[0] - a[0], b[1] - a[1]);
 	if (zustand.spulen) {
-		ctx.strokeStyle = "rgba(40,90,215," + (0.3 + 0.5 * zustand.B0) + ")"; ctx.lineWidth = 1;
+		ctx.strokeStyle = "rgba(0,131,143," + (0.3 + 0.5 * zustand.B0) + ")"; ctx.lineWidth = 1;
 		for (let x = -p.ax + 0.8; x < p.ax; x += 1.6) for (let y = -LP - p.ay + 0.8; y < -LP + p.ay; y += 1.6) { const q = P(x, y), e = sk * 0.22; ctx.beginPath(); ctx.moveTo(q[0] - e, q[1] - e); ctx.lineTo(q[0] + e, q[1] + e); ctx.moveTo(q[0] - e, q[1] + e); ctx.lineTo(q[0] + e, q[1] - e); ctx.stroke(); }
 	}
 	text(ctx, zustand.spulen ? "Polschuh: Magnetfeld" : "Polschuh (Spulen aus)", (a[0] + b[0]) / 2, b[1] + 14, 12, "#555");

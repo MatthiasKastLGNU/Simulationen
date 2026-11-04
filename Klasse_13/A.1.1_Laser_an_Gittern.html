@@ -1398,6 +1398,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1509,7 +1514,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<div class="zeile"><label>Gitterkonstante <i class="gr">g</i></label><input type="range" id="regler-g" min="5" max="20" step="0.1" value="10"><span class="wert" id="wert-g"></span></div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
-			<p class="fussnote">Schirmabstand <i class="gr">a</i> = 1,00&nbsp;m. Die Helligkeit wird automatisch angepasst, damit auch schwache Maxima sichtbar bleiben. Die Gitter sind schematisch gezeichnet.</p>
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Schirmabstand <i class="gr">a</i> = 1,00&nbsp;m. Die Helligkeit wird automatisch angepasst, damit auch schwache Maxima sichtbar bleiben. Die Gitter sind schematisch gezeichnet.</p></div></details>
 		</div>
 	</div>
 
@@ -1731,8 +1736,7 @@ function zeichne() {
 	P.text(g, "100 mm", xb + 50 * pxmm, yb - 7, { groesse: fs - 1, farbe: "#DDD", ausrichtung: "center" });
 
 	const d1 = abstandErsteOrdnung();
-	document.getElementById("auswertung").innerHTML = "Abstand der Maxima 1. Ordnung von der Mitte: <i class='gr'>d</i><sub>1</sub> = <span class='kennzahl'>" +
-		(isFinite(d1) ? P.de(d1, 1) + "&nbsp;mm" : "kein Maximum") + "</span>";
+	KastWerte.karten(document.getElementById("auswertung"), [{ titel: "Abstand der Maxima 1. Ordnung von der Mitte <i class='gr'>d</i><sub>1</sub>", wert: isFinite(d1) ? P.de(d1, 1) + "&nbsp;mm" : "kein Maximum", betont: true }]);
 }
 
 function groesse() {

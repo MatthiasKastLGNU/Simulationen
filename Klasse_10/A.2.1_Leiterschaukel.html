@@ -734,6 +734,11 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
+		/* data-schalter: Anzeige ein/aus, Zustand steht im Code als .aktiv/.an → aria-pressed daraus spiegeln (2026-11-04) */
+		wurzel.querySelectorAll("button[data-schalter]").forEach(b => {
+			const an = String(b.classList.contains("aktiv") || b.classList.contains("an"));
+			if (b.getAttribute("aria-pressed") !== an) b.setAttribute("aria-pressed", an);
+		});
 		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
@@ -1163,7 +1168,7 @@ const ctx = canvas.getContext("2d");
 let W = 740, H = 530, s = 60, ox = 0, oy = 0;
 const KX = -0.45, KY = -0.38;
 const ROT = [215, 40, 35], GRUEN = [0, 145, 65], KUPFER = [200, 120, 55], LITZE = [235, 160, 30];
-const BLAU = "#0000BF", KRAFTROT = "#BF0000";
+const BLAU = "#00838F", KRAFTROT = "#BF0000";   /* BLAU = Farbe von B (Farbschema) */
 
 function farbe(c, f) {
 	let r, g, b;
@@ -1352,7 +1357,7 @@ function hinweise() {
 		[[-3, 2.6, -3, 2.0], [-3.0, 1.0, -2.2, 1.0], [2.4, 1.0, 3.0, 1.0], [3, 2.0, 3, 2.6]].forEach(([x1, y1, x2, y2]) => {
 			let a = P(...dreh(x1, y1)), b = P(...dreh(x2, y2));
 			if (r < 0) [a, b] = [b, a];
-			pfeil(a[0], a[1], b[0], b[1], "#111", Math.max(2, s * 0.04));
+			pfeil(a[0], a[1], b[0], b[1], "#6A3D9A", Math.max(2, s * 0.04));   /* Stromrichtung I */
 		});
 		const q = P(...dreh(-3.35, 2.3)); beschriftung("I", q[0], q[1], "#111");
 	}
@@ -1402,7 +1407,7 @@ function zeichneDraufsicht() {
 	ctx.fillText("N", xl - polB / 2, my); ctx.fillText("S", xr + polB / 2, my);
 	for (let k = -3; k <= 3; k++) {
 		const y = my + k * e * 0.9;
-		pfeil(xl + 4, y, xr - 4, y, "rgba(0,0,191,0.55)", Math.max(1.5, e * 0.04));
+		pfeil(xl + 4, y, xr - 4, y, "rgba(0,131,143,0.65)", Math.max(1.5, e * 0.04));
 	}
 	beschriftung("B", xr - e * 0.5, my - hoehe / 2 + e * 0.2, BLAU);
 	/* Leiter: Länge 5 cm, Winkel α zur Feldrichtung; Strom von + nach − */
