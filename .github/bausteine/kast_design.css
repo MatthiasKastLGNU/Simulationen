@@ -1,0 +1,271 @@
+/* ==========================================================================
+   Kast-Design 2026-11 (Klasse 12): ein Bediensystem für alle Simulationen
+   Gilt für SimUI-, KI- und Einzeldateien gleichermaßen. Rollen statt Einzelstile:
+   Modus · Hauptaktion · Auswahl · Schalter · Werkzeug | Hauptwert · Nebenwert · Hinweis
+   Farben der Größen wie im TikZ-Farbschema der Arbeitsblätter (2026-10-18).
+   ========================================================================== */
+:root {
+	--ui: #0000BF; --ui-dunkel: #00008F; --ui-hell: #EEF0FF; --ui-zart: #F7F8FF;
+	--rand: #C9CDD6; --rand-zart: #E3E6EC; --flaeche: #F2F3F6; --flaeche2: #E8EAEF;
+	--text2: #4A4F59; --text3: #737884;
+	--gut: #2E7D32; --gut-hg: #EEF7EE; --falsch: #C62828; --falsch-hg: #FDF0F0; --gold: #E0A100;
+	/* Farbschema der Blätter */
+	--f-plus: #E03030; --f-minus: #3050E0; --f-F: #BF0000; --f-E: #D46A00; --f-B: #00838F;
+	--f-v: #2E8B3A; --f-p: #8D5524; --f-a: #C2185B; --f-I: #6A3D9A; --f-hilfe: #808080;
+	--f-phi-n: #3050E0; --f-phi-m: #8A3FB0; --f-phi-h: #E03030;
+	--r-knopf: 6px; --r-karte: 8px;
+}
+/* Formelzeichen in der Farbe ihrer Größe (wie im Blatt) */
+html.kd i.gF, html.kd .gF { color: var(--f-F); } html.kd i.gE, html.kd .gE { color: var(--f-E); }
+html.kd i.gB, html.kd .gB { color: var(--f-B); } html.kd i.gv, html.kd .gv { color: var(--f-v); }
+html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { color: var(--f-a); }
+html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
+html.kd .gphi { color: var(--f-phi-m); }
+
+/* ---------- Auftrag: was ist zu tun? (oben im Kasten, normale Schrift) ---------- */
+html.kd p.auftrag, html.kd .auftrag-text, html.kd p.hinweis#auftrag {
+	font-size: 1rem; color: #111; margin: 0 0 0.6rem; line-height: 1.45;
+}
+
+/* ---------- 1 Modus: Leiste über dem Kasten (Segmentleiste) ---------- */
+html.kd .modusleiste {
+	display: flex; flex-wrap: wrap; gap: 3px; width: fit-content; max-width: 100%;
+	padding: 3px; margin: 0 0 0.75rem; background: var(--ui-hell); border-radius: 9px;
+	border: 1px solid #D9DDF7;
+}
+html.kd .modusleiste button {
+	font: inherit; font-size: 0.95rem; line-height: 1.2; min-height: 2.15rem;
+	padding: 0.3rem 0.95rem; border: none !important; border-radius: var(--r-knopf);
+	background: transparent; color: var(--ui); cursor: pointer; box-shadow: none !important;
+	display: inline-flex; align-items: center; gap: 0.4rem; font-weight: normal;
+}
+html.kd .modusleiste button:hover:not(.aktiv) { background: rgba(0,0,191,0.07); }
+html.kd .modusleiste button.aktiv { background: var(--ui) !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,80,0.3) !important; }
+html.kd .modusleiste button svg { width: 1.15rem; height: 1.15rem; }
+
+/* ---------- Bediengruppen: kleiner Titel über den Elementen ---------- */
+html.kd .bedienleiste, html.kd div.gruppen {
+	display: flex; flex-wrap: wrap; gap: 0.7rem 1.4rem; align-items: flex-end; margin-top: 0.7rem;
+}
+html.kd .bgruppe, html.kd div.gruppen > div.gr { display: inline-flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+html.kd .btitel, html.kd .gtitel, html.kd div.gt {
+	font-size: 0.78rem; color: var(--text3); letter-spacing: 0.01em; line-height: 1.2; font-weight: normal;
+}
+html.kd .knopfleiste, html.kd .knopfreihe, html.kd div.kn { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+
+/* ---------- 3 Auswahl (eins aus mehreren): Segmente in einer grauen Schale ---------- */
+html.kd .k-wahl {
+	display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 2px; width: fit-content; max-width: 100%;
+	background: var(--flaeche); border: 1px solid var(--rand-zart); border-radius: 8px;
+}
+html.kd .k-wahl > button {
+	font: inherit; font-size: 0.9rem; line-height: 1.2; min-height: 2.15rem; min-width: 2.4rem;
+	padding: 0.25rem 0.7rem; border: 1px solid transparent !important; border-radius: var(--r-knopf);
+	background: transparent !important; color: #2B2F36 !important; box-shadow: none !important; font-weight: normal;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; cursor: pointer;
+}
+html.kd .k-wahl > button:hover:not(.aktiv):not(:disabled) { background: rgba(0,0,0,0.05) !important; }
+html.kd .k-wahl > button.aktiv {
+	background: #fff !important; color: var(--ui) !important; border-color: var(--ui) !important;
+	box-shadow: 0 1px 3px rgba(0,0,60,0.18) !important;
+}
+html.kd .k-wahl > button:disabled { opacity: 0.4; cursor: default; }
+html.kd .k-wahl > button svg { width: 1.3rem; height: 1.3rem; }
+html.kd .k-wahl > button.gross svg, html.kd .k-wahl > button.ik.gross svg { width: 1.6rem; height: 1.6rem; }
+
+/* einzelne Knöpfe ohne Rolle (z. B. Polung tauschen): ruhig, grau */
+html.kd .k-einzel {
+	font: inherit; font-size: 0.9rem; min-height: 2.15rem; min-width: 2.4rem; padding: 0.25rem 0.7rem;
+	border: 1px solid var(--rand) !important; border-radius: var(--r-knopf); background: #fff !important;
+	color: #2B2F36 !important; box-shadow: 0 1px 1px rgba(0,0,0,0.05) !important;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; cursor: pointer;
+}
+html.kd .k-einzel:hover:not(:disabled) { background: var(--flaeche) !important; }
+html.kd .k-einzel.aktiv { border-color: var(--ui) !important; color: var(--ui) !important; background: var(--ui-hell) !important; }
+
+/* ---------- 4 Schalter (an/aus): Pille mit Leuchtpunkt ---------- */
+html.kd label.chip {
+	display: inline-flex; align-items: center; gap: 0; position: relative; flex: 0 0 auto !important;
+	min-height: 2.15rem; padding: 0.2rem 0.85rem 0.2rem 0.6rem; border-radius: 999px;
+	border: 1px solid var(--rand) !important; background: #fff !important; color: #2B2F36 !important;
+	box-shadow: none !important; font-size: 0.9rem; cursor: pointer; min-width: 0 !important; white-space: nowrap;
+}
+html.kd label.chip::before {
+	content: ""; flex: none; width: 0.62rem; height: 0.62rem; border-radius: 50%;
+	border: 1.5px solid #A3A8B3; background: #fff; margin-right: 0.45rem; transition: background 0.15s, border-color 0.15s;
+}
+html.kd label.chip:hover { background: var(--flaeche) !important; }
+html.kd label.chip:has(input:checked) { background: var(--ui-hell) !important; border-color: var(--ui) !important; color: var(--ui) !important; }
+html.kd label.chip:has(input:checked)::before { background: var(--ui); border-color: var(--ui); box-shadow: 0 0 0 2px rgba(0,0,191,0.15); }
+html.kd label.chip:has(input:disabled) { opacity: 0.4; cursor: default; }
+html.kd label.chip:has(input:focus-visible) { outline: 2px solid #6B7BFF; outline-offset: 2px; }
+html.kd label.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+html.kd label.chip span[data-chipicon] { margin-right: 0.3rem; }
+html.kd span[data-chipicon] svg { width: 1.15rem; height: 1.15rem; display: block; }
+/* gewöhnliche Häkchen außerhalb von Chips */
+html.kd input[type="checkbox"] { accent-color: var(--ui); width: 1.05rem; height: 1.05rem; }
+
+/* ---------- 2 Hauptaktion: blau gefüllt, fett, eine pro Kasten ---------- */
+html.kd button.haupt {
+	font: inherit; font-size: 1rem; font-weight: bold; line-height: 1.2; min-height: 2.5rem;
+	padding: 0.35rem 1.15rem; border: 1px solid var(--ui) !important; border-radius: var(--r-knopf);
+	background: var(--ui) !important; color: #fff !important; cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0,0,80,0.25), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
+}
+html.kd button.haupt:hover:not(:disabled) { background: var(--ui-dunkel) !important; }
+html.kd button.haupt:active:not(:disabled) { transform: translateY(1px); }
+html.kd button.haupt:disabled { opacity: 0.45; cursor: default; }
+html.kd button.haupt.an, html.kd button.haupt.aktiv, html.kd button.haupt.laeuft { background: #fff !important; color: var(--ui) !important; }
+html.kd button.haupt svg { width: 1.25rem; height: 1.25rem; }
+/* Start/Pause als runder Knopf (nur Symbol) */
+html.kd button.haupt.k-rund { width: 2.6rem; height: 2.6rem; min-height: 0; padding: 0; border-radius: 50%; }
+html.kd button.haupt.k-rund svg { width: 1.45rem; height: 1.45rem; }
+
+/* Gerät ein/aus (Strom, Quelle): bernstein wie eine Kontrollleuchte */
+html.kd .schalter-an { background: #FFF4D6 !important; border-color: #E0A100 !important; color: #8A5A00 !important; box-shadow: 0 0 0 1px #E0A100 inset !important; }
+/* Bewegung (Tempo, Schritt): dunkel wie ein Gerät */
+html.kd button.beweg {
+	min-height: 2.15rem; border-radius: var(--r-knopf); background: #2E3238 !important; border: 1px solid #2E3238 !important;
+	color: #fff !important; box-shadow: none !important;
+}
+html.kd button.beweg:hover:not(:disabled) { background: #474C54 !important; }
+html.kd button.beweg.aktiv { color: #FFD34D !important; border-color: #FFD34D !important; }
+
+/* ---------- 5 Werkzeug: kleine graue Symbole unter dem Bild rechts ---------- */
+html.kd .bildrahmen { position: relative; }
+html.kd .bildleiste {
+	position: static !important; display: flex; justify-content: flex-end; align-items: center;
+	gap: 2px; margin: 3px 0 0.35rem; flex-wrap: wrap; background: none; padding: 0;
+}
+html.kd .bildleiste button, html.kd button.neben, html.kd button.symbol {
+	font: inherit; font-size: 0.8rem; min-height: 2rem; min-width: 2rem; padding: 0.2rem 0.35rem;
+	border: 1px solid transparent !important; border-radius: var(--r-knopf); background: transparent !important;
+	color: var(--text3) !important; box-shadow: none !important; font-weight: normal;
+	display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; cursor: pointer;
+}
+html.kd .bildleiste button:hover:not(:disabled), html.kd button.neben:hover:not(:disabled), html.kd button.symbol:hover:not(:disabled) {
+	background: var(--flaeche) !important; color: #222 !important; border-color: var(--rand-zart) !important;
+}
+html.kd .bildleiste button:disabled, html.kd button.neben:disabled { opacity: 0.35; cursor: default; }
+html.kd .bildleiste button svg, html.kd button.neben svg, html.kd button.symbol svg { width: 1.1rem; height: 1.1rem; }
+/* Pause/Start eines laufenden Diagramms bleibt kenntlich */
+html.kd .bildleiste button:not(.neben):not(.symbol)[data-icon="play"], html.kd .bildleiste button:not(.neben):not(.symbol)[data-icon="pause"] { color: var(--ui) !important; }
+
+/* ---------- Regler: Beschriftung · Schiene · Wert ---------- */
+html.kd input[type="range"] {
+	-webkit-appearance: none; appearance: none; background: transparent; height: 1.6rem; margin: 0;
+	min-width: 110px; cursor: pointer; --anteil: 50%; --spur: var(--ui);
+}
+html.kd input[type="range"]:focus { outline: none; }
+html.kd input[type="range"]::-webkit-slider-runnable-track {
+	height: 5px; border-radius: 3px;
+	background: linear-gradient(to right, var(--spur) 0, var(--spur) var(--anteil), #D5D8E0 var(--anteil), #D5D8E0 100%);
+}
+html.kd input[type="range"]::-moz-range-track { height: 5px; border-radius: 3px; background: #D5D8E0; }
+html.kd input[type="range"]::-moz-range-progress { height: 5px; border-radius: 3px; background: var(--spur); }
+html.kd input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none; width: 1.15rem; height: 1.15rem; margin-top: calc(2.5px - 0.575rem); border-radius: 50%;
+	background: #fff; border: 2px solid var(--spur); box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+html.kd input[type="range"]::-moz-range-thumb {
+	width: 0.95rem; height: 0.95rem; border-radius: 50%; background: #fff; border: 2px solid var(--spur); box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+html.kd input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(0,0,191,0.18); }
+html.kd input[type="range"]:disabled { opacity: 0.35; cursor: default; }
+/* Wert neben dem Regler: ruhige Pille, antippbar (regler_tippen) */
+html.kd input[type="range"] ~ .wert, html.kd input[type="range"] ~ .wertanz, html.kd .wert-tippbar, html.kd .regler .wert {
+	display: inline-block; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right;
+	min-width: 4.6em; padding: 0.1rem 0.45rem; border-radius: 5px; background: var(--flaeche);
+	color: #1D2027; font-size: 0.92rem; font-weight: 600; text-decoration: none !important; border: none !important;
+}
+html.kd .wert-tippbar:hover { background: var(--ui-hell); color: var(--ui); cursor: text; box-shadow: inset 0 0 0 1px #B8BFF2; }
+html.kd .zeile > label, html.kd .steuerung .zeile > label { font-size: 0.92rem; color: var(--text2); }
+
+/* ---------- Werte: Hauptwert · Nebenwerte (Wertkarten) ---------- */
+html.kd .wertkarten, html.kd div.werte { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0.2rem; }
+html.kd .wertkarte, html.kd div.werte > .karte {
+	flex: 1 1 8.5rem; min-width: 0; border: 1px solid var(--rand-zart) !important; border-radius: var(--r-karte);
+	padding: 0.35rem 0.7rem 0.4rem; background: #FAFBFC !important; box-shadow: none !important;
+}
+html.kd .wertkarte .wk-titel, html.kd .wertkarte .wk-t, html.kd div.werte > .karte > .klein {
+	font-size: 0.76rem; overflow-wrap: break-word; color: var(--text3); line-height: 1.25; white-space: normal;
+}
+html.kd .wertkarte .wk-wert, html.kd .wertkarte .wk-w, html.kd div.werte > .karte > .gross {
+	font-size: 1.3rem; font-weight: 600; color: #15181E; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.3;
+}
+html.kd .wertkarte .wk-text { font-size: 0.85rem; color: var(--text2); }
+/* Hauptwert: worum es geht */
+html.kd .wertkarte.betont, html.kd div.werte > .karte.haupt {
+	flex: 2 1 12rem; border: 2px solid var(--ui) !important; background: var(--ui-zart) !important;
+}
+html.kd .wertkarte.betont .wk-titel, html.kd .wertkarte.betont .wk-t, html.kd div.werte > .karte.haupt > .klein { color: var(--ui); }
+html.kd .wertkarte.betont .wk-wert, html.kd .wertkarte.betont .wk-w, html.kd div.werte > .karte.haupt > .gross { font-size: 1.6rem; font-weight: bold; color: #0A0C40; }
+html.kd .kd-werte { border-top: none !important; padding-top: 0 !important; line-height: 1.45 !important; }
+html.kd .wertkarte.klein { flex: 0 1 auto; }
+html.kd .wertkarte.klein .wk-wert { font-size: 1.05rem; }
+html.kd p.urteil { margin: 0.45rem 0 0; padding: 0.35rem 0.7rem; border-radius: 0 6px 6px 0; font-weight: 600; font-size: 0.95rem; }
+html.kd p.urteil.gut { border-left: 4px solid var(--gut); background: var(--gut-hg); color: #1B5E20; }
+html.kd p.urteil.schlecht { border-left: 4px solid var(--falsch); background: var(--falsch-hg); color: #8E1B1B; }
+html.kd p.urteil.neutral { border-left: 4px solid var(--ui); background: var(--ui-zart); color: #0A0C40; }
+/* Nebenwerte als ruhige Zeile */
+html.kd .auswertung { margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px solid var(--rand-zart); font-size: 0.95rem; line-height: 1.65; color: #1D2027; }
+html.kd .auswertung .naeherung { color: var(--text3); font-size: 0.88rem; }
+
+/* ---------- Hinweise: klein, grau, am Ende; Modell einklappbar ---------- */
+html.kd .fussnote, html.kd p.hinweis:not(#auftrag), html.kd div.hinweis { font-size: 0.86rem; color: var(--text3); line-height: 1.45; margin: 0.5rem 0 0; }
+html.kd details.mehr { margin: 0.55rem 0 0; font-size: 0.86rem; color: var(--text3); }
+html.kd details.mehr > summary {
+	cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 0.35rem;
+	color: var(--text3); font-size: 0.84rem; padding: 0.15rem 0.5rem 0.15rem 0.3rem; border-radius: 999px; user-select: none;
+}
+html.kd details.mehr > summary::-webkit-details-marker { display: none; }
+html.kd details.mehr > summary::before {
+	content: "i"; display: inline-grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%;
+	border: 1.3px solid currentColor; font: italic bold 0.72rem/1 Georgia, serif;
+}
+html.kd details.mehr > summary:hover { background: var(--flaeche); color: #333; }
+html.kd details.mehr[open] > summary { color: #333; }
+html.kd details.mehr > .mehr-inhalt { padding: 0.35rem 0 0 0.3rem; line-height: 1.45; }
+html.kd details.mehr > .mehr-inhalt > p { margin: 0 0 0.35rem; }
+
+/* ---------- Eingabelücken (Spiele, Aufträge): deutlich, Einheit dahinter ---------- */
+html.kd input[type="number"], html.kd input[type="text"].eingabe, html.kd input.eingabe, html.kd .eingabe input {
+	font: inherit; font-size: 1.05rem; font-variant-numeric: tabular-nums; text-align: right;
+	padding: 0.25rem 0.5rem; min-height: 2.2rem; border: 1.5px solid #9EA5B5; border-radius: var(--r-knopf);
+	background: #fff; color: #111; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+}
+html.kd input[type="number"]:focus, html.kd input.eingabe:focus, html.kd .eingabe input:focus { outline: none; border-color: var(--ui); box-shadow: 0 0 0 3px rgba(0,0,191,0.15); }
+html.kd input.richtig, html.kd .eingabe.richtig input { border-color: var(--gut) !important; background: var(--gut-hg) !important; }
+html.kd input.falsch, html.kd .eingabe.falsch input { border-color: var(--falsch) !important; background: var(--falsch-hg) !important; }
+html.kd .einheit { color: var(--text2); margin-left: 0.25rem; white-space: nowrap; }
+
+/* Rückmeldung nach dem Prüfen */
+html.kd .rueckmeldung.gut, html.kd .meldung.gut { border-left: 4px solid var(--gut); background: var(--gut-hg); padding: 0.4rem 0.7rem; border-radius: 0 6px 6px 0; }
+html.kd .rueckmeldung.schlecht, html.kd .meldung.schlecht { border-left: 4px solid var(--falsch); background: var(--falsch-hg); padding: 0.4rem 0.7rem; border-radius: 0 6px 6px 0; }
+
+/* ---------- Messtabelle ---------- */
+html.kd table.messtabelle, html.kd table.mess { font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+html.kd table.messtabelle thead th, html.kd table.mess thead th { font-weight: 600; color: #222; background: #FAFBFC; }
+html.kd table.messtabelle td:first-child, html.kd table.mess td:first-child { color: var(--text3); }
+html.kd tr.messzeile.neu td:not(.weg) { animation: kd-neu 1.2s ease-out; }
+@keyframes kd-neu { from { background: #FFF3C4; } to { background: transparent; } }
+
+/* ---------- Bild ---------- */
+html.kd canvas.sim { border-radius: 4px; }
+
+/* ---------- Handy: größere Tippflächen ---------- */
+@media (max-width: 560px) {
+	html.kd .modusleiste { width: 100%; }
+	html.kd .zeile:has(> input[type="range"]) { display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 0.6rem; align-items: center; }
+	html.kd .zeile:has(> input[type="range"]) > label { grid-column: 1 / -1; flex: none !important; }
+	html.kd .zeile > input[type="range"] { min-width: 0; width: 100%; }
+	html.kd .modusleiste button { flex: 1 1 auto; justify-content: center; padding: 0.3rem 0.6rem; }
+	html.kd .bedienleiste, html.kd div.gruppen { gap: 0.6rem 0.9rem; }
+	html.kd .k-wahl > button, html.kd label.chip, html.kd .k-einzel { min-height: 2.4rem; }
+	html.kd .bildleiste button { min-height: 2.3rem; min-width: 2.3rem; }
+	html.kd .wertkarte, html.kd div.werte > .karte { flex-basis: 7rem; }
+	html.kd .wertkarte .wk-wert, html.kd .wertkarte .wk-w, html.kd div.werte > .karte > .gross { font-size: 1.15rem; }
+	html.kd .wertkarte.betont .wk-wert, html.kd .wertkarte.betont .wk-w, html.kd div.werte > .karte.haupt > .gross { font-size: 1.4rem; }
+}
+@media print { html.kd .bildleiste, html.kd details.mehr > summary::before { display: none; } }
