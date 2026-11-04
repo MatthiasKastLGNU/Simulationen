@@ -1291,30 +1291,71 @@ let WZ = 370, HZ = 370, WE = 370, HE = 370;
 function zeichneZyk() {
 	gZ.clearRect(0, 0, WZ, HZ);
 	/* Der Duantenradius ist maßstäblich (2,5 m füllen das Bild), B zeigt sich in den Feldsymbolen, U im Spalt */
-	const cx = WZ / 2, cy = HZ / 2, Rp = (Math.min(WZ, HZ) / 2 - 14) * zustand.R / 2.5, spalt = 10;
-	gZ.fillStyle = "#E9EEF7"; gZ.strokeStyle = "#333"; gZ.lineWidth = 1.5;
-	gZ.beginPath(); gZ.arc(cx, cy - spalt / 2, Rp, Math.PI, 0); gZ.closePath(); gZ.fill(); gZ.stroke();
-	gZ.beginPath(); gZ.arc(cx, cy + spalt / 2, Rp, 0, Math.PI); gZ.closePath(); gZ.fill(); gZ.stroke();
-	const fs = Math.round(6 + 7 * zustand.B / 2), fa = "rgba(110,110,150," + (0.25 + 0.6 * zustand.B / 2) + ")";
-	const nf = Math.max(3, Math.round(12 * Rp / (Math.min(WZ, HZ) / 2)));
-	for (let k = 0; k < nf; k++) { const x = cx - Rp * 0.8 + k * Rp * 1.6 / Math.max(1, nf - 1); P.text(gZ, "⊙", x, cy - Rp * 0.5 + (k % 2) * 6, { ausrichtung: "center", groesse: fs, farbe: fa }); P.text(gZ, "⊙", x, cy + Rp * 0.55 + (k % 2) * 6, { ausrichtung: "center", groesse: fs, farbe: fa }); }
+	const cx = WZ / 2 - 12, cy = HZ / 2, Rp = (Math.min(WZ, HZ) / 2 - 30) * zustand.R / 2.5, spalt = 10;
+	/* Magnetpol als Hintergrund: Feld aus der Zeichenebene heraus */
+	const rPol = Math.min(WZ, HZ) / 2 - 22;
+	const pg = gZ.createRadialGradient(cx, cy, rPol * 0.2, cx, cy, rPol);
+	pg.addColorStop(0, "rgba(0,0,191,0.05)"); pg.addColorStop(1, "rgba(0,0,191,0.12)");
+	gZ.fillStyle = pg; gZ.beginPath(); gZ.arc(cx, cy, rPol, 0, 2 * Math.PI); gZ.fill();
+	const fa = "rgba(70,70,140," + (0.2 + 0.5 * zustand.B / 2) + ")";
+	gZ.strokeStyle = fa; gZ.fillStyle = fa; gZ.lineWidth = 1;
+	for (let x = cx - rPol; x <= cx + rPol; x += 28) for (let y = cy - rPol; y <= cy + rPol; y += 28) {
+		if (Math.hypot(x - cx, y - cy) > rPol - 8 || Math.hypot(x - cx, y - cy) < Rp + 6) continue;
+		gZ.beginPath(); gZ.arc(x, y, 4, 0, 2 * Math.PI); gZ.stroke(); gZ.beginPath(); gZ.arc(x, y, 1.2, 0, 2 * Math.PI); gZ.fill();
+	}
+	/* Duanten: Kupferhalbschalen mit Glanz */
+	for (const oben of [true, false]) {
+		const yc = oben ? cy - spalt / 2 : cy + spalt / 2;
+		const dg = gZ.createLinearGradient(cx - Rp, yc - (oben ? Rp : 0), cx + Rp, yc + (oben ? 0 : Rp));
+		dg.addColorStop(0, "#F6D2A8"); dg.addColorStop(0.45, "#E7B07A"); dg.addColorStop(1, "#B9773E");
+		gZ.fillStyle = dg; gZ.strokeStyle = "#7A4A1E"; gZ.lineWidth = 1.6;
+		gZ.beginPath(); if (oben) gZ.arc(cx, yc, Rp, Math.PI, 0); else gZ.arc(cx, yc, Rp, 0, Math.PI); gZ.closePath(); gZ.fill(); gZ.stroke();
+	}
+	/* Feldsymbole auf den Duanten (Dichte ~ B) */
+	const nf = Math.max(3, Math.round(10 * Rp / (Math.min(WZ, HZ) / 2)));
+	gZ.strokeStyle = "rgba(90,50,20,0.45)"; gZ.fillStyle = "rgba(90,50,20,0.45)";
+	for (let k = 0; k < nf; k++) {
+		const x = cx - Rp * 0.75 + k * Rp * 1.5 / Math.max(1, nf - 1);
+		for (const y of [cy - Rp * 0.45, cy + Rp * 0.5]) { gZ.beginPath(); gZ.arc(x, y, 3.5, 0, 2 * Math.PI); gZ.stroke(); gZ.beginPath(); gZ.arc(x, y, 1, 0, 2 * Math.PI); gZ.fill(); }
+	}
+	/* Wechselspannungsquelle (Kreis mit Sinus) rechts, Leitungen zu beiden Duanten */
+	{
+		const qx = Math.min(WZ - 18, cx + Rp + 40), qr = 12;
+		gZ.strokeStyle = "#333"; gZ.lineWidth = 1.4;
+		gZ.beginPath(); gZ.moveTo(cx + Rp * 0.7, cy - spalt / 2 - Rp * 0.71); gZ.lineTo(qx, cy - spalt / 2 - Rp * 0.71); gZ.lineTo(qx, cy - qr); gZ.stroke();
+		gZ.beginPath(); gZ.moveTo(cx + Rp * 0.7, cy + spalt / 2 + Rp * 0.71); gZ.lineTo(qx, cy + spalt / 2 + Rp * 0.71); gZ.lineTo(qx, cy + qr); gZ.stroke();
+		gZ.fillStyle = "#fff"; gZ.beginPath(); gZ.arc(qx, cy, qr, 0, 2 * Math.PI); gZ.fill(); gZ.stroke();
+		gZ.beginPath(); for (let i = 0; i <= 20; i++) { const x = qx - 7 + 14 * i / 20, y = cy - 4 * Math.sin(2 * Math.PI * i / 20); i ? gZ.lineTo(x, y) : gZ.moveTo(x, y); } gZ.stroke();
+	}
 	/* Wechselfeld im Spalt: Pfeildicke ~ Spaltspannung */
 	for (const xs of [-0.6, 0, 0.6]) P.pfeil(gZ, cx + xs * Rp, cy + spalt / 2, cx + xs * Rp, cy - spalt / 2, P.FARBEN.blau, 0.8 + 2.4 * zustand.U / 100, 5);
+	/* Ionenquelle in der Mitte */
+	const iq = gZ.createRadialGradient(cx, cy, 0, cx, cy, 7); iq.addColorStop(0, "rgba(255,80,80,0.95)"); iq.addColorStop(1, "rgba(255,80,80,0)");
+	gZ.fillStyle = iq; gZ.beginPath(); gZ.arc(cx, cy, 7, 0, 2 * Math.PI); gZ.fill();
 	if (!lauf) return;
 	const s = Rp / zustand.R;
-	const n = lauf.radien.length, zeige = Math.min(n, 400);
-	gZ.lineWidth = 1.2;
-	for (let k = n - zeige; k < n; k++) {
-		const r = lauf.radien[k] * s, oben = k % 2 === 0;
-		gZ.strokeStyle = "rgba(191,0,0," + (0.25 + 0.75 * (k - (n - zeige)) / zeige) + ")";
+	const n = lauf.radien.length;
+	gZ.lineWidth = 1.6;
+	/* bei vielen Umläufen nur jeden st-ten Halbkreis (paarweise oben/unten), damit die ganze Spirale sichtbar bleibt */
+	const st = Math.max(1, Math.ceil(n / 36 / 2)) * 2;
+	for (let k = 0; k < n; k++) {
+		if (k % st > 1 && k < n - 2) continue;
+		const r = lauf.radien[k] * s, oben = k % 2 === 0, t = n > 1 ? k / (n - 1) : 1;
+		/* Farbe nach Energie: früh blau, spät rot */
+		gZ.strokeStyle = "rgb(" + Math.round(40 + 175 * t) + "," + Math.round(60 * (1 - t)) + "," + Math.round(200 * (1 - t) + 20) + ")";
 		gZ.beginPath();
-		if (oben) gZ.arc(cx + (k % 4 === 0 ? 0 : 0), cy - spalt / 2, r, Math.PI, 0);
+		if (oben) gZ.arc(cx, cy - spalt / 2, r, Math.PI, 0);
 		else gZ.arc(cx, cy + spalt / 2, r, 0, Math.PI);
 		gZ.stroke();
 	}
-	const last = lauf.radien[n - 1] || 0;
-	P.text(gZ, "Umläufe: " + Math.floor(n / 2), 8, 16, { groesse: 12 });
-	P.text(gZ, "Spalt: E-Feld", cx + Rp * 0.35, cy + 4, { groesse: 11, farbe: P.FARBEN.blau });
+	/* Teilchen am Ende der Spur */
+	if (n) {
+		const r = lauf.radien[n - 1] * s, oben = (n - 1) % 2 === 0, x = oben ? cx + r : cx - r, y = oben ? cy - spalt / 2 : cy + spalt / 2;
+		const kg = gZ.createRadialGradient(x - 2, y - 2, 1, x, y, 5); kg.addColorStop(0, "#fff"); kg.addColorStop(1, "#B01818");
+		gZ.fillStyle = kg; gZ.beginPath(); gZ.arc(x, y, 5, 0, 2 * Math.PI); gZ.fill();
+	}
+	{ const t = "Umläufe: " + Math.floor(n / 2); gZ.font = "bold 13px " + K.SCHRIFT; const w = gZ.measureText(t).width;
+	  gZ.fillStyle = "rgba(255,255,255,0.9)"; gZ.fillRect(4, 4, w + 12, 20); P.text(gZ, t, 10, 18, { groesse: 13, fett: true }); }
 }
 function zeichneEnergie() {
 	gE.clearRect(0, 0, WE, HE);
