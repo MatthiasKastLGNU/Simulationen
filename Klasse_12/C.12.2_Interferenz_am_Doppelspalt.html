@@ -1286,12 +1286,13 @@ window.SimKit = (function () {
 	}
 	/* Kopie mit weißem Grund, darunter ein eigener Streifen mit "Kast" rechts */
 	function mitKast(c, d) {
-		const streifen = Math.round(22 * d), n = document.createElement("canvas");
+		/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+		const streifen = Math.round(26 * d), n = document.createElement("canvas");
 		n.width = c.width; n.height = c.height + streifen;
 		const x = n.getContext("2d");
 		x.fillStyle = "#fff"; x.fillRect(0, 0, n.width, n.height); x.drawImage(c, 0, 0);
-		x.fillStyle = "#888"; x.font = Math.round(12 * d) + "px " + K.SCHRIFT; x.textAlign = "right"; x.textBaseline = "bottom";
-		x.fillText("Kast", n.width - 8 * d, n.height - 4 * d);
+		x.fillStyle = "#888"; x.font = Math.round(15 * d) + "px " + K.SCHRIFT; x.textAlign = "right"; x.textBaseline = "alphabetic";
+		x.fillText("Kast", n.width - Math.round(10 * d), n.height - Math.round(8 * d));
 		return n;
 	}
 	function bildLeiste(behaelter, erzeuger, dateiname, vorne = [], hinten = []) {

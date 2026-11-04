@@ -942,13 +942,14 @@ bildLeiste(document.getElementById("eben-leinwand"), () => mitKast(cE), () => "A
 bildLeiste(document.getElementById("berg-leinwand"), () => mitKast(cB), () => "A.3.2 Potentialgebirge");
 
 function mitKast(c, unten) {
-	const k = weissKopie(c), d = window.devicePixelRatio || 1, zusatz = unten ? Math.round(unten.hoehe * d) : 0, streifen = Math.round(22 * d);
+	/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+	const k = weissKopie(c), d = Math.max(1, c.width / Math.max(1, c.clientWidth || c.width)), zusatz = unten ? Math.round(unten.hoehe * d) : 0, streifen = Math.round(26 * d);
 	const n = document.createElement("canvas"); n.width = k.width; n.height = k.height + zusatz + streifen;
 	const x = n.getContext("2d");
 	x.fillStyle = "#fff"; x.fillRect(0, 0, n.width, n.height); x.drawImage(k, 0, 0);
 	if (unten) unten.zeichne(x, k.height, d, n.width);
-	x.fillStyle = "#888"; x.font = Math.round(12 * d) + "px " + SCHRIFT; x.textAlign = "right"; x.textBaseline = "bottom";
-	x.fillText("Kast", n.width - 8 * d, n.height - 4 * d);
+	x.fillStyle = "#888"; x.font = Math.round(15 * d) + "px " + SCHRIFT; x.textAlign = "right"; x.textBaseline = "alphabetic";
+	x.fillText("Kast", n.width - Math.round(10 * d), n.height - Math.round(8 * d));
 	return n;
 }
 function auswertungsKarten() {   // Wertkarten fürs Heftbild

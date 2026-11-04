@@ -1048,12 +1048,13 @@ window.SimUI = (function () {
 		c.width = canvas.width; c.height = canvas.height;
 		const g = c.getContext("2d");
 		/* unten ein Streifen mit „Kast“ rechts (Kast 2026-10-15: bei Downloads immer rechts unten Kast) */
-		const leiste = Math.max(24, Math.round(canvas.height * 0.055));
+		/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+		const s = Math.max(1, canvas.width / Math.max(1, canvas.clientWidth || canvas.width)), leiste = Math.round(26 * s);
 		c.height = canvas.height + leiste;
 		g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 		g.drawImage(canvas, 0, 0);
-		g.font = Math.round(leiste * 0.55) + "px 'Libertinus Sans', 'Segoe UI', sans-serif"; g.fillStyle = "#888"; g.textAlign = "right"; g.textBaseline = "middle";
-		g.fillText("Kast", c.width - Math.round(leiste * 0.6), canvas.height + leiste / 2);
+		g.font = Math.round(15 * s) + "px 'Libertinus Sans', 'Segoe UI', sans-serif"; g.fillStyle = "#888"; g.textAlign = "right"; g.textBaseline = "alphabetic";
+		g.fillText("Kast", c.width - Math.round(10 * s), c.height - Math.round(8 * s));
 		return new Promise(ok => c.toBlob(ok, "image/png"));
 	}
 	function kannKopieren() { return !!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem); }

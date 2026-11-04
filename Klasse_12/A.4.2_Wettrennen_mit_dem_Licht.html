@@ -230,15 +230,16 @@ function symbolKnopf(name, titel, aktion) {
 	return b;
 }
 function mitKast(quelle) {   /* weißer Streifen unter dem Bild, rechts "Kast" */
-	const streifen = Math.round(quelle.width * 0.045) + 16;
+	/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+	const s = Math.max(1, quelle.width / Math.max(1, quelle.clientWidth || quelle.width)), streifen = Math.round(26 * s);
 	const c = document.createElement("canvas");
 	c.width = quelle.width; c.height = quelle.height + streifen;
 	const g = c.getContext("2d");
 	g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
 	g.drawImage(quelle, 0, 0);
-	g.fillStyle = "#888"; g.textAlign = "right"; g.textBaseline = "middle";
-	g.font = Math.round(streifen * 0.5) + "px 'Libertinus Sans', sans-serif";
-	g.fillText("Kast", c.width - 14, quelle.height + streifen / 2);
+	g.fillStyle = "#888"; g.textAlign = "right"; g.textBaseline = "alphabetic";
+	g.font = Math.round(15 * s) + "px 'Libertinus Sans', sans-serif";
+	g.fillText("Kast", c.width - Math.round(10 * s), c.height - Math.round(8 * s));
 	return c;
 }
 function blobVon(canvas) { return new Promise(r => mitKast(canvas).toBlob(r, "image/png")); }

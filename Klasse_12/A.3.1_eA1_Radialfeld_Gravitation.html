@@ -193,7 +193,8 @@ function heftBild(c, zeilen) {
 	x.fillStyle = "#fff"; x.fillRect(0, 0, k.width, H); x.drawImage(c, 0, 0);
 	x.fillStyle = "#111"; x.font = g + "px " + getComputedStyle(document.body).fontFamily; x.textBaseline = "middle";
 	zeilen.forEach((z, i) => x.fillText(z, rand, c.height + rand / 2 + (i + 0.5) * zh));
-	x.fillStyle = "#888"; x.textAlign = "right"; x.fillText("Kast", k.width - rand, H - Math.round(13 * s));
+	/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+	x.fillStyle = "#888"; x.textAlign = "right"; x.textBaseline = "alphabetic"; x.fillText("Kast", k.width - Math.round(10 * s), H - Math.round(8 * s));
 	return k;
 }
 function bildLeiste(behaelter, erzeuger, dateiname, vorne) {

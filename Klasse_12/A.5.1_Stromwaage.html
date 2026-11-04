@@ -891,8 +891,9 @@ function mitKast(c, faktor) {
 	const k = document.createElement("canvas"), f = faktor || c.width / W, st = Math.round(26 * f);
 	k.width = c.width; k.height = c.height + st;
 	const kg = k.getContext("2d"); kg.fillStyle = "#fff"; kg.fillRect(0, 0, k.width, k.height); kg.drawImage(c, 0, 0);
-	kg.fillStyle = "#888"; kg.font = Math.round(14 * f) + "px 'Libertinus Sans', sans-serif"; kg.textAlign = "right"; kg.textBaseline = "middle";
-	kg.fillText("Kast", k.width - 12 * f, c.height + st / 2); return k;
+	/* einheitlicher Kast-Streifen wie KI.canvasKopie: Streifen 26 px, Schrift 15 px, #888, 10 px vom rechten Rand, Grundlinie 8 px über der Unterkante */
+	kg.fillStyle = "#888"; kg.font = Math.round(15 * f) + "px 'Libertinus Sans', sans-serif"; kg.textAlign = "right"; kg.textBaseline = "alphabetic";
+	kg.fillText("Kast", k.width - Math.round(10 * f), k.height - Math.round(8 * f)); return k;
 }
 
 // Bügelknöpfe als kleine Piktogramme (U-Form, unterschiedlich breit)
