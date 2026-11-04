@@ -1337,38 +1337,38 @@ function qAktuell() { return Q0 * (1 - kugel.schritte / kugel.n); }
 function zeichneKugel() {
 	const c = kctx; c.clearRect(0, 0, KW, KH);
 	/* Handy: Kondensator oben, Diagramm darunter; sonst nebeneinander */
-	const eng = KW < 560, breiteL = eng ? KW : KW * 0.4, hoeheL = eng ? Math.round(KH * 0.46) : KH;
+	const eng = KW < 560, breiteL = eng ? KW : KW * 0.4, hoeheL = eng ? Math.round(KH * 0.52) : KH;
 	/* Kondensator mit Kugel */
-	const cx = breiteL / 2, yo = 50, yu = hoeheL - 50, xl = cx - 90, xr = cx + 90;
+	const halb = Math.min(105, breiteL * 0.3), cx = breiteL / 2, yo = 46, yu = hoeheL - 74, xl = cx - halb, xr = cx + halb, PD = 14;
 	/* Platten getönt nach Ladung (je leerer, desto blasser), Ladungszeichen auf den Platten */
 	const Q = qAktuell(), nz = Math.round(Q / Q0 * 16), anteil = Q / Q0;
 	const platte = (x, plus) => {
-		const gr = c.createLinearGradient(x, 0, x + 10, 0);
+		const gr = c.createLinearGradient(x, 0, x + PD, 0);
 		const a1 = 0.25 + 0.75 * anteil;
 		gr.addColorStop(0, plus ? "rgba(235,168,168," + a1 + ")" : "rgba(168,182,238," + a1 + ")");
 		gr.addColorStop(0.5, plus ? "#FBE3E3" : "#E3E8FB");
 		gr.addColorStop(1, plus ? "rgba(228,154,154," + a1 + ")" : "rgba(154,170,232," + a1 + ")");
-		c.fillStyle = "#E6E8EE"; c.fillRect(x, yo, 10, yu - yo);
-		c.fillStyle = gr; c.fillRect(x, yo, 10, yu - yo);
-		c.strokeStyle = plus ? "#B02424" : "#2440B0"; c.lineWidth = 1; c.strokeRect(x, yo, 10, yu - yo);
+		c.fillStyle = "#E6E8EE"; c.fillRect(x, yo, PD, yu - yo);
+		c.fillStyle = gr; c.fillRect(x, yo, PD, yu - yo);
+		c.strokeStyle = plus ? "#B02424" : "#2440B0"; c.lineWidth = 1; c.strokeRect(x, yo, PD, yu - yo);
 		c.strokeStyle = plus ? P.FARBEN.rot : P.FARBEN.blau; c.lineWidth = 1.8; c.lineCap = "round";
 		for (let k = 0; k < nz; k++) {
-			const y = yo + (k + 0.5) * (yu - yo) / Math.max(nz, 1), xm = x + 5;
-			c.beginPath(); c.moveTo(xm - 3, y); c.lineTo(xm + 3, y); if (plus) { c.moveTo(xm, y - 3); c.lineTo(xm, y + 3); } c.stroke();
+			const y = yo + (k + 0.5) * (yu - yo) / Math.max(nz, 1), xm = x + PD / 2;
+			c.beginPath(); c.moveTo(xm - 4, y); c.lineTo(xm + 4, y); if (plus) { c.moveTo(xm, y - 4); c.lineTo(xm, y + 4); } c.stroke();
 		}
 		c.lineCap = "butt";
 	};
-	platte(xl - 10, true); platte(xr, false);
+	platte(xl - PD, true); platte(xr, false);
 	/* Feldlinien, blasser mit sinkender Ladung */
 	if (anteil > 0.02) {
 		for (let k = 0; k < 5; k++) {
 			const y = yo + (k + 0.5) * (yu - yo) / 5;
-			P.pfeil(c, xl + 4, y, xr - 4, y, "rgba(128,128,128," + (0.15 + 0.45 * anteil) + ")", 1.2, 7);
+			P.pfeil(c, xl + 4, y, xr - 4, y, "rgba(110,110,110," + (0.15 + 0.5 * anteil) + ")", 1.5, 8);
 		}
 	}
 	/* Kugel am Faden: Pendel um Aufhängepunkt (Isolierfaden an einem Stativausleger) */
-	const ax = cx, ay = 18, L = (yu - yo) * 0.72;
-	const auslenkung = 76;
+	const r = 18, ax = cx, ay = 18, L = (yo + yu) / 2 - ay;   /* Kugel hängt in Plattenmitte */
+	const auslenkung = Math.min(halb - r - 1, 0.85 * L);      /* die Kugel berührt die Platten gerade */
 	let px;
 	if (kugel.anim) px = cx + kugel.richtung * auslenkung * (2 * kugel.phase - 1);
 	else px = kugel.schritte === 0 ? cx : cx + (kugel.schritte % 2 === 1 ? auslenkung : -auslenkung);
@@ -1377,12 +1377,23 @@ function zeichneKugel() {
 	c.strokeStyle = "#555"; c.lineWidth = 1;
 	c.beginPath(); c.moveTo(ax, ay); c.lineTo(px, py); c.stroke();
 	/* Metallkugel mit Glanz; unterwegs geladen: rot (+) bzw. blau (−) getönt */
-	const r = 14, ladung = kugel.anim ? kugel.richtung : 0;
+	const ladung = kugel.anim ? kugel.richtung : 0;
 	const gk = c.createRadialGradient(px - r * 0.35, py - r * 0.35, r * 0.12, px, py, r);
 	gk.addColorStop(0, "#fff"); gk.addColorStop(1, ladung > 0 ? "#B01818" : ladung < 0 ? "#1A35B0" : "#8A9099");
 	c.beginPath(); c.arc(px, py, r, 0, 2 * Math.PI); c.fillStyle = gk; c.fill();
-	if (ladung) { c.strokeStyle = "#fff"; c.lineWidth = 2.4; c.lineCap = "round"; c.beginPath(); c.moveTo(px - 6, py); c.lineTo(px + 6, py); if (ladung > 0) { c.moveTo(px, py - 6); c.lineTo(px, py + 6); } c.stroke(); c.lineCap = "butt"; }
-	P.text(c, "U = " + P.de(Q / C_K, 0) + " V", cx, hoeheL - 18, { groesse: 13, ausrichtung: "center" });
+	c.strokeStyle = "rgba(0,0,0,0.3)"; c.lineWidth = 1; c.stroke();
+	if (ladung) { c.strokeStyle = "#fff"; c.lineWidth = 2.8; c.lineCap = "round"; c.beginPath(); c.moveTo(px - 7, py); c.lineTo(px + 7, py); if (ladung > 0) { c.moveTo(px, py - 7); c.lineTo(px, py + 7); } c.stroke(); c.lineCap = "butt"; }
+	/* Spannungsmessgerät unter dem Kondensator, mit den Platten verbunden */
+	{
+		const bw = 104, bh = 34, bx = cx - bw / 2, by = yu + 22;
+		c.strokeStyle = "#333"; c.lineWidth = 1.5;
+		c.beginPath(); c.moveTo(xl - PD / 2, yu); c.lineTo(xl - PD / 2, by + bh / 2); c.lineTo(bx, by + bh / 2);
+		c.moveTo(xr + PD / 2, yu); c.lineTo(xr + PD / 2, by + bh / 2); c.lineTo(bx + bw, by + bh / 2); c.stroke();
+		const gq = c.createLinearGradient(0, by, 0, by + bh); gq.addColorStop(0, "#F4F6F9"); gq.addColorStop(1, "#C9CFD8");
+		c.fillStyle = gq; c.strokeStyle = "#6B7380"; c.lineWidth = 1.2; c.beginPath(); c.roundRect(bx, by, bw, bh, 5); c.fill(); c.stroke();
+		c.fillStyle = "#1F2A33"; c.fillRect(bx + 8, by + 6, bw - 16, bh - 12);
+		P.text(c, P.de(Q / C_K, 0) + " V", bx + bw - 14, by + bh / 2 + 5, { groesse: 14, fett: true, ausrichtung: "right", farbe: "#7CFFB2" });
+	}
 	P.text(c, "schematisch", 6, hoeheL - 4, { groesse: 10, farbe: "#888" });
 
 	/* Q-U-Diagramm */
