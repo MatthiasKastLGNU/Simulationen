@@ -1364,9 +1364,10 @@ function ladungsZeichen(g, x, y, pos, groesse = 13) {
 function geo() {
 	const M = MODELL;
 	/* bei verborgenem oder sehr kleinem Canvas nicht negativ werden lassen */
-	const s = Math.max(50, (HP - 24 - 74) / (M.L + M.hPlatte / 2));
-	const cx = WP / 2, yA = 24, yK = yA + M.L * s;
-	const yO = yK - M.hPlatte / 2 * s, yU = yK + M.hPlatte / 2 * s;
+	/* Maßstab nach dem Plattenkondensator (dort passiert die Physik); der Faden wird verkürzt
+	   gezeichnet, die waagerechte Auslenkung der Kugel bleibt im Plattenmaßstab richtig. */
+	const s = Math.max(50, Math.min((HP - 24 - 70 - 70) / M.hPlatte, WP * 0.5 / M.d));
+	const cx = WP / 2, yA = 24, yU = HP - 70, yO = yU - M.hPlatte * s, yK = (yO + yU) / 2;
 	return { s, cx, yA, yK, yO, yU, yLeit: yU + 40, xL: cx - M.d / 2 * s, xR: cx + M.d / 2 * s };
 }
 function linie(x1, y1, x2, y2) { gP.beginPath(); gP.moveTo(x1, y1); gP.lineTo(x2, y2); gP.stroke(); }
@@ -1416,7 +1417,10 @@ function zeichnePendel() {
 		gP.fillStyle = "#59616B"; gP.fillRect(xSt - 7, gm.yA - 17, 14, 14);
 	}
 	gP.fillStyle = "#555"; gP.fillRect(px - 3, gm.yA - 8, 6, 8);
-	const Lp = M.L * s, bx = px + Lp * Math.sin(st.theta), by = gm.yA + Lp * Math.cos(st.theta), rp = M.r * s;
+	/* nahe den Platten maßstäblich (Berührung!), große Ausschläge sanft gestaucht, damit der kurze Faden nicht waagerecht steht */
+	const Ld = gm.yK - gm.yA, dxw = M.L * s * Math.sin(st.theta), knick = 0.6 * Ld;
+	const dx = Math.abs(dxw) <= knick ? dxw : Math.sign(dxw) * Math.min(0.85 * Ld, knick + (Math.abs(dxw) - knick) * 0.35);
+	const bx = px + dx, by = gm.yA + Math.sqrt(Math.max(1, Ld * Ld - dx * dx)), rp = M.r * s, Lp = Math.hypot(bx - px, by - gm.yA);
 	const ux = (bx - px) / Lp, uy = (by - gm.yA) / Lp;
 	gP.strokeStyle = "#444"; gP.lineWidth = 1.2;
 	linie(px, gm.yA - 2, bx - ux * rp, by - uy * rp);
