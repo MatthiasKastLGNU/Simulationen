@@ -1354,6 +1354,7 @@ function zeichneMems() {
 	gM.setTransform(dpr * f, 0, 0, dpr * f, 0, 0);   /* Zeichnen in festen logischen Koordinaten */
 	gM.clearRect(0, 0, LW, LH);
 	const r = mems(zustand.a);
+	const gS = WM < 560 ? 16 : 13;   /* Schrift im Bild: am Handy größer, weil das Bild verkleinert wird */
 	const g0 = 18, fw = 10;                          /* Spalt und Fingerbreite im Bild */
 	const zelle = 2 * fw + fw + 2 * g0 + 22;
 	const federL = 58;
@@ -1364,53 +1365,77 @@ function zeichneMems() {
 	let dx = r.x / MEMS.d0 * g0 * UEBERHOEHUNG;
 	dx = Math.max(-0.85 * g0, Math.min(0.85 * g0, dx));
 
-	/* Gehaeuse oben und unten */
-	gM.fillStyle = "#666";
-	gM.fillRect(x0 - federL, oben - 12, breite + 2 * federL, 12);
-	gM.fillRect(x0 - federL, unten, breite + 2 * federL, 12);
-	gM.fillRect(x0 - federL - 8, oben - 12, 8, unten - oben + 24);
-	gM.fillRect(x0 + breite + federL, oben - 12, 8, unten - oben + 24);
+	/* Chip-Ausschnitt: Siliziumgrund, Rahmen mit Verlauf (wie unter dem Mikroskop) */
+	const gx0 = x0 - federL - 8, gx1 = x0 + breite + federL + 8;
+	gM.fillStyle = "#EEF0F4"; gM.fillRect(gx0, oben - 12, gx1 - gx0, unten - oben + 24);
+	const rahmen = (x, y, w, h) => {
+		const gr = w > h ? gM.createLinearGradient(0, y, 0, y + h) : gM.createLinearGradient(x, 0, x + w, 0);
+		gr.addColorStop(0, "#7D8691"); gr.addColorStop(0.5, "#B5BDC9"); gr.addColorStop(1, "#59616B");
+		gM.fillStyle = gr; gM.fillRect(x, y, w, h);
+	};
+	rahmen(gx0, oben - 12, gx1 - gx0, 12); rahmen(gx0, unten, gx1 - gx0, 12);
+	rahmen(gx0, oben - 12, 8, unten - oben + 24); rahmen(gx1 - 8, oben - 12, 8, unten - oben + 24);
 
-	/* Federn zwischen Gehaeuse und Masse */
-	gM.strokeStyle = "#333"; gM.lineWidth = 1.8;
-	for (const s of [-1, 1]) {
-		const xa = s < 0 ? x0 - federL : x0 + breite + federL;
-		const xb = (s < 0 ? x0 : x0 + breite) + dx;
+	/* Federn als Mäander (wie in echten MEMS) */
+	gM.strokeStyle = "#5C7FC2"; gM.lineWidth = 2.4; gM.lineJoin = "round";
+	for (const sg of [-1, 1]) {
+		const xa = sg < 0 ? x0 - federL : x0 + breite + federL;
+		const xb = (sg < 0 ? x0 : x0 + breite) + dx;
 		gM.beginPath(); gM.moveTo(xa, cy);
-		for (let k = 1; k < 10; k++) gM.lineTo(xa + (xb - xa) * k / 10, cy + (k % 2 ? -8 : 8));
+		const n = 6;
+		for (let k = 0; k < n; k++) {
+			const xk = xa + (xb - xa) * (k + 0.5) / n, h = 11 * (k % 2 ? 1 : -1);
+			gM.lineTo(xk, cy); gM.lineTo(xk, cy + h);
+			const xk2 = xa + (xb - xa) * (k + 1) / n;
+			gM.lineTo(xk2, cy + h); gM.lineTo(xk2, cy);
+		}
 		gM.lineTo(xb, cy); gM.stroke();
 	}
 
-	/* bewegliche Masse mit Fingern */
-	gM.fillStyle = "#8FA8D8";
+	/* bewegliche Masse mit Fingern (blau, mit Ätzlöchern) */
+	const blau = gM.createLinearGradient(0, cy - mh / 2, 0, cy + mh / 2);
+	blau.addColorStop(0, "#B4C6EC"); blau.addColorStop(0.5, "#8FA8D8"); blau.addColorStop(1, "#6F8CC8");
+	gM.fillStyle = blau;
 	gM.fillRect(x0 + dx, cy - mh / 2, breite, mh);
+	gM.strokeStyle = "#4C6BB0"; gM.lineWidth = 1; gM.strokeRect(x0 + dx, cy - mh / 2, breite, mh);
+	gM.fillStyle = "rgba(255,255,255,0.55)";
+	for (let x = x0 + dx + 14; x < x0 + dx + breite - 10; x += 22) for (const yy of [cy - 8, cy + 8]) gM.fillRect(x - 2.5, yy - 2.5, 5, 5);
 	for (let k = 0; k < nz; k++) {
 		const xm = x0 + k * zelle + fw + g0 + dx + 11;
+		const gf = gM.createLinearGradient(xm, 0, xm + fw, 0);
+		gf.addColorStop(0, "#A5BAE6"); gf.addColorStop(0.5, "#C9D6F3"); gf.addColorStop(1, "#7F9AD2");
+		gM.fillStyle = gf;
 		gM.fillRect(xm, oben + 10, fw, cy - mh / 2 - oben - 10);
 		gM.fillRect(xm, cy + mh / 2, fw, unten - 10 - cy - mh / 2);
 	}
-	P.text(gM, "bewegliche Masse", x0 + breite / 2 + dx, cy + 5, { ausrichtung: "center", groesse: 13, fett: true, farbe: "#123" });
+	{
+		const t = "bewegliche Masse"; gM.font = "bold " + gS + "px " + K.SCHRIFT; const w = gM.measureText(t).width;
+		gM.fillStyle = "rgba(255,255,255,0.85)"; gM.fillRect(x0 + breite / 2 + dx - w / 2 - 6, cy - gS * 0.7, w + 12, gS * 1.4);
+		P.text(gM, t, x0 + breite / 2 + dx, cy + 5, { ausrichtung: "center", groesse: gS, fett: true, farbe: "#24407A" });
+	}
 
-	/* feste Finger: links der beweglichen Finger Elektrode 1, rechts Elektrode 2 */
+	/* feste Finger: links der beweglichen Finger Elektrode 1 (Kupferton), rechts Elektrode 2 (grün) */
 	for (let k = 0; k < nz; k++) {
 		const xm = x0 + k * zelle + fw + g0 + 11;
 		const xl = xm - g0 - fw, xr = xm + fw + g0;
-		for (const [xf, farbe] of [[xl, "#C98A4B"], [xr, "#5E9E6E"]]) {
-			gM.fillStyle = farbe;
+		for (const [xf, h1, h2] of [[xl, "#E2A56A", "#A86A2E"], [xr, "#86C497", "#3E7A4E"]]) {
+			const gf = gM.createLinearGradient(xf, 0, xf + fw, 0);
+			gf.addColorStop(0, h2); gf.addColorStop(0.5, h1); gf.addColorStop(1, h2);
+			gM.fillStyle = gf;
 			gM.fillRect(xf, oben, fw, cy - mh / 2 - oben - 10);
 			gM.fillRect(xf, cy + mh / 2 + 10, fw, unten - cy - mh / 2 - 10);
 		}
 	}
 
 	/* Beschriftung */
-	P.text(gM, "C₁: Spalt links der Finger", x0 - federL, LH - 30, { groesse: 13, farbe: "#8A5A2B", fett: true });
-	P.text(gM, "C₂: Spalt rechts der Finger", x0 + breite + federL, LH - 30, { groesse: 13, farbe: "#3E7A4E", fett: true, ausrichtung: "right" });
+	P.text(gM, WM < 560 ? "C₁: links" : "C₁: Spalt links der Finger", x0 - federL, LH - 30, { groesse: gS, farbe: "#8A5A2B", fett: true });
+	P.text(gM, WM < 560 ? "C₂: rechts" : "C₂: Spalt rechts der Finger", x0 + breite + federL, LH - 30, { groesse: gS, farbe: "#3E7A4E", fett: true, ausrichtung: "right" });
 	const pl = 40 * Math.max(-1, Math.min(1, zustand.a / 20));
 	if (Math.abs(pl) > 1) {
 		P.pfeil(gM, LW / 2, LH - 12, LW / 2 + pl, LH - 12, P.FARBEN.rot, 2.5, 9);
-		P.text(gM, "a", LW / 2 + pl + (pl > 0 ? 8 : -14), LH - 7, { groesse: 14, kursiv: true, farbe: P.FARBEN.rot });
+		P.text(gM, "a", LW / 2 + pl + (pl > 0 ? 8 : -14), LH - 7, { groesse: gS + 2, kursiv: true, farbe: P.FARBEN.rot });
 	}
-	P.text(gM, "schematisch; Auslenkung zusätzlich " + UEBERHOEHUNG + "-fach vergrößert", LW - 4, 14, { groesse: 11, farbe: "#888", ausrichtung: "right" });
+	P.text(gM, (WM < 560 ? "Auslenkung " + UEBERHOEHUNG + "-fach vergrößert" : "schematisch; Auslenkung zusätzlich " + UEBERHOEHUNG + "-fach vergrößert"), LW - 4, 14, { groesse: WM < 560 ? 13 : 11, farbe: "#888", ausrichtung: "right" });
 
 	document.getElementById("aw-mems").innerHTML =
 		"Auslenkung der Masse: " + P.de(Math.abs(r.x) * 1e9, 2) + "&nbsp;nm" + (Math.abs(r.x) > 1e-12 ? (r.x < 0 ? " nach links" : " nach rechts") : "") +
