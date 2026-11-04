@@ -1808,7 +1808,13 @@ function zeichneLupe(b) {
 	}
 	gS.restore();
 	gS.strokeStyle = "#C86400"; gS.lineWidth = 3; gS.beginPath(); gS.arc(lx, ly, lr, 0, 2 * Math.PI); gS.stroke(); gS.lineWidth = 1;
-	P.text(gS, "rot: Kern, blau: Hülle", Math.min(WS - 62, Math.max(62, lx)), ly + lr + 15, { ausrichtung: "center", groesse: 11, farbe: "#555" });
+	{	/* Legende auf weißem Schild, damit sie auf dem Ballon lesbar bleibt */
+		const tx = Math.min(WS - 62, Math.max(62, lx)), ty = ly + lr + 15;
+		gS.font = "11px " + K.SCHRIFT; const bt = gS.measureText("rot: Kern, blau: Hülle").width;
+		gS.fillStyle = "rgba(255,255,255,0.92)"; gS.strokeStyle = "#C86400"; gS.lineWidth = 1;
+		gS.beginPath(); gS.roundRect ? gS.roundRect(tx - bt / 2 - 6, ty - 12, bt + 12, 17, 4) : gS.rect(tx - bt / 2 - 6, ty - 12, bt + 12, 17); gS.fill(); gS.stroke();
+		P.text(gS, "rot: Kern, blau: Hülle", tx, ty, { ausrichtung: "center", groesse: 11, farbe: "#333" });
+	}
 }
 
 function phaseSn() {

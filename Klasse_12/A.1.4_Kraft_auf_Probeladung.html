@@ -1376,9 +1376,29 @@ function kraftpfeil(x0, y0, Fx, Fy, farbe, breite, name) {
 		/* Name hinter der Pfeilspitze: so trennen sich die Beschriftungen auch bei kurzen Pfeilen */
 		const dx = xPix(x1) - xPix(x0), dy = yPix(y1) - yPix(y0), l = Math.hypot(dx, dy) || 1;
 		const tx = xPix(x1) + dx / l * 15, ty = yPix(y1) + dy / l * 13;
-		P.symbol(ctx, zustand.modus === "feldstaerke" ? "E" : "F", name, tx - (name.length > 1 ? 10 : 6), ty + 5, { groesse: 13, farbe });
+		pfeilNamen.push({ x: tx, y: ty, ux: dx / l, uy: dy / l, name, farbe, b: name.length > 1 ? 26 : 16, h: 16 });
 	}
 	return { x: x1, y: y1 };
+}
+
+/* Pfeilnamen erst sammeln, dann so verschieben, dass sie sich nicht überdecken (auch am Handy, wo 1 cm nur 20 px misst) */
+let pfeilNamen = [];
+function namenZeichnen(hindernisse) {
+	const ueber = (a, b) => Math.abs(a.x - b.x) < (a.b + b.b) / 2 + 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2 + 1;
+	for (let runde = 0; runde < 60; runde++) {
+		let bewegt = false;
+		pfeilNamen.forEach((a, i) => {
+			/* ein Name weicht aus, wenn er ein Hindernis oder einen früher gesetzten Namen berührt */
+			if (hindernisse.some(h => ueber(a, h)) || pfeilNamen.some((b, j) => j < i && ueber(a, b))) { a.x += a.ux * 2; a.y += a.uy * 2; bewegt = true; }
+		});
+		if (!bewegt) break;
+	}
+	const art = zustand.modus === "feldstaerke" ? "E" : "F";
+	for (const n of pfeilNamen) {
+		ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(n.x - n.b / 2, n.y - n.h / 2, n.b, n.h);
+		P.symbol(ctx, art, n.name, n.x - n.b / 2 + 2, n.y + 5, { groesse: 13, farbe: n.farbe });
+	}
+	pfeilNamen = [];
 }
 
 function pfeileSichtbar() { return zustand.modus !== "aufgabe" || zustand.geloest[zustand.aufgabe]; }
@@ -1408,9 +1428,10 @@ function zeichne() {
 		if (zustand.gesamt) kraftpfeil(p.x, p.y, g.Fx, g.Fy, P.FARBEN.gruen, 3.2, "ges");
 	}
 	/* Probeladung */
-	ctx.beginPath(); ctx.arc(xPix(p.x), yPix(p.y), 7, 0, 2 * Math.PI); ctx.fillStyle = "#fff"; ctx.fill();
+	ctx.beginPath(); ctx.arc(xPix(p.x), yPix(p.y), W < 560 ? 4.5 : 7, 0, 2 * Math.PI); ctx.fillStyle = "#fff"; ctx.fill();   /* am Handy kleiner, damit kurze Pfeile sichtbar bleiben */
 	ctx.strokeStyle = P.FARBEN.rot; ctx.lineWidth = 2; ctx.stroke();
 	P.text(ctx, "q", xPix(p.x) - 14, yPix(p.y) + 16, { groesse: 13, kursiv: true, farbe: P.FARBEN.rot });
+	namenZeichnen([{ x: xPix(p.x), y: yPix(p.y), b: 18, h: 18 }, { x: xPix(p.x) - 10, y: yPix(p.y) + 12, b: 10, h: 14 }]);
 
 	aktualisiereAuswertung(g);
 }

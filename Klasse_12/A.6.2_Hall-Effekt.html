@@ -1310,8 +1310,11 @@ function zeichne(g, W, H) {
 	g.fillStyle = "#1B1B1B"; g.fillRect(W - 140, ym - 20, 130, 40);
 	g.font = "bold 18px Consolas, monospace"; g.fillStyle = "#7CFC7C"; g.textAlign = "right";
 	g.fillText((h.U >= 0 ? "+" : "") + P.de(h.U * 1e3, 3) + " mV", W - 16, ym + 7); g.textAlign = "left";
-	P.symbol(g, "U", "H", W - 140, ym - 26, { groesse: 12, farbe: "#555" });
-	P.text(g, "(oben gegen unten)", W - 118, ym - 26, { groesse: 11, farbe: "#555" });
+	{	/* am Handy unter dem Messgerät, sonst läuft die Zuleitung durch die Beschriftung */
+		const yb = eng ? ym + 36 : ym - 26;
+		P.symbol(g, "U", "H", W - 140, yb, { groesse: 12, farbe: "#555" });
+		P.text(g, "(oben gegen unten)", W - 118, yb, { groesse: 11, farbe: "#555" });
+	}
 	/* Kraftpfeile an einem Traeger */
 	const tx = x0 + 0.35 * (x1 - x0), ty = (y0 + y1) / 2;
 	const vRicht = m.z < 0 ? -1 : 1;                   /* Driftrichtung in x */

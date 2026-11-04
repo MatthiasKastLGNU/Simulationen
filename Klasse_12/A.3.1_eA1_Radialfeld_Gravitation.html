@@ -280,7 +280,8 @@ function achsen(x, o) {
 		text(x, rtext ? rtext(r) : komma(r, 0), px(r), y0 + 5, f - 1, "#333", "center", "top"); }
 	for (let e = emin; e <= emax + 1e-9; e += estep) { x.strokeStyle = "#111"; x.beginPath(); x.moveTo(L - 3, py(e)); x.lineTo(L + 3, py(e)); x.stroke();
 		text(x, komma(e, Number.isInteger(estep) ? 0 : 1), L - 6, py(e), f - 1, "#333", "right", "middle"); }
-	rlabel(R + 14, y0 - 6); elabel(L + 8, O - 10);
+	/* Achsentitel zuletzt (nach Kurven und Markenlinien), damit ihr weißer Grund nichts verdeckt bekommt */
+	queueMicrotask(() => { rlabel(R + 14, y0 - 6); elabel(L + 8, O - 10); });
 	return { px, py, y0 };
 }
 
@@ -294,7 +295,7 @@ function zeichneFlaeche() {
 	x.fillStyle = "#fff"; x.fillRect(0, 0, b.w, b.h);
 	const L = b.schmal ? 40 : 52, R = b.w - (b.schmal ? 36 : 70), szene = b.schmal ? 62 : 74;
 	const hoehe = (b.h - szene - 40) / 2;
-	const oF = szene + 22, uF = oF + hoehe - 30, oE = uF + 72, uE = b.h - 26;
+	const oF = szene + 22, uF = oF + hoehe - 30, oE = uF + 86, uE = b.h - 26;   /* Lücke für die Marken r_E, r_A, damit sie keine Achsentitel berühren */
 	const rmax = 100;
 	// oben: Diagramm F(r)
 	const a1 = achsen(x, { L, R, O: oF, U: uF, rmin: 0, rmax, emin: 0, emax: 20, rstep: 10, estep: 5, f,
@@ -319,7 +320,7 @@ function zeichneFlaeche() {
 	const marke = (r, name, farbe) => {
 		x.strokeStyle = farbe; x.lineWidth = 1.2; x.setLineDash([5, 4]);
 		x.beginPath(); x.moveTo(a1.px(r), oF - 4); x.lineTo(a1.px(r), uE); x.stroke(); x.setLineDash([]);
-		const X = a1.px(r), Y = uF + 38;
+		const X = a1.px(r), Y = uF + 40;
 		x.fillStyle = "#fff"; x.strokeStyle = farbe; x.lineWidth = 2; x.beginPath(); x.arc(X, Y, 11, 0, 7); x.fill(); x.stroke();
 		zeichen(x, "r", name, X, Y + 4, f - 1, farbe, "center");
 	};
