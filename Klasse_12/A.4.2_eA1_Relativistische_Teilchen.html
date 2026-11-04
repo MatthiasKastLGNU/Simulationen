@@ -1294,18 +1294,17 @@ function zeichneDreieck(g, W, H) {
 	g.clearRect(0, 0, W, H);
 	const w = werte(Ekin(), zustand.teilchen);
 	P.text(g, "Energie-Impuls-Dreieck (maßstäblich)", W / 2, 16, { ausrichtung: "center", groesse: 12, fett: true, farbe: P.FARBEN.blau });
-	const s = Math.min((W - 90) / Math.max(w.pc, 1e-9), (H - 80) / w.mc2);
+	const tMc = "mc² = " + P.sig(w.mc2, 4) + " MeV";
+	g.font = "12px " + K.SCHRIFT; const btMc = g.measureText(tMc).width;
+	/* rechts neben dem senkrechten Schenkel bleibt immer Platz für dessen Beschriftung */
+	const s = Math.min((W - 30 - btMc - 16) / Math.max(w.pc, 1e-9), (H - 80) / w.mc2);
 	const x0 = 30, y0 = H - 40;
 	const xa = x0 + w.pc * s, ya = y0 - w.mc2 * s;
 	g.strokeStyle = "#111"; g.lineWidth = 2;
 	g.beginPath(); g.moveTo(x0, y0); g.lineTo(xa, y0); g.lineTo(xa, ya); g.closePath(); g.stroke();
 	g.strokeRect(xa - 8, y0 - 8, 8, 8);
 	P.text(g, "pc = " + P.sig(w.pc, 3) + " MeV", (x0 + xa) / 2, y0 + 18, { ausrichtung: "center", groesse: 12 });
-	{	/* passt die Beschriftung rechts nicht mehr ins Bild, rückt sie nach links */
-		const t = "mc² = " + P.sig(w.mc2, 4) + " MeV";
-		g.font = "12px " + K.SCHRIFT; const bt = g.measureText(t).width;
-		P.text(g, t, Math.min(xa + 6, W - 4 - bt), (y0 + ya) / 2 + (xa + 6 + bt > W - 4 ? -10 : 0), { groesse: 12 });
-	}
+	P.text(g, tMc, xa + 8, (y0 + ya) / 2 + 4, { groesse: 12 });
 	P.text(g, "E = " + P.sig(w.Eges, 4) + " MeV", (x0 + xa) / 2 - 10, (y0 + ya) / 2 - 8, { ausrichtung: "right", groesse: 12, farbe: P.FARBEN.rot });
 }
 function zeichneBahn(g, W, H) {
@@ -1315,8 +1314,8 @@ function zeichneBahn(g, W, H) {
 	const rKl = w.pcKl * MEV / C_L / (q * 1.602e-19 * zustand.B);
 	P.text(g, "Kreisbahn im Magnetfeld", W / 2, 16, { ausrichtung: "center", groesse: 12, fett: true, farbe: P.FARBEN.blau });
 	const rMax = Math.max(rRel, rKl);
-	const s = (Math.min(W, H) - 70) / (2 * rMax);
-	const cx = W / 2, cy = H / 2 + 8;
+	const s = (Math.min(W, H - 50) - 40) / (2 * rMax);       /* unten Platz für die zwei Textzeilen */
+	const cx = W / 2, cy = (H - 40) / 2 + 12;
 	for (const [r, f, gestr] of [[rKl, P.FARBEN.blau, true], [rRel, P.FARBEN.rot, false]]) {
 		g.save(); g.strokeStyle = f; g.lineWidth = 2; if (gestr) g.setLineDash([6, 4]);
 		g.beginPath(); g.arc(cx, cy, r * s, 0, 2 * Math.PI); g.stroke(); g.restore();
