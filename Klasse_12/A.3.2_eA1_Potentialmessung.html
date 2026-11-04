@@ -606,6 +606,7 @@ window.SimPlus = (function () {
 		this.alle = [];
 		this.verlauf = [];
 		this.stil();
+		(window.kastMesstabellen = window.kastMesstabellen || []).push(this);
 		const box = this.koerper.closest(".tcb-body"), alleMuell = document.querySelectorAll('button[data-icon="muell"]');
 		const muell = (box && box.querySelector('button[data-icon="muell"]')) || (alleMuell.length === 1 ? alleMuell[0] : null);
 		if (muell) {
@@ -676,6 +677,21 @@ window.SimPlus = (function () {
 		if (v.art === "hinzu") { const i = this.alle.indexOf(v.a); if (i >= 0) this.alle.splice(i, 1); v.a.tr.remove(); }
 		else if (v.art === "weg") { this.koerper.insertBefore(v.a.tr, this.alle[v.i] ? this.alle[v.i].tr : null); this.alle.splice(v.i, 0, v.a); }
 		else if (v.art === "aus") v.a.aus = !v.a.aus;
+		this.neu(); this.zeichne();
+	};
+	/* für „Zuletzt gewählt“: Inhalt sichern und wiederherstellen */
+	Messtabelle.prototype.sichern = function () {
+		return this.alle.map(a => ({ w: Array.from(a.tr.children).slice(1, -1).map(td => [td.innerHTML, td.className]), r: a.eintrag, aus: a.aus }));
+	};
+	Messtabelle.prototype.wiederherstellen = function (liste) {
+		this.leeren();
+		for (const z of liste) {
+			this.hinzu(z.w.map(x => x[0]), z.r);
+			const a = this.alle[this.alle.length - 1];
+			Array.from(a.tr.children).slice(1, -1).forEach((td, i) => { if (z.w[i] && z.w[i][1]) td.className = z.w[i][1]; });
+			a.aus = !!z.aus;
+		}
+		this.verlauf = [];
 		this.neu(); this.zeichne();
 	};
 	Messtabelle.prototype.leeren = function () { this.alle = []; this.verlauf = []; this.koerper.innerHTML = ""; this.neu(); };
@@ -1657,6 +1673,66 @@ K.nachFontLaden(aktualisiere);
 		});
 	}
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", einrichten); else einrichten();
+})();
+</script>
+<script>
+/* Zuletzt gewählt (Kast 2026-11-04): Modus, Auswahlknöpfe, Regler, Häkchen und Messtabellen
+   werden im Sitzungsspeicher des Tabs gesichert. Lädt das Tablet die Seite nach dem Wechsel
+   zu OneNote neu, ist alles wieder da. Ein neuer Tab beginnt frisch, damit in der nächsten
+   Stunde keine alten Werte auftauchen. Laborauftrag/Spiel sind ausgenommen (eigener Speicher). */
+(() => {
+	const SCHLUESSEL = "kast_zustand:" + location.pathname + location.search;
+	const ausgenommen = el => !!el.closest("#spiel, .spiel, [data-nicht-merken]");
+	let laedt = true, uhr = null;
+	const gruppen = () => Array.from(new Set(Array.from(document.querySelectorAll("button.aktiv")).map(b => b.parentElement)))
+		.concat(Array.from(document.querySelectorAll(".modusleiste, .knopfleiste")))
+		.filter((g, i, a) => a.indexOf(g) === i && g.querySelectorAll(":scope > button").length >= 2 && !ausgenommen(g));
+	const gruppenName = g => g.id || "g" + Array.from(document.querySelectorAll("*")).indexOf(g);
+	function sichern() {
+		if (laedt) return;
+		try {
+			const z = { g: {}, r: {}, c: {}, t: {} };
+			for (const g of gruppen()) {
+				const bs = Array.from(g.querySelectorAll(":scope > button")), i = bs.findIndex(b => b.classList.contains("aktiv"));
+				if (i >= 0 && bs.filter(b => b.classList.contains("aktiv")).length === 1) z.g[gruppenName(g)] = i;
+			}
+			document.querySelectorAll('input[type="range"][id]').forEach(r => { if (!ausgenommen(r)) z.r[r.id] = r.value; });
+			document.querySelectorAll('input[type="checkbox"][id]').forEach(c => { if (!ausgenommen(c)) z.c[c.id] = c.checked; });
+			(window.kastMesstabellen || []).forEach(t => { if (t.koerper.id && !ausgenommen(t.koerper)) z.t[t.koerper.id] = t.sichern(); });
+			sessionStorage.setItem(SCHLUESSEL, JSON.stringify(z));
+		} catch (e) { /* Speicher gesperrt: dann eben ohne */ }
+	}
+	const spaeter = () => { clearTimeout(uhr); uhr = setTimeout(sichern, 300); };
+	function laden() {
+		let z = null;
+		try { z = JSON.parse(sessionStorage.getItem(SCHLUESSEL) || "null"); } catch (e) { z = null; }
+		if (z) {
+			try {
+				/* zuerst die Modusleiste, dann die übrigen Gruppen (ein Moduswechsel kann Gruppen ein- und ausblenden) */
+				const alle = gruppen().sort((a, b) => (b.classList.contains("modusleiste") ? 1 : 0) - (a.classList.contains("modusleiste") ? 1 : 0));
+				for (const g of alle) {
+					const i = z.g[gruppenName(g)];
+					const b = i === undefined ? null : g.querySelectorAll(":scope > button")[i];
+					if (b && !b.classList.contains("aktiv") && !b.disabled) b.click();
+				}
+				for (const [id, v] of Object.entries(z.r)) {
+					const r = document.getElementById(id);
+					if (r && r.value !== v && !r.disabled) { r.value = v; r.dispatchEvent(new Event("input", { bubbles: true })); r.dispatchEvent(new Event("change", { bubbles: true })); }
+				}
+				for (const [id, v] of Object.entries(z.c)) {
+					const c = document.getElementById(id);
+					if (c && c.checked !== v && !c.disabled) { c.checked = v; c.dispatchEvent(new Event("change", { bubbles: true })); }
+				}
+				(window.kastMesstabellen || []).forEach(t => { const d = z.t[t.koerper.id]; if (d && d.length) t.wiederherstellen(d); });
+			} catch (e) { /* lieber frisch als kaputt */ }
+		}
+		laedt = false;
+		["input", "change", "click"].forEach(ev => document.addEventListener(ev, spaeter, true));
+		document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") sichern(); });
+		window.addEventListener("pagehide", sichern);
+	}
+	/* erst nach dem Aufbau der Simulation (inklusive ?modus=…) wiederherstellen */
+	if (document.readyState === "complete") setTimeout(laden, 0); else window.addEventListener("load", () => setTimeout(laden, 0));
 })();
 </script>
 </body>
