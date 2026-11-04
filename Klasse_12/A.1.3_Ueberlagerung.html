@@ -1760,7 +1760,7 @@ function zeichneFormelzeichen(text, mx, my, farbe, groesse) {
 
 function zeichneLadung(L, nummer) {
 	var px = pxX(L.x), py = pxY(L.y);
-	var r = 9 + 0.5 * Math.abs(L.q);   /* der Betrag der Ladung zeigt sich in der Größe */
+	var r = 12 + 0.6 * Math.abs(L.q);   /* der Betrag der Ladung zeigt sich in der Größe */
 	var positiv = L.q >= 0;
 	ctx.save();
 	/* Kugel mit Glanz (wie Coulomb-Messlabor), weißer Rand trennt sie von Linien */
@@ -1891,6 +1891,21 @@ function zeichneFeldlinien(nurIndex, farbe) {
 
 /* Modus "Feldlinie entsteht": an der aktuellen Stelle die Pfeiladdition zeigen.
    Was davon sichtbar ist, haengt von der Phase ab: erst E1, dann E2, dann die Summe. */
+/* zarte Verbindungslinien vom aktuellen Punkt zu den Ladungen: E1 und E2 liegen auf diesen Geraden */
+function zeichneVerbindungen() {
+	var a = zustand.aufbau;
+	if (!a.position || a.phase < 1) return;
+	var px = pxX(a.position.x), py = pxY(a.position.y);
+	ctx.save(); ctx.setLineDash([3, 5]); ctx.lineWidth = 1.2;
+	[["#008040", 0, 1], ["#0000BF", 1, 2]].forEach(function (v) {
+		if (a.phase < v[2]) return;
+		var L = zustand.ladungen[v[1]];
+		ctx.strokeStyle = v[0]; ctx.globalAlpha = 0.45;
+		ctx.beginPath(); ctx.moveTo(pxX(L.x), pxY(L.y)); ctx.lineTo(px, py); ctx.stroke();
+	});
+	ctx.restore();
+}
+
 function zeichneAufbau() {
 	var a = zustand.aufbau;
 
@@ -1900,17 +1915,19 @@ function zeichneAufbau() {
 			zeichneLinienzug(a.alleLinien[i], "#BBB", 1.3, false);
 		}
 	}
-	if (a.rueckweg.length > 1) zeichneLinienzug(a.rueckweg, "#BF0000", 2.6, true);
-	if (a.linie.length > 1) zeichneLinienzug(a.linie, "#BF0000", 2.6, true);
+	if (a.rueckweg.length > 1) zeichneLinienzug(a.rueckweg, "#BF0000", 3.2, true);
+	if (a.linie.length > 1) zeichneLinienzug(a.linie, "#BF0000", 3.2, true);
 
 	/* Startpunkt bleibt als kleiner Kreis sichtbar und ist ziehbar */
 	var sx = pxX(a.start.x), sy = pxY(a.start.y);
 	ctx.save();
 	ctx.beginPath();
-	ctx.arc(sx, sy, 7.5, 0, 2 * Math.PI);
+	ctx.arc(sx, sy, 9, 0, 2 * Math.PI);
 	ctx.fillStyle = "#fff";
+	ctx.shadowColor = "rgba(0,0,0,0.25)"; ctx.shadowBlur = 4;
 	ctx.fill();
-	ctx.lineWidth = 2;
+	ctx.shadowBlur = 0;
+	ctx.lineWidth = 2.5;
 	ctx.strokeStyle = "#BF0000";
 	ctx.stroke();
 	ctx.restore();
@@ -1923,6 +1940,14 @@ function zeichneAufbau() {
 		return;
 	}
 
+	if (a.phase === 0 && a.linie.length < 2) {
+		/* noch nichts konstruiert: Startpunkt beschriften (mit hellem Grund) */
+		ctx.save(); ctx.font = "15px " + getComputedStyle(document.body).fontFamily; ctx.textBaseline = "middle";
+		var t = "Start (" + zahl(a.start.x) + " cm | " + zahl(a.start.y) + " cm)", tw = ctx.measureText(t).width;
+		var tx = Math.min(sx + 15, canvas.clientWidth - tw - 8);
+		ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.fillRect(tx - 4, sy - 22, tw + 8, 20);
+		ctx.fillStyle = "#BF0000"; ctx.fillText(t, tx, sy - 12); ctx.restore();
+	}
 	var x = a.position.x, y = a.position.y;
 	var E1 = feldAn(x, y, 0), E2 = feldAn(x, y, 1);
 	var Eres = { x: E1.x + E2.x, y: E1.y + E2.y };
@@ -1948,9 +1973,9 @@ function zeichneAufbau() {
 		ctx.stroke();
 		ctx.restore();
 	}
-	if (ph >= 1) pfeil(px, py, p1.x, p1.y, "#008040", 2.4, false, "E|1");
-	if (ph >= 2) pfeil(px, py, p2.x, p2.y, "#0000BF", 2.4, false, "E|2");
-	if (ph >= 3) pfeil(px, py, pr.x, pr.y, "#BF0000", 3.4, false, "E|res");
+	if (ph >= 1) pfeil(px, py, p1.x, p1.y, "#008040", 3, false, "E|1");
+	if (ph >= 2) pfeil(px, py, p2.x, p2.y, "#0000BF", 3, false, "E|2");
+	if (ph >= 3) pfeil(px, py, pr.x, pr.y, "#BF0000", 4, false, "E|res");
 
 	ctx.save();
 	ctx.beginPath();
@@ -1958,6 +1983,15 @@ function zeichneAufbau() {
 	ctx.fillStyle = "#BF0000";
 	ctx.fill();
 	ctx.restore();
+}
+
+/* sanfter Feldschein um eine Ladung: zeigt, wo das Feld stark ist, ohne die Feldlinie zu verraten */
+function zeichneSchein(L) {
+	if (!L.q) return;
+	var px = pxX(L.x), py = pxY(L.y), R = (1.6 + 0.12 * Math.abs(L.q)) * skala;
+	var g = ctx.createRadialGradient(px, py, 0, px, py, R), f = L.q > 0 ? "191,0,0" : "0,0,191";
+	g.addColorStop(0, "rgba(" + f + ",0.22)"); g.addColorStop(0.35, "rgba(" + f + ",0.09)"); g.addColorStop(1, "rgba(" + f + ",0)");
+	ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, R, 0, 2 * Math.PI); ctx.fill();
 }
 
 function zeichneKaro() {
@@ -1990,6 +2024,8 @@ function zeichne() {
 		return;
 	}
 
+	zeichneSchein(zustand.ladungen[0]); zeichneSchein(zustand.ladungen[1]);
+	zeichneVerbindungen();
 	zeichneLadung(zustand.ladungen[0], "1");
 	zeichneLadung(zustand.ladungen[1], "2");
 	zeichneAufbau();
