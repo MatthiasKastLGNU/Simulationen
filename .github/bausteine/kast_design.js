@@ -122,7 +122,85 @@
 		ctx.restore();
 		return { x: x - b / 2, y: y, b: b, h: yk + hb - y, unten: yk + hb };
 	}
-	window.KastMessgeraet = { digital, waage };
+	/* Zeigermessgerät: KastMessgeraet.analog(ctx, x, y, {wert, min, max, teile, fein, beschrift, einheit, titel, breite, farbe, unten, buchsen, anker, oben})
+	   Skala von min bis max (bei min = −max Nullpunkt in der Mitte), teile Hauptstriche, fein Zwischenstriche je Teil,
+	   beschrift(w) liefert die Zahl an einem Hauptstrich (Standard: Betrag, deutsch). unten: kleine Zeile unter der Skala (z. B. „Messbereich 30 mV“).
+	   (x, y) ist die Mitte (anker "mitte"), sonst "links"/"rechts" an der Gehäusekante; oben: y ist die Oberkante. Gibt {x, y, b, h, buchsen} zurück. */
+	function analog(ctx, x, y, o) {
+		o = o || {};
+		const b = o.breite || 150, min = o.min == null ? -1 : o.min, max = o.max == null ? 1 : o.max, sp = max - min || 1;
+		const teile = o.teile || 4, fein = o.fein || 5;
+		const fT = Math.max(10, Math.round(b * 0.075)), rand = b * 0.06;
+		const kopf = o.titel ? Math.max(b * 0.13, fT * 1.6) : rand;
+		const fB = b - 2 * rand, fH = b * 0.5;
+		const fuss = (o.unten ? Math.max(b * 0.1, fT * 1.5) : rand) + (o.buchsen ? b * 0.14 : 0) + (o.farbe ? b * 0.03 : 0);
+		const gH = kopf + fH + fuss;
+		let gx = x - b / 2; if (o.anker === "links") gx = x; else if (o.anker === "rechts") gx = x - b;
+		const gy = o.oben ? y : y - gH / 2;
+		ctx.save();
+		/* Gehäuse wie beim Digitalgerät */
+		ctx.shadowColor = "rgba(0,0,0,0.28)"; ctx.shadowBlur = b * 0.06; ctx.shadowOffsetY = b * 0.015;
+		const gg = ctx.createLinearGradient(0, gy, 0, gy + gH); gg.addColorStop(0, "#474D56"); gg.addColorStop(1, "#272B31");
+		ctx.fillStyle = gg; rr(ctx, gx, gy, b, gH, b * 0.06); ctx.fill();
+		ctx.shadowColor = "transparent";
+		ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1; rr(ctx, gx + 0.5, gy + 0.5, b - 1, gH - 1, b * 0.055); ctx.stroke();
+		if (o.titel) { ctx.fillStyle = "#D9DEE5"; ctx.font = fT + "px " + SCHRIFT; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(o.titel, gx + rand, gy + kopf * 0.52); }
+		/* Skalenblatt */
+		const fx = gx + rand, fy = gy + kopf;
+		const fg = ctx.createLinearGradient(0, fy, 0, fy + fH); fg.addColorStop(0, "#FDFCF7"); fg.addColorStop(1, "#ECE8DC");
+		ctx.fillStyle = fg; rr(ctx, fx, fy, fB, fH, b * 0.03); ctx.fill();
+		ctx.strokeStyle = "rgba(0,0,0,0.4)"; rr(ctx, fx + 0.5, fy + 0.5, fB - 1, fH - 1, b * 0.028); ctx.stroke();
+		const px = fx + fB / 2, py = fy + fH * 0.9, R = fH * 0.72, halb = 0.30 * Math.PI;
+		const winkel = w => -Math.PI / 2 - halb + (w - min) / sp * 2 * halb;
+		ctx.save(); rr(ctx, fx, fy, fB, fH, b * 0.03); ctx.clip();
+		/* Spiegelband */
+		ctx.strokeStyle = "rgba(150,160,175,0.35)"; ctx.lineWidth = R * 0.05;
+		ctx.beginPath(); ctx.arc(px, py, R * 0.86, winkel(min), winkel(max)); ctx.stroke();
+		/* Skalenbogen und Striche */
+		ctx.strokeStyle = "#1E2228"; ctx.lineWidth = Math.max(1, b * 0.007);
+		ctx.beginPath(); ctx.arc(px, py, R, winkel(min), winkel(max)); ctx.stroke();
+		const n = teile * fein, deu = v => (Math.round(v * 1000) / 1000).toString().replace(".", ",");
+		const beschrift = o.beschrift || (v => deu(Math.abs(v)));
+		ctx.fillStyle = "#1E2228"; ctx.font = Math.max(9, Math.round(b * 0.068)) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+		for (let i = 0; i <= n; i++) {
+			const v = min + sp * i / n, a = winkel(v), haupt = i % fein === 0, mitte = !haupt && fein % 2 === 0 && i % (fein / 2) === 0;
+			const l = haupt ? R * 0.13 : mitte ? R * 0.09 : R * 0.055;
+			ctx.lineWidth = haupt ? Math.max(1.2, b * 0.009) : Math.max(0.8, b * 0.005);
+			ctx.beginPath(); ctx.moveTo(px + Math.cos(a) * R, py + Math.sin(a) * R); ctx.lineTo(px + Math.cos(a) * (R - l), py + Math.sin(a) * (R - l)); ctx.stroke();
+			if (haupt) ctx.fillText(beschrift(v), px + Math.cos(a) * R * 1.13, py + Math.sin(a) * R * 1.13);
+		}
+		/* Einheit rechts unten im Blatt: dort kommt der Zeiger nie hin */
+		if (o.einheit) { ctx.font = "600 " + Math.max(10, Math.round(b * 0.085)) + "px " + SCHRIFT; ctx.fillText(o.einheit, px + R * 0.7, py - R * 0.12); }
+		/* Zeiger mit Schatten */
+		const wv = Math.max(min - sp * 0.04, Math.min(max + sp * 0.04, +o.wert || 0)), az = winkel(wv), lz = R * 1.02;
+		ctx.lineCap = "round";
+		ctx.strokeStyle = "rgba(0,0,0,0.18)"; ctx.lineWidth = Math.max(1.6, b * 0.013);
+		ctx.beginPath(); ctx.moveTo(px + 1.5, py + 2); ctx.lineTo(px + 1.5 + Math.cos(az) * lz, py + 2 + Math.sin(az) * lz); ctx.stroke();
+		ctx.strokeStyle = "#C62828";
+		ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(az) * lz, py + Math.sin(az) * lz); ctx.stroke();
+		const kg = ctx.createRadialGradient(px - b * 0.01, py - b * 0.01, 0, px, py, b * 0.045);
+		kg.addColorStop(0, "#6B7380"); kg.addColorStop(1, "#1E2228");
+		ctx.fillStyle = kg; ctx.beginPath(); ctx.arc(px, py, b * 0.04, 0, 7); ctx.fill();
+		/* Glas */
+		const glas = ctx.createLinearGradient(0, fy, 0, fy + fH * 0.45); glas.addColorStop(0, "rgba(255,255,255,0.5)"); glas.addColorStop(1, "rgba(255,255,255,0)");
+		ctx.fillStyle = glas; ctx.fillRect(fx, fy, fB, fH * 0.45);
+		ctx.restore();
+		let yy = fy + fH;
+		if (o.unten) { ctx.fillStyle = "#C9CFD8"; ctx.font = fT + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(o.unten, gx + b / 2, yy + Math.max(b * 0.1, fT * 1.5) / 2); yy += Math.max(b * 0.1, fT * 1.5); } else yy += rand;
+		const buchsen = [];
+		if (o.buchsen) {
+			const by = yy + b * 0.06;
+			for (const [bx, f] of [[gx + b * 0.3, "#C62828"], [gx + b * 0.7, "#1A1A1A"]]) {
+				ctx.fillStyle = f; ctx.beginPath(); ctx.arc(bx, by, b * 0.04, 0, 7); ctx.fill();
+				ctx.fillStyle = "#0B0B0B"; ctx.beginPath(); ctx.arc(bx, by, b * 0.016, 0, 7); ctx.fill();
+				buchsen.push([bx, by]);
+			}
+		}
+		if (o.farbe) { ctx.fillStyle = o.farbe; rr(ctx, gx + b * 0.05, gy + gH - b * 0.035, b * 0.9, b * 0.014, b * 0.008); ctx.fill(); }
+		ctx.restore();
+		return { x: gx, y: gy, b: b, h: gH, buchsen };
+	}
+	window.KastMessgeraet = { digital, waage, analog };
 
 	/* ---------------- Wertkarten aus Code ----------------
 	   KastWerte.karten(el, [{titel, wert, betont, klein}], mehrHtml, mehrTitel)
@@ -148,24 +226,26 @@
 	window.KastWerte = { karten };
 
 	/* ---------------- Rollen der Knöpfe ---------------- */
-	const ROLLE = ["haupt", "neben", "symbol", "beweg", "zeile-weg"];
+	const ROLLE = ["haupt", "neben", "symbol", "beweg", "pfeil", "zeile-weg"];
 	const hatRolle = b => ROLLE.some(k => b.classList.contains(k));
 	function rollen(wurzel) {
-		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn");
+		const behaelter = wurzel.querySelectorAll(".knopfleiste, .knopfreihe, div.kn, .ik-leiste");
 		behaelter.forEach(k => {
 			if (k.closest(".modusleiste, .bildleiste") || k.classList.contains("modusleiste") || k.classList.contains("bildleiste")) return;
 			const kinder = Array.from(k.children);
 			const bs = kinder.filter(e => e.tagName === "BUTTON" && !hatRolle(e));
 			const fremd = kinder.filter(e => !(e.tagName === "BUTTON" && !hatRolle(e)) && !(e.tagName === "SPAN" && !e.textContent.trim()));
-			const wahl = bs.length >= 2 && fremd.length === 0 && bs.some(b => b.classList.contains("aktiv") || b.dataset.wert !== undefined || b.dataset.modus !== undefined);
+			const schalt = bs.filter(b => b.hasAttribute("aria-pressed"));
+			const wahl = bs.length >= 2 && fremd.length === 0 && schalt.length === 0 && bs.some(b => b.classList.contains("aktiv") || b.dataset.wert !== undefined || b.dataset.modus !== undefined);
 			k.classList.toggle("k-wahl", wahl);
-			bs.forEach(b => b.classList.toggle("k-einzel", !wahl));
+			k.classList.toggle("k-schaltgruppe", schalt.length > 0 && schalt.length === bs.length);
+			bs.forEach(b => { const s = b.hasAttribute("aria-pressed"); b.classList.toggle("k-schalt", s); b.classList.toggle("k-einzel", !wahl && !s); });
 		});
 		wurzel.querySelectorAll("button.wahl").forEach(b => {
 			const k = b.parentElement;
 			if (k && !k.classList.contains("k-wahl") && Array.from(k.children).every(e => e.tagName === "BUTTON" && e.classList.contains("wahl"))) k.classList.add("k-wahl");
 		});
-		wurzel.querySelectorAll("button.haupt").forEach(b => b.classList.toggle("k-rund", !b.textContent.trim() && !!b.querySelector("svg")));
+		wurzel.querySelectorAll("button.haupt").forEach(b => b.classList.toggle("k-rund", !b.textContent.trim() && b.querySelectorAll("svg").length === 1));
 	}
 	/* ---------------- Reglerfarbe nach Größe (TikZ-Farbschema) ----------------
 	   Nur Größen mit eigener Farbe; Spannung, Länge, Masse, Zeit bleiben im Bedienblau. */
@@ -185,7 +265,9 @@
 		if (r.dataset.kdFarbe) return;
 		const txt = reglerText(r).replace(/\s+/g, " ");
 		let g = r.dataset.groesse || null;
-		if (!g) for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung/i.test(txt.split(" ")[0])) { g = k; break; }
+		if (g === "-") g = null;
+		/* <html data-groessenfarben="aus">: Blätter dieser Stufe zeichnen noch nicht im TikZ-Farbschema → Regler bleiben blau */
+		else if (!g && document.documentElement.dataset.groessenfarben !== "aus") for (const [re, k] of GROESSE) if (re.test(txt) && !/energie|spannung/i.test(txt.split(" ")[0])) { g = k; break; }
 		r.dataset.kdFarbe = g || "-";
 		if (!g) return;
 		r.style.setProperty("--spur", "var(--f-" + g + ")");
@@ -209,7 +291,7 @@
 		new MutationObserver(ms => {
 			if (ms.every(m => m.target.closest && m.target.closest("table"))) return;
 			clearTimeout(warte); warte = setTimeout(() => { rollen(document); alleSchienen(); }, 30);
-		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden"] });
+		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "aria-pressed"] });
 		const start = Date.now();
 		new MutationObserver(ms => {
 			if (Date.now() - start < 2000) return;

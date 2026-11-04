@@ -41,17 +41,17 @@ html.kd .modusleiste button {
 }
 html.kd .modusleiste button:hover:not(.aktiv) { background: rgba(0,0,191,0.07); }
 html.kd .modusleiste button.aktiv { background: var(--ui) !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,80,0.3) !important; }
-html.kd .modusleiste button svg { width: 1.15rem; height: 1.15rem; }
+html.kd .modusleiste button svg { width: auto; height: 1.15rem; max-width: 2rem; flex: none; }
 
 /* ---------- Bediengruppen: kleiner Titel über den Elementen ---------- */
 html.kd .bedienleiste, html.kd div.gruppen {
 	display: flex; flex-wrap: wrap; gap: 0.7rem 1.4rem; align-items: flex-end; margin-top: 0.7rem;
 }
-html.kd .bgruppe, html.kd div.gruppen > div.gr { display: inline-flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
-html.kd .btitel, html.kd .gtitel, html.kd div.gt {
+html.kd .bgruppe, html.kd div.gruppen > div.gr, html.kd div.gk { display: inline-flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+html.kd .btitel, html.kd .gtitel, html.kd div.gt, html.kd .gk-titel {
 	font-size: 0.78rem; color: var(--text3); letter-spacing: 0.01em; line-height: 1.2; font-weight: normal;
 }
-html.kd .knopfleiste, html.kd .knopfreihe, html.kd div.kn { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+html.kd .knopfleiste, html.kd .knopfreihe, html.kd div.kn, html.kd .ik-leiste { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
 
 /* ---------- 3 Auswahl (eins aus mehreren): Segmente in einer grauen Schale ---------- */
 html.kd .k-wahl {
@@ -70,8 +70,8 @@ html.kd .k-wahl > button.aktiv {
 	box-shadow: 0 1px 3px rgba(0,0,60,0.18) !important;
 }
 html.kd .k-wahl > button:disabled { opacity: 0.4; cursor: default; }
-html.kd .k-wahl > button svg { width: 1.3rem; height: 1.3rem; }
-html.kd .k-wahl > button.gross svg, html.kd .k-wahl > button.ik.gross svg { width: 1.6rem; height: 1.6rem; }
+html.kd .k-wahl > button svg { width: auto; height: 1.3rem; max-width: 2.2rem; flex: none; }
+html.kd .k-wahl > button.gross svg, html.kd .k-wahl > button.ik.gross svg { width: auto; height: 1.6rem; max-width: 2.6rem; }
 
 /* einzelne Knöpfe ohne Rolle (z. B. Polung tauschen): ruhig, grau */
 html.kd .k-einzel {
@@ -102,6 +102,22 @@ html.kd label.chip:has(input:focus-visible) { outline: 2px solid #6B7BFF; outlin
 html.kd label.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 html.kd label.chip span[data-chipicon] { margin-right: 0.3rem; }
 html.kd span[data-chipicon] svg { width: 1.15rem; height: 1.15rem; display: block; }
+/* Umschaltknöpfe (aria-pressed), z. B. Pfeile ein/aus: wie Schalter, Pille mit Leuchtpunkt */
+html.kd .k-schaltgruppe { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+html.kd button.k-schalt {
+	font: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem; flex: 0 0 auto;
+	min-height: 2.15rem; padding: 0.2rem 0.8rem 0.2rem 0.6rem; border-radius: 999px; cursor: pointer;
+	border: 1px solid var(--rand) !important; background: #fff !important; color: #2B2F36 !important; box-shadow: none !important;
+}
+html.kd button.k-schalt::before {
+	content: ""; flex: none; width: 0.62rem; height: 0.62rem; border-radius: 50%;
+	border: 1.5px solid #A3A8B3; background: #fff; transition: background 0.15s, border-color 0.15s;
+}
+html.kd button.k-schalt:hover:not(:disabled) { background: var(--flaeche) !important; }
+html.kd button.k-schalt[aria-pressed="true"] { background: var(--ui-hell) !important; border-color: var(--ui) !important; color: var(--ui) !important; }
+html.kd button.k-schalt[aria-pressed="true"]::before { background: var(--ui); border-color: var(--ui); box-shadow: 0 0 0 2px rgba(0,0,191,0.15); }
+html.kd button.k-schalt:disabled { opacity: 0.4; cursor: default; }
+html.kd button.k-schalt svg { width: auto; height: 1.3rem; max-width: 2.2rem; flex: none; }
 /* gewöhnliche Häkchen außerhalb von Chips */
 html.kd input[type="checkbox"] { accent-color: var(--ui); width: 1.05rem; height: 1.05rem; }
 
@@ -117,7 +133,7 @@ html.kd button.haupt:hover:not(:disabled) { background: var(--ui-dunkel) !import
 html.kd button.haupt:active:not(:disabled) { transform: translateY(1px); }
 html.kd button.haupt:disabled { opacity: 0.45; cursor: default; }
 html.kd button.haupt.an, html.kd button.haupt.aktiv, html.kd button.haupt.laeuft { background: #fff !important; color: var(--ui) !important; }
-html.kd button.haupt svg { width: 1.25rem; height: 1.25rem; }
+html.kd button.haupt svg { width: auto; height: 1.25rem; max-width: 2rem; flex: none; }
 /* Start/Pause als runder Knopf (nur Symbol) */
 html.kd button.haupt.k-rund { width: 2.6rem; height: 2.6rem; min-height: 0; padding: 0; border-radius: 50%; }
 html.kd button.haupt.k-rund svg { width: 1.45rem; height: 1.45rem; }
@@ -125,11 +141,14 @@ html.kd button.haupt.k-rund svg { width: 1.45rem; height: 1.45rem; }
 /* Gerät ein/aus (Strom, Quelle): bernstein wie eine Kontrollleuchte */
 html.kd .schalter-an { background: #FFF4D6 !important; border-color: #E0A100 !important; color: #8A5A00 !important; box-shadow: 0 0 0 1px #E0A100 inset !important; }
 /* Bewegung (Tempo, Schritt): dunkel wie ein Gerät */
-html.kd button.beweg {
+html.kd button.beweg, html.kd button.ik.pfeil {
 	min-height: 2.15rem; border-radius: var(--r-knopf); background: #2E3238 !important; border: 1px solid #2E3238 !important;
 	color: #fff !important; box-shadow: none !important;
 }
-html.kd button.beweg:hover:not(:disabled) { background: #474C54 !important; }
+html.kd button.beweg:hover:not(:disabled), html.kd button.ik.pfeil:hover:not(:disabled) { background: #474C54 !important; }
+html.kd button.ik.pfeil { min-width: 2.9rem; min-height: 2.4rem; padding: 0 0.5rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+html.kd button.ik.pfeil svg { width: auto; height: 1.4rem; }
+html.kd .gk-hinweis { font-size: 0.75rem; color: var(--text3); line-height: 1.15; margin-left: 0.25rem; }
 html.kd button.beweg.aktiv { color: #FFD34D !important; border-color: #FFD34D !important; }
 
 /* ---------- 5 Werkzeug: kleine graue Symbole unter dem Bild rechts ---------- */
@@ -269,3 +288,7 @@ html.kd canvas.sim { border-radius: 4px; }
 	html.kd .wertkarte.betont .wk-wert, html.kd .wertkarte.betont .wk-w, html.kd div.werte > .karte.haupt > .gross { font-size: 1.4rem; }
 }
 @media print { html.kd .bildleiste, html.kd details.mehr > summary::before { display: none; } }
+/* Wertkarten: leere Karten ausblenden, Karten nicht über die ganze Zeile ziehen */
+html.kd .wertkarte:has(> .wk-wert:empty) { display: none; }
+html.kd .wertkarte { max-width: 17rem; }
+html.kd .wertkarte.betont { max-width: 24rem; }
