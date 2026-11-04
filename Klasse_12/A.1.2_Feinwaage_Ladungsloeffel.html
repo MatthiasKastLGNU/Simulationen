@@ -902,27 +902,52 @@ window.SimUI = (function () {
 			}
 		}
 
-		/* Platten */
-		ctx.fillStyle = "#D8D8D8"; ctx.strokeStyle = "#444"; ctx.lineWidth = 1.5;
-		ctx.fillRect(L, yO, R - L, dicke); ctx.strokeRect(L, yO, R - L, dicke);
-		ctx.fillRect(L, yU, R - L, dicke); ctx.strokeRect(L, yU, R - L, dicke);
-		ctx.font = "bold " + Math.round(16 * ts) + "px " + K.SCHRIFT;
-		ctx.textAlign = "right"; ctx.textBaseline = "middle";
-		ctx.fillStyle = "#BF0000"; ctx.fillText("+", L - 8 * s, yO + dicke / 2);
-		ctx.fillStyle = "#0000BF"; ctx.fillText("−", L - 8 * s, yU + dicke / 2);
-		ctx.font = Math.round(13 * ts) + "px " + K.SCHRIFT; ctx.fillStyle = "#333"; ctx.textAlign = "left";
+		/* Platten: Metall, bei anliegender Spannung nach Ladung getönt, mit gezeichneten Ladungszeichen */
+		const an = zustand.U > 0;
+		const platte = (y, plus) => {
+			const gr = ctx.createLinearGradient(0, y, 0, y + dicke);
+			if (!an) { gr.addColorStop(0, "#F1F3F6"); gr.addColorStop(1, "#C8CDD5"); }
+			else if (plus) { gr.addColorStop(0, "#FBE3E3"); gr.addColorStop(1, "#EBA8A8"); }
+			else { gr.addColorStop(0, "#E3E8FB"); gr.addColorStop(1, "#A8B6EE"); }
+			ctx.fillStyle = gr; ctx.strokeStyle = !an ? "#8A9099" : plus ? "#B02424" : "#2440B0"; ctx.lineWidth = 1.3;
+			ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(L, y, R - L, dicke, 2); else ctx.rect(L, y, R - L, dicke); ctx.fill(); ctx.stroke();
+			if (!an) return;
+			const n = Math.max(5, Math.round(zustand.U / 600)), k = Math.min(4, dicke * 0.35);
+			ctx.strokeStyle = plus ? "#BF0000" : "#0000BF"; ctx.lineWidth = 1.8; ctx.lineCap = "round";
+			for (let i = 0; i < n; i++) {
+				const xm = L + (R - L) * (i + 0.5) / n, ym = y + dicke / 2;
+				ctx.beginPath(); ctx.moveTo(xm - k, ym); ctx.lineTo(xm + k, ym); if (plus) { ctx.moveTo(xm, ym - k); ctx.lineTo(xm, ym + k); } ctx.stroke();
+			}
+			ctx.lineCap = "butt";
+		};
+		platte(yO, true); platte(yU, false);
+		/* Hochspannungsquelle mit zwei Buchsen (kein Batteriesymbol), Leitungen zu den Platten */
+		{
+			const qx = L - 22 * s, ym = (yO + yU) / 2 + dicke / 2, rb = Math.max(4, 5 * s);
+			ctx.strokeStyle = "#555"; ctx.lineWidth = 1.4;
+			ctx.beginPath(); ctx.moveTo(L, yO + dicke / 2); ctx.lineTo(qx, yO + dicke / 2); ctx.lineTo(qx, ym - 14 * s); ctx.stroke();
+			ctx.beginPath(); ctx.moveTo(L, yU + dicke / 2); ctx.lineTo(qx, yU + dicke / 2); ctx.lineTo(qx, ym + 14 * s); ctx.stroke();
+			for (const [yy, f] of [[ym - 14 * s, "#BF0000"], [ym + 14 * s, "#0000BF"]]) { ctx.fillStyle = "#fff"; ctx.strokeStyle = f; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(qx, yy, rb, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); }
+			ctx.font = "bold " + Math.round(13 * ts) + "px " + K.SCHRIFT; ctx.textBaseline = "middle"; ctx.textAlign = "right";
+			if (qx - rb - 12 > 0) { ctx.fillStyle = "#BF0000"; ctx.fillText("+", qx - rb - 3, ym - 14 * s); ctx.fillStyle = "#0000BF"; ctx.fillText("−", qx - rb - 3, ym + 14 * s); }
+		}
+		ctx.font = Math.round(13 * ts) + "px " + K.SCHRIFT; ctx.fillStyle = "#333"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
 		ctx.fillText("U = " + K.de(zustand.U / 1000, 1) + " kV", L, yO - 16 * s);
 
-		/* Waage rechts unten */
+		/* Waage rechts unten: Gehäuse mit Verlauf und Schatten, Wägeteller, Anzeige */
 		const wx = 540 * s, wy = 330 * s;
-		ctx.fillStyle = "#EEE"; ctx.strokeStyle = "#444";
-		ctx.fillRect(wx - 90 * ts, wy, 180 * ts, 50 * ts); ctx.strokeRect(wx - 90 * ts, wy, 180 * ts, 50 * ts);
-		ctx.fillStyle = "#CCC"; ctx.fillRect(wx - 55 * ts, wy - 8 * ts, 110 * ts, 8 * ts); ctx.strokeRect(wx - 55 * ts, wy - 8 * ts, 110 * ts, 8 * ts);
-		/* Display */
-		ctx.fillStyle = "#1A1A1A"; ctx.fillRect(wx - 70 * ts, wy + 12 * ts, 140 * ts, 28 * ts);
-		ctx.fillStyle = "#FF3B30"; ctx.font = "bold " + Math.round(20 * ts) + "px " + K.SCHRIFT; ctx.textAlign = "right";
-		ctx.fillText(K.de(anzeige(), 1), wx + 30 * ts, wy + 27 * ts);
-		ctx.font = Math.round(14 * ts) + "px " + K.SCHRIFT; ctx.fillText("mg", wx + 62 * ts, wy + 27 * ts);
+		ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.22)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+		const gw = ctx.createLinearGradient(0, wy, 0, wy + 50 * ts);
+		gw.addColorStop(0, "#F4F6F9"); gw.addColorStop(1, "#C9CFD8");
+		ctx.fillStyle = gw; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(wx - 90 * ts, wy, 180 * ts, 50 * ts, 7 * ts); else ctx.rect(wx - 90 * ts, wy, 180 * ts, 50 * ts); ctx.fill(); ctx.restore();
+		ctx.strokeStyle = "#6B7380"; ctx.lineWidth = 1.2; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(wx - 90 * ts, wy, 180 * ts, 50 * ts, 7 * ts); else ctx.rect(wx - 90 * ts, wy, 180 * ts, 50 * ts); ctx.stroke();
+		const gt = ctx.createLinearGradient(0, wy - 8 * ts, 0, wy);
+		gt.addColorStop(0, "#E9ECF0"); gt.addColorStop(1, "#AEB5BF");
+		ctx.fillStyle = gt; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(wx - 55 * ts, wy - 8 * ts, 110 * ts, 8 * ts, 3); else ctx.rect(wx - 55 * ts, wy - 8 * ts, 110 * ts, 8 * ts); ctx.fill(); ctx.stroke();
+		ctx.fillStyle = "#1F2A33"; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(wx - 70 * ts, wy + 11 * ts, 140 * ts, 29 * ts, 4); else ctx.rect(wx - 70 * ts, wy + 11 * ts, 140 * ts, 29 * ts); ctx.fill();
+		ctx.fillStyle = "#7CFFB2"; ctx.font = "bold " + Math.round(20 * ts) + "px " + K.SCHRIFT; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+		ctx.fillText(K.de(anzeige(), 1), wx + 30 * ts, wy + 26 * ts);
+		ctx.font = Math.round(14 * ts) + "px " + K.SCHRIFT; ctx.fillText("mg", wx + 62 * ts, wy + 26 * ts);
 
 		/* Isolierende Halterung: Stütze auf der Waage, Arm in den Kondensator */
 		const verschiebung = Math.min(8, kraft() / G * 1e6 * 0.25) * s;   // kleine sichtbare Auslenkung (übertrieben)
@@ -939,7 +964,7 @@ window.SimUI = (function () {
 
 		/* Löffel (Kugel) */
 		const grad = ctx.createRadialGradient(kx - 7 * s, yArm - 7 * s, 3 * s, kx, yArm, rK);
-		grad.addColorStop(0, "#FFFFFF"); grad.addColorStop(1, "#8A8A8A");
+		grad.addColorStop(0, "#FFFFFF"); grad.addColorStop(1, zustand.anteil > 0 ? "#B07A7A" : "#8A8A8A");   /* geladen: leicht rötlich */
 		ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(kx, yArm, rK, 0, 2 * Math.PI); ctx.fill();
 		ctx.strokeStyle = "#555"; ctx.lineWidth = 1.2; ctx.stroke();
 		plusZeichen(kx, yArm, rK, Math.round(16 * zustand.anteil), "#BF0000");
