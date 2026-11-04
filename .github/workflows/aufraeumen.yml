@@ -1,0 +1,37 @@
+# Löscht einmal im Monat Simulationen, deren <meta name="kast-auslauf"> abgelaufen ist,
+# und baut danach die Übersicht neu. Markieren: python .github/index/aufraeumen.py markieren DATEI
+name: Auslaufende Simulationen löschen
+
+on:
+  schedule:
+    - cron: "17 4 2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: uebersicht
+  cancel-in-progress: false
+
+jobs:
+  aufraeumen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Abgelaufene löschen
+        run: python3 .github/index/aufraeumen.py loeschen
+      - name: Übersicht erzeugen
+        run: python3 .github/index/erzeugen.py
+      - name: Hochladen, falls geändert
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add -A Klasse_* index.html
+          if git diff --cached --quiet; then echo "Nichts abgelaufen"; exit 0; fi
+          git commit -m "Abgelaufene Simulationen gelöscht"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            sleep 5
+          done
+          exit 1

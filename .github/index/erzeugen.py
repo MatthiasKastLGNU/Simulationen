@@ -5,12 +5,22 @@ Aufruf im Wurzelordner des Repos:  python .github/index/erzeugen.py
 Liest Klasse_<nn>/*.html (Titel aus <title>), Kapitelnamen aus .github/index/kapitel.json
 und das Layout aus .github/index/vorlage.html; schreibt index.html und Klasse_<nn>/index.html.
 
+Simulationen mit <meta name="kast-auslauf" content="JJJJ-MM-TT"> erscheinen nicht in der
+Übersicht. Sie bleiben für alte QR-Codes erreichbar und werden ab diesem Datum von
+.github/index/aufraeumen.py gelöscht (Workflow aufraeumen.yml).
+
 Quelle dieser Datei: Documents/0_Einstellungen/Skript/simulationen_index/ (dort bearbeiten,
 dann simulationen_index.py ausführen, das lädt sie hoch).
 """
 import glob, html, json, os, re
 
 HIER = os.path.dirname(os.path.abspath(__file__))
+AUSLAUF = re.compile(r'<meta\s+name="kast-auslauf"\s+content="(\d{4}-\d{2}-\d{2})"', re.I)
+
+
+def auslaufdatum(text):
+    m = AUSLAUF.search(text or "")
+    return m.group(1) if m else None
 
 
 def titel_aus(text, fallback):
@@ -31,6 +41,8 @@ def simulationen():
         klasse, datei = m.groups()
         n = re.match(r"^([A-Z])\.(\d+)\.(\d+)(?:_(gA|eA\d*))?_(.+)$", datei)
         text = open(pfad, encoding="utf-8", errors="replace").read()
+        if auslaufdatum(text):
+            continue
         sims.append({
             "k": klasse,
             "pfad": pfad,
