@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1195,25 +1163,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title" id="aufgabe-titel">Aufgabe</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort" id="antwort-label"></label><input type="number" id="antwort" step="any" placeholder="?"><span id="antwort-einheit"></span>
-				<span class="knopfleiste"><button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button><button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button><button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button></span>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1: Welcher Ansatz?</summary><p class="tipp" id="tipp1"></p></details>
-			<details class="tipp-box"><summary>Tipp 2: Welche Beziehungen helfen?</summary><p class="tipp" id="tipp2"></p></details>
-			<details class="tipp-box"><summary>Tipp 3: Ergebnis zum Vergleichen</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
 	<div class="tcb blau" id="box-sim">
 		<div class="tcb-title">Simulation: Geschwindigkeit, Impuls und Energie</div>
 		<div class="tcb-body">
@@ -1257,8 +1206,7 @@ const K = window.SimKit, P = window.SimPlus;
 const C_L = 2.998e8, MEV = 1.602e-13;
 const TEILCHEN = { e: { name: "Elektron", mc2: 0.511, q: 1 }, p: { name: "Proton", mc2: 938.27, q: 1 }, a: { name: "α-Teilchen", mc2: 3727.4, q: 2 } };
 
-const zustand = { teilchen: "e", bereich: 10, eRel: 0.2, B: 0.5, messpunkte: [], modus: "erkunden" };
-const aufgabe = { nr: 0, soll: 0 };
+const zustand = { teilchen: "e", bereich: 10, eRel: 0.2, B: 0.5, messpunkte: [] };
 
 function Ekin() { return zustand.bereich * zustand.eRel; }           /* MeV */
 function werte(E, t) {
@@ -1381,54 +1329,6 @@ document.getElementById("btn-flugzeit").addEventListener("click", () => {
 });
 document.getElementById("btn-leeren").addEventListener("click", () => { zustand.messpunkte = []; aktualisiere(); });
 
-/* ---------- Aufgaben: Protonentherapie ---------- */
-const AUFGABEN = [
-	() => {
-		const E = P.runde(P.zufall(70, 250), 5), w = werte(E, "p");
-		const B = w.pc * MEV / C_L / (1.602e-19 * 1.5);
-		return { titel: "Aufgabe: Umlenkmagnet für die Protonentherapie", text: "Protonen mit <i class='gr'>E</i><sub>kin</sub> = " + E + "&nbsp;MeV sollen in einem homogenen Magnetfeld auf einem Kreisbogen mit <i class='gr'>r</i> = 1,50&nbsp;m umgelenkt werden. Berechnen Sie die n&ouml;tige Flussdichte.", label: "<i class='gr'>B</i> =", einheit: "T", soll: B,
-			t1: "Bestimmen Sie zuerst den relativistischen Impuls aus der kinetischen Energie.", t2: "(<i class='gr'>p</i><i class='gr'>c</i>)<sup>2</sup> = <i class='gr'>E</i><sub>kin</sub><sup>2</sup> + 2<i class='gr'>E</i><sub>kin</sub>&thinsp;<i class='gr'>m</i><i class='gr'>c</i><sup>2</sup>; <i class='gr'>r</i> = <i class='gr'>p</i>/(<i class='gr'>e</i><i class='gr'>B</i>)", t3: "<i class='gr'>p</i><i class='gr'>c</i> = " + P.sig(w.pc, 4) + "&nbsp;MeV, <i class='gr'>B</i> &asymp; " + P.sig(B, 3) + "&nbsp;T", klassisch: w.pcKl * MEV / C_L / (1.602e-19 * 1.5) };
-	},
-	() => {
-		const U = P.runde(P.zufall(0.2, 3), 0.1), w = werte(U, "e");
-		return { titel: "Aufgabe: Schnelle Elektronen", text: "Elektronen werden aus der Ruhe mit <i class='gr'>U</i> = " + P.de(U, 1) + "&nbsp;MV beschleunigt. Berechnen Sie <i class='gr'>v</i>/<i class='gr'>c</i> relativistisch.", label: "<i class='gr'>v</i>/<i class='gr'>c</i> =", einheit: "", soll: w.b,
-			t1: "Berechnen Sie zuerst den Lorentzfaktor.", t2: "&gamma; = 1 + <i class='gr'>e</i><i class='gr'>U</i>/(<i class='gr'>m</i><i class='gr'>c</i><sup>2</sup>), <i class='gr'>v</i>/<i class='gr'>c</i> = &radic;(1 &minus; 1/&gamma;<sup>2</sup>)", t3: "&gamma; = " + P.sig(w.g, 4) + ", <i class='gr'>v</i>/<i class='gr'>c</i> &asymp; " + P.sig(w.b, 4), klassisch: w.bKl };
-	}
-];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	document.getElementById("box-sim").classList.toggle("verborgen", aufg);
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	const a = AUFGABEN[(aufgabe.nr - 1) % AUFGABEN.length]();
-	Object.assign(aufgabe, a);
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-titel").textContent = a.titel;
-	document.getElementById("aufgabe-text").innerHTML = a.text;
-	document.getElementById("antwort-label").innerHTML = a.label;
-	document.getElementById("antwort-einheit").innerHTML = a.einheit;
-	["tipp1", "tipp2", "tipp3"].forEach(k => document.getElementById(k).innerHTML = a[k.replace("tipp", "t")]);
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", neueAufgabe);
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, aufgabe.soll, 0.02, 0.06);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Richtig."); return; }
-	if (Math.abs(ein - aufgabe.klassisch) / aufgabe.klassisch < 0.02) { P.zeigeRueckmeldung(el, "falsch", "Das ist der klassisch berechnete Wert. Hier m&uuml;ssen Sie relativistisch rechnen."); return; }
-	if (ein >= 1 && aufgabe.einheit === "") { P.zeigeRueckmeldung(el, "falsch", "Ein K&ouml;rper mit Masse erreicht die Lichtgeschwindigkeit nie: <i class='gr'>v</i>/<i class='gr'>c</i> muss kleiner als 1 sein."); return; }
-	P.zeigeRueckmeldung(el, art === "knapp" ? "knapp" : "falsch", art === "knapp" ? "Knapp daneben. Pr&uuml;fen Sie die Rundung der Zwischenergebnisse." : "Das passt noch nicht. Pr&uuml;fen Sie die Einheiten (MeV, J, kg&thinsp;m/s).");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: " + aufgabe.t3));
-
 function layout() {
 	({ W: WV, H: HV } = K.skaliereCanvas(cV, gV, b => b < 560 ? 0.7 : 0.4));
 	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, 0.8));
@@ -1440,10 +1340,8 @@ SimUI.bildKnopf("btn-v-bild", cV, () => "Relativistisch_v_" + zustand.teilchen);
 SimUI.bildKnopf("btn-dreieck-bild", cD, () => "Relativistisch_Dreieck_" + zustand.teilchen);
 SimUI.bildKnopf("btn-bahn-bild", cB, () => "Relativistisch_Bahn_" + zustand.teilchen);
 SimUI.tabelleKnopf("btn-tab-bild", "werte-tab", () => "Relativistisch_Werte_" + zustand.teilchen, "Klassisch und relativistisch im Vergleich");
-SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

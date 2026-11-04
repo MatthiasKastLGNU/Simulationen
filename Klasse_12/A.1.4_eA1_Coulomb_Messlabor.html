@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1222,42 +1190,6 @@ window.SimUI = (function () {
 		<button data-modus="erkunden" class="aktiv">Erkunden</button>
 	</div>
 
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Die elektrische Feldkonstante bestimmen</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Beide Kugeln sind mit <i class="gr">U</i> = <b id="aufgabe-u"></b> geladen. Die Ladung einer Kugel wurde mit dem Messverst&auml;rker gemessen: <i class="gr">Q</i> = <b id="aufgabe-c"></b>.
-				Nehmen Sie eine Messreihe auf und bestimmen Sie &epsilon;<sub>0</sub>.
-			</p>
-			<div class="antwortzeile">
-				<label for="antwort">&epsilon;<sub>0</sub> =</label>
-				<input type="number" id="antwort" step="any" placeholder="?">
-				<span>&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm)</span>
-				<span class="knopfleiste">
-					<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-					<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-					<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-				</span>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Was messen Sie?</summary>
-				<p class="tipp">Lesen Sie &Delta;<i class="gr">m</i> f&uuml;r mindestens f&uuml;nf Abst&auml;nde ab und berechnen Sie <i class="gr">F</i> = &Delta;<i class="gr">m</i>&thinsp;&middot;&thinsp;<i class="gr">g</i>. Werten Sie nur Abst&auml;nde ab dem 2,5-fachen Kugeldurchmesser aus. Messen Sie z&uuml;gig.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span><i class="gr">F</i> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;&epsilon;<sub>0</sub>&thinsp;&middot;&thinsp;<i class="gr">r</i><sup>2</sup></span></span></p>
-				<p class="tipp">Tragen Sie <i class="gr">F</i> &uuml;ber 1/<i class="gr">r</i><sup>2</sup> auf. Die Steigung ist <i class="gr">Q</i><sup>2</sup>/(4&pi;&epsilon;<sub>0</sub>).</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="formelzeile"><span>&epsilon;<sub>0</sub> =</span><span class="bruch"><span class="z"><i class="gr">Q</i><sup>2</sup></span><span class="n">4&thinsp;&middot;&thinsp;&pi;&thinsp;&middot;&thinsp;<i class="gr">m</i></span></span></p>
-				<p class="tipp">Achten Sie auf die Einheiten der Steigung <i class="gr">m</i> (mN&thinsp;&middot;&thinsp;cm<sup>2</sup>) und der Ladung (nC).</p>
-			</details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Kraft zwischen zwei geladenen Kugeln</div>
 		<div class="tcb-body">
@@ -1351,8 +1283,7 @@ const EPS0 = 8.854e-12, KC = 1 / (4 * Math.PI * EPS0);
 const G = 9.81;
 const STANDARD = { r: 8, U: 10, R: 2, feuchte: 30, influenz: true };   /* Tischtennisbaelle mit Leitlack, 10-kV-Netzgeraet */
 const zustand = Object.assign({ tSeit: 0, darstellung: "Fr", ausschluss: false, modus: "erkunden", fOben: 1, fUnten: 1 }, STANDARD);
-const aufgabe = { nr: 0, U: 10, R: 2, Qangabe: 19.5 };
-/* Standard (Link ohne Zusatz): nur messen, keine Diagramme, keine Regression, keine F-Spalte, kein Aufgabenmodus;
+/* Standard (Link ohne Zusatz): nur messen, keine Diagramme, keine Regression, keine F-Spalte;
    ausgewertet wird von Hand auf dem Blatt. Vollstaendige Version mit ?auswertung=an */
 const NUR_MESSEN = new URLSearchParams(location.search).get("auswertung") !== "an";
 if (NUR_MESSEN) {
@@ -1387,7 +1318,7 @@ function kraft(z, t) {                                                      /* N
 	if (z.influenz) F *= influenzFaktor(z.r / z.R);
 	return F;
 }
-function aktiv() { return zustand.modus === "aufgabe" ? { r: zustand.r, U: aufgabe.U, R: aufgabe.R, feuchte: 30, influenz: true, fOben: 1, fUnten: 1 } : zustand; }
+function aktiv() { return zustand; }
 /* Anzeige der Feinwaage in g: Aufloesung 0,001 g, kleines Rauschen */
 function anzeigeMasse() { return P.runde(kraft(aktiv(), zustand.tSeit) / G * 1e3 + 0.0006 * P.gauss(), 0.001); }
 function bruch(f) { return f === 1 ? "Q" : "Q/" + Math.round(1 / f); }
@@ -1619,47 +1550,6 @@ setInterval(() => { zustand.tSeit += 2; aktualisiere(); }, 200);
 
 /* Material */
 
-/* ---------- Aufgabe ---------- */
-const VERSTECKT = ["zeile-u", "zeile-rk", "zeile-feuchte", "zeile-influenz", "zeile-standard", "zeile-halbieren"];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	VERSTECKT.forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-	tabelle.leeren(); zustand.tSeit = 0;
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.R = P.runde(P.zufall(1.5, 2.5), 0.1);
-	aufgabe.U = P.runde(P.zufall(6, 10), 0.5);
-	aufgabe.Qangabe = Math.round(ladung(aufgabe.R, aufgabe.U) * 1e10) / 10;
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-u").innerHTML = P.de(aufgabe.U, 1) + "&nbsp;kV";
-	document.getElementById("aufgabe-c").innerHTML = P.de(aufgabe.Qangabe, 1) + "&nbsp;nC";
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	tabelle.leeren(); zustand.tSeit = 0;
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, 8.854, 0.05, 0.15);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Sehr gut. Der Tabellenwert ist 8,854&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm)."); return; }
-	if (art === "knapp") { P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Haben Sie Messpunkte mit kleinem Abstand (Influenz) mitgenommen oder zu langsam gemessen?"); return; }
-	const v = ein / 8.854;
-	if (Math.abs(v - 0.5) < 0.08 || Math.abs(v - 2) < 0.3) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Beide Kugeln tragen die Ladung <i class='gr'>Q</i>, im Z&auml;hler steht also <i class='gr'>Q</i><sup>2</sup>.");
-	else if (v > 50 || v < 0.02) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten: mN, cm und nC umrechnen.");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie Ihre Steigung und den Term f&uuml;r &epsilon;<sub>0</sub>.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: Aus der Steigung von <i class='gr'>F</i> &uuml;ber 1/<i class='gr'>r</i><sup>2</sup> folgt &epsilon;<sub>0</sub> &asymp; 8,85&middot;10<sup>&minus;12</sup>&nbsp;As/(Vm).");
-});
-
 function layout() {
 	({ W: WA, H: HA } = K.skaliereCanvas(cA, gA, b => b < 560 ? 1.0 : 0.6));
 	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, b => b < 560 ? 0.8 : 0.48));
@@ -1673,6 +1563,5 @@ SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

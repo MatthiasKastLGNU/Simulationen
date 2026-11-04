@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1216,43 +1184,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Verborgene Elektroden erkennen</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Unter einer Abdeckung liegen Elektroden, die Sie nicht sehen. Messen Sie mit der Sonde das Potential an vielen Stellen.
-				Welche Anordnung liegt vor?
-			</p>
-			<div class="antwortzeile" id="antwort-knoepfe">
-				<button data-wert="platten" class="gross" data-icon="wanne_platten" data-text="zwei Platten" title="zwei Platten"></button>
-				<button data-wert="ring" class="gross" data-icon="wanne_ring" data-text="Scheibe in Ring" title="Scheibe in Ring"></button>
-				<button data-wert="dipol" class="gross" data-icon="wanne_dipol" data-text="Dipol" title="zwei Scheiben (Dipol)"></button>
-			</div>
-			<div class="antwortzeile knopfleiste">
-				<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-				<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Wie gehen Sie vor?</summary>
-				<p class="tipp">Speichern Sie Messpunkte in einem groben Raster &uuml;ber die ganze Wanne. Suchen Sie dann Punkte mit gleichem Potential.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Woran erkennen Sie die Anordnung?</summary>
-				<p class="tipp">Zwei Platten: parallele, gerade &Auml;quipotentiallinien mit gleichem Abstand. Scheibe in Ring: Kreise um einen Mittelpunkt. Dipol: zwei Zentren, dazwischen eine gerade Linie mit dem mittleren Potential.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Hilfsmittel</summary>
-				<p class="tipp">Nach mindestens 12 gespeicherten Messpunkten k&ouml;nnen Sie die &Auml;quipotentiallinien einblenden.</p>
-			</details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Wanne mit Leitungswasser (Draufsicht)</div>
 		<div class="tcb-body">
@@ -1322,8 +1253,7 @@ const K = window.SimKit, P = window.SimPlus;
 /* Rechengitter: 1 mm, Wanne 20 cm x 15 cm */
 const NX = 201, NY = 151, H_CM = 0.1;
 const LAENGE = 20, BREITE = 15;
-const zustand = { anordnung: "platten", U: 10, sonde: { x: 10, y: 7.5 }, aequi: false, darstellung: "lin", modelle: false, modus: "erkunden" };
-const aufgabe = { nr: 0, anordnung: "dipol", dreh: false, tausch: false, geloest: false };
+const zustand = { anordnung: "platten", U: 10, sonde: { x: 10, y: 7.5 }, aequi: false, darstellung: "lin", modelle: false };
 let phi = new Float32Array(NX * NY), fest = new Uint8Array(NX * NY), rechnet = false, rechenId = 0;
 const RING = { mx: 10, my: 7.5, ri: 0.5, R: 7.5 };
 
@@ -1350,7 +1280,7 @@ function elektroden(art, dreh, tausch) {
 	};
 }
 function aktuelleElektroden() {
-	return zustand.modus === "aufgabe" ? elektroden(aufgabe.anordnung, aufgabe.dreh, aufgabe.tausch) : elektroden(zustand.anordnung, false, false);
+	return elektroden(zustand.anordnung, false, false);
 }
 /* Laplace-Gleichung mit SOR; Waende isolierend (Neumann) */
 function starteRechnung() {
@@ -1397,7 +1327,7 @@ function phiBei(x, y) {
 	const a = phi[j * NX + i], b = phi[j * NX + i + 1], c = phi[(j + 1) * NX + i], d = phi[(j + 1) * NX + i + 1];
 	return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy;
 }
-function Ug() { return zustand.modus === "aufgabe" ? 10 : zustand.U; }
+function Ug() { return zustand.U; }
 function messung(x, y) { return P.runde(Ug() * phiBei(x, y) + 0.015 * P.gauss(), 0.01); }
 
 /* ---------- Zeichnen ---------- */
@@ -1454,7 +1384,7 @@ function zeichneWanne(g, W, H, mitSonde) {
 		}
 	}
 	/* Elektroden */
-	if (zustand.modus === "erkunden") {
+	{
 		const el = aktuelleElektroden();
 		const schritt = Math.max(1, Math.round(1 / s * 10)) / 10;
 		for (let y = 0; y < BREITE; y += 0.1) for (let x = 0; x < LAENGE; x += 0.1) {
@@ -1467,8 +1397,6 @@ function zeichneWanne(g, W, H, mitSonde) {
 		const t0 = { platten: [17, 0.9], ring: [10, 0.3], dipol: [14, 7.5 - 1.4] }[zustand.anordnung];
 		P.text(g, "U = " + P.de(zustand.U, 1) + " V", px(t1[0]), py(t1[1]), { ausrichtung: "center", groesse: 12, fett: true, farbe: "#B0463C" });
 		P.text(g, "0 V", px(t0[0]), py(t0[1]), { ausrichtung: "center", groesse: 12, fett: true, farbe: "#333" });
-	} else {
-		g.fillStyle = "rgba(0,0,0,0.04)"; g.fillRect(px(0), py(0), s * LAENGE, s * BREITE);
 	}
 	/* gespeicherte Punkte */
 	messpunkte.zeilen.forEach(p => {
@@ -1501,7 +1429,7 @@ function zeichneWanne(g, W, H, mitSonde) {
 }
 
 function abstand(p) {
-	const art = zustand.modus === "aufgabe" ? aufgabe.anordnung : zustand.anordnung;
+	const art = zustand.anordnung;
 	if (art === "ring") return Math.hypot(p.x - RING.mx, p.y - RING.my) * 10;   /* mm */
 	return p.x;                                                                      /* cm */
 }
@@ -1517,7 +1445,7 @@ function zeichneDiagramm() {
 	else { trafo = a => Math.log(a); xL = "ln(r/mm)"; xE = ""; xMin = 1; xMax = 4.5; }
 	const u = P.achsen(gD, { dx: 56, dy: 22, dw: WD - 80, dh: HD - 64, xMin, xMax, yMin: 0, yMax: Math.ceil(Ug() / 2) * 2 + 2, xLabel: xL, xEinheit: xE, yLabel: "φ", yEinheit: "V" });
 	if (d !== "lin" && !ring) { aw.innerHTML = "Die Linearisierungen mit <i class='gr'>r</i> sind f&uuml;r die Anordnung <b>Scheibe in Ring</b> gedacht. Dort ist <i class='gr'>r</i> der Abstand vom Mittelpunkt."; return; }
-	if (zustand.modelle && ring && zustand.modus === "erkunden") {
+	if (zustand.modelle && ring) {
 		const U = zustand.U, ri = RING.ri * 10, R = RING.R * 10;
 		const m2 = r => U * Math.log(R / r) / Math.log(R / ri);
 		const m3 = r => U * (1 / r - 1 / R) / (1 / ri - 1 / R);
@@ -1538,11 +1466,9 @@ function zeichneDiagramm() {
 function aktualisiere() {
 	document.getElementById("wert-u").innerHTML = P.de(zustand.U, 1) + "&nbsp;V";
 	const chk = document.getElementById("chk-aequi");
-	chk.disabled = zustand.modus === "aufgabe" && messpunkte.zeilen.length < 12;
-	if (chk.disabled) { chk.checked = false; zustand.aequi = false; }
-	document.getElementById("spalte-r").classList.toggle("verborgen", zustand.anordnung !== "ring" || zustand.modus === "aufgabe");
+	document.getElementById("spalte-r").classList.toggle("verborgen", zustand.anordnung !== "ring");
 	zeichneWanne(gW, WW, HW, true);
-	if (zustand.modus === "erkunden") zeichneDiagramm();
+	zeichneDiagramm();
 }
 
 K.bindeKnopfgruppe("anordnung-knoepfe", w => { zustand.anordnung = w; messpunkte.leeren(); starteRechnung(); }, aktualisiere);
@@ -1554,7 +1480,7 @@ document.getElementById("btn-speichern").addEventListener("click", () => {
 	if (rechnet) return;
 	const p = { x: P.runde(zustand.sonde.x, 0.1), y: P.runde(zustand.sonde.y, 0.1) };
 	p.phi = messung(p.x, p.y);
-	const ring = zustand.anordnung === "ring" && zustand.modus === "erkunden";
+	const ring = zustand.anordnung === "ring";
 	messpunkte.hinzu([P.de(p.x, 1), P.de(p.y, 1), ring ? P.de(abstand(p), 0) : "", P.de(p.phi, 2)], p);
 	if (!ring) messpunkte.koerper.lastChild.children[3].classList.add("verborgen");
 	aktualisiere();
@@ -1570,42 +1496,6 @@ P.ziehbar(cW, (x, y) => {
 });
 
 
-/* ---------- Aufgabe ---------- */
-const VERSTECKT = ["zeile-anordnung", "zeile-u", "box-auswertung"];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	VERSTECKT.forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	messpunkte.leeren();
-	if (aufg) neueAufgabe(); else starteRechnung();
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.anordnung = ["platten", "ring", "dipol"][Math.floor(Math.random() * 3)];
-	aufgabe.dreh = Math.random() < 0.5; aufgabe.tausch = Math.random() < 0.5; aufgabe.geloest = false;
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	messpunkte.leeren();
-	starteRechnung();
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("antwort-knoepfe").addEventListener("click", ev => {
-	const b = ev.target.closest("button"); if (!b) return;
-	const el = document.getElementById("rueckmeldung");
-	if (messpunkte.zeilen.length < 6) { P.zeigeRueckmeldung(el, "knapp", "Messen Sie zuerst: Speichern Sie mindestens sechs Messpunkte."); return; }
-	if (b.dataset.wert === aufgabe.anordnung) P.zeigeRueckmeldung(el, "gut", "Richtig erkannt. Begr&uuml;nden Sie Ihre Entscheidung mit dem Verlauf der &Auml;quipotentiallinien.");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt nicht zu den Messwerten. Suchen Sie Punkte gleichen Potentials und verbinden Sie sie gedanklich.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	const name = { platten: "zwei Platten", ring: "Scheibe in Ring", dipol: "zwei Scheiben (Dipol)" }[aufgabe.anordnung];
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: " + name + ". Die &Auml;quipotentiallinien sind jetzt eingeblendet.");
-	zustand.aequi = true; document.getElementById("chk-aequi").disabled = false; document.getElementById("chk-aequi").checked = true;
-	zeichneWanne(gW, WW, HW, true);
-});
-
 function layout() {
 	({ W: WW, H: HW } = K.skaliereCanvas(cW, gW, 0.77));
 	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, b => b < 560 ? 0.7 : 0.45));
@@ -1617,15 +1507,13 @@ SimUI.bildKnopf("btn-dia-bild", cD, () => "Potentialmessung_Diagramm_" + zustand
 SimUI.tabelleKnopf("btn-tab-bild", "messpunkte-tabelle", () => "Potentialmessung_Messpunkte_" + zustand.anordnung, "Potentialmessung: Messpunkte");
 layout();
 starteRechnung();
-/* Modus per Link: ?modus=aufgabe oder eine Anordnung (?modus=ring) */
+/* Modus per Link: eine Anordnung (?modus=ring); das alte ?modus=aufgabe landet beim Erkunden */
 try {
 	const m = (new URLSearchParams(location.search).get("modus") || "").toLowerCase();
 	const k = m && document.querySelector('#anordnung-knoepfe button[data-wert="' + m + '"]');
-	if (k) { k.click(); document.getElementById("modus-knoepfe").classList.add("per-link-aus"); document.getElementById("zeile-anordnung").classList.add("per-link-aus"); }
-	else SimUI.modusPerLink("modus-knoepfe");
+	if (k) { k.click(); document.getElementById("zeile-anordnung").classList.add("per-link-aus"); }
 } catch (e) { /* ohne Parameter */ }
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

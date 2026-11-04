@@ -170,38 +170,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1203,48 +1171,10 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
 	<div class="knopfleiste" id="ansicht-knoepfe" style="margin-bottom:0.3rem">
 		<button data-wert="euler" class="aktiv gross" data-icon="euler" data-text="Euler" title="Euler-Verfahren"></button>
 		<button data-wert="modell" class="gross" data-icon="tangente" data-text="Tangente" title="Tangente und Linearisierung"></button>
 		<button data-wert="energie" class="gross" data-icon="energie" data-text="Energie" title="Energiebilanz"></button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Kapazit&auml;t aus einer Entladekurve bestimmen</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Ein Kondensator unbekannter Kapazit&auml;t entl&auml;dt sich &uuml;ber den Widerstand <i class="gr">R</i> = <b id="aufgabe-r"></b>, die Anfangsspannung ist <i class="gr">U</i><sub>0</sub> = 10&nbsp;V.
-				Die Punkte sind Messwerte. Bestimmen Sie <i class="gr">C</i> m&ouml;glichst genau.
-			</p>
-			<div class="antwortzeile">
-				<label for="antwort"><i class="gr">C</i> =</label>
-				<input type="number" id="antwort" step="any" placeholder="?">
-				<span>&micro;F</span>
-				<span class="knopfleiste">
-					<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-					<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-					<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-				</span>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Wie werten Sie aus?</summary>
-				<p class="tipp">Schalten Sie auf die linearisierte Darstellung um. Lesen Sie mit dem Fadenkreuz zwei weit auseinanderliegende Punkte der Geraden ab.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span>ln</span><span class="bruch"><span class="z"><i class="gr">U</i></span><span class="n"><i class="gr">U</i><sub>0</sub></span></span><span>= &minus;</span><span class="bruch"><span class="z">1</span><span class="n">&tau;</span></span><span>&middot; <i class="gr">t</i></span><span style="margin-left:1.5em">&tau; = <i class="gr">R</i>&thinsp;&middot;&thinsp;<i class="gr">C</i></span></p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="tipp" id="tipp3-wert"></p>
-			</details>
-		</div>
 	</div>
 
 	<div class="tcb blau">
@@ -1286,9 +1216,8 @@ const K = window.SimKit, P = window.SimPlus;
 
 /* Einheiten im Zustand: R in kOhm, C in muF, U in V, t in s, dt in s */
 const U0 = 10;
-const zustand = { ansicht: "euler", modus: "erkunden", vorgang: "entladen", R: 10, C: 100, tAchse: 5, dt: 0.2, darstellung: "normal", tangente: true,
+const zustand = { ansicht: "euler", vorgang: "entladen", R: 10, C: 100, tAchse: 5, dt: 0.2, darstellung: "normal", tangente: true,
 	t: 0, laeuft: false, marke: { t: 1, y: 3.7 } };
-const aufgabe = { nr: 0, R: 0, C: 0, U0: 10, tAchse: 60, daten: [] };
 
 /* ---------- Physik ---------- */
 function tau(z) { return z.R * 1e3 * z.C * 1e-6; }
@@ -1354,18 +1283,13 @@ function zeichneEuler() {
 }
 
 function zeichneModell() {
-	const aufg = zustand.modus === "aufgabe";
-	const z = aufg ? { R: aufgabe.R, C: aufgabe.C, vorgang: "entladen" } : zustand;
-	const tMax = aufg ? aufgabe.tAchse : zustand.tAchse;
+	const z = zustand, tMax = zustand.tAchse;
 	const ln = zustand.darstellung === "ln";
 	const u = ln
 		? P.achsen(ctx, { dx: LINKS, dy: 24, dw: W - LINKS - 20, dh: H - 70, xMin: 0, xMax: tMax, yMin: -5, yMax: 0, ySchritt: 1, xLabel: "t", xEinheit: "s", yLabel: z.vorgang === "laden" ? "ln(1 − U/U₀)" : "ln(U/U₀)", yStellen: 0 })
 		: P.achsen(ctx, { dx: LINKS, dy: 24, dw: W - LINKS - 20, dh: H - 70, xMin: 0, xMax: tMax, yMin: 0, yMax: 12, ySchritt: 2, xLabel: "t", xEinheit: "s", yLabel: "U", yEinheit: "V", yStellen: 0 });
 	achsenAktuell = u;
-	if (aufg) {
-		const pts = aufgabe.daten.map(d => ({ x: d.t, y: ln ? lin(d.u, "entladen") : d.u })).filter(p => isFinite(p.y) && p.y >= -5);
-		P.punkte(ctx, u, pts, P.FARBEN.blau, { r: 2.8 });
-	} else {
+	{
 		const T = tau(z);
 		ctx.save(); ctx.beginPath(); ctx.rect(u.o.dx, u.o.dy, u.o.dw, u.o.dh); ctx.clip();
 		P.kurve(ctx, u, t => ln ? lin(uC(z, t), z.vorgang) : uC(z, t), 0, tMax, P.FARBEN.blau);
@@ -1377,8 +1301,8 @@ function zeichneModell() {
 	}
 	fadenkreuz(u);
 	const mk = zustand.marke;
-	let text = "Fadenkreuz: <i class='gr'>t</i> = " + P.sig(mk.t, 3) + "&nbsp;s<span class='trenner'>|</span>" + (ln ? (z.vorgang === "laden" && !aufg ? "ln(1 &minus; <i class='gr'>U</i>/<i class='gr'>U</i><sub>0</sub>)" : "ln(<i class='gr'>U</i>/<i class='gr'>U</i><sub>0</sub>)") + " = " + P.de(mk.y, 2) : "<i class='gr'>U</i> = " + P.de(mk.y, 2) + "&nbsp;V");
-	if (!aufg) text += "<br>&tau; = <i class='gr'>R</i>&thinsp;&middot;&thinsp;<i class='gr'>C</i> = " + P.sig(tau(z), 3) + "&nbsp;s";
+	let text = "Fadenkreuz: <i class='gr'>t</i> = " + P.sig(mk.t, 3) + "&nbsp;s<span class='trenner'>|</span>" + (ln ? (z.vorgang === "laden" ? "ln(1 &minus; <i class='gr'>U</i>/<i class='gr'>U</i><sub>0</sub>)" : "ln(<i class='gr'>U</i>/<i class='gr'>U</i><sub>0</sub>)") + " = " + P.de(mk.y, 2) : "<i class='gr'>U</i> = " + P.de(mk.y, 2) + "&nbsp;V");
+	text += "<br>&tau; = <i class='gr'>R</i>&thinsp;&middot;&thinsp;<i class='gr'>C</i> = " + P.sig(tau(z), 3) + "&nbsp;s";
 	document.getElementById("auswertung").innerHTML = text;
 }
 
@@ -1418,7 +1342,7 @@ const ALLE_ZEILEN = ["zeile-vorgang", "zeile-dt", "zeile-darstellung", "zeile-r"
 
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
-	const a = zustand.modus === "aufgabe" ? "modell" : zustand.ansicht;
+	const a = zustand.ansicht;
 	if (a === "euler") zeichneEuler(); else if (a === "modell") zeichneModell(); else zeichneEnergie();
 }
 function aktualisiere() {
@@ -1428,15 +1352,12 @@ function aktualisiere() {
 	zeichne();
 }
 function zeigeAnsicht() {
-	const aufg = zustand.modus === "aufgabe";
-	const a = aufg ? "modell" : zustand.ansicht;
-	document.getElementById("ansicht-knoepfe").classList.toggle("verborgen", aufg);
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
+	const a = zustand.ansicht;
 	document.querySelectorAll("#ansicht-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === zustand.ansicht));
-	const sichtbar = aufg ? ["zeile-darstellung"] : ZEILEN[a];
+	const sichtbar = ZEILEN[a];
 	ALLE_ZEILEN.forEach(id => document.getElementById(id).classList.toggle("verborgen", !sichtbar.includes(id)));
-	document.getElementById("sim-titel").textContent = aufg ? "Messwerte einer Entladung" : TITEL[a];
-	document.getElementById("fussnote").innerHTML = aufg ? "Ziehen Sie das grüne Fadenkreuz, um Werte abzulesen." : FUSSNOTE[a];
+	document.getElementById("sim-titel").textContent = TITEL[a];
+	document.getElementById("fussnote").innerHTML = FUSSNOTE[a];
 	stoppe(); zustand.t = 0;
 	aktualisiere();
 }
@@ -1476,7 +1397,7 @@ document.getElementById("btn-zurueck").addEventListener("click", () => { stoppe(
 /* Fadenkreuz ziehen */
 P.ziehbar(canvas, (x, y) => {
 	const u = achsenAktuell;
-	if (!u || (zustand.modus !== "aufgabe" && zustand.ansicht !== "modell")) return null;
+	if (!u || zustand.ansicht !== "modell") return null;
 	return (x >= u.o.dx && x <= u.o.dx + u.o.dw && y >= u.o.dy && y <= u.o.dy + u.o.dh) ? "marke" : null;
 }, (id, x, y) => {
 	const u = achsenAktuell;
@@ -1485,72 +1406,22 @@ P.ziehbar(canvas, (x, y) => {
 	zeichne();
 });
 
-/* ---------- Aufgabenmodus ---------- */
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	if (modus === "aufgabe" && aufgabe.nr === 0) neueAufgabe();
-	history.replaceState(null, "", "#" + (modus === "aufgabe" ? "aufgabe" : zustand.ansicht));
-	zeigeAnsicht();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	const Rliste = [10, 22, 33, 47, 68, 100];
-	aufgabe.R = Rliste[Math.floor(Math.random() * Rliste.length)];
-	let C, T;
-	do { C = P.runde(P.zufall(120, 1500), 10); T = aufgabe.R * 1e3 * C * 1e-6; } while (T < 2 || T > 60);
-	aufgabe.C = C;
-	aufgabe.tAchse = Math.ceil(4 * T / 5) * 5;
-	aufgabe.daten = [];
-	for (let k = 0; k <= 40; k++) {
-		const t = aufgabe.tAchse * k / 40;
-		aufgabe.daten.push({ t, u: Math.max(0.001, U0 * Math.exp(-t / T) * (1 + 0.02 * P.gauss())) });
-	}
-	zustand.darstellung = "normal";
-	document.querySelectorAll("#darstellung-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === "normal"));
-	zustand.marke = { t: aufgabe.tAchse * 0.5, y: 6 };
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-r").innerHTML = aufgabe.R + "&nbsp;k&Omega;";
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.getElementById("tipp3-wert").innerHTML = "Die Gerade hat die Steigung &minus;1/&tau; mit &tau; &asymp; " + P.de(T, 1) + "&nbsp;s.";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, aufgabe.C, 0.05, 0.15);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Richtig. Die Kapazit&auml;t betr&auml;gt " + aufgabe.C + "&nbsp;&micro;F."); return; }
-	const v = ein / aufgabe.C;
-	if (Math.abs(v - Math.LN2) < 0.06) P.zeigeRueckmeldung(el, "falsch", "Sie haben vermutlich die Halbwertszeit als Zeitkonstante verwendet. Es gilt <i class='gr'>T</i><sub>1/2</sub> = &tau;&thinsp;&middot;&thinsp;ln&thinsp;2.");
-	else if (Math.abs(v - 1000) < 60 || Math.abs(v - 0.001) < 0.00006) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie die Einheiten: k&Omega; und &micro;F.");
-	else if (art === "knapp") P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. W&auml;hlen Sie die beiden Punkte weiter auseinander.");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie, wie die Steigung mit &tau; zusammenh&auml;ngt.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	const T = aufgabe.R * 1e3 * aufgabe.C * 1e-6;
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: Steigung &minus;1/&tau; mit &tau; &asymp; " + P.de(T, 1) + "&nbsp;s, also <i class='gr'>C</i> = &tau;&thinsp;/&thinsp;<i class='gr'>R</i> = " + aufgabe.C + "&nbsp;&micro;F.");
-});
-
 function layout() {
 	({ W, H } = K.skaliereCanvas(canvas, ctx, b => b < 560 ? 0.95 : 0.55));
 	aktualisiere();
 }
 window.addEventListener("resize", layout);
 let h0 = location.hash.replace("#", "");
-/* Modus per Link: ?modus=euler | modell | energie | aufgabe zeigt nur diesen Teil */
+/* Modus per Link: ?modus=euler | modell | energie zeigt nur diesen Teil; das alte ?modus=aufgabe landet beim Erkunden */
 if (!h0) {
 	try { h0 = new URLSearchParams(location.search).get("modus") || ""; } catch (e) { h0 = ""; }
 	if (h0 === "aufgabe") h0 = "";
-	if (h0) { document.getElementById("modus-knoepfe").classList.add("per-link-aus"); document.getElementById("ansicht-knoepfe").classList.add("per-link-aus"); }
+	if (h0) { document.getElementById("ansicht-knoepfe").classList.add("per-link-aus"); }
 }
 SimUI.bildKnopf("btn-bild", canvas, () => "RC_DGL_" + zustand.ansicht + "_R" + zustand.R + "kOhm_C" + zustand.C + "uF");
-/* Aufgabenmodus entfernt (Kast 2026-11-04): ?modus=aufgabe landet beim Erkunden */
 if (TITEL[h0]) zustand.ansicht = h0; zeigeAnsicht();
 layout();
 K.nachFontLaden(zeichne);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

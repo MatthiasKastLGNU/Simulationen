@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1216,30 +1184,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title" id="aufgabe-titel">Aufgabe</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort" id="antwort-label"></label>
-				<input type="number" id="antwort" step="any" placeholder="?"><span id="antwort-einheit"></span>
-				<span class="knopfleiste">
-					<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-					<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-					<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-				</span>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1: Was messen Sie?</summary><p class="tipp" id="tipp1"></p></details>
-			<details class="tipp-box"><summary>Tipp 2: Welche Beziehung hilft?</summary><p class="tipp" id="tipp2"></p></details>
-			<details class="tipp-box"><summary>Tipp 3: Ergebnis zum Vergleichen</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Magnetfelder mit der Hall-Sonde vermessen</div>
 		<div class="tcb-body">
@@ -1293,12 +1237,11 @@ const LANG = { l: 40, R: 3, N: 400 }, HH = { R: 15, N: 130 }, KURZ = { R: 5, N: 
 const ERDFELD = 0.045; /* mT, Anteil in Messrichtung ohne Nullabgleich */
 
 /* Einheiten: Orte in cm, I in A, B in mT */
-const zustand = { art: "lang", I: 1.5, a: 15, anzahl: 1, kipp: 0, nullabgleich: false, einzel: true, theorie: true, homo: 0.01, sonde: 0, modus: "erkunden" };
-const aufgabe = { nr: 0, typ: "abstand", Idraht: 15, loesung: 0 };
+const zustand = { art: "lang", I: 1.5, a: 15, anzahl: 1, kipp: 0, nullabgleich: false, einzel: true, theorie: true, homo: 0.01, sonde: 0 };
 
 function spulenAchse(x, x0, R, N, I) { const r = R / 100, d = (x - x0) / 100; return MU0 * N * I * r * r / (2 * Math.pow(r * r + d * d, 1.5)) * 1e3; }
 function beitraege(x) {
-	const I = zustand.modus === "aufgabe" && aufgabe.typ === "draht" ? aufgabe.Idraht : zustand.I;
+	const I = zustand.I;
 	switch (aktArt()) {
 		case "lang": {
 			const n = LANG.N / (LANG.l / 100), r = LANG.R / 100, x1 = -LANG.l / 200, x2 = LANG.l / 200, X = x / 100;
@@ -1313,7 +1256,7 @@ function beitraege(x) {
 		default: return [x > 0.2 ? MU0 * I / (2 * Math.PI * x / 100) * 1e3 : NaN];
 	}
 }
-function aktArt() { return zustand.modus === "aufgabe" ? (aufgabe.typ === "draht" ? "draht" : "helmholtz") : zustand.art; }
+function aktArt() { return zustand.art; }
 function Bwahr(x) { return beitraege(x).reduce((a, b) => a + b, 0); }
 function Banzeige(x) {
 	const B = Bwahr(x) * Math.cos(zustand.kipp * Math.PI / 180) + (zustand.nullabgleich ? 0 : ERDFELD);
@@ -1375,11 +1318,10 @@ function zeichneAufbau(g, W, H) {
 function zeichneDiagramm() {
 	gD.clearRect(0, 0, WD, HD);
 	const art = aktArt(), bb = bereich();
-	const I = zustand.modus === "aufgabe" && aufgabe.typ === "draht" ? aufgabe.Idraht : zustand.I;
+	const I = zustand.I;
 	const yMax = art === "draht" ? Math.max(0.5, Math.ceil(MU0 * I / (2 * Math.PI * 0.005) * 1e3 * 1.1 * 10) / 10) : art === "lang" ? 20 : art === "helmholtz" ? 2 : 4;
 	const u = P.achsen(gD, { dx: 56, dy: 22, dw: WD - 80, dh: HD - 64, xMin: art === "draht" ? 0 : bb.min, xMax: bb.max, yMin: 0, yMax, xLabel: art === "draht" ? "r" : "x", xEinheit: "cm", yLabel: "B", yEinheit: "mT" });
-	const aufg = zustand.modus === "aufgabe";
-	if (zustand.theorie && !aufg) {
+	if (zustand.theorie) {
 		if (zustand.einzel && beitraege(0).length > 1) {
 			const n = beitraege(0).length;
 			for (let k = 0; k < n; k++) P.kurve(gD, u, x => beitraege(x)[k], bb.min, bb.max, P.FARBEN.grau, { gestrichelt: true, breite: 1.4 });
@@ -1396,15 +1338,15 @@ function zeichneDiagramm() {
 	}
 	P.punkte(gD, u, tabelle.zeilen.map(p => ({ x: p.x, y: p.B })), P.FARBEN.blau);
 	const aw = document.getElementById("auswertung");
-	if (art === "draht" && tabelle.zeilen.length >= 3 && !aufg) {
+	if (art === "draht" && tabelle.zeilen.length >= 3) {
 		const reg = P.linReg(tabelle.zeilen.map(p => 1 / (p.x / 100)), tabelle.zeilen.map(p => p.B / 1e3));
 		aw.innerHTML = "Regression <i class='gr'>B</i> &uuml;ber 1/<i class='gr'>r</i>: Steigung " + P.sig(reg.m, 3) + "&nbsp;T&thinsp;m, Achsenabschnitt " + P.sig(reg.b * 1e3, 2) + "&nbsp;mT, <i class='gr'>R</i><sup>2</sup> = " + P.de(reg.R2, 4) + " &rArr; &mu;<sub>0</sub> = 2&pi;&thinsp;&middot;&thinsp;Steigung/<i class='gr'>I</i> = " + P.sig(2 * Math.PI * reg.m / I, 4) + "&nbsp;Vs/(Am)";
-	} else if (art === "helmholtz" && !aufg) {
+	} else if (art === "helmholtz") {
 		const f = Math.pow(0.8, 1.5) * MU0 * HH.N * zustand.I / (HH.R / 100) * 1e3;
 		aw.innerHTML = "Mitte: <i class='gr'>B</i>(0) = " + P.de(Bwahr(0), 4) + "&nbsp;mT; Formel (4/5)<sup>3/2</sup>&thinsp;&mu;<sub>0</sub><i class='gr'>N</i><i class='gr'>I</i>/<i class='gr'>R</i> = " + P.de(f, 4) + "&nbsp;mT (gilt nur f&uuml;r <i class='gr'>a</i> = <i class='gr'>R</i>).";
-	} else if (art === "lang" && !aufg) {
+	} else if (art === "lang") {
 		aw.innerHTML = "Mitte: " + P.de(Bwahr(0), 3) + "&nbsp;mT; Ende (<i class='gr'>x</i> = 20&nbsp;cm): " + P.de(Bwahr(20), 3) + "&nbsp;mT, also " + P.de(Bwahr(20) / Bwahr(0) * 100, 1) + "&nbsp;% des Werts in der Mitte. Formel lange Spule: " + P.de(MU0 * LANG.N * zustand.I / (LANG.l / 100) * 1e3, 3) + "&nbsp;mT.";
-	} else aw.innerHTML = aufg ? "" : "Summe der Einzelbeitr&auml;ge (rot) und Einzelkurven (grau gestrichelt).";
+	} else aw.innerHTML = "Summe der Einzelbeitr&auml;ge (rot) und Einzelkurven (grau gestrichelt).";
 }
 
 function aktualisiere() {
@@ -1413,7 +1355,7 @@ function aktualisiere() {
 	document.getElementById("wert-a").innerHTML = P.de(zustand.a, 1) + "&nbsp;cm";
 	document.getElementById("wert-kipp").innerHTML = zustand.kipp + "&deg;";
 	document.getElementById("zeile-a").classList.toggle("verborgen", art !== "helmholtz");
-	document.getElementById("zeile-n").classList.toggle("verborgen", art !== "kurz" || zustand.modus === "aufgabe");
+	document.getElementById("zeile-n").classList.toggle("verborgen", art !== "kurz");
 	document.getElementById("spalte-ort").innerHTML = art === "draht" ? "<i class='gr'>r</i> in cm" : "<i class='gr'>x</i> in cm";
 	const bb = bereich();
 	zustand.sonde = Math.max(bb.min, Math.min(bb.max, zustand.sonde));
@@ -1447,71 +1389,6 @@ P.ziehbar(cA, (x, y) => (geo && Math.abs(y - geo.yA) < 30) ? "sonde" : null, (id
 setInterval(() => zeichneAufbau(gA, WA, HA), 600);
 
 
-/* ---------- Aufgabe ---------- */
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	["zeile-art", "zeile-einzel", "zeile-theorie"].forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	if (aufg) neueAufgabe();
-	tabelle.leeren();
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.typ = aufgabe.nr % 2 === 1 ? "abstand" : "draht";
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	if (aufgabe.typ === "abstand") {
-		zustand.a = P.runde(P.zufall(6, 28), 0.5); document.getElementById("regler-a").value = zustand.a;
-		document.getElementById("aufgabe-titel").textContent = "Aufgabe: Den besten Spulenabstand finden";
-		document.getElementById("aufgabe-text").innerHTML = "Stellen Sie den Abstand <i class='gr'>a</i> des Helmholtz-Paars so ein, dass das Feld in der Mitte m&ouml;glichst weit homogen ist. Die berechnete Kurve ist ausgeblendet; nutzen Sie Messwerte.";
-		document.getElementById("antwort-label").innerHTML = "<i class='gr'>a</i> =";
-		document.getElementById("antwort-einheit").innerHTML = "cm";
-		document.getElementById("tipp1").innerHTML = "Messen Sie f&uuml;r einen Abstand <i class='gr'>B</i> in der Mitte und bei <i class='gr'>x</i> = &plusmn;4&nbsp;cm. Ver&auml;ndern Sie <i class='gr'>a</i>, bis die Werte fast gleich sind.";
-		document.getElementById("tipp2").innerHTML = "Ist <i class='gr'>a</i> zu gro&szlig;, hat die Kurve in der Mitte eine Delle; ist <i class='gr'>a</i> zu klein, einen Buckel.";
-		document.getElementById("tipp3").innerHTML = "Der optimale Abstand h&auml;ngt nur vom Spulenradius ab: <i class='gr'>a</i> = <i class='gr'>R</i>.";
-		aufgabe.loesung = HH.R;
-	} else {
-		aufgabe.Idraht = P.runde(P.zufall(8, 18), 0.5);
-		zustand.sonde = 3;
-		document.getElementById("aufgabe-titel").textContent = "Aufgabe: Magnetische Feldkonstante am Draht bestimmen";
-		document.getElementById("aufgabe-text").innerHTML = "Durch den Draht flie&szlig;t <i class='gr'>I</i> = " + P.de(aufgabe.Idraht, 1) + "&nbsp;A. Messen Sie <i class='gr'>B</i> f&uuml;r mehrere Abst&auml;nde <i class='gr'>r</i> und bestimmen Sie &mu;<sub>0</sub>. Denken Sie an den Nullabgleich.";
-		document.getElementById("antwort-label").innerHTML = "&mu;<sub>0</sub> =";
-		document.getElementById("antwort-einheit").innerHTML = "&middot;10<sup>&minus;7</sup>&nbsp;Vs/(Am)";
-		document.getElementById("tipp1").innerHTML = "Messen Sie <i class='gr'>B</i> f&uuml;r mindestens f&uuml;nf Abst&auml;nde zwischen 1&nbsp;cm und 10&nbsp;cm.";
-		document.getElementById("tipp2").innerHTML = "<i class='gr'>B</i> = &mu;<sub>0</sub>&thinsp;<i class='gr'>I</i>/(2&pi;<i class='gr'>r</i>). Tragen Sie <i class='gr'>B</i> &uuml;ber 1/<i class='gr'>r</i> auf; die Steigung ist &mu;<sub>0</sub><i class='gr'>I</i>/(2&pi;).";
-		document.getElementById("tipp3").innerHTML = "Tabellenwert: &mu;<sub>0</sub> = 4&pi;&middot;10<sup>&minus;7</sup> &asymp; 12,57&middot;10<sup>&minus;7</sup>&nbsp;Vs/(Am).";
-		aufgabe.loesung = 4 * Math.PI;
-	}
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	zustand.theorie = false; document.getElementById("chk-theorie").checked = false;
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); tabelle.leeren(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	if (!isFinite(ein)) { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (aufgabe.typ === "abstand") {
-		const d = Math.abs(ein - HH.R);
-		if (d <= 0.8) P.zeigeRueckmeldung(el, "gut", "Richtig: Der Helmholtz-Abstand ist gleich dem Spulenradius, <i class='gr'>a</i> = 15&nbsp;cm.");
-		else if (d <= 2.5) P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Vergleichen Sie Messwerte bei <i class='gr'>x</i> = 0 und <i class='gr'>x</i> = &plusmn;5&nbsp;cm genauer.");
-		else P.zeigeRueckmeldung(el, "falsch", "Das Feld ist dort noch deutlich inhomogen. Achten Sie auf Delle oder Buckel in der Mitte.");
-		return;
-	}
-	const art = P.pruefe(ein, aufgabe.loesung, 0.04, 0.12);
-	if (art === "gut") P.zeigeRueckmeldung(el, "gut", "Sehr gut. Der Tabellenwert ist 12,57&middot;10<sup>&minus;7</sup>&nbsp;Vs/(Am).");
-	else if (art === "knapp") P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Haben Sie den Nullabgleich durchgef&uuml;hrt und die Sonde nicht gekippt?");
-	else if (Math.abs(ein / aufgabe.loesung - 2 * Math.PI) < 0.5 || Math.abs(ein * 2 * Math.PI / aufgabe.loesung - 1) < 0.1) P.zeigeRueckmeldung(el, "falsch", "Pr&uuml;fen Sie den Faktor 2&pi; in <i class='gr'>B</i> = &mu;<sub>0</sub><i class='gr'>I</i>/(2&pi;<i class='gr'>r</i>).");
-	else P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Pr&uuml;fen Sie die Einheiten (mT, cm) und die Steigung.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	const el = document.getElementById("rueckmeldung");
-	if (aufgabe.typ === "abstand") P.zeigeRueckmeldung(el, "knapp", "L&ouml;sung: <i class='gr'>a</i> = <i class='gr'>R</i> = 15&nbsp;cm. Dann verschwindet in der Mitte auch die zweite Ableitung von <i class='gr'>B</i>(<i class='gr'>x</i>).");
-	else P.zeigeRueckmeldung(el, "knapp", "L&ouml;sung: &mu;<sub>0</sub> &asymp; 12,6&middot;10<sup>&minus;7</sup>&nbsp;Vs/(Am). Ohne Nullabgleich verschiebt das Erdfeld alle Werte um etwa 0,05&nbsp;mT; das &auml;ndert den Achsenabschnitt, nicht die Steigung.");
-});
-
 function layout() {
 	({ W: WA, H: HA } = K.skaliereCanvas(cA, gA, b => b < 560 ? 0.5 : 0.3));
 	({ W: WD, H: HD } = K.skaliereCanvas(cD, gD, b => b < 560 ? 0.72 : 0.45));
@@ -1521,16 +1398,14 @@ window.addEventListener("resize", layout);
 SimUI.bildKnopf("btn-bild", cA, () => "Hallsonde_Aufbau_" + aktArt());
 SimUI.bildKnopf("btn-dia-bild", cD, () => "Hallsonde_Diagramm_" + aktArt());
 SimUI.tabelleKnopf("btn-tab-bild", "mess-tab", () => "Hallsonde_Messwerte_" + aktArt(), "Messungen mit der Hall-Sonde");
-/* Modus per Link: ?modus=aufgabe oder eine Anordnung (?modus=helmholtz) */
+/* Modus per Link: eine Anordnung (?modus=helmholtz); das alte ?modus=aufgabe landet beim Erkunden */
 try {
 	const m = (new URLSearchParams(location.search).get("modus") || "").toLowerCase();
 	const k = m && document.querySelector('#art-knoepfe button[data-wert="' + m + '"]');
-	if (k) { k.click(); document.getElementById("modus-knoepfe").classList.add("per-link-aus"); document.getElementById("zeile-art").classList.add("per-link-aus"); }
-	else SimUI.modusPerLink("modus-knoepfe");
+	if (k) { k.click(); document.getElementById("zeile-art").classList.add("per-link-aus"); }
 } catch (e) { /* ohne Parameter */ }
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

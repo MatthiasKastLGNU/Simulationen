@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1195,25 +1163,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title" id="aufgabe-titel">Aufgabe</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort" id="antwort-label"></label><input type="number" id="antwort" step="any" placeholder="?"><span id="antwort-einheit"></span>
-				<span class="knopfleiste"><button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button><button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button><button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button></span>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1: Welcher Ansatz?</summary><p class="tipp" id="tipp1"></p></details>
-			<details class="tipp-box"><summary>Tipp 2: Welche Beziehungen helfen?</summary><p class="tipp" id="tipp2"></p></details>
-			<details class="tipp-box"><summary>Tipp 3: Ergebnis zum Vergleichen</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
 	<div class="tcb blau" id="box-sim">
 		<div class="tcb-title">Simulation: Lange Spule mit Kern</div>
 		<div class="tcb-body">
@@ -1245,8 +1194,7 @@ const MU0 = 4 * Math.PI * 1e-7, LV_HE = 20.8e3, RHO_FL = 125, RHO_GAS = 0.166;
 const KERNE = { luft: { name: "Luft", mur: 1, bs: Infinity }, alu: { name: "Aluminium", mur: 1.000022, bs: Infinity }, kupfer: { name: "Kupfer", mur: 0.99999, bs: Infinity }, ferrit: { name: "Ferrit", mur: 1000, bs: 0.5 }, eisen: { name: "Weicheisen", mur: 5000, bs: 2.0 } };
 const PRESETS = { schule: { N: 600, I: 2, l: 0.3, r: 0.03, kern: "luft", mrt: false }, mrt: { N: 8000, I: 500, l: 1.6, r: 0.45, kern: "luft", mrt: true } };
 
-const zustand = Object.assign({ modus: "erkunden", quench: null }, PRESETS.schule);
-const aufgabe = { nr: 0, soll: 0 };
+const zustand = Object.assign({ quench: null }, PRESETS.schule);
 
 function feld(z, I) {
 	const k = KERNE[z.kern];
@@ -1372,66 +1320,14 @@ document.getElementById("btn-quench").addEventListener("click", () => {
 	}, 100);
 });
 
-/* ---------- Aufgaben ---------- */
-const AUFGABEN = [
-	() => {
-		const N = P.runde(P.zufall(300, 1200), 50), I = P.runde(P.zufall(1, 5), 0.5), l = P.runde(P.zufall(0.2, 0.6), 0.05), r = P.runde(P.zufall(0.02, 0.05), 0.005);
-		const B = MU0 * N * I / l, E = B * B / (2 * MU0) * Math.PI * r * r * l;
-		return { titel: "Aufgabe: Energie im Feld einer Luftspule", text: "Eine lange Luftspule hat <i class='gr'>N</i> = " + N + " Windungen, die L&auml;nge " + P.de(l * 100, 0) + "&nbsp;cm und den Radius " + P.de(r * 100, 1) + "&nbsp;cm. Es flie&szlig;t <i class='gr'>I</i> = " + P.de(I, 1) + "&nbsp;A. Berechnen Sie die Energie des Magnetfelds im Innern.", label: "<i class='gr'>E</i> =", einheit: "mJ", soll: E * 1e3,
-			t1: "Berechnen Sie zuerst die Flussdichte und dann die Energiedichte.", t2: "<i class='gr'>B</i> = &mu;<sub>0</sub><i class='gr'>N</i><i class='gr'>I</i>/<i class='gr'>l</i>, &rho; = <i class='gr'>B</i><sup>2</sup>/(2&mu;<sub>0</sub>), <i class='gr'>V</i> = &pi;<i class='gr'>r</i><sup>2</sup><i class='gr'>l</i>", t3: "<i class='gr'>B</i> = " + P.sig(B * 1e3, 3) + "&nbsp;mT, <i class='gr'>E</i> &asymp; " + P.sig(E * 1e3, 3) + "&nbsp;mJ" };
-	},
-	() => {
-		const B = P.runde(P.zufall(1.5, 7), 0.5), V = P.runde(P.zufall(0.5, 2), 0.1);
-		const E = B * B / (2 * MU0) * V, m = E / LV_HE;
-		return { titel: "Aufgabe: Helium beim Quench", text: "Ein supraleitender Magnet erzeugt im Volumen <i class='gr'>V</i> = " + P.de(V, 1) + "&nbsp;m<sup>3</sup> ein homogenes Feld mit <i class='gr'>B</i> = " + P.de(B, 1) + "&nbsp;T. Beim Quench wird die gesamte Feldenergie an fl&uuml;ssiges Helium &uuml;bertragen (<i class='gr'>L</i><sub>V</sub> = 20,8&nbsp;kJ/kg). Welche Masse Helium verdampft h&ouml;chstens?", label: "<i class='gr'>m</i> =", einheit: "kg", soll: m,
-			t1: "Die Feldenergie wird vollst&auml;ndig zum Verdampfen genutzt.", t2: "<i class='gr'>E</i> = <i class='gr'>B</i><sup>2</sup><i class='gr'>V</i>/(2&mu;<sub>0</sub>), <i class='gr'>m</i> = <i class='gr'>E</i>/<i class='gr'>L</i><sub>V</sub>", t3: "<i class='gr'>E</i> = " + P.sig(E / 1e6, 3) + "&nbsp;MJ, <i class='gr'>m</i> &asymp; " + P.sig(m, 3) + "&nbsp;kg" };
-	}
-];
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	document.getElementById("box-sim").classList.toggle("verborgen", aufg);
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	const a = AUFGABEN[(aufgabe.nr - 1) % AUFGABEN.length]();
-	Object.assign(aufgabe, a);
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-titel").textContent = a.titel;
-	document.getElementById("aufgabe-text").innerHTML = a.text;
-	document.getElementById("antwort-label").innerHTML = a.label;
-	document.getElementById("antwort-einheit").innerHTML = a.einheit;
-	document.getElementById("tipp1").innerHTML = a.t1; document.getElementById("tipp2").innerHTML = a.t2; document.getElementById("tipp3").innerHTML = a.t3;
-	document.getElementById("antwort").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", neueAufgabe);
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort"));
-	const el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, aufgabe.soll, 0.03, 0.1);
-	if (art === "leer") { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein."); return; }
-	if (art === "gut") { P.zeigeRueckmeldung(el, "gut", "Richtig."); return; }
-	const v = ein / aufgabe.soll;
-	if (Math.abs(v - 2) < 0.1 || Math.abs(v - 0.5) < 0.03) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 2: Die Energiedichte enth&auml;lt den Faktor &frac12;.");
-	else if (Math.abs(v - 1000) < 80 || Math.abs(v - 0.001) < 0.0001) P.zeigeRueckmeldung(el, "falsch", "Ein Faktor 1000: Pr&uuml;fen Sie die Einheiten (mJ, kJ, cm).");
-	else P.zeigeRueckmeldung(el, art === "knapp" ? "knapp" : "falsch", art === "knapp" ? "Knapp daneben. Pr&uuml;fen Sie die Rundung." : "Das passt noch nicht. Rechnen Sie Schritt f&uuml;r Schritt mit Einheiten.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: " + aufgabe.t3));
-
 function layout() {
 	({ W: WS, H: HS } = K.skaliereCanvas(cS, gS, b => b < 560 ? 0.75 : 0.47));
 	aktualisiere();
 }
 window.addEventListener("resize", layout);
 SimUI.bildKnopf("btn-bild", cS, () => "Spule_N" + zustand.N + "_" + zustand.kern);
-SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

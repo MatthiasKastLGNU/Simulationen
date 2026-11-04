@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1195,26 +1163,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Unbekanntes Material untersuchen</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort"><i class="gr">n</i> =</label><input type="number" id="antwort" step="any" placeholder="?"><span>&middot;10<sup id="exp-anzeige">22</sup>&nbsp;m<sup>&minus;3</sup></span>
-				<label style="margin-left:0.6rem">Ladungstr&auml;ger</label><span class="knopfleiste" id="traeger-antwort"><button data-wert="-1" class="gross" data-icon="ladung_minus" title="negativ"></button><button data-wert="1" class="gross" data-icon="ladung_plus" title="positiv"></button></span>
-			</div>
-			<div class="antwortzeile knopfleiste"><button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button><button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button><button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button></div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1: Welcher Ansatz?</summary><p class="tipp">Im Gleichgewicht ist die elektrische Kraft durch das Hall-Feld genauso gro&szlig; wie die Lorentzkraft.</p></details>
-			<details class="tipp-box"><summary>Tipp 2: Welche Beziehungen helfen?</summary><p class="formelzeile"><span><i class="gr">U</i><sub>H</sub> =</span><span class="bruch"><span class="z"><i class="gr">I</i>&thinsp;&middot;&thinsp;<i class="gr">B</i></span><span class="n"><i class="gr">n</i>&thinsp;&middot;&thinsp;<i class="gr">e</i>&thinsp;&middot;&thinsp;<i class="gr">d</i></span></span></p><p class="tipp">Das Vorzeichen der Hall-Spannung verr&auml;t das Vorzeichen der Ladungstr&auml;ger.</p></details>
-			<details class="tipp-box"><summary>Tipp 3: Ergebnis zum Vergleichen</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Ladungstr&auml;ger im Hall-Pl&auml;ttchen</div>
 		<div class="tcb-body">
@@ -1244,13 +1192,12 @@ const E_LAD = 1.602e-19;
 /* Ladungstraegerdichte in 1/m^3, Vorzeichen der Traeger */
 const MATERIALIEN = { cu: { name: "Kupfer", n: 8.5e28, z: -1 }, gen: { name: "n-Germanium", n: 1.0e21, z: -1 }, gep: { name: "p-Germanium", n: 1.0e21, z: 1 }, insb: { name: "Indiumantimonid", n: 2.0e22, z: -1 } };
 /* I in A (Kupfer) bzw. mA (Halbleiter), B in T, d in mm */
-const zustand = { mat: "gen", I: 3, B: 0.5, d: 1, laeuft: true, modus: "erkunden" };
-const aufgabe = { nr: 0, n: 1e22, z: -1, I: 20e-3, B: 0.4, d: 0.5e-3, U: 0, gewaehlt: null };
+const zustand = { mat: "gen", I: 3, B: 0.5, d: 1, laeuft: true };
 
-function material() { return zustand.modus === "aufgabe" ? { name: "unbekannt", n: aufgabe.n, z: aufgabe.z } : MATERIALIEN[zustand.mat]; }
-function stromSI() { return zustand.mat === "cu" && zustand.modus === "erkunden" ? zustand.I : zustand.I * 1e-3; }
+function material() { return MATERIALIEN[zustand.mat]; }
+function stromSI() { return zustand.mat === "cu" ? zustand.I : zustand.I * 1e-3; }
 function hall() {
-	const m = material(), I = zustand.modus === "aufgabe" ? aufgabe.I : stromSI(), B = zustand.modus === "aufgabe" ? aufgabe.B : zustand.B, d = zustand.modus === "aufgabe" ? aufgabe.d : zustand.d * 1e-3;
+	const m = material(), I = stromSI(), B = zustand.B, d = zustand.d * 1e-3;
 	const b = 0.01;                                    /* Breite 1 cm */
 	const vd = I / (m.n * E_LAD * b * d);
 	return { U: m.z * I * B / (m.n * E_LAD * d), vd, m, I, B, d };
@@ -1271,7 +1218,7 @@ function zeichne(g, W, H) {
 	g.fillStyle = "#B8741A"; g.fillRect(x0 - 20, y0 + 20, 20, y1 - y0 - 40); g.fillRect(x1, y0 + 20, 20, y1 - y0 - 40);
 	P.pfeil(g, eng ? 4 : x0 - 70, (y0 + y1) / 2, x0 - 24, (y0 + y1) / 2, P.FARBEN.blau, 1.2 + 0.5 * zustand.I, 10);   /* Pfeildicke ~ Stromstärke */
 	P.text(g, eng ? "I" : "I (technisch)", eng ? 6 : x0 - 72, (y0 + y1) / 2 - 10, { groesse: 12, farbe: P.FARBEN.blau, kursiv: eng });
-	const B = zustand.modus === "aufgabe" ? aufgabe.B : zustand.B;
+	const B = zustand.B;
 	/* Die Flussdichte zeigt sich in Größe und Deutlichkeit der Feldsymbole */
 	const bA = Math.min(1, Math.abs(B));
 	if (bA > 0.005) for (let x = x0 + 30; x < x1; x += 60) for (let y = y0 + 25; y < y1; y += 50) P.text(g, B >= 0 ? "⊙" : "⊗", x, y, { ausrichtung: "center", groesse: Math.round(9 + 9 * bA), farbe: "rgba(0,0,120," + (0.12 + 0.5 * bA) + ")" });
@@ -1327,7 +1274,7 @@ function zeichne(g, W, H) {
 }
 function bewege(dt) {
 	const h = hall();
-	const B = zustand.modus === "aufgabe" ? aufgabe.B : zustand.B;
+	const B = zustand.B;
 	const vRicht = h.m.z < 0 ? -1 : 1;
 	const FL = h.m.z * vRicht * (B >= 0 ? -1 : 1);
 	const schnell = h.I > 0 ? 0.03 + 0.03 * Math.min(10, zustand.I) : 0;   /* Driftgeschwindigkeit ~ Stromstärke (schematisch) */
@@ -1339,15 +1286,14 @@ function bewege(dt) {
 	});
 }
 function aktualisiere() {
-	const cu = zustand.mat === "cu" && zustand.modus === "erkunden";
+	const cu = zustand.mat === "cu";
 	document.getElementById("regler-i").max = 10;
 	document.getElementById("wert-i").innerHTML = P.de(zustand.I, 1) + "&nbsp;" + (cu ? "A" : "mA");
 	document.getElementById("wert-b").innerHTML = P.de(zustand.B, 2) + "&nbsp;T";
 	document.getElementById("wert-d").innerHTML = P.de(zustand.d, 2) + "&nbsp;mm";
 	zeichne(gH, WH, HH);
 	const h = hall();
-	if (zustand.modus === "erkunden") document.getElementById("auswertung").innerHTML = "<i class='gr'>U</i><sub>H</sub> = <i class='gr'>I</i><i class='gr'>B</i>/(<i class='gr'>n</i><i class='gr'>e</i><i class='gr'>d</i>) = " + P.sig(h.U * 1e3, 3) + "&nbsp;mV; Ladungstr&auml;gerdichte <i class='gr'>n</i> = " + P.sig(h.m.n, 2) + "&nbsp;m<sup>&minus;3</sup>, Driftgeschwindigkeit " + P.sig(h.vd, 3) + "&nbsp;m/s. Breite des Pl&auml;ttchens 1&nbsp;cm.";
-	else document.getElementById("auswertung").innerHTML = "";
+	document.getElementById("auswertung").innerHTML = "<i class='gr'>U</i><sub>H</sub> = <i class='gr'>I</i><i class='gr'>B</i>/(<i class='gr'>n</i><i class='gr'>e</i><i class='gr'>d</i>) = " + P.sig(h.U * 1e3, 3) + "&nbsp;mV; Ladungstr&auml;gerdichte <i class='gr'>n</i> = " + P.sig(h.m.n, 2) + "&nbsp;m<sup>&minus;3</sup>, Driftgeschwindigkeit " + P.sig(h.vd, 3) + "&nbsp;m/s. Breite des Pl&auml;ttchens 1&nbsp;cm.";
 }
 K.bindeKnopfgruppe("material-knoepfe", w => zustand.mat = w, aktualisiere);
 P.regler("regler-i", "wert-i", v => v, v => zustand.I = v, aktualisiere);
@@ -1361,51 +1307,14 @@ btn.addEventListener("click", () => {
 	if (zustand.laeuft) stopp = K.starteSchleife(dt => { bewege(Math.min(dt, 0.05)); zeichne(gH, WH, HH); return zustand.laeuft; });
 });
 
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", modus !== "aufgabe");
-	document.getElementById("zeile-material").classList.toggle("verborgen", modus === "aufgabe");
-	["regler-i", "regler-b", "regler-d"].forEach(id => document.getElementById(id).closest(".zeile").classList.toggle("verborgen", modus === "aufgabe"));
-	if (modus === "aufgabe" && aufgabe.nr === 0) neueAufgabe();
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.n = P.runde(P.zufall(0.5, 9.5), 0.1) * 1e22; aufgabe.z = Math.random() < 0.5 ? -1 : 1;
-	aufgabe.I = P.runde(P.zufall(5, 40), 1) * 1e-3; aufgabe.B = P.runde(P.zufall(0.2, 0.9), 0.05); aufgabe.d = P.runde(P.zufall(0.2, 1.0), 0.05) * 1e-3;
-	aufgabe.U = aufgabe.z * aufgabe.I * aufgabe.B / (aufgabe.n * E_LAD * aufgabe.d);
-	aufgabe.gewaehlt = null;
-	document.querySelectorAll("#traeger-antwort button").forEach(b => b.classList.remove("aktiv"));
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-text").innerHTML = "Ein Pl&auml;ttchen der Dicke <i class='gr'>d</i> = " + P.de(aufgabe.d * 1e3, 2) + "&nbsp;mm wird von <i class='gr'>I</i> = " + P.de(aufgabe.I * 1e3, 0) + "&nbsp;mA durchflossen und steht senkrecht im Feld <i class='gr'>B</i> = " + P.de(aufgabe.B, 2) + "&nbsp;T. Das Voltmeter zeigt die Hall-Spannung. Bestimmen Sie die Ladungstr&auml;gerdichte und das Vorzeichen der Ladungstr&auml;ger.";
-	document.getElementById("tipp3").innerHTML = "<i class='gr'>n</i> &asymp; " + P.de(aufgabe.n / 1e22, 1) + "&middot;10<sup>22</sup>&nbsp;m<sup>&minus;3</sup>, Ladungstr&auml;ger " + (aufgabe.z < 0 ? "negativ" : "positiv");
-	document.getElementById("antwort").value = ""; document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-}
-document.getElementById("traeger-antwort").addEventListener("click", ev => { const b = ev.target.closest("button"); if (!b) return; aufgabe.gewaehlt = +b.dataset.wert; document.querySelectorAll("#traeger-antwort button").forEach(x => x.classList.toggle("aktiv", x === b)); });
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const ein = P.leseZahl(document.getElementById("antwort")) * 1e22, el = document.getElementById("rueckmeldung");
-	const art = P.pruefe(ein, aufgabe.n, 0.03, 0.1);
-	if (art === "leer") return P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie eine Zahl ein.");
-	if (aufgabe.gewaehlt === null) return P.zeigeRueckmeldung(el, "knapp", "W&auml;hlen Sie noch das Vorzeichen der Ladungstr&auml;ger.");
-	const vz = aufgabe.gewaehlt === aufgabe.z;
-	if (art === "gut" && vz) return P.zeigeRueckmeldung(el, "gut", "Richtig.");
-	if (art === "gut") return P.zeigeRueckmeldung(el, "knapp", "Die Dichte stimmt, das Vorzeichen nicht. &Uuml;berlegen Sie mit der Drei-Finger-Regel, zu welcher Seite die Ladungstr&auml;ger abgelenkt werden.");
-	P.zeigeRueckmeldung(el, art, "Die Dichte stimmt noch nicht. Pr&uuml;fen Sie die Einheiten (mA, mm, mV).");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: " + document.getElementById("tipp3").innerHTML));
-
 function layout() {
 	({ W: WH, H: HH } = K.skaliereCanvas(cH, gH, b => b < 560 ? 1.15 : 0.5));
 	aktualisiere();
 }
 window.addEventListener("resize", layout);
-SimUI.bildKnopf("btn-bild", cH, () => "Hall_Effekt_" + (zustand.modus === "aufgabe" ? "Aufgabe" : zustand.mat) + "_B" + P.de(zustand.B, 2) + "T");
-SimUI.modusPerLink("modus-knoepfe");
+SimUI.bildKnopf("btn-bild", cH, () => "Hall_Effekt_" + zustand.mat + "_B" + P.de(zustand.B, 2) + "T");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

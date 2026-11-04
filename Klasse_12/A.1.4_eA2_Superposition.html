@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1210,38 +1178,6 @@ window.SimUI = (function () {
 		<button data-modus="erkunden" class="aktiv">In der Ebene</button>
 	</div>
 
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Feldst&auml;rke im Punkt P berechnen</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text"><span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span><span id="aufgabe-text"></span></p>
-			<div class="antwortzeile">
-				<label for="antwort-e">|<i class="gr">E</i>| =</label>
-				<input type="number" id="antwort-e" step="any" placeholder="?"><span>kV/m</span>
-				<label for="antwort-w" style="margin-left:0.6rem">Winkel zur <i class="gr">x</i>-Achse</label>
-				<input type="number" id="antwort-w" step="any" placeholder="?"><span>&deg;</span>
-			</div>
-			<div class="antwortzeile knopfleiste">
-				<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-				<button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button>
-				<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Wie gehen Sie vor?</summary>
-				<p class="tipp">Berechnen Sie f&uuml;r jede Ladung einzeln Betrag und Richtung der Feldst&auml;rke in P. Skizzieren Sie die Pfeile: von positiven Ladungen weg, zu negativen hin.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span><i class="gr">E</i> =</span><span class="bruch"><span class="z">1</span><span class="n">4&pi;&epsilon;<sub>0</sub></span></span><span>&middot;</span><span class="bruch"><span class="z">|<i class="gr">Q</i>|</span><span class="n"><i class="gr">r</i><sup>2</sup></span></span></p>
-				<p class="tipp">Parallele Pfeile mit Vorzeichen addieren; senkrechte Pfeile mit Pythagoras und tan&thinsp;&alpha; zusammensetzen. Mit 1&nbsp;nC und 1&nbsp;cm ergibt sich 89,9&nbsp;kV/m.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="tipp" id="tipp3"></p>
-			</details>
-		</div>
-	</div>
-
 	<div id="teil-achse" class="verborgen">
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Feld zweier Punktladungen auf der Verbindungsachse</div>
@@ -1379,9 +1315,8 @@ const STANDARD = () => ({
 	Eh: 0, EhW: 270, P: { x: 3, y: 3 }, mass: 8, komp: true, gitter: false, raster: true
 });
 const zustand = Object.assign({ modus: "erkunden", achse: 20 }, STANDARD());
-const aufgabe = { nr: 0, ladungen: [], P: { x: 0, y: 0 }, E: 0, w: 0 };
 
-function quellen() { return zustand.modus === "aufgabe" ? aufgabe.ladungen : zustand.ladungen.filter(l => l.an); }
+function quellen() { return zustand.ladungen.filter(l => l.an); }
 function feldVon(l, x, y) {
 	const dx = x - l.x, dy = y - l.y, r2 = dx * dx + dy * dy;
 	if (r2 < 0.04) return null;
@@ -1400,7 +1335,7 @@ const cE = document.getElementById("ebene-canvas"), gE = cE.getContext("2d");
 const cX = document.getElementById("achse-canvas"), gX = cX.getContext("2d");
 let WE = 760, HE = 530, WX = 760, HX = 260, geo = null;
 
-function zeichneEbene(g, W, H, ohnePfeile) {
+function zeichneEbene(g, W, H) {
 	g.clearRect(0, 0, W, H);
 	const s = Math.min((W - 30) / 20, (H - 30) / 14);
 	const ox = W / 2, oy = H / 2;
@@ -1417,7 +1352,7 @@ function zeichneEbene(g, W, H, ohnePfeile) {
 	else P.text(g, "x in cm", px(10) - 4, py(0) - 8, { ausrichtung: "right", groesse: 11 });
 	P.text(g, "y in cm", px(0) + 8, py(7) + 12, { groesse: 11 });
 
-	if (zustand.gitter && !ohnePfeile) {
+	if (zustand.gitter) {
 		for (let x = -9; x <= 9; x += 1.5) for (let y = -6; y <= 6; y += 1.5) {
 			const f = feldGesamt(x, y); if (!f) continue;
 			const b = Math.hypot(f.Ex, f.Ey); if (b < 1e-6) continue;
@@ -1428,12 +1363,12 @@ function zeichneEbene(g, W, H, ohnePfeile) {
 	const qs = quellen();
 	qs.forEach((l, k) => {
 		const vzFarbe = l.q > 0 ? "#BF0000" : "#0000BF";   /* positiv rot, negativ blau */
-		const farbe = zustand.modus === "aufgabe" ? vzFarbe : FARBE[zustand.ladungen.indexOf(l)];
+		const farbe = FARBE[zustand.ladungen.indexOf(l)];
 		const rk = 6 + 2.2 * Math.abs(l.q);   /* der Betrag der Ladung zeigt sich in der Größe */
 		g.fillStyle = vzFarbe; g.beginPath(); g.arc(px(l.x), py(l.y), rk, 0, 2 * Math.PI); g.fill();
 		SimUI.ladungsZeichen(g, px(l.x), py(l.y), rk, l.q);
 		/* Beschriftung Q mit Index; passt sie rechts nicht mehr ins Bild, steht sie links von der Ladung */
-		const nr = zustand.modus === "aufgabe" ? "" : String(zustand.ladungen.indexOf(l) + 1);
+		const nr = String(zustand.ladungen.indexOf(l) + 1);
 		const rest = (nr ? " = " : "") + P.de(l.q, 1) + " nC";
 		g.font = "italic 12px " + K.SCHRIFT; const wQ = nr ? g.measureText("Q").width + 1 : 0;
 		g.font = "9px " + K.SCHRIFT; const wI = nr ? g.measureText(nr).width + 1 : 0;
@@ -1449,15 +1384,14 @@ function zeichneEbene(g, W, H, ohnePfeile) {
 		P.text(g, rest, xL + wQ + wI, yL, { groesse: 12, farbe });
 	});
 	/* Punkt P */
-	const Pp = zustand.modus === "aufgabe" ? aufgabe.P : zustand.P;
+	const Pp = zustand.P;
 	g.fillStyle = "#111"; g.beginPath(); g.arc(px(Pp.x), py(Pp.y), 5, 0, 2 * Math.PI); g.fill();
 	{
-		/* am Handy nur "P" (außer in der Aufgabe, dort braucht man die Koordinaten) */
-		const tP = W < 560 && zustand.modus !== "aufgabe" ? "P" : ("P(" + P.de(Pp.x, 1) + " | " + P.de(Pp.y, 1) + ")").replace(/-/g, "\u2212");
+		/* am Handy nur "P" */
+		const tP = W < 560 ? "P" : ("P(" + P.de(Pp.x, 1) + " | " + P.de(Pp.y, 1) + ")").replace(/-/g, "\u2212");
 		g.font = "bold 12px " + K.SCHRIFT; const wP = g.measureText(tP).width;
 		P.text(g, tP, Math.min(px(Pp.x) + 8, W - 4 - wP), py(Pp.y) + 18, { groesse: 12, fett: true });
 	}
-	if (ohnePfeile) return;
 	const m = zustand.mass;
 	let Ex = 0, Ey = 0;
 	for (const l of qs) {
@@ -1494,7 +1428,7 @@ function aktualisiere() {
 	document.getElementById("wert-eh").innerHTML = P.de(zustand.Eh, 1) + "&nbsp;kV/m";
 	document.getElementById("wert-ehw").innerHTML = zustand.EhW + "&deg;";
 	document.getElementById("wert-mass").innerHTML = zustand.mass + "&nbsp;px pro kV/m";
-	zeichneEbene(gE, WE, HE, zustand.modus === "aufgabe");
+	zeichneEbene(gE, WE, HE);
 	if (zustand.modus === "erkunden") {
 		const tb = document.getElementById("ergebnis-koerper");
 		let html = "", Ex = 0, Ey = 0, singulaer = false;
@@ -1560,7 +1494,7 @@ document.getElementById("btn-standard").addEventListener("click", () => {
 });
 
 P.ziehbar(cE, (x, y) => {
-	if (!geo || zustand.modus === "aufgabe") return null;
+	if (!geo) return null;
 	const Pp = zustand.P;
 	if (Math.hypot(x - geo.px(Pp.x), y - geo.py(Pp.y)) < 12) return "P";
 	for (let k = 0; k < 4; k++) { const l = zustand.ladungen[k]; if (l.an && Math.hypot(x - geo.px(l.x), y - geo.py(l.y)) < 14) return k; }
@@ -1573,63 +1507,15 @@ P.ziehbar(cE, (x, y) => {
 });
 
 
-/* ---------- Aufgabe ---------- */
-const VERSTECKT = ["steuerung", "ergebnis-wrap", "box-achse"];
+/* ---------- Modus ---------- */
 P.bindeModus("modus-knoepfe", modus => {
-	/* Auf der Achse: eigener Teil (vorher Feld_auf_der_Achse.html), In der Ebene und Aufgabe: Rechner */
+	/* Auf der Achse: eigener Teil (vorher Feld_auf_der_Achse.html), In der Ebene: Rechner */
 	const achse = modus === "achse";
 	document.getElementById("teil-achse").classList.toggle("verborgen", !achse);
 	document.getElementById("teil-ebene").classList.toggle("verborgen", achse);
-	if (achse) { document.getElementById("aufgabenkarte").classList.add("verborgen"); if (window.achseNeu) window.achseNeu(); return; }
+	if (achse) { if (window.achseNeu) window.achseNeu(); return; }
 	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	VERSTECKT.forEach(id => document.getElementById(id).classList.toggle("verborgen", aufg));
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
 	layout();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	const q = () => (Math.random() < 0.5 ? -1 : 1) * P.runde(P.zufall(1, 5), 0.5);
-	if (Math.random() < 0.5) {
-		/* parallel: beide Ladungen und P auf der x-Achse */
-		const x1 = -P.runde(P.zufall(2, 6), 1), x2 = P.runde(P.zufall(2, 6), 1);
-		const xp = Math.random() < 0.6 ? P.runde(P.zufall(x1 + 1, x2 - 1), 1) : x2 + P.runde(P.zufall(2, 3), 1);
-		aufgabe.ladungen = [{ q: q(), x: x1, y: 0 }, { q: q(), x: x2, y: 0 }];
-		aufgabe.P = { x: xp, y: 0 };
-	} else {
-		/* orthogonal: eine Ladung auf der x-Achse, eine auf der y-Achse, P im Ursprung */
-		aufgabe.ladungen = [{ q: q(), x: -P.runde(P.zufall(2, 6), 1), y: 0 }, { q: q(), x: 0, y: -P.runde(P.zufall(2, 5), 1) }];
-		aufgabe.P = { x: 0, y: 0 };
-	}
-	const f = (() => { let Ex = 0, Ey = 0; for (const l of aufgabe.ladungen) { const v = feldVon(l, aufgabe.P.x, aufgabe.P.y); Ex += v.Ex; Ey += v.Ey; } return { Ex, Ey }; })();
-	aufgabe.E = Math.hypot(f.Ex, f.Ey); aufgabe.w = winkel(f.Ex, f.Ey);
-	if (aufgabe.P.x === aufgabe.ladungen[0].x || aufgabe.P.x === aufgabe.ladungen[1].x && aufgabe.P.y === aufgabe.ladungen[1].y || aufgabe.E < 1) { aufgabe.nr--; return neueAufgabe(); }
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	document.getElementById("aufgabe-text").innerHTML = "Berechnen Sie Betrag und Richtung der elektrischen Feldst&auml;rke im Punkt P. Geben Sie den Winkel gegen den Uhrzeigersinn zur positiven <i class='gr'>x</i>-Achse an (0&deg; bis 360&deg;).";
-	document.getElementById("tipp3").innerHTML = "|<i class='gr'>E</i>| &asymp; " + P.de(aufgabe.E, 1) + "&nbsp;kV/m";
-	["antwort-e", "antwort-w"].forEach(id => document.getElementById(id).value = "");
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const e = P.leseZahl(document.getElementById("antwort-e")), w = P.leseZahl(document.getElementById("antwort-w"));
-	const el = document.getElementById("rueckmeldung");
-	const artE = P.pruefe(e, aufgabe.E, 0.03, 0.1);
-	let dw = Math.abs(((w - aufgabe.w) % 360 + 540) % 360 - 180);
-	if (artE === "leer" || !isFinite(w)) { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie Betrag und Winkel ein."); return; }
-	if (artE === "gut" && dw <= 3) { P.zeigeRueckmeldung(el, "gut", "Richtig: |<i class='gr'>E</i>| = " + P.de(aufgabe.E, 1) + "&nbsp;kV/m unter " + P.de(aufgabe.w, 1) + "&deg;."); return; }
-	if (artE === "gut" && Math.abs(dw - 180) <= 3) { P.zeigeRueckmeldung(el, "knapp", "Der Betrag stimmt, die Richtung ist genau entgegengesetzt. Pr&uuml;fen Sie: Feldst&auml;rkepfeile zeigen von positiven Ladungen weg."); return; }
-	if (artE === "gut") { P.zeigeRueckmeldung(el, "knapp", "Der Betrag stimmt. Pr&uuml;fen Sie den Winkel: Von welcher Achse aus und in welchem Drehsinn messen Sie?"); return; }
-	if (artE === "knapp") { P.zeigeRueckmeldung(el, "knapp", "Knapp daneben. Pr&uuml;fen Sie Ihre Rundung und die Abst&auml;nde."); return; }
-	P.zeigeRueckmeldung(el, "falsch", "Das passt noch nicht. Haben Sie die Vorzeichen beachtet? Bei parallelen Feldern wird mit Vorzeichen addiert.");
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	let t = "L&ouml;sung: ";
-	aufgabe.ladungen.forEach((l, k) => { const f = feldVon(l, aufgabe.P.x, aufgabe.P.y); t += "<i class='gr'>E</i><sub>" + (k + 1) + "</sub> = " + P.de(f.betrag, 1) + "&nbsp;kV/m; "; });
-	t += "resultierend |<i class='gr'>E</i>| = " + P.de(aufgabe.E, 1) + "&nbsp;kV/m unter " + P.de(aufgabe.w, 1) + "&deg;.";
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", t);
 });
 
 function layout() {
@@ -1842,6 +1728,5 @@ K.nachFontLaden(aktualisiere);
 window.achseNeu = layout;
 })();
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1216,42 +1184,6 @@ window.SimUI = (function () {
 		<span class="nummer platzhalter">12 eA</span>
 	</div>
 
-	<div class="modusleiste" id="modus-knoepfe" style="display:none">
-		<button data-modus="erkunden" class="aktiv">Erkunden</button>
-	</div>
-
-	<div class="tcb gruen verborgen" id="aufgabenkarte">
-		<div class="tcb-title">Aufgabe: Elektronenmasse mit Unsicherheitsintervall</div>
-		<div class="tcb-body">
-			<p class="aufgabe-text">
-				<span class="aufgabe-nr" id="aufgabe-nr">Nr. 1</span>
-				Messen Sie mindestens vier Kreisbahnen mit der Messleiste im Kolben, werten Sie mit der Regression aus und geben Sie die Elektronenmasse an.
-				Das Spulenpaar hat <i class="gr">R</i> = 15,0&nbsp;cm und <i class="gr">N</i> = 130. Ein Restgaseinfluss ist eingeschaltet.
-			</p>
-			<div class="antwortzeile">
-				<label for="antwort"><i class="gr">m</i> =</label>
-				<input type="number" id="antwort" step="any" placeholder="?"><span>&middot;10<sup>&minus;31</sup>&nbsp;kg</span>
-				<label for="antwort-u">&plusmn;</label>
-				<input type="number" id="antwort-u" step="any" placeholder="?"><span>&middot;10<sup>&minus;31</sup>&nbsp;kg</span>
-			</div>
-			<div class="antwortzeile knopfleiste"><button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button><button id="btn-neue-aufgabe" data-icon="wuerfel" title="Neue Aufgabe"></button><button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button></div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box">
-				<summary>Tipp 1: Wie messen Sie genau?</summary>
-				<p class="tipp">W&auml;hlen Sie gro&szlig;e Bahnradien. Setzen Sie beide Marken an die Mitte des leuchtenden Strahls und schauen Sie senkrecht auf die Messleiste (Blickwinkel 0&deg;).</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 2: Welche Beziehungen helfen?</summary>
-				<p class="formelzeile"><span><i class="gr">r</i><sup>2</sup> =</span><span class="bruch"><span class="z">2&thinsp;&middot;&thinsp;<i class="gr">m</i></span><span class="n"><i class="gr">e</i>&thinsp;&middot;&thinsp;<i class="gr">k</i><sup>2</sup></span></span><span>&middot;</span><span class="bruch"><span class="z"><i class="gr">U</i><sub>B</sub></span><span class="n"><i class="gr">I</i><sup>2</sup></span></span><span style="margin-left:1em">mit <i class="gr">B</i> = <i class="gr">k</i>&thinsp;&middot;&thinsp;<i class="gr">I</i></span></p>
-				<p class="tipp">Die Unsicherheit der Steigung erhalten Sie aus den Grenzgeraden.</p>
-			</details>
-			<details class="tipp-box">
-				<summary>Tipp 3: Ergebnis zum Vergleichen</summary>
-				<p class="tipp">Mit Restgas liegt der Messwert typischerweise etwas unter dem Tabellenwert 9,109&middot;10<sup>&minus;31</sup>&nbsp;kg. Eine realistische Unsicherheit liegt bei einigen Prozent.</p>
-			</details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title">Simulation: Fadenstrahlrohr im Helmholtz-Spulenpaar</div>
 		<div class="tcb-body">
@@ -1309,12 +1241,11 @@ const R_SP = 0.150, N_SP = 130;
 const K_B = Math.pow(0.8, 1.5) * MU0 * N_SP / R_SP;           /* T pro A */
 
 /* Einheiten: U in V, I in A, Laengen in cm, Winkel in Grad, u(r) in mm, u(U) in %, u(R) in cm */
-const zustand = { U: 250, I: 1.3, ablesung: "innen", blick: 0, restgas: false, marken: [-4.5, 4.5], ur: 1, uu: 2, ui: 0.02, uR: 0.2, modus: "erkunden" };
-const aufgabe = { nr: 0, faktor: 1 };
+const zustand = { U: 250, I: 1.3, ablesung: "innen", blick: 0, restgas: false, marken: [-4.5, 4.5], ur: 1, uu: 2, ui: 0.02, uR: 0.2 };
 
 function radiusWahr(z) {                                       /* cm */
 	const r = Math.sqrt(2 * M_E * z.U / E_LAD) / (K_B * z.I) * 100;
-	return z.restgas ? r * (zustand.modus === "aufgabe" ? aufgabe.faktor : 0.975) : r;
+	return z.restgas ? r * 0.975 : r;
 }
 /* Abbildung eines Punkts der Bahnebene (horizontale Lage X in cm) auf die Skala */
 function aufSkala(X) {
@@ -1379,7 +1310,7 @@ function zeichneRohr(g, W, H, mitMarken) {
 	});
 	geo.yL = yL;
 }
-function param() { return { U: zustand.U, I: zustand.I, restgas: zustand.modus === "aufgabe" ? true : zustand.restgas }; }
+function param() { return { U: zustand.U, I: zustand.I, restgas: zustand.restgas }; }
 function abgelesenerDurchmesser() { return Math.abs(zustand.marken[1] - zustand.marken[0]); }
 
 function masseAus(U, I, r) { return E_LAD * Math.pow(K_B * I, 2) * Math.pow(r / 100, 2) / (2 * U); }
@@ -1432,7 +1363,7 @@ function zeichneRegression() {
 	if (ok) {
 		const mMin = mAus(sMin) * (1 - uRrel), mMax = mAus(sMax) * (1 + uRrel);
 		t += "<br>Grenzgeraden (grau) und <i class='gr'>u</i>(<i class='gr'>R</i>): <i class='gr'>m</i> zwischen " + P.de(mMin * 1e31, 2) + " und " + P.de(mMax * 1e31, 2) + "&middot;10<sup>&minus;31</sup>&nbsp;kg";
-		if (zustand.modus === "erkunden") t += (M_E >= mMin && M_E <= mMax) ? "<br><b>Der Tabellenwert 9,11&middot;10<sup>&minus;31</sup>&nbsp;kg liegt im Intervall.</b>" : "<br><b>Der Tabellenwert liegt au&szlig;erhalb: Suchen Sie eine systematische Ursache.</b>";
+		t += (M_E >= mMin && M_E <= mMax) ? "<br><b>Der Tabellenwert 9,11&middot;10<sup>&minus;31</sup>&nbsp;kg liegt im Intervall.</b>" : "<br><b>Der Tabellenwert liegt au&szlig;erhalb: Suchen Sie eine systematische Ursache.</b>";
 	} else t += "<br>Keine Ursprungsgerade geht durch alle Fehlerbalken: Die Unsicherheiten sind zu klein angesetzt oder es gibt Ausrei&szlig;er.";
 	aw.innerHTML = t;
 }
@@ -1449,7 +1380,7 @@ function aktualisiere() {
 	const r = radiusWahr(param());
 	const passt = r < 7.8;
 	document.getElementById("ablesung").innerHTML = "abgelesener Durchmesser: <span class='kennzahl'>" + P.de(abgelesenerDurchmesser(), 1) + "&nbsp;cm</span>, <i class='gr'>B</i> = " + P.de(K_B * zustand.I * 1e3, 3) + "&nbsp;mT"
-		+ (zustand.modus === "erkunden" ? "<span class='naeherung'> | wahrer Durchmesser " + P.de(2 * r, 2) + "&nbsp;cm</span>" : "") + (passt ? "" : " <b>Die Bahn trifft den Kolben.</b>");
+		+ "<span class='naeherung'> | wahrer Durchmesser " + P.de(2 * r, 2) + "&nbsp;cm</span>" + (passt ? "" : " <b>Die Bahn trifft den Kolben.</b>");
 	zeichneBalken();
 	zeichneRegression();
 }
@@ -1485,43 +1416,6 @@ document.getElementById("btn-messwert").addEventListener("click", () => {
 document.getElementById("btn-leeren").addEventListener("click", () => { tabelle.leeren(); aktualisiere(); });
 
 
-/* ---------- Aufgabe ---------- */
-P.bindeModus("modus-knoepfe", modus => {
-	zustand.modus = modus;
-	const aufg = modus === "aufgabe";
-	document.getElementById("aufgabenkarte").classList.toggle("verborgen", !aufg);
-	document.getElementById("zeile-restgas").classList.toggle("verborgen", aufg);
-	if (aufg && aufgabe.nr === 0) neueAufgabe();
-	tabelle.leeren();
-	aktualisiere();
-});
-function neueAufgabe() {
-	aufgabe.nr++;
-	aufgabe.faktor = P.runde(P.zufall(0.965, 0.99), 0.001);
-	document.getElementById("aufgabe-nr").textContent = "Nr. " + aufgabe.nr;
-	["antwort", "antwort-u"].forEach(id => document.getElementById(id).value = "");
-	document.getElementById("rueckmeldung").textContent = "";
-	document.querySelectorAll(".tipp-box").forEach(d => d.open = false);
-	tabelle.leeren();
-}
-document.getElementById("btn-neue-aufgabe").addEventListener("click", () => { neueAufgabe(); aktualisiere(); });
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const m = P.leseZahl(document.getElementById("antwort")), um = P.leseZahl(document.getElementById("antwort-u"));
-	const el = document.getElementById("rueckmeldung");
-	if (!isFinite(m) || !isFinite(um)) { P.zeigeRueckmeldung(el, "falsch", "Bitte geben Sie Messwert und Unsicherheit ein."); return; }
-	if (tabelle.zeilen.length < 4) { P.zeigeRueckmeldung(el, "knapp", "Nehmen Sie zuerst mindestens vier Messwerte auf."); return; }
-	const soll = 9.109 * aufgabe.faktor * aufgabe.faktor;
-	const rel = um / m;
-	if (Math.abs(m - soll) / soll > 0.1) { P.zeigeRueckmeldung(el, "falsch", "Ihr Messwert weicht stark ab. Pr&uuml;fen Sie die Einheiten der Steigung (cm<sup>2</sup>) und die Ablesung."); return; }
-	if (rel < 0.01) { P.zeigeRueckmeldung(el, "knapp", "Der Messwert ist plausibel, die Unsicherheit ist aber unrealistisch klein. Allein <i class='gr'>R</i> tr&auml;gt schon etwa 2,7&nbsp;% bei."); return; }
-	if (rel > 0.3) { P.zeigeRueckmeldung(el, "knapp", "Der Messwert ist plausibel, die Unsicherheit ist aber sehr gro&szlig;. Messen Sie mit gro&szlig;en Radien."); return; }
-	const drin = 9.109 >= m - um && 9.109 <= m + um;
-	P.zeigeRueckmeldung(el, "gut", "Gut: " + P.de(m, 2) + "&nbsp;&plusmn;&nbsp;" + P.de(um, 2) + " (" + P.de(rel * 100, 1) + "&nbsp;%). " + (drin ? "Der Tabellenwert liegt im Intervall." : "Der Tabellenwert liegt au&szlig;erhalb. Das Restgas verkleinert die Bahn systematisch."));
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "L&ouml;sung: Ohne Ablesefehler erg&auml;be sich hier <i class='gr'>m</i> &asymp; " + P.de(9.109 * aufgabe.faktor * aufgabe.faktor, 2) + "&middot;10<sup>&minus;31</sup>&nbsp;kg. Die Abweichung vom Tabellenwert entsteht durch den Energieverlust im Restgas (kleinerer Radius).");
-});
-
 function layout() {
 	({ W: WR, H: HR } = K.skaliereCanvas(cR, gR, b => b < 560 ? 0.9 : 0.62));
 	({ W: WB, H: HB } = K.skaliereCanvas(cB, gB, () => 170 / Math.max(320, cB.clientWidth)));
@@ -1533,10 +1427,8 @@ SimUI.bildKnopf("btn-bild", cR, () => "Fadenstrahlrohr_UB" + zustand.U + "V_I" +
 SimUI.bildKnopf("btn-balken-bild", cB, "Fadenstrahlrohr_Unsicherheiten");
 SimUI.bildKnopf("btn-reg-bild", cG, "Fadenstrahlrohr_Regression");
 SimUI.tabelleKnopf("btn-tab-bild", "mess-tab", "Fadenstrahlrohr_Messtabelle", "Fadenstrahlrohr: Messtabelle");
-SimUI.modusPerLink("modus-knoepfe");
 layout();
 K.nachFontLaden(aktualisiere);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>

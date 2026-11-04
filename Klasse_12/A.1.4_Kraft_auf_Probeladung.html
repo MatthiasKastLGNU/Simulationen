@@ -167,38 +167,6 @@ input[type="checkbox"] { accent-color: var(--blue-frame); }
 .auswertung .naeherung { color: #555; font-size: 0.9rem; }
 .folgerung { font-weight: bold; }
 
-.aufgabe-nr { display: inline-block; background: var(--green-frame); color: #fff; border-radius: 1mm; padding: 0.05rem 0.5rem; margin-right: 0.5rem; font-size: 0.85rem; }
-.aufgabe-text { margin: 0 0 0.6rem 0; }
-.antwortzeile { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
-.antwortzeile input[type="number"] {
-	font: inherit; font-size: 1.05rem; width: 7em; text-align: right;
-	padding: 0.2rem 0.4rem; border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	font-variant-numeric: tabular-nums;
-}
-.antwortzeile button, .gruenknopf {
-	font: inherit; font-size: 0.95rem; padding: 0.28rem 0.8rem;
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	background: #fff; color: var(--green-frame); cursor: pointer;
-}
-.antwortzeile button:hover, .gruenknopf:hover { background: var(--green-title); }
-.rueckmeldung { font-weight: bold; margin-top: 0.55rem; min-height: 1.5em; }
-.rueckmeldung.gut { color: var(--green-frame); }
-.rueckmeldung.knapp { color: #9A6700; }
-.rueckmeldung.falsch { color: var(--red-frame); }
-.tipp { font-size: 0.88rem; color: #555; margin: 0.45rem 0 0 0; }
-details.tipp-box { margin-top: 0.7rem; }
-details.tipp-box > summary {
-	cursor: pointer; width: max-content; max-width: 100%;
-	font-size: 0.9rem; color: var(--green-frame);
-	border: 1.5px solid var(--green-frame); border-radius: 1mm;
-	padding: 0.18rem 0.7rem; list-style: none;
-}
-details.tipp-box > summary::-webkit-details-marker { display: none; }
-details.tipp-box > summary::before { content: "\25B8\00A0\00A0"; }
-details.tipp-box[open] > summary::before { content: "\25BE\00A0\00A0"; }
-details.tipp-box > summary:hover { background: var(--green-title); }
-details.tipp-box + details.tipp-box { margin-top: 0.4rem; }
-
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.75rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; }
 .bruch > .z { border-bottom: 1px solid currentColor; padding: 0 0.45em 0.14em; }
@@ -1207,34 +1175,6 @@ window.SimUI = (function () {
 		<button data-modus="feldstaerke">Feldstärke</button>
 	</div>
 
-	<div class="tcb gruen verborgen" id="aufgabe-box">
-		<div class="tcb-title">Selbstkontrolle: Gesamtkraft in den Punkten <i class="gr">A</i>, <i class="gr">B</i> und <i class="gr">C</i></div>
-		<div class="tcb-body">
-			<p class="aufgabe-text">Wählen Sie einen Punkt und geben Sie Ihren Betrag der Gesamtkraft auf die Probeladung sowie den Winkel zur positiven <i class="gr">x</i>-Achse an (gegen den Uhrzeigersinn gemessen).</p>
-			<div class="zeile"><label>Punkt</label>
-				<span class="knopfleiste" id="aufgabe-punkt">
-					<button data-wert="0" class="aktiv"><i class="gr">A</i>(2|0)</button>
-					<button data-wert="1"><i class="gr">B</i>(2|2)</button>
-					<button data-wert="2"><i class="gr">C</i>(4|&minus;4)</button>
-				</span>
-			</div>
-			<div class="antwortzeile">
-				<label for="antwort-f"><i class="gr">F</i><sub>ges</sub> =</label>
-				<input type="number" id="antwort-f" step="any"><span>&middot;10<sup>&minus;12</sup>&nbsp;N</span>
-				<label for="antwort-w" style="margin-left:0.6rem">Winkel</label>
-				<input type="number" id="antwort-w" step="any"><span>&deg;</span>
-			</div>
-			<div class="antwortzeile knopfleiste">
-				<button id="btn-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
-				<button id="btn-loesung" class="neben" data-icon="auge" title="Lösung zeigen"></button>
-			</div>
-			<div class="rueckmeldung" id="rueckmeldung"></div>
-			<details class="tipp-box"><summary>Tipp 1</summary><p class="tipp">Berechnen Sie zuerst für jede der beiden Ladungen einzeln den Betrag der Kraft mit dem Gesetz von Coulomb. Den Abstand lesen Sie aus den Koordinaten ab (1 Einheit = 1&nbsp;cm = 0,01&nbsp;m).</p></details>
-			<details class="tipp-box"><summary>Tipp 2</summary><p class="tipp">Richtung: <i class="gr">Q</i><sub>L</sub> ist negativ und zieht die positive Probeladung zu sich hin. <i class="gr">Q</i><sub>R</sub> ist positiv und stößt sie von sich weg. Zeichnen Sie beide Pfeile am Ort der Probeladung und addieren Sie sie (Parallelogramm oder Pfeile aneinanderhängen).</p></details>
-			<details class="tipp-box"><summary>Tipp 3</summary><p class="tipp" id="tipp3"></p></details>
-		</div>
-	</div>
-
 	<div class="tcb blau">
 		<div class="tcb-title"><span data-f="Simulation: Kräfte auf eine Probeladung im Feld zweier Punktladungen" data-e="Simulation: Feldstärke im Feld zweier Punktladungen">Simulation: Kräfte auf eine Probeladung im Feld zweier Punktladungen</span></div>
 		<div class="tcb-body">
@@ -1295,7 +1235,7 @@ const LADUNGEN = [
 ];
 const Q_PROBE = 1.0e-13;
 const PUNKTE = [{ name: "A", x: 2, y: 0 }, { name: "B", x: 2, y: 2 }, { name: "C", x: 4, y: -4 }];
-const zustand = { modus: "erkunden", p: { x: 4, y: -4 }, massstab: 5e-12, einzel: true, parallelogramm: true, gesamt: true, iso: false, aufgabe: 0, geloest: [false, false, false] };
+const zustand = { modus: "erkunden", p: { x: 4, y: -4 }, massstab: 5e-12, einzel: true, parallelogramm: true, gesamt: true, iso: false };
 
 function einzelkraft(L, x, y) {
 	const dx = (x - L.x) * 0.01, dy = (y - L.y) * 0.01, r2 = dx * dx + dy * dy;
@@ -1400,8 +1340,6 @@ function namenZeichnen(hindernisse) {
 	pfeilNamen = [];
 }
 
-function pfeileSichtbar() { return zustand.modus !== "aufgabe" || zustand.geloest[zustand.aufgabe]; }
-
 function zeichne() {
 	ctx.clearRect(0, 0, W, H);
 	zeichneGitter();
@@ -1412,7 +1350,7 @@ function zeichne() {
 		P.text(ctx, pk.name, xPix(pk.x) + 6, yPix(pk.y) - 6, { groesse: 13, fett: true, kursiv: true });
 	}
 	LADUNGEN.forEach(zeichneLadung);
-	if (g && pfeileSichtbar()) {
+	if (g) {
 		const [fL, fR] = g.einzeln;
 		if (zustand.parallelogramm && zustand.einzel) {
 			ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = "#808080"; ctx.lineWidth = 1.2;
@@ -1440,7 +1378,6 @@ function aktualisiereAuswertung(g) {
 	const el = document.getElementById("auswertung");
 	const ort = ("Probeladung bei (" + P.de(zustand.p.x, 1) + "|" + P.de(zustand.p.y, 1) + ")").replace(/-/g, "−");
 	if (!g) { el.innerHTML = ort + ": zu nah an einer Ladung."; return; }
-	if (!pfeileSichtbar()) { el.innerHTML = ort + '<br><span class="naeherung">Die Kräfte werden angezeigt, sobald Sie diesen Punkt richtig gelöst oder die Lösung aufgerufen haben.</span>'; return; }
 	const [fL, fR] = g.einzeln, s = zustand.massstab;
 	if (zustand.modus === "feldstaerke") { zeigeKomponenten(g); el.innerHTML = ort + '<br><span class="naeherung">Feldstärke <i class="gr">E</i> = <i class="gr">F</i>/<i class="gr">q</i> mit <i class="gr">q</i> = 1,0&middot;10<sup>&minus;13</sup>&nbsp;C; Pfeilmaßstab 1&nbsp;cm &#8793; ' + P.de(s / Q_PROBE, 0) + '&nbsp;V/m.</span>'; return; }
 	el.innerHTML = ort + "<br>" +
@@ -1472,62 +1409,11 @@ function setzeBeschriftung() {
 	document.querySelectorAll("#massstab-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === ziel));
 	if (!e) document.getElementById("komponenten-koerper").innerHTML = "";
 }
-/* ---------- Selbstkontrolle ---------- */
-function setzeAufgabe(i) {
-	zustand.aufgabe = i;
-	zustand.p = { x: PUNKTE[i].x, y: PUNKTE[i].y };
-	document.getElementById("antwort-f").value = "";
-	document.getElementById("antwort-w").value = "";
-	document.getElementById("rueckmeldung").textContent = "";
-	document.getElementById("rueckmeldung").className = "rueckmeldung";
-	const g = gesamtkraft(PUNKTE[i].x, PUNKTE[i].y), [fL, fR] = g.einzeln;
-	document.getElementById("tipp3").innerHTML = "Zum Vergleichen: <i class='gr'>F</i><sub>L</sub> = " + P.sig(fL.betrag, 3) + "&nbsp;N und <i class='gr'>F</i><sub>R</sub> = " + P.sig(fR.betrag, 3) + "&nbsp;N.";
-	document.querySelectorAll("#aufgabe-box details").forEach(d => d.open = false);
-	zeichne();
-}
-function winkelDifferenz(a, b) { let d = ((a - b) % 360 + 540) % 360 - 180; return Math.abs(d); }
-document.getElementById("btn-pruefen").addEventListener("click", () => {
-	const g = gesamtkraft(zustand.p.x, zustand.p.y);
-	const f = P.leseZahl(document.getElementById("antwort-f")) * 1e-12;
-	const w = P.leseZahl(document.getElementById("antwort-w"));
-	const rm = document.getElementById("rueckmeldung");
-	if (!isFinite(f) || !isFinite(w)) { P.zeigeRueckmeldung(rm, "falsch", "Bitte geben Sie Betrag und Winkel ein."); return; }
-	const artF = P.pruefe(f, g.betrag, 0.05, 0.15);
-	const dw = winkelDifferenz(w, g.winkel);
-	const artW = dw <= 4 ? "gut" : dw <= 12 ? "knapp" : "falsch";
-	if (artF === "gut" && artW === "gut") {
-		zustand.geloest[zustand.aufgabe] = true;
-		P.zeigeRueckmeldung(rm, "gut", "Richtig! Vergleichen Sie Ihre Zeichnung mit den Pfeilen im Bild.");
-		zeichne(); return;
-	}
-	const teile = [];
-	if (artF === "knapp") teile.push("Der Betrag liegt knapp daneben. Prüfen Sie die Pfeillängen mit Ihrem Maßstab.");
-	else if (artF === "falsch") {
-		const summe = g.einzeln[0].betrag + g.einzeln[1].betrag;
-		if (Math.abs(f - summe) / summe < 0.05 && Math.abs(summe - g.betrag) / g.betrag > 0.05) teile.push("Sie haben die Beträge einfach addiert. Kräfte werden als Pfeile addiert.");
-		else if (Math.abs(f / g.betrag - 1e4) / 1e4 < 0.1 || Math.abs(f / g.betrag - 1e-4) / 1e-4 < 0.1) teile.push("Der Betrag ist um den Faktor 10⁴ falsch. Rechnen Sie den Abstand in Meter um.");
-		else teile.push("Der Betrag stimmt noch nicht. Prüfen Sie Abstände und Einzelkräfte.");
-	}
-	if (artW === "knapp") teile.push("Der Winkel liegt knapp daneben.");
-	else if (artW === "falsch") teile.push("Die Richtung stimmt nicht. Überlegen Sie für jede Ladung: Anziehung oder Abstoßung?");
-	P.zeigeRueckmeldung(rm, artF === "falsch" || artW === "falsch" ? "falsch" : "knapp", teile.join(" "));
-});
-document.getElementById("btn-loesung").addEventListener("click", () => {
-	const g = gesamtkraft(zustand.p.x, zustand.p.y);
-	zustand.geloest[zustand.aufgabe] = true;
-	P.zeigeRueckmeldung(document.getElementById("rueckmeldung"), "knapp", "Lösung: <i class='gr'>F</i><sub>ges</sub> = " + P.sig(g.betrag, 3) + "&nbsp;N, Winkel " + winkelText(g.winkel) + ".");
-	zeichne();
-});
-K.bindeKnopfgruppe("aufgabe-punkt", w => setzeAufgabe(+w));
-
 P.bindeModus("modus-knoepfe", m => {
 	zustand.modus = m;
-	const aufgabe = m === "aufgabe";
-	document.getElementById("aufgabe-box").classList.toggle("verborgen", !aufgabe);
-	document.getElementById("zeile-springen").classList.toggle("verborgen", aufgabe);
 	document.getElementById("chk-iso").parentElement.classList.toggle("verborgen", m !== "erkunden");
 	setzeBeschriftung();
-	if (aufgabe) setzeAufgabe(zustand.aufgabe); else zeichne();
+	zeichne();
 });
 
 /* ---------- Bedienung ---------- */
@@ -1543,7 +1429,7 @@ document.getElementById("btn-standard").addEventListener("click", () => {
 });
 
 P.ziehbar(canvas,
-	(x, y) => zustand.modus !== "aufgabe" && Math.hypot(x - xPix(zustand.p.x), y - yPix(zustand.p.y)) < 16 ? "p" : null,
+	(x, y) => Math.hypot(x - xPix(zustand.p.x), y - yPix(zustand.p.y)) < 16 ? "p" : null,
 	(k, x, y) => {
 		let nx = Math.round(xWert(x) * 2) / 2, ny = Math.round(yWert(y) * 2) / 2;
 		nx = Math.max(-8.5, Math.min(8.5, nx)); ny = Math.max(-6.5, Math.min(6.5, ny));
@@ -1563,6 +1449,5 @@ SimUI.bildKnopf("btn-bild", canvas, () => (zustand.modus === "feldstaerke" ? "Fe
 	() => ["Kräfte auf eine Probeladung im Feld zweier Punktladungen: Probeladung bei (" + P.de(zustand.p.x, 1) + "|" + P.de(zustand.p.y, 1) + ")"]);
 K.nachFontLaden(zeichne);
 </script>
-<!-- Kast 2026-11-04: Aufgabenmodus (Einsetzaufgabe mit Lösungsknopf/Ergebnistipp) entfernt, Knopf weg; der zugehörige Code ist noch unsichtbar in der Datei und fliegt beim nächsten Überarbeiten raus. -->
 </body>
 </html>
