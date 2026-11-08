@@ -3618,7 +3618,7 @@ BAU.rechnen = function (behaelter) {
 	KI.chipsBeschraenken(chips, chipKnoepfe);
 	const rechts = KI.el("div", "rechts"); const status = KI.el("div", "status"); rechts.appendChild(status); leiste.appendChild(rechts);
 	behaelter.appendChild(leiste);
-	const formel = KI.el("p", "auftrag", "Rechne mit <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> (Änderung: Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>) und <i class=\"gr\">g</i> = " + GE + ". Runde sinnvoll, kleine Rundungsabweichungen sind in Ordnung.");
+	const formel = KI.el("p", "auftrag", "Rechne mit <i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · <i class=\"gr\">h</i> (Änderung: Δ<i class=\"gr\">E</i><sub>pot</sub> = <i class=\"gr\">m</i> · <i class=\"gr\">g</i> · Δ<i class=\"gr\">h</i>) und <i class=\"gr\">g</i> = " + GE + ". Du hast pro Aufgabe <b>zwei</b> Versuche, danach siehst du den Rechenweg. Runde sinnvoll, kleine Rundungsabweichungen sind in Ordnung.");
 	behaelter.appendChild(formel);
 	const karte = KI.el("div", "rechenkarte"); behaelter.appendChild(karte);
 	const aufgabeEl = KI.el("p", "rechenaufgabe"); karte.appendChild(aufgabeEl);
@@ -3628,16 +3628,23 @@ BAU.rechnen = function (behaelter) {
 	eingabeZeile.appendChild(eingabe);
 	const einheitEl = KI.el("span", "einheit"); eingabeZeile.appendChild(einheitEl);
 	const pruefKnopf = KI.hauptKnopf("pruefen", "Prüfen"); eingabeZeile.appendChild(pruefKnopf);
-	const tippKnopf = KI.symbolKnopf("tipp", "Tipp", () => { tippEl.hidden = false; tipps++; });
+	const tippKnopf = KI.symbolKnopf("tipp", "Tipp", () => { if (tippEl.hidden && !eingabe.disabled) { tipps++; merke(false); } tippEl.hidden = false; });
 	eingabeZeile.appendChild(tippKnopf);
 	const tippEl = KI.el("div", "erkl"); tippEl.hidden = true; karte.appendChild(tippEl);
 	const rueck = KI.el("p", "rueck"); karte.appendChild(rueck);
 	const wegEl = KI.el("div", "rechenweg"); wegEl.hidden = true; karte.appendChild(wegEl);
 	const weiterLeiste = KI.el("div", "leiste"); const weiterKnopf = KI.hauptKnopf("weiter", "Weiter"); weiterLeiste.appendChild(weiterKnopf); weiterLeiste.hidden = true; karte.appendChild(weiterLeiste);
 	const ende = KI.el("div", ""); behaelter.appendChild(ende);
-	const neuLeiste = KI.el("div", "leiste"); neuLeiste.appendChild(KI.symbolKnopf("zurueck", "Neu beginnen", () => starte(stufeNr))); behaelter.appendChild(neuLeiste);
 
-	let stufeNr = 0, nr = 0, aufgabe = null, versuche = 0, fehler = 0, tipps = 0, erledigt = [], geprueftUm = 0;
+	/* Serie mit Kreisleiste und Schummelschutz (Kast 2026-11-08): kein Neustart mitten in der Serie; nach Reiterwechsel oder
+	   Neuladen geht die Serie weiter, mit DERSELBEN Aufgabe (SERIE.aufgabe) und gemerktem Fehlversuch. Nie „offen = falsch“.
+	   Kreis grün: gelöst (im ersten oder zweiten Versuch), rot: nach zwei Versuchen nicht gelöst. */
+	const SERIE = KI.serie(id);
+	let stufeNr = 0, nr = 0, ergebnisse = [], aufgabe = null, versuche = 0, fehler = 0, tipps = 0, erledigt = [], geprueftUm = 0;
+	function merke(beantwortet, geloest) {
+		if (beantwortet) ergebnisse[nr] = geloest;
+		SERIE.merke(stufeNr, { ergebnisse, nr: beantwortet ? nr + 1 : nr, versuche: beantwortet ? 0 : versuche, fehler, tipps, erledigt: erledigt.map(a => KI.alsDaten(a)).filter(Boolean) });
+	}
 	const heft = KI.heftleiste(behaelter, () => {
 		const b = [{ art: "titel", t: STUFEN[stufeNr].titel }];
 		erledigt.forEach((a, i) => {
@@ -3664,21 +3671,28 @@ BAU.rechnen = function (behaelter) {
 			k.innerHTML = STUFEN[j].name + (st ? ' <span class="geschafft">' + "★".repeat(st) + "</span>" : "");
 		});
 	}
-	function zeigeStatus() { status.innerHTML = "<span>Aufgabe " + Math.min(nr + 1, STUFEN[stufeNr].anzahl) + " / " + STUFEN[stufeNr].anzahl + "</span><span>Fehlversuche: " + fehler + "</span>"; }
-	function starte(i) {
-		stufeNr = i; nr = 0; fehler = 0; tipps = 0; erledigt = [];
+	function zeigeStatus() { status.innerHTML = KI.kreise(ergebnisse, STUFEN[stufeNr].anzahl, nr); }
+	function starte(i, neu) {
+		stufeNr = i; nr = 0; ergebnisse = []; versuche = 0; fehler = 0; tipps = 0; erledigt = [];
 		markiere(); ende.innerHTML = ""; heft.hidden = true; karte.hidden = false;
-		neueAufgabe();
+		const alt = neu ? null : SERIE.lies(i);
+		if (alt) {
+			nr = alt.nr; ergebnisse = alt.ergebnisse || []; fehler = alt.fehler || 0; tipps = alt.tipps || 0; erledigt = alt.erledigt || [];
+			KI.meldung("Deine angefangene Serie geht weiter.");
+			if (nr >= STUFEN[i].anzahl) { nr--; geprueftUm = 0; weiter(); return; }
+		}
+		neueAufgabe(alt ? alt.versuche || 0 : 0);
 	}
-	function neueAufgabe() {
-		aufgabe = STUFEN[stufeNr].erzeuge(); versuche = 0;
+	function neueAufgabe(schonVersucht) {
+		aufgabe = SERIE.aufgabe(stufeNr, nr, () => STUFEN[stufeNr].erzeuge()); versuche = schonVersucht || 0;
 		aufgabeEl.innerHTML = aufgabe.text;
 		gesuchtEl.innerHTML = aufgabe.gesucht + " =";
 		einheitEl.textContent = aufgabe.einheit;
 		eingabe.value = ""; eingabe.disabled = false; pruefKnopf.disabled = false;
 		tippEl.innerHTML = KI.icon("tipp", 15) + " " + aufgabe.tipp; tippEl.hidden = true;
 		rueck.textContent = ""; rueck.className = "rueck"; wegEl.hidden = true; weiterLeiste.hidden = true;
-		zeigeStatus();
+		if (versuche) { rueck.className = "rueck schlecht"; rueck.innerHTML = "Dein erster Versuch war nicht richtig. Du hast noch einen Versuch."; }
+		zeigeStatus(); merke(false);
 		setTimeout(() => eingabe.focus({ preventScroll: true }), 50);
 	}
 	function zeigeWeg() { wegEl.innerHTML = aufgabe.weg.map(z => "<div>" + z + "</div>").join(""); wegEl.hidden = false; }
@@ -3691,40 +3705,41 @@ BAU.rechnen = function (behaelter) {
 		if (nah(x, w)) {
 			rueck.className = "rueck gut"; rueck.innerHTML = "Richtig!";
 			KI.funken(rueck, 8);
-			abschluss();
+			abschluss(true);
 			return;
 		}
-		versuche++; fehler++; zeigeStatus();
+		versuche++; fehler++; merke(false);
 		const falle = (aufgabe.fallen || []).find(f => nah(x, f.wert));
 		rueck.className = "rueck schlecht";
 		if (falle) rueck.innerHTML = falle.hinweis;
 		else if (nah(x, w * 1000) || nah(x, w / 1000)) rueck.innerHTML = "Die Größenordnung stimmt nicht: Prüfe die Einheiten (g oder kg, m oder km, J oder kJ).";
 		else if (nah(Math.abs(x), Math.abs(w))) rueck.innerHTML = "Achte auf das Vorzeichen.";
 		else rueck.innerHTML = versuche >= 2 ? "Leider nicht. Hier ist der Rechenweg:" : "Noch nicht richtig. Versuche es noch einmal oder hole dir einen Tipp.";
-		if (versuche >= 2) abschluss();
+		if (versuche >= 2) abschluss(false);
 	}
-	function abschluss() {
+	function abschluss(geloest) {
 		eingabe.disabled = true; pruefKnopf.disabled = true;
 		zeigeWeg();
 		erledigt.push(aufgabe);
+		merke(true, geloest); zeigeStatus();
 		weiterLeiste.hidden = false;
-		geprueftUm = performance.now(); weiterKnopf.focus({ preventScroll: true });
+		geprueftUm = performance.now(); setTimeout(() => weiterKnopf.focus({ preventScroll: true }), 400);   /* verzögert: sonst blättert dieselbe Enter-Taste sofort weiter */
 	}
 	function weiter() {
 		if (performance.now() - geprueftUm < 250) return;   /* Schutz: kein "Weiter" im selben Augenblick wie "Prüfen" */
 		nr++;
 		if (nr < STUFEN[stufeNr].anzahl) { neueAufgabe(); return; }
-		karte.hidden = true; zeigeStatus();
+		karte.hidden = true; zeigeStatus(); SERIE.loesche(stufeNr);
 		const s = fehler + tipps <= 1 ? 3 : fehler + tipps <= 3 ? 2 : 1;
 		KI.speicher.schreib("sterne_" + id + "_" + stufeNr, Math.max(s, KI.speicher.lies("sterne_" + id + "_" + stufeNr, 0)));
 		KI.bestwert(id, s); markiere();
 		const p = KI.el("p", "rueck gut", "Stufe geschafft: " + STUFEN[stufeNr].anzahl + " Aufgaben mit " + fehler + " Fehlversuch" + (fehler === 1 ? "" : "en") + (tipps ? " und " + tipps + " Tipp" + (tipps === 1 ? "" : "s") : "") + ". " + KI.sterneHtml(s));
 		ende.innerHTML = ""; ende.appendChild(p);
+		const l = KI.el("div", "leiste");
+		const nochmal = KI.hauptKnopf("zurueck", "Neue Aufgaben"); nochmal.addEventListener("click", () => starte(stufeNr, true)); l.appendChild(nochmal);
 		const folge = KI.naechsteStufe(stufeNr, STUFEN.length);
-		if (folge >= 0) {
-			const l = KI.el("div", "leiste"); const n = KI.hauptKnopf("weiter", "Nächste Stufe: " + STUFEN[folge].name);
-			n.addEventListener("click", () => starte(folge)); l.appendChild(n); ende.appendChild(l);
-		}
+		if (folge >= 0) { const n = KI.hauptKnopf("weiter", "Nächste Stufe: " + STUFEN[folge].name); n.addEventListener("click", () => starte(folge)); l.appendChild(n); }
+		ende.appendChild(l);
 		KI.funken(p, 20); heft.hidden = false;
 	}
 	pruefKnopf.addEventListener("click", pruefe);
