@@ -522,6 +522,9 @@ canvas.sim { display: block; width: 100%; height: auto; touch-action: none; bord
 .bedienleiste button.haupt:hover, .eingabezeile button.haupt:hover { background: #1515D0; }
 .messzeile { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 1.6rem; margin-top: 0.6rem; font-size: 1rem; }
 .messzeile b { font-variant-numeric: tabular-nums; }
+/* Wertkarten in der Messzeile: Reihe über die volle Breite, Karte nie schmaler als ihr Wert (Kast 2026-11-08: Box zu klein für 131 km/h) */
+.messzeile > .wertkarten { flex: 1 1 100%; justify-content: center; }
+html.kd .messzeile .wertkarte { min-width: max-content; }
 .hinweis { font-size: 0.95rem; color: #333; margin: 0.2rem 0 0.6rem; }
 .fussnote { font-size: 0.85rem; color: #555; margin: 0.6rem 0 0; text-align: center; }
 
@@ -3219,7 +3222,13 @@ BAU.bahn = function (b) {
 		const D = { x0: -55, x1: 340, h0: 0, h1: 78 };
 		const A = abbildung({ x: rB.x, y: rB.y + 28, w: rB.w, h: rB.h - 44 }, D);
 		zeichneLandschaft(c, rB, D, A, bahn, { schmal, bremseAb: SILVER.bremseAb });
-		SILVER.pos.forEach((x, i) => kreisNummer(c, A.px(x), A.py(bahn.h(x)) - (schmal ? 26 : 32), i + 1, z.halt.has(i + 1), schmal));
+		/* Kreisnummern: auf Kuppen und Tälern über der Bahn, am steilen Hang daneben auf gleicher Höhe wie der Wagen,
+		   sonst wirkt der Halt tiefer als die Marke (Kast 2026-11-08, Position 2) */
+		SILVER.pos.forEach((x, i) => {
+			const X = A.px(x), Y = A.py(bahn.h(x)), st = bahn.s(x) * A.sy / A.sx;
+			if (Math.abs(st) < 0.6) kreisNummer(c, X, Y - (schmal ? 26 : 32), i + 1, z.halt.has(i + 1), schmal);
+			else kreisNummer(c, X + Math.sign(st) * (schmal ? 20 : 24), Y - (schmal ? 8 : 10), i + 1, z.halt.has(i + 1), schmal);
+		});
 		zeichneWagen(c, A, bahn, L.x, schmal);
 		/* Messwerte stehen in den Wertkarten unter dem Bild (Kast-Design, kein Wert doppelt) */
 		const h = bahn.h(L.x), v = Math.sqrt(2 * ekin(L, bahn));
