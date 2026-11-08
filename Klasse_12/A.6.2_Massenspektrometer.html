@@ -1952,8 +1952,8 @@ function zeichne(g, W, H, ohneIonen) {
 	else P.text(g, "E, B₁", fx0 + 26, fy0 + 30, { groesse: 12, kursiv: true, farbe: "#339" });
 	/* Umlenkfeld */
 	g.fillStyle = "rgba(0,0,191,0.05)"; g.fillRect(xSpalt, ySpalt, W - xSpalt - 10, H - ySpalt - 10);
-	for (let x = xSpalt + 20; x < W - 20; x += 40) for (let y = ySpalt + 24; y < H - 20; y += 40) P.text(g, "⊙", x, y, { ausrichtung: "center", groesse: Math.round(7 + 14 * zustand.B2 / 0.8), farbe: "rgba(80,80,170," + (0.2 + 0.6 * zustand.B2 / 0.8) + ")" });
-	P.text(g, "Umlenkfeld B₂ (aus der Zeichenebene)", W - 16, H - 16, { ausrichtung: "right", groesse: 12, farbe: "#339" });
+	for (let x = xSpalt + 20; x < W - 20; x += 40) for (let y = ySpalt + 24; y < H - 20; y += 40) P.text(g, "⊗", x, y, { ausrichtung: "center", groesse: Math.round(7 + 14 * zustand.B2 / 0.8), farbe: "rgba(80,80,170," + (0.2 + 0.6 * zustand.B2 / 0.8) + ")" });
+	P.text(g, "Umlenkfeld B₂ (in die Zeichenebene)", W - 16, H - 16, { ausrichtung: "right", groesse: 12, farbe: "#339" });
 	/* Detektor */
 	g.fillStyle = "#333"; g.fillRect(xSpalt, ySpalt - 4, detL * s, 4);
 	for (let c = 0; c <= detL; c++) {
