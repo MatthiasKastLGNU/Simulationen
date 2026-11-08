@@ -1785,7 +1785,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<div class="zeile"><label>Dicke <i class="gr">d</i></label><input type="range" id="regler-d" min="0.05" max="2" step="0.05" value="1"><span class="wert" id="wert-d"></span></div>
 			</div>
 			<div class="auswertung" id="auswertung"></div>
-			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Draufsicht, schematisch. Die Driftgeschwindigkeit ist f&uuml;r die Darstellung stark vergr&ouml;&szlig;ert. Magnetfeld senkrecht zur Zeichenebene (&odot; aus der Ebene heraus bei <i class="gr">B</i> &gt; 0).</p></div></details>
+			<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Draufsicht, schematisch. Die Driftgeschwindigkeit ist f&uuml;r die Darstellung stark vergr&ouml;&szlig;ert. Magnetfeld senkrecht zur Zeichenebene (&otimes; in die Ebene hinein bei <i class="gr">B</i> &gt; 0).</p></div></details>
 		</div>
 	</div>
 
@@ -1828,7 +1828,7 @@ function zeichne(g, W, H) {
 	const B = zustand.B;
 	/* Die Flussdichte zeigt sich in Größe und Deutlichkeit der Feldsymbole */
 	const bA = Math.min(1, Math.abs(B));
-	if (bA > 0.005) for (let x = x0 + 30; x < x1; x += 60) for (let y = y0 + 25; y < y1; y += 50) P.text(g, B >= 0 ? "⊙" : "⊗", x, y, { ausrichtung: "center", groesse: Math.round(9 + 9 * bA), farbe: "rgba(0,0,120," + (0.12 + 0.5 * bA) + ")" });
+	if (bA > 0.005) for (let x = x0 + 30; x < x1; x += 60) for (let y = y0 + 25; y < y1; y += 50) P.text(g, B >= 0 ? "⊗" : "⊙", x, y, { ausrichtung: "center", groesse: Math.round(9 + 9 * bA), farbe: "rgba(0,0,120," + (0.12 + 0.5 * bA) + ")" });
 	/* Die Dicke zeigt sich in einer Seitenansicht unten links */
 	const dPix = Math.max(2, zustand.d * 9);
 	const ySeite = eng ? H - 22 : H - 30, bSeite = eng ? 60 : 80;
@@ -1869,7 +1869,7 @@ function zeichne(g, W, H) {
 	/* Kraftpfeile an einem Traeger */
 	const tx = x0 + 0.35 * (x1 - x0), ty = (y0 + y1) / 2;
 	const vRicht = m.z < 0 ? -1 : 1;                   /* Driftrichtung in x */
-	const FL = m.z * vRicht * (B >= 0 ? -1 : 1);       /* F = q v x B, v in x, B aus der Ebene: F_y = -q v B (Bildschirm-y nach unten positiv) */
+	const FL = m.z * vRicht * (B >= 0 ? -1 : 1);       /* F = q v x B, v in x, B in die Ebene (-z): F_y(math) = +q v B, Bildschirm-y nach unten positiv */
 	if (Math.abs(B) > 0.01 && h.I > 0) {
 		P.pfeil(g, tx, ty, tx, ty + FL * 38, P.FARBEN.gruen, 2.5, 9);
 		P.symbol(g, "F", "L", tx + 6, ty + FL * 30, { groesse: 13, farbe: P.FARBEN.gruen });
