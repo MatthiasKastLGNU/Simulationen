@@ -1866,17 +1866,17 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 				<button id="btn-bild" class="neben" data-icon="download" title="Bild herunterladen"></button>
 			</div>
 			<div class="steuerung">
-				<div class="zeile"><label>Beschleunigung <i class="gr">U</i><sub>B</sub></label><input type="range" id="regler-u" min="120" max="350" step="5" value="250"><span class="wert" id="wert-u"></span></div>
+				<div class="zeile"><label>Beschleunigung <i class="gr">U</i><sub>B</sub></label><input type="range" id="regler-u" min="150" max="300" step="5" value="250"><span class="wert" id="wert-u"></span></div>
 				<div class="zeile"><label>Spulenstrom <i class="gr">I</i></label><input type="range" id="regler-i" min="0.8" max="2.6" step="0.01" value="1.3"><span class="wert" id="wert-i"></span></div>
 				<div class="zeile"><label>Ablesung</label>
-					<span class="knopfleiste" id="ablesung-knoepfe"><button data-wert="innen" class="aktiv" title="Messleiste im Kolben">Messleiste innen</button><button data-wert="aussen" title="Lineal außen am Kolben">Lineal außen</button></span>
+					<span class="knopfleiste" id="ablesung-knoepfe"><button data-wert="peilen" class="aktiv" title="Schirm hinter dem Kolben, jeden Rand einzeln senkrecht anpeilen">Schirm, Rand anpeilen</button><button data-wert="mittig" title="Schirm hinter dem Kolben, Auge vor der Bahnmitte">Schirm, Auge mittig</button><button data-wert="aussen" title="Lineal außen am Kolben">Lineal außen</button></span>
 				</div>
 				<div class="zeile"><label>Blickwinkel</label><input type="range" id="regler-blick" min="-15" max="15" step="1" value="0"><span class="wert" id="wert-blick"></span></div>
 				<div class="zeile knopfleiste"><button id="btn-messwert" class="haupt" data-icon="notieren" data-text="notieren" title="Messwert notieren"></button>
-					<span id="zeile-restgas"><label class="chip" title="Energieverlust durch Stöße mit dem Restgas"><input type="checkbox" id="chk-restgas">Restgas-Stöße</label></span></div>
+					<span id="zeile-restgas"><label class="chip" title="Elektronen geben bei Stößen mit dem Gas Energie ab"><input type="checkbox" id="chk-restgas">Stöße mit dem Gas</label></span></div>
 			</div>
 			<p class="fussnote">Ziehen Sie die beiden roten Marken auf die Mitte des Strahls.</p>
-<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Angezeigt wird der abgelesene Durchmesser. Au&szlig;en liegt das Lineal 8&nbsp;cm vor der Bahnebene, das Auge 40&nbsp;cm vor der Bahnebene.</p></div></details>
+<details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Helmholtz-Spulenpaar mit 130 Windungen je Spule und 15&nbsp;cm Radius, Kolben 16&nbsp;cm. Der wei&szlig;e Schirm steht 6&nbsp;cm hinter der Bahnebene, das Lineal au&szlig;en 8&nbsp;cm davor, das Auge 40&nbsp;cm vor der Bahnebene. Peilt man jeden Rand einzeln senkrecht an, f&auml;llt die Parallaxe weg.</p></div></details>
 			<div class="auswertung" id="ablesung"></div>
 			<div class="tabelle-wrap">
 				<table class="messtabelle" id="mess-tab"><thead><tr><th>Nr.</th><th><i class="gr">U</i><sub>B</sub> in V</th><th><i class="gr">I</i> in A</th><th>2<i class="gr">r</i> in cm</th><th><i class="gr">r</i><sup>2</sup> in cm<sup>2</sup></th><th><i class="gr">U</i><sub>B</sub>/<i class="gr">I</i><sup>2</sup> in V/A<sup>2</sup></th><th><i class="gr">m</i> in 10<sup>&minus;31</sup>&nbsp;kg</th></tr></thead><tbody id="messtabelle-koerper"></tbody></table>
@@ -1916,7 +1916,7 @@ const R_SP = 0.150, N_SP = 130;
 const K_B = Math.pow(0.8, 1.5) * MU0 * N_SP / R_SP;           /* T pro A */
 
 /* Einheiten: U in V, I in A, Laengen in cm, Winkel in Grad, u(r) in mm, u(U) in %, u(R) in cm */
-const zustand = { U: 250, I: 1.3, ablesung: "innen", blick: 0, restgas: false, marken: [-4.5, 4.5], ur: 1, uu: 2, ui: 0.02, uR: 0.2 };
+const zustand = { U: 250, I: 1.3, ablesung: "peilen", blick: 0, restgas: false, marken: [-4.5, 4.5], ur: 1, uu: 2, ui: 0.02, uR: 0.2 };
 
 function radiusWahr(z) {                                       /* cm */
 	const r = Math.sqrt(2 * M_E * z.U / E_LAD) / (K_B * z.I) * 100;
@@ -1924,9 +1924,10 @@ function radiusWahr(z) {                                       /* cm */
 }
 /* Abbildung eines Punkts der Bahnebene (horizontale Lage X in cm) auf die Skala */
 function aufSkala(X) {
-	if (zustand.ablesung === "innen") return X;
-	const a = 40, e = 8;
-	return X * (a - e) / a + e * Math.tan(zustand.blick * Math.PI / 180);
+	const a = 40, w = Math.tan(zustand.blick * Math.PI / 180);
+	if (zustand.ablesung === "peilen") return X;
+	if (zustand.ablesung === "mittig") { const e = 6; return X * (a + e) / a - e * w; }   /* Schirm hinter der Bahn: größer */
+	const e = 8; return X * (a - e) / a + e * w;                                         /* Lineal vor der Bahn: kleiner */
 }
 
 const cR = document.getElementById("rohr-canvas"), gR = cR.getContext("2d");
@@ -1941,29 +1942,45 @@ function zeichneRohr(g, W, H, mitMarken) {
 	const s = (H - 40) / 20;                                  /* px pro cm */
 	const cx = W / 2, cy = H / 2 + 6;
 	geo = { s, cx, cy };
-	/* Hintergrund und Helmholtz-Spule (Blick entlang der Spulenachse) */
-	g.fillStyle = "#1A1A22"; g.fillRect(0, 0, W, H);
-	g.strokeStyle = "rgba(200,150,40,0.55)"; g.lineWidth = 12;
-	g.beginPath(); g.arc(cx, cy, 9.6 * s, 0, 2 * Math.PI); g.stroke();
-	/* Kolben */
-	g.fillStyle = "rgba(90,70,160,0.18)"; g.beginPath(); g.arc(cx, cy, 8 * s, 0, 2 * Math.PI); g.fill();
-	g.strokeStyle = "rgba(220,220,255,0.6)"; g.lineWidth = 1.5; g.stroke();
+	/* abgedunkelter Raum: Helmholtz-Spule (Blick entlang der Spulenachse), weißer Schirm hinter dem Kolben */
+	g.fillStyle = "#15161C"; g.fillRect(0, 0, W, H);
 	const r = radiusWahr(param());
-	const kanoneY = cy + 6.0 * s;
-	/* Bahn: Kreis durch den Kanonenaustritt, Mittelpunkt senkrecht darueber */
-	const my = kanoneY - r * s;
+	const gx = cx - 5.6 * s, gy = cy + 1.2 * s;              /* Strahlaustritt: Kanone links unten, Strahl nach oben */
+	const mxB = gx + r * s, my = gy;                          /* Bahnmittelpunkt rechts vom Austritt (Feld in die Ebene) */
+	if (zustand.ablesung !== "aussen") {
+		g.fillStyle = "rgba(205,208,214,0.16)"; g.fillRect(cx - 9.2 * s, cy - 7.4 * s, 18.4 * s, 14.8 * s);
+		g.strokeStyle = "rgba(205,208,214,0.10)"; g.lineWidth = 1;
+		for (let c = -9; c <= 9; c++) { g.beginPath(); g.moveTo(cx + c * s, cy - 7.4 * s); g.lineTo(cx + c * s, cy + 7.4 * s); g.stroke(); }
+		for (let c = -7; c <= 7; c++) { g.beginPath(); g.moveTo(cx - 9.2 * s, my + c * s); g.lineTo(cx + 9.2 * s, my + c * s); g.stroke(); }
+	}
+	const ring = g.createRadialGradient(cx, cy, 9.0 * s, cx, cy, 10.3 * s);
+	ring.addColorStop(0, "#5A3A1C"); ring.addColorStop(0.5, "#B87333"); ring.addColorStop(1, "#4A2E15");
+	g.strokeStyle = ring; g.lineWidth = 1.3 * s; g.beginPath(); g.arc(cx, cy, 9.65 * s, 0, 2 * Math.PI); g.stroke();
+	g.strokeStyle = "rgba(0,0,0,0.6)"; g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, 9.0 * s, 0, 2 * Math.PI); g.stroke(); g.beginPath(); g.arc(cx, cy, 10.3 * s, 0, 2 * Math.PI); g.stroke();
+	/* Kolben aus Glas */
+	const glas = g.createRadialGradient(cx - 2.5 * s, cy - 3 * s, 0.5 * s, cx, cy, 8 * s);
+	glas.addColorStop(0, "rgba(200,215,230,0.16)"); glas.addColorStop(1, "rgba(120,140,170,0.08)");
+	g.fillStyle = glas; g.beginPath(); g.arc(cx, cy, 8 * s, 0, 2 * Math.PI); g.fill();
+	g.strokeStyle = "rgba(210,225,240,0.55)"; g.lineWidth = 1.5; g.stroke();
+	g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 0.25 * s; g.lineCap = "round"; g.beginPath(); g.arc(cx, cy, 7.1 * s, Math.PI * 1.18, Math.PI * 1.36); g.stroke();
+	/* Leuchtspur (grün), trifft die Kanone von hinten */
 	g.save();
 	g.beginPath(); g.arc(cx, cy, 8 * s - 2, 0, 2 * Math.PI); g.clip();
-	for (const [b, f] of [[0.45 * s, "rgba(80,140,255,0.25)"], [0.22 * s, "rgba(120,180,255,0.6)"], [2, "rgba(220,235,255,0.95)"]]) {
-		g.strokeStyle = f; g.lineWidth = b; g.beginPath(); g.arc(cx, my, r * s, 0, 2 * Math.PI); g.stroke();
+	const ende = 3 * Math.PI - Math.asin(Math.min(1, 0.6 / Math.max(r, 0.6)));   /* knapp vor der Rückkehr: trifft den Anodenkegel */
+	for (const [b, f] of [[0.55 * s, "rgba(47,203,110,0.18)"], [0.26 * s, "rgba(47,203,110,0.5)"], [2.2, "rgba(150,255,190,0.95)"]]) {
+		g.strokeStyle = f; g.lineWidth = b; g.beginPath(); g.arc(mxB, my, r * s, Math.PI, ende, false); g.stroke();
 	}
 	g.restore();
-	/* Kanone */
-	g.fillStyle = "#777"; g.fillRect(cx - 12, kanoneY + 2, 24, 18);
-	g.fillStyle = "#999"; g.fillRect(cx - 5, kanoneY - 3, 10, 6);
-	/* Messleiste auf Hoehe des Bahnmittelpunkts */
+	/* Elektronenkanone: Wehnelt-Zylinder, Anodenkegel, Lochblende, Glasfuß */
+	const e = 0.55 * s;
+	g.fillStyle = "#6E7479"; g.fillRect(gx - 0.3 * e, gy + 1.5 * e, 0.6 * e, 1.0 * e);
+	g.fillStyle = "rgba(255,150,40,0.7)"; g.beginPath(); g.arc(gx, gy + 2.2 * e, 0.16 * e, 0, 2 * Math.PI); g.fill();
+	g.fillStyle = "#8E959A"; g.beginPath(); g.moveTo(gx - 0.1 * e, gy + 1.45 * e); g.lineTo(gx - 0.4 * e, gy + 0.2 * e); g.lineTo(gx + 0.4 * e, gy + 0.2 * e); g.lineTo(gx + 0.1 * e, gy + 1.45 * e); g.closePath(); g.fill();
+	g.fillStyle = "#A9AEB3"; g.fillRect(gx - 0.75 * e, gy, 0.62 * e, 0.18 * e); g.fillRect(gx + 0.13 * e, gy, 0.62 * e, 0.18 * e);
+	g.strokeStyle = "rgba(170,180,190,0.6)"; g.lineWidth = 2; g.beginPath(); g.moveTo(gx, gy + 2.5 * e); g.lineTo(gx, cy + 7.8 * s); g.stroke();
+	/* Skala auf Höhe des Bahnmittelpunkts: Schirm hinten oder Lineal außen */
 	const yL = my;
-	g.strokeStyle = zustand.ablesung === "innen" ? "rgba(255,255,160,0.9)" : "rgba(255,255,255,0.9)";
+	g.strokeStyle = zustand.ablesung === "aussen" ? "rgba(255,255,255,0.9)" : "rgba(255,255,170,0.9)";
 	g.lineWidth = 1;
 	g.beginPath(); g.moveTo(cx - 7.5 * s, yL); g.lineTo(cx + 7.5 * s, yL); g.stroke();
 	for (let c = -7; c <= 7; c += 0.5) {
@@ -1971,13 +1988,15 @@ function zeichneRohr(g, W, H, mitMarken) {
 		g.beginPath(); g.moveTo(X, yL - (lang ? 7 : 4)); g.lineTo(X, yL + (lang ? 7 : 4)); g.stroke();
 		if (lang && c % 2 === 0) P.text(g, String(Math.abs(c)), X, yL - 10, { ausrichtung: "center", groesse: 10, farbe: "#FFFFC0" });
 	}
-	if (W < 560) P.text(g, zustand.ablesung === "innen" ? "Messleiste (cm)" : "Lineal außen (cm)", cx, yL + 26, { groesse: 11, farbe: "#FFFFC0", ausrichtung: "center" });
-	else P.text(g, zustand.ablesung === "innen" ? "Messleiste (cm)" : "Lineal außen (cm)", cx + 7.6 * s, yL + 4, { groesse: 11, farbe: "#FFFFC0" });
-	/* scheinbare Lage der Strahlmitte auf der Skala */
-	if (zustand.ablesung === "aussen") {
-		g.fillStyle = "rgba(120,180,255,0.9)";
-		for (const X of [-r, r]) { g.beginPath(); g.arc(cx + aufSkala(X) * s, yL, 3, 0, 2 * Math.PI); g.fill(); }
-		P.text(g, "blau: Strahl, wie er auf dem Lineal erscheint", 10, H - 10, { groesse: 11, farbe: "#CCE" });
+	const skalaName = zustand.ablesung === "aussen" ? "Lineal außen (cm)" : "Schirm hinten (cm)";
+	if (W < 560) P.text(g, skalaName, cx, yL + 26, { groesse: 11, farbe: "#FFFFC0", ausrichtung: "center" });
+	else P.text(g, skalaName, cx + 7.6 * s, yL + 4, { groesse: 11, farbe: "#FFFFC0" });
+	/* scheinbare Lage der Bahnränder auf der Skala */
+	if (zustand.ablesung !== "peilen") {
+		g.fillStyle = "rgba(150,255,190,0.95)";
+		const xm = (mxB - cx) / s;
+		for (const X of [xm - r, xm + r]) { g.beginPath(); g.arc(cx + aufSkala(X) * s, yL, 3.2, 0, 2 * Math.PI); g.fill(); }
+		P.text(g, "grüne Punkte: wo die Bahnränder auf der Skala erscheinen", 10, H - 10, { groesse: 11, farbe: "#CDE" });
 	}
 	if (!mitMarken) return;
 	zustand.marken.forEach(m => {
@@ -2057,7 +2076,7 @@ function aktualisiere() {
 	document.getElementById("wert-uR").innerHTML = P.de(zustand.uR, 2) + "&nbsp;cm";
 	zeichneRohr(gR, WR, HR, true);
 	const r = radiusWahr(param());
-	const passt = r < 7.8;
+	const passt = Math.hypot(-5.6 + r, 1.2) + r < 7.8;
 	document.getElementById("ablesung").innerHTML = "abgelesener Durchmesser: <span class='kennzahl'>" + P.de(abgelesenerDurchmesser(), 1) + "&nbsp;cm</span>, <i class='gr'>B</i> = " + P.de(K_B * zustand.I * 1e3, 3) + "&nbsp;mT"
 		+ "<span class='naeherung'> | wahrer Durchmesser " + P.de(2 * r, 2) + "&nbsp;cm</span>" + (passt ? "" : " <b>Die Bahn trifft den Kolben.</b>");
 	zeichneBalken();
