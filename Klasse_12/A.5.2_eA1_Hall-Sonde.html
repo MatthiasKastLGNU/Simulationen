@@ -181,6 +181,7 @@ table.messtabelle tr:last-child td, table.messtabelle tr:last-child th { border-
 table.messtabelle td:first-child, table.messtabelle th:first-child { text-align: center; }
 .tabelle-wrap { overflow-x: auto; margin-top: 0.5rem; }
 .verborgen { display: none !important; }
+html.kd .steuerung .zeile[hidden][id], html.kd .zeile[hidden], html.kd [hidden], [hidden] { display: none !important; } /* ausgeblendete Zeilen auch in Handybreite (Design setzt dort display:grid) */
 
 .hinweis { font-size: 0.9rem; color: #444; margin: 0.4rem 0 0; }
 .kennzahl { font-variant-numeric: tabular-nums; font-weight: bold; }
@@ -1864,8 +1865,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			<div class="zeile" style="margin-bottom:0.4rem" id="zeile-art">
 				<span class="knopfleiste" id="art-knoepfe">
 					<button data-wert="lang" class="aktiv gross" data-icon="sp_lang" data-text="lange Spule" title="lange Spule"></button>
-					<button data-wert="helmholtz" class="gross" data-icon="sp_helmholtz" data-text="Helmholtz" title="Helmholtz-Paar"></button>
-					<button data-wert="kurz" class="gross" data-icon="sp_kurz" data-text="kurze Spulen" title="kurze Spulen"></button>
+					<button data-wert="kurz" class="gross" data-icon="sp_kurz" data-text="kurze Spulen" title="Station 2: kurze Spulen hintereinander"></button>
+					<button data-wert="paar" class="gross" data-icon="sp_helmholtz" data-text="Spulenpaar" title="Station 3: Spulenpaar mit veränderlichem Abstand"></button>
 					<button data-wert="draht" class="gross" data-icon="sp_draht" data-text="Draht" title="gerader Draht"></button>
 				</span>
 			</div>
@@ -1876,6 +1877,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			<div class="steuerung">
 				<div class="zeile"><label>Stromst&auml;rke <i class="gr">I</i></label><input type="range" id="regler-i" min="0" max="3" step="0.05" value="1.5"><span class="wert" id="wert-i"></span></div>
 				<div class="zeile" id="zeile-a"><label>Spulenabstand <i class="gr">a</i></label><input type="range" id="regler-a" min="5" max="30" step="0.5" value="15"><span class="wert" id="wert-a"></span></div>
+				<div class="zeile" id="zeile-flach"><span class="knopfleiste"><button id="btn-flach" data-schalter aria-pressed="false" title="flache Spulen: Helmholtz-Paar mit R = 15 cm und N = 130">flache Spulen (Helmholtz)</button></span></div>
+				<div class="zeile" id="zeile-buendel"><label>Leiterbündel <i class="gr">n</i></label><span class="knopfleiste" id="buendel-knoepfe"><button data-wert="1" class="aktiv">1</button><button data-wert="5">5</button><button data-wert="10">10</button></span></div>
 				<div class="zeile" id="zeile-n"><label>Anzahl kurzer Spulen</label><span class="knopfleiste" id="anzahl-knoepfe"><button data-wert="1" class="aktiv">1</button><button data-wert="2">2</button><button data-wert="3">3</button></span></div>
 				<div class="zeile"><label>Sondenkippung &alpha;</label><input type="range" id="regler-kipp" min="0" max="30" step="1" value="0"><span class="wert" id="wert-kipp"></span></div>
 				<div class="zeile knopfleiste">
@@ -1883,12 +1886,13 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<label class="chip" id="zeile-einzel" title="Einzelbeiträge zeigen"><input type="checkbox" id="chk-einzel" checked>Einzelbeiträge</label>
 					<label class="chip" id="zeile-theorie" title="berechnete Kurve zeigen"><input type="checkbox" id="chk-theorie" checked>berechnete Kurve</label>
 				</div>
-				<div class="zeile"><label>Homogenit&auml;tsbereich</label><span class="knopfleiste" id="homo-knoepfe"><button data-wert="0">aus</button><button data-wert="0.01" class="aktiv">1&nbsp;%</button><button data-wert="0.05">5&nbsp;%</button></span></div>
+				<div class="zeile"><label>Homogenit&auml;tsbereich</label><span class="knopfleiste" id="homo-knoepfe"><button data-wert="0">aus</button><button data-wert="0.01">1&nbsp;%</button><button data-wert="0.05" class="aktiv">5&nbsp;%</button></span></div>
 				<div class="zeile"><span class="knopfleiste"><button id="btn-messwert" class="haupt" data-icon="notieren" data-text="notieren" title="Messwert notieren"></button></span></div>
 			</div>
 			<p class="fussnote" id="hinweis">Ziehen Sie die Sonde entlang der Achse. Die Anzeige rauscht wie ein echtes Messger&auml;t (&plusmn;&nbsp;0,005&nbsp;mT).</p>
 			<canvas id="diagramm-canvas" class="sim"></canvas>
 			<div class="bildleiste knopfleiste"><button id="btn-dia-bild" class="neben" data-icon="download" title="Diagramm herunterladen"></button></div>
+			<div class="zeile" id="zeile-mu"><label>Ihr Wert f&uuml;r &mu;<sub>0</sub></label><span style="white-space:nowrap"><input class="eingabe" id="mu-ein" inputmode="decimal" size="6" aria-label="eigener Wert für mu0"><span class="einheit">&middot;10<sup>&minus;6</sup>&nbsp;Vs/(Am)</span></span><span class="knopfleiste"><button id="btn-mu" class="haupt" title="eigenen Wert mit der Simulation vergleichen">Vergleichen</button></span></div>
 			<div class="auswertung" id="auswertung"></div>
 			<div class="tabelle-wrap" style="max-height:200px; overflow-y:auto">
 				<table class="messtabelle" id="mess-tab"><thead><tr><th>Nr.</th><th id="spalte-ort"><i class="gr">x</i> in cm</th><th><i class="gr">B</i> in mT</th></tr></thead><tbody id="messtabelle-koerper"></tbody></table>
@@ -1907,12 +1911,13 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 "use strict";
 const K = window.SimKit, P = window.SimPlus;
 const MU0 = 4 * Math.PI * 1e-7;
-const LANG = { l: 40, R: 3, N: 400 }, HH = { R: 15, N: 130 }, KURZ = { R: 5, N: 100, abstand: 6 };
+const LANG = { l: 60, R: 4, N: 120 }, HH = { R: 15, N: 130 }, KURZ = { R: 3.2, L: 4.4, N: 600, abstand: 5 }; /* lange Spule wie in A.5.2; kurze Spulen: Schulspulen mit 600 Windungen aus dem Transformatorbaukasten (mittlerer Radius 3,2 cm, Wickellänge 4,4 cm, Mittenabstand dicht an dicht 5 cm) */
 const ERDFELD = 0.045; /* mT, Anteil in Messrichtung ohne Nullabgleich */
 
 /* Einheiten: Orte in cm, I in A, B in mT */
-const zustand = { art: "lang", I: 1.5, a: 15, anzahl: 1, kipp: 0, nullabgleich: false, einzel: true, theorie: true, homo: 0.01, sonde: 0 };
+const zustand = { art: "lang", I: 3, a: 15, anzahl: 1, kipp: 0, nullabgleich: false, einzel: true, theorie: true, homo: 0.05, sonde: 0, flach: false, n: 1, muEigen: null };
 
+function endlSpule(x, x0, L, R, N, I) { const X = (x - x0) / 100, l = L / 100, r = R / 100; return MU0 * N / l * I / 2 * ((X + l / 2) / Math.hypot(X + l / 2, r) - (X - l / 2) / Math.hypot(X - l / 2, r)) * 1e3; }
 function spulenAchse(x, x0, R, N, I) { const r = R / 100, d = (x - x0) / 100; return MU0 * N * I * r * r / (2 * Math.pow(r * r + d * d, 1.5)) * 1e3; }
 function beitraege(x) {
 	const I = zustand.I;
@@ -1921,13 +1926,15 @@ function beitraege(x) {
 			const n = LANG.N / (LANG.l / 100), r = LANG.R / 100, x1 = -LANG.l / 200, x2 = LANG.l / 200, X = x / 100;
 			return [MU0 * n * I / 2 * ((X - x1) / Math.hypot(X - x1, r) - (X - x2) / Math.hypot(X - x2, r)) * 1e3];
 		}
-		case "helmholtz": return [spulenAchse(x, -zustand.a / 2, HH.R, HH.N, I), spulenAchse(x, zustand.a / 2, HH.R, HH.N, I)];
+		case "paar": return zustand.flach
+			? [spulenAchse(x, -zustand.a / 2, HH.R, HH.N, I), spulenAchse(x, zustand.a / 2, HH.R, HH.N, I)]
+			: [endlSpule(x, -zustand.a / 2, KURZ.L, KURZ.R, KURZ.N, I), endlSpule(x, zustand.a / 2, KURZ.L, KURZ.R, KURZ.N, I)];
 		case "kurz": {
 			const n = zustand.anzahl, liste = [];
-			for (let k = 0; k < n; k++) liste.push(spulenAchse(x, (k - (n - 1) / 2) * KURZ.abstand, KURZ.R, KURZ.N, I));
+			for (let k = 0; k < n; k++) liste.push(endlSpule(x, (k - (n - 1) / 2) * KURZ.abstand, KURZ.L, KURZ.R, KURZ.N, I));
 			return liste;
 		}
-		default: return [x > 0.2 ? MU0 * I / (2 * Math.PI * x / 100) * 1e3 : NaN];
+		default: return [x > 0.2 ? MU0 * zustand.n * I / (2 * Math.PI * x / 100) * 1e3 : NaN];
 	}
 }
 function aktArt() { return zustand.art; }
@@ -1936,7 +1943,13 @@ function Banzeige(x) {
 	const B = Bwahr(x) * Math.cos(zustand.kipp * Math.PI / 180) + (zustand.nullabgleich ? 0 : ERDFELD);
 	return P.runde(B + 0.004 * P.gauss(), 0.001);
 }
-function bereich() { return aktArt() === "draht" ? { min: 0.5, max: 12 } : { min: -30, max: 30 }; }
+function bereich() {
+	const art = aktArt();
+	if (art === "draht") return { min: 0.5, max: 12 };
+	if (art === "lang") return { min: -45, max: 45 };
+	if (art === "paar" && zustand.flach) return { min: -30, max: 30 };
+	return { min: -16, max: 16 };
+}
 
 const cA = document.getElementById("aufbau-canvas"), gA = cA.getContext("2d");
 const cD = document.getElementById("diagramm-canvas"), gD = cD.getContext("2d");
@@ -1952,7 +1965,8 @@ function zeichneAufbau(g, W, H) {
 	g.strokeStyle = "#999"; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(px(bb.min), yA); g.lineTo(px(bb.max), yA); g.stroke(); g.setLineDash([]);
 	for (let x = Math.ceil(bb.min / 5) * 5; x <= bb.max; x += art === "draht" ? 1 : 5) {
 		g.strokeStyle = "#555"; g.beginPath(); g.moveTo(px(x), H - 22); g.lineTo(px(x), H - 16); g.stroke();
-		if (art !== "draht" || x % 2 === 0) P.text(g, String(x), px(x), H - 4, { ausrichtung: "center", groesse: 10 });
+		const schrittZahl = art === "draht" ? 2 : (W < 560 && bb.max - bb.min > 60 ? 15 : 5); /* in Handybreite weniger Zahlen, sonst überlappen sie */
+		if (x % schrittZahl === 0) P.text(g, String(x), px(x), H - 4, { ausrichtung: "center", groesse: 10 });
 	}
 	P.text(g, art === "draht" ? "r in cm" : "x in cm", W - 6, H - 26, { ausrichtung: "right", groesse: 11 });
 	const spule = (x0, R, halbL, farbe) => {
@@ -1963,13 +1977,29 @@ function zeichneAufbau(g, W, H) {
 		g.strokeRect(px(x0 - halbL), yA - h - 6, Math.max(4, 2 * halbL * s), 6);
 		g.strokeRect(px(x0 - halbL), yA + h, Math.max(4, 2 * halbL * s), 6);
 	};
-	if (art === "lang") { spule(0, LANG.R * 3, LANG.l / 2, "#E3B55A"); P.text(g, "lange Spule (Radius nicht maßstäblich)", 34, 14, { groesse: 11, farbe: "#555" }); }
-	if (art === "helmholtz") { spule(-zustand.a / 2, HH.R, 0.6, "#E3B55A"); spule(zustand.a / 2, HH.R, 0.6, "#E3B55A"); P.text(g, "Helmholtz-Paar, R = 15 cm, N = 130 je Spule", 34, 14, { groesse: 11, farbe: "#555" }); }
-	if (art === "kurz") { for (let k = 0; k < zustand.anzahl; k++) spule((k - (zustand.anzahl - 1) / 2) * KURZ.abstand, KURZ.R, 1.2, "#E3B55A"); P.text(g, "kurze Spulen, R = 5 cm, N = 100 je Spule", 34, 14, { groesse: 11, farbe: "#555" }); }
+	/* Spule aus dem Transformatorbaukasten im Längsschnitt: Wicklung kupfer, Spulenkörper dunkel (wie im Blatt) */
+	const trafo = x0 => {
+		const hL = KURZ.L / 2, ri = Math.min(2.0 * s, H / 2 - 30), ro = Math.min(4.3 * s, H / 2 - 12), xa = px(x0 - hL), b = 2 * hL * s;
+		for (const sg of [-1, 1]) {
+			const y1 = sg < 0 ? yA - ro : yA + ri;
+			const gr = g.createLinearGradient(0, y1, 0, y1 + ro - ri);
+			gr.addColorStop(0, "#9A5B2A"); gr.addColorStop(0.5, "#E8B98C"); gr.addColorStop(1, "#9A5B2A");
+			g.fillStyle = gr; g.fillRect(xa, y1, b, ro - ri);
+			g.strokeStyle = "rgba(90,50,20,0.45)"; g.lineWidth = 0.6;
+			for (let xx = xa + 3; xx < xa + b - 1; xx += 3.2) { g.beginPath(); g.moveTo(xx, y1); g.lineTo(xx + 0.8, y1 + ro - ri); g.stroke(); }
+			g.fillStyle = "#3A3F45";
+			g.fillRect(xa - 3, sg < 0 ? yA - ro - 5 : yA + ri - 2, 3, ro - ri + 7);
+			g.fillRect(xa + b, sg < 0 ? yA - ro - 5 : yA + ri - 2, 3, ro - ri + 7);
+		}
+	};
+	if (art === "lang") { spule(0, LANG.R * 1.6, LANG.l / 2, "#E3B55A"); P.text(g, "lange Spule: l = 60 cm, N = 120 (Radius überhöht)", 34, 14, { groesse: 11, farbe: "#555" }); }
+	if (art === "paar" && zustand.flach) { spule(-zustand.a / 2, HH.R, 0.6, "#E3B55A"); spule(zustand.a / 2, HH.R, 0.6, "#E3B55A"); P.text(g, "flache Spulen (Helmholtz): R = 15 cm, N = 130 je Spule", 34, 14, { groesse: 11, farbe: "#555" }); }
+	if (art === "paar" && !zustand.flach) { trafo(-zustand.a / 2); trafo(zustand.a / 2); P.text(g, "zwei Spulen mit je 600 Windungen, gleichsinnig in Reihe", 34, 14, { groesse: 11, farbe: "#555" }); }
+	if (art === "kurz") { for (let k = 0; k < zustand.anzahl; k++) trafo((k - (zustand.anzahl - 1) / 2) * KURZ.abstand); P.text(g, "Spulen mit je 600 Windungen, ohne Eisenkern", 34, 14, { groesse: 11, farbe: "#555" }); }
 	if (art === "draht") {
 		g.fillStyle = "#B87333"; g.beginPath(); g.arc(px(0), yA, 7, 0, 2 * Math.PI); g.fill();
 		P.text(g, "×", px(0), yA + 5, { ausrichtung: "center", groesse: 14, fett: true, farbe: "#fff" });
-		P.text(g, "Draht (Strom in die Zeichenebene), Blick von oben", 34, 14, { groesse: 11, farbe: "#555" });
+		P.text(g, zustand.n > 1 ? "Bündel aus " + zustand.n + " Leitern (Strom in die Zeichenebene)" : "gerader Leiter (Strom in die Zeichenebene)", 34, 14, { groesse: 11, farbe: "#555" });
 	}
 	/* Sonde */
 	const X = px(zustand.sonde);
@@ -1986,7 +2016,7 @@ function zeichneDiagramm() {
 	gD.clearRect(0, 0, WD, HD);
 	const art = aktArt(), bb = bereich();
 	const I = zustand.I;
-	const yMax = art === "draht" ? Math.max(0.5, Math.ceil(MU0 * I / (2 * Math.PI * 0.005) * 1e3 * 1.1 * 10) / 10) : art === "lang" ? 20 : art === "helmholtz" ? 2 : 4;
+	const yMax = art === "draht" ? Math.max(0.5, Math.ceil(MU0 * zustand.n * Number(document.getElementById("regler-i").max) / (2 * Math.PI * 0.005) * 1e3 * 1.1 * 10) / 10) : art === "lang" ? 1.5 : (art === "paar" && zustand.flach) ? 2 : 20;
 	const u = P.achsen(gD, { dx: 56, dy: 22, dw: WD - 80, dh: HD - 64, xMin: art === "draht" ? 0 : bb.min, xMax: bb.max, yMin: 0, yMax, xLabel: art === "draht" ? "r" : "x", xEinheit: "cm", yLabel: "B", yEinheit: "mT" });
 	if (zustand.theorie) {
 		if (zustand.einzel && beitraege(0).length > 1) {
@@ -2007,18 +2037,29 @@ function zeichneDiagramm() {
 	const aw = document.getElementById("auswertung");
 	const reg = art === "draht" && tabelle.zeilen.length >= 3 ? P.linReg(tabelle.zeilen.map(p => 1 / (p.x / 100)), tabelle.zeilen.map(p => p.B / 1e3)) : null;
 	const Bt = "<i class='gr gB'>B</i>";
-	if (reg) {
-		KastWerte.karten(aw, [{ titel: "magnetische Feldkonstante &mu;<sub>0</sub> = 2&pi;&thinsp;&middot;&thinsp;Steigung/<i class='gr'>I</i>", wert: P.sig(2 * Math.PI * reg.m / I, 4) + "&nbsp;Vs/(Am)", betont: true },
-			{ titel: "Steigung " + Bt + " über 1/<i class='gr'>r</i>", wert: P.sig(reg.m, 3) + "&nbsp;T&thinsp;m" },
-			{ titel: "Achsenabschnitt", wert: P.sig(reg.b * 1e3, 2) + "&nbsp;mT", klein: true }, { titel: "<i class='gr'>R</i><sup>2</sup>", wert: P.de(reg.R2, 4), klein: true }]);
-	} else if (art === "helmholtz") {
+	if (art === "draht") {
+		/* Schummelschutz: Die Auswertung der Simulation erscheint erst, wenn der eigene Wert eingegeben ist */
+		const Iges = zustand.n * I;
+		const karten = [{ titel: "Gesamtstromstärke <i class='gr gI'>I</i> = <i class='gr'>n</i>&thinsp;&middot;&thinsp;<i class='gr'>I</i><sub>Netzgerät</sub>", wert: P.de(Iges, 1) + "&nbsp;A" }];
+		if (!reg) {
+			KastWerte.karten(aw, karten, "", "", "<p class='urteil neutral'>Notieren Sie mindestens drei Messwerte. Werten Sie selbst aus und geben Sie dann Ihren Wert für &mu;<sub>0</sub> ein.</p>");
+		} else if (zustand.muEigen === null) {
+			KastWerte.karten(aw, karten, "", "", "<p class='urteil neutral'>Geben Sie Ihren Wert für &mu;<sub>0</sub> ein und tippen Sie auf Vergleichen.</p>");
+		} else {
+			const muSim = 2 * Math.PI * reg.m / Iges, abw = (zustand.muEigen - muSim) / muSim * 100;
+			KastWerte.karten(aw, [{ titel: "&mu;<sub>0</sub> aus der Simulation in 10<sup>&minus;6</sup>&nbsp;Vs/(Am)", wert: P.sig(muSim * 1e6, 4), betont: true },
+				{ titel: "Ihr Wert in 10<sup>&minus;6</sup>&nbsp;Vs/(Am)", wert: P.sig(zustand.muEigen * 1e6, 4) },
+				{ titel: "Abweichung", wert: P.de(abw, 1) + "&nbsp;%" }].concat(karten).concat([{ titel: "<i class='gr'>R</i><sup>2</sup>", wert: P.de(reg.R2, 4), klein: true }]),
+				"", "", Math.abs(abw) <= 5 ? "<p class='urteil gut'>Gut ausgewertet: Ihr Wert weicht höchstens 5&nbsp;% ab.</p>" : "<p class='urteil schlecht'>Mehr als 5&nbsp;% Abweichung: Prüfen Sie Steigung, Einheiten (cm in m) und die Stromstärke <i class='gr'>n</i>&thinsp;&middot;&thinsp;<i class='gr'>I</i>.</p>");
+		}
+	} else if (art === "paar" && zustand.flach) {
 		const f = Math.pow(0.8, 1.5) * MU0 * HH.N * zustand.I / (HH.R / 100) * 1e3;
 		KastWerte.karten(aw, [{ titel: "Mitte " + Bt + "(0)", wert: P.de(Bwahr(0), 4) + "&nbsp;mT", betont: true },
 			{ titel: "Formel (4/5)<sup>3/2</sup>&thinsp;&mu;<sub>0</sub><i class='gr'>NI</i>/<i class='gr'>R</i> (nur für <i class='gr'>a</i> = <i class='gr'>R</i>)", wert: P.de(f, 4) + "&nbsp;mT" }]);
 	} else if (art === "lang") {
 		KastWerte.karten(aw, [{ titel: "Mitte " + Bt + "(0)", wert: P.de(Bwahr(0), 3) + "&nbsp;mT", betont: true },
-			{ titel: "Ende " + Bt + "(20&nbsp;cm)", wert: P.de(Bwahr(20), 3) + "&nbsp;mT" },
-			{ titel: "Ende im Vergleich zur Mitte", wert: P.de(Bwahr(20) / Bwahr(0) * 100, 1) + "&nbsp;%" },
+			{ titel: "Ende " + Bt + "(30&nbsp;cm)", wert: P.de(Bwahr(30), 3) + "&nbsp;mT" },
+			{ titel: "Ende im Vergleich zur Mitte", wert: P.de(Bwahr(30) / Bwahr(0) * 100, 1) + "&nbsp;%" },
 			{ titel: "Formel lange Spule &mu;<sub>0</sub><i class='gr'>NI</i>/<i class='gr'>l</i>", wert: P.de(MU0 * LANG.N * zustand.I / (LANG.l / 100) * 1e3, 3) + "&nbsp;mT", klein: true }]);
 	} else aw.innerHTML = "Summe der Einzelbeitr&auml;ge (rot) und Einzelkurven (grau gestrichelt).";
 }
@@ -2028,18 +2069,42 @@ function aktualisiere() {
 	document.getElementById("wert-i").innerHTML = P.de(zustand.I, 2) + "&nbsp;A";
 	document.getElementById("wert-a").innerHTML = P.de(zustand.a, 1) + "&nbsp;cm";
 	document.getElementById("wert-kipp").innerHTML = zustand.kipp + "&deg;";
-	document.getElementById("zeile-a").classList.toggle("verborgen", art !== "helmholtz");
-	document.getElementById("zeile-n").classList.toggle("verborgen", art !== "kurz");
+	document.getElementById("zeile-a").hidden = (art !== "paar");
+	document.getElementById("zeile-flach").hidden = (art !== "paar");
+	document.getElementById("zeile-buendel").hidden = (art !== "draht");
+	document.getElementById("zeile-mu").hidden = (art !== "draht");
+	const ra = document.getElementById("regler-a");
+	ra.min = 5; ra.max = zustand.flach ? 30 : 16;
+	document.getElementById("zeile-n").hidden = (art !== "kurz");
 	document.getElementById("spalte-ort").innerHTML = art === "draht" ? "<i class='gr'>r</i> in cm" : "<i class='gr'>x</i> in cm";
 	const bb = bereich();
 	zustand.sonde = Math.max(bb.min, Math.min(bb.max, zustand.sonde));
 	const regI = document.getElementById("regler-i");
-	regI.max = art === "draht" ? 20 : 3;
+	regI.max = art === "draht" ? (zustand.n > 1 ? 5 : 20) : art === "lang" ? 5 : (art === "paar" && zustand.flach) ? 3 : 1.5;
+	if (zustand.I > +regI.max) { zustand.I = +regI.max; regI.value = regI.max; }
 	zeichneAufbau(gA, WA, HA);
 	zeichneDiagramm();
 }
 
-K.bindeKnopfgruppe("art-knoepfe", w => { zustand.art = w; zustand.sonde = w === "draht" ? 3 : 0; if (w === "draht" && zustand.I < 5) { zustand.I = 15; document.getElementById("regler-i").max = 20; document.getElementById("regler-i").value = 15; } if (w !== "draht" && zustand.I > 3) { zustand.I = 1.5; document.getElementById("regler-i").value = 1.5; } tabelle.leeren(); }, aktualisiere);
+K.bindeKnopfgruppe("art-knoepfe", w => {
+	zustand.art = w; zustand.sonde = w === "draht" ? 3 : 0; zustand.muEigen = null;
+	const ri = document.getElementById("regler-i"), start = { lang: [5, 3], kurz: [1.5, 1], paar: [1.5, 1], draht: [20, 15] }[w] || [3, 1.5];
+	if (w === "paar") { zustand.flach = false; zustand.a = 5; const ra = document.getElementById("regler-a"); ra.max = 16; ra.value = 5; const bf = document.getElementById("btn-flach"); bf.classList.remove("aktiv"); bf.setAttribute("aria-pressed", "false"); }
+	if (w === "draht" && zustand.n > 1) start[0] = 5, start[1] = 5;
+	ri.max = start[0]; zustand.I = start[1]; ri.value = start[1];
+	tabelle.leeren();
+}, aktualisiere);
+K.bindeKnopfgruppe("buendel-knoepfe", w => { zustand.n = +w; zustand.muEigen = null; const ri = document.getElementById("regler-i"); ri.max = zustand.n > 1 ? 5 : 20; if (zustand.I > +ri.max) { zustand.I = +ri.max; ri.value = ri.max; } tabelle.leeren(); }, aktualisiere);
+document.getElementById("btn-flach").addEventListener("click", ev => {
+	zustand.flach = !zustand.flach; ev.currentTarget.classList.toggle("aktiv", zustand.flach); ev.currentTarget.setAttribute("aria-pressed", String(zustand.flach));
+	const ra = document.getElementById("regler-a"), ri = document.getElementById("regler-i");
+	zustand.a = zustand.flach ? 15 : 5; ra.max = zustand.flach ? 30 : 16; ra.value = zustand.a;
+	ri.max = zustand.flach ? 3 : 1.5; zustand.I = zustand.flach ? 1.5 : 1; ri.value = zustand.I;
+	zustand.sonde = 0; tabelle.leeren(); aktualisiere();
+});
+const muVergleich = () => { const t = document.getElementById("mu-ein").value.replace(",", ".").trim(), v = parseFloat(t); zustand.muEigen = isFinite(v) && v > 0 ? v * 1e-6 : null; zeichneDiagramm(); };
+document.getElementById("btn-mu").addEventListener("click", muVergleich);
+document.getElementById("mu-ein").addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); muVergleich(); } });
 K.bindeKnopfgruppe("anzahl-knoepfe", w => { zustand.anzahl = +w; tabelle.leeren(); }, aktualisiere);
 K.bindeKnopfgruppe("homo-knoepfe", w => zustand.homo = parseFloat(w), aktualisiere);
 P.regler("regler-i", "wert-i", v => v, v => zustand.I = v, aktualisiere);
@@ -2075,8 +2140,10 @@ SimUI.tabelleKnopf("btn-tab-bild", "mess-tab", () => "Hallsonde_Messwerte_" + ak
 /* Modus per Link: eine Anordnung (?modus=helmholtz); das alte ?modus=aufgabe landet beim Erkunden */
 try {
 	const m = (new URLSearchParams(location.search).get("modus") || "").toLowerCase();
-	const k = m && document.querySelector('#art-knoepfe button[data-wert="' + m + '"]');
+	const m2 = m === "helmholtz" ? "paar" : m;
+	const k = m2 && document.querySelector('#art-knoepfe button[data-wert="' + m2 + '"]');
 	if (k) { k.click(); document.getElementById("zeile-art").classList.add("per-link-aus"); }
+	if (m === "helmholtz") document.getElementById("btn-flach").click();
 } catch (e) { /* ohne Parameter */ }
 layout();
 K.nachFontLaden(aktualisiere);

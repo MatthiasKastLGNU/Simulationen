@@ -1794,10 +1794,10 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			</div>
 			<div class="steuerung">
 				<div class="zeile"><label>Voreinstellung</label><span class="knopfleiste" id="preset-knoepfe"><button data-wert="schule" class="aktiv gross" data-icon="sp_lang" data-text="Schulspule" title="Schulspule"></button><button data-wert="mrt" class="gross" data-icon="mrt" data-text="MRT" title="MRT-Magnet"></button></span></div>
-				<div class="zeile"><label>Windungszahl <i class="gr">N</i></label><input type="range" id="regler-n" min="100" max="10000" step="100" value="600"><span class="wert" id="wert-n"></span></div>
+				<div class="zeile"><label>Windungszahl <i class="gr">N</i></label><input type="range" id="regler-n" min="100" max="10000" step="100" value="500"><span class="wert" id="wert-n"></span></div>
 				<div class="zeile"><label>Stromst&auml;rke <i class="gr">I</i></label><input type="range" id="regler-i" min="0" max="600" step="0.5" value="2"><span class="wert" id="wert-i"></span></div>
 				<div class="zeile"><label>L&auml;nge <i class="gr">l</i></label><input type="range" id="regler-l" min="0.1" max="2" step="0.01" value="0.3"><span class="wert" id="wert-l"></span></div>
-				<div class="zeile"><label>Radius <i class="gr">r</i></label><input type="range" id="regler-r" min="0.01" max="0.6" step="0.01" value="0.03"><span class="wert" id="wert-r"></span></div>
+				<div class="zeile"><label>Radius <i class="gr">r</i></label><input type="range" id="regler-r" min="0.01" max="0.6" step="0.005" value="0.025"><span class="wert" id="wert-r"></span></div>
 				<div class="zeile"><label>Kern</label><span class="knopfleiste" id="kern-knoepfe"><button data-wert="luft" class="aktiv"><span class="muster" style="background:#fff"></span>Luft</button><button data-wert="alu"><span class="muster" style="background:#D0D4D8"></span>Aluminium</button><button data-wert="kupfer"><span class="muster" style="background:#C87A3A"></span>Kupfer</button><button data-wert="ferrit"><span class="muster" style="background:#3A3A3A"></span>Ferrit</button><button data-wert="eisen"><span class="muster" style="background:#7A7F86"></span>Weicheisen</button></span></div>
 				<div class="zeile" id="zeile-quench"><span class="knopfleiste"><button id="btn-quench" class="haupt" data-icon="quench" data-text="Quench auslösen" title="Quench auslösen"></button></span></div>
 			</div>
@@ -1814,7 +1814,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 const K = window.SimKit, P = window.SimPlus;
 const MU0 = 4 * Math.PI * 1e-7, LV_HE = 20.8e3, RHO_FL = 125, RHO_GAS = 0.166;
 const KERNE = { luft: { name: "Luft", mur: 1, bs: Infinity }, alu: { name: "Aluminium", mur: 1.000022, bs: Infinity }, kupfer: { name: "Kupfer", mur: 0.99999, bs: Infinity }, ferrit: { name: "Ferrit", mur: 1000, bs: 0.5 }, eisen: { name: "Weicheisen", mur: 5000, bs: 2.0 } };
-const PRESETS = { schule: { N: 600, I: 2, l: 0.3, r: 0.03, kern: "luft", mrt: false }, mrt: { N: 8000, I: 500, l: 1.6, r: 0.45, kern: "luft", mrt: true } };
+const PRESETS = { schule: { N: 500, I: 2, l: 0.3, r: 0.025, kern: "luft", mrt: false }, mrt: { N: 6000, I: 300, l: 1.5, r: 0.4, kern: "luft", mrt: true } }; /* Schulspule wie im Blatt (A = 20 cm²); MRT bewusst ein 1,5-T-Gerät mit anderen Daten als M2 im Blatt (Schummelschutz für die Materialaufgabe) */
 
 const zustand = Object.assign({ quench: null }, PRESETS.schule);
 
@@ -2010,7 +2010,7 @@ function aktualisiere() {
 	document.getElementById("wert-n").innerHTML = z.N;
 	document.getElementById("wert-i").innerHTML = P.sig(z.I, 3) + "&nbsp;A";
 	document.getElementById("wert-l").innerHTML = P.de(z.l, 2) + "&nbsp;m";
-	document.getElementById("wert-r").innerHTML = P.de(z.r * 100, 0) + "&nbsp;cm";
+	document.getElementById("wert-r").innerHTML = P.de(z.r * 100, z.r < 0.1 ? 1 : 0) + "&nbsp;cm";
 	document.getElementById("zeile-quench").querySelector("#btn-quench").classList.toggle("verborgen", !z.mrt);
 	zeichne(gS, WS, HS);
 	const f = feld(z, z.quench ? z.quench.I : z.I);
@@ -2021,8 +2021,8 @@ function aktualisiere() {
 	let t = "<i class='gr'>B</i><sub>Luft</sub> = &mu;<sub>0</sub><i class='gr'>N</i><i class='gr'>I</i>/<i class='gr'>l</i> = " + P.sig(f.B0, 3) + "&nbsp;T; mit Kern <i class='gr'>B</i> = " + P.sig(f.B, 3) + "&nbsp;T (wirksames &mu;<sub>r</sub> = " + P.sig(f.murEff, 4) + ")";
 	t += "<br>&rho;<sub>mag</sub> = <i class='gr'>B</i><sup>2</sup>/(2&mu;<sub>0</sub>&mu;<sub>r</sub>) = " + P.sig(f.rho, 3) + "&nbsp;J/m<sup>3</sup>, Volumen " + P.sig(f.V, 3) + "&nbsp;m<sup>3</sup>, Energie <b>" + (f.E >= 1e6 ? P.sig(f.E / 1e6, 3) + "&nbsp;MJ" : f.E >= 1e3 ? P.sig(f.E / 1e3, 3) + "&nbsp;kJ" : P.sig(f.E, 3) + "&nbsp;J") + "</b>";
 	if (z.mrt) {
-		const E0 = feld(z, z.I).E, m = E0 / LV_HE;
-		t += "<br>Beim Quench verdampft h&ouml;chstens <i class='gr'>m</i> = <i class='gr'>E</i>/<i class='gr'>L</i><sub>V</sub> = " + P.sig(m, 3) + "&nbsp;kg Helium: " + P.sig(m / RHO_FL * 1000, 3) + "&nbsp;L fl&uuml;ssig, " + P.sig(m / RHO_GAS, 3) + "&nbsp;m<sup>3</sup> Gas bei 20&nbsp;&deg;C.";
+		const E0 = feld(z, z.I).E;
+		t += "<br>Beim Quench geht die Feldenergie an das Helium &uuml;ber. Wie viel davon verdampft, berechnen Sie selbst.";
 		if (z.quench) t += "<br><b>Quench: " + P.de(z.quench.t, 1) + "&nbsp;s, in innere Energie umgesetzt " + P.sig((E0 - f.E) / 1e6, 3) + "&nbsp;MJ</b>";
 	}
 	const aw = document.getElementById("auswertung"), quench = z.quench ? "<p class='urteil schlecht'>Quench: " + P.de(z.quench.t, 1) + "&nbsp;s, in innere Energie umgesetzt " + P.sig((feld(z, z.I).E - f.E) / 1e6, 3) + "&nbsp;MJ</p>" : "";
