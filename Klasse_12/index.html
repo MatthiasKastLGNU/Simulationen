@@ -135,6 +135,7 @@ h4.abs {
 }
 .niveau.eA { color: var(--red-frame); background: var(--red-title); }
 .niveau.gA { color: var(--green-frame); background: var(--green-title); }
+.karte .niveau { margin: 0 6px 0 0; }
 .qr {
 	flex: none; width: 40px; border: 0; border-left: 1px solid #e3e3ea; background: #fafafc;
 	cursor: pointer; display: grid; place-items: center; color: #555; border-radius: 0 3px 3px 0;
@@ -383,13 +384,12 @@ function zeigen() {
 					main.appendChild(h);
 				}
 			}
-			const blattNeu = s.ab + '|' + s.niveau;
+			const blattNeu = s.ab; // eine Box je Abschnitt, gA/eA steht an der Karte (Kast 2026-11-11)
 			if (blattNeu !== blatt) {
 				blatt = blattNeu;
 				const box = document.createElement('section');
 				box.className = 'abschnitt';
-				const niv = s.niveau ? '<span class="niveau ' + s.niveau.slice(0, 2) + '">' + esc(s.niveau) + '</span>' : '';
-				box.innerHTML = '<div class="titel">' + (s.ab ? esc(s.ab) + ' ' + markiere(kn[s.ab] || '', woerter) : 'Ohne Zuordnung') + niv + '</div>';
+				box.innerHTML = '<div class="titel">' + (s.ab ? esc(s.ab) + ' ' + markiere(kn[s.ab] || '', woerter) : 'Ohne Zuordnung') + '</div>';
 				raster = document.createElement('div');
 				raster.className = 'raster';
 				box.appendChild(raster);
@@ -397,9 +397,10 @@ function zeigen() {
 			}
 			const karte = document.createElement('div');
 			karte.className = 'karte';
+			const niv = s.niveau ? '<span class="niveau ' + s.niveau.slice(0, 2) + '">' + esc(s.niveau.slice(0, 2)) + '</span>' : '';
 			karte.innerHTML =
 				'<a href="' + esc(PRAEFIX + s.pfad) + '" target="_blank" rel="noopener">' +
-					'<span class="name">' + markiere(s.titel, woerter) + '</span>' +
+					'<span class="name">' + niv + markiere(s.titel, woerter) + '</span>' +
 				'</a>' +
 				'<button class="qr" type="button" title="QR-Code zeigen" aria-label="QR-Code für ' + esc(s.titel) + ' zeigen">' +
 					'<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="currentColor"><path d="M2 2h7v7H2zM4 4v3h3V4zM11 2h7v7h-7zM13 4v3h3V4zM2 11h7v7H2zM4 13v3h3v-3zM11 11h3v3h-3zM14 14h4v4h-4zM11 15h2v3h-2zM16 11h2v2h-2z"/></svg>' +
