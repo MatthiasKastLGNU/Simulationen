@@ -1230,6 +1230,11 @@ button.feinknopf:hover { background: var(--blue-title); }
 .sp-einheit { margin-left: 0.25rem; }
 .sp-aktion { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .sp-gefunden .btitel { display: block; font-size: 0.8rem; color: #808080; margin-top: 0.4rem; }
+.sp-bestaetigt { flex: 1 1 100%; padding: 0.25rem 0.6rem; border-left: 3px solid #2E7D32; background: #F3FAF2; font-variant-numeric: tabular-nums; }
+.sp-bestaetigt .sp-haken { color: #2E7D32; font-weight: 700; }
+.sp-hilfezeile { margin-top: 0.4rem; }
+.sp-karte .rueckmeldung .sp-tipp { display: block; margin-top: 0.45rem; padding: 0.35rem 0.6rem; font-weight: 400; color: #333; background: #FFF8E1; border-left: 3px solid #E0A800; }
+.sp-karte .rueckmeldung .sp-tipp b { color: #8A6100; }
 .sp-fund { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; align-items: baseline; padding: 0.25rem 0.6rem; border-left: 3px solid #2E7D32; background: #F3FAF2; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
 .sp-fund span { white-space: nowrap; }
 .sp-u { color: #555; }
@@ -1901,6 +1906,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button type="button" id="sp-pruefen" class="haupt" data-icon="haken" data-text="Prüfen" title="Prüfen"></button>
 				</div>
 				<div class="rueckmeldung" id="sp-rueck"></div>
+				<div class="antwortzeile sp-hilfezeile" hidden><button type="button" id="sp-hilfe" class="feinknopf">Lösung zeigen und weiter</button></div>
 				<div class="sp-gefunden" id="sp-gefunden"></div>
 				<div class="sp-rechenweg" id="sp-rechenweg"></div>
 				<div class="antwortzeile"><button type="button" id="sp-weiter" class="haupt" hidden>Zur Probe B</button><button type="button" id="sp-neu" class="haupt" hidden>Neue Proben</button></div>
@@ -2163,10 +2169,11 @@ K.nachFontLaden(aktualisiere);
 	function sichern() { try { localStorage.setItem(SPEICHER, JSON.stringify(sp)); } catch (e) { /* ohne Speicher */ } }
 	function neuesSpiel(durchgang) {
 		sp = { durchgang, nr: 0, proben: [probeA(), probeB()], fehler: [0, 0], geloest: [false, false], protokoll: [[], []],
-			schritt: ["v", "v"], aktuell: [-1, -1], gefunden: [[], []], ein: [{ v: ["", ""], m: [["", ""], ["", ""]] }, { v: ["", ""], m: [["", ""]] }], weg: ["", ""], rueck: ["", ""] };
+			schritt: ["v", "v"], aktuell: [-1, -1], gefunden: [[], []], ein: [{ v: ["", ""], m: [["", ""], ["", ""]] }, { v: ["", ""], m: [["", ""]] }], weg: ["", ""], rueck: ["", ""], versuch: [0, 0] };
 		sichern();
 	}
 	sp = laden(); if (!sp) neuesSpiel(1);
+	if (!sp.versuch) sp.versuch = [0, 0];   /* Fehlversuche im aktuellen Schritt: steuert die Tipps (Kast 2026-11-12) */
 	const PR = () => sp.proben[sp.nr];
 
 	/* ---------- Laborzustand ---------- */
@@ -2379,7 +2386,7 @@ K.nachFontLaden(aktualisiere);
 		const box = $("sp-eingaben");
 		if (geloest) { box.innerHTML = ""; $("sp-plus").hidden = true; return; }
 		if (s === "v") box.innerHTML = zahlfeld("sp-v", "<i class='gr gv'>v</i> =", "m/s", e.v);
-		else box.innerHTML = e.m.map((w, k) => zahlfeld("sp-m" + k, "<i class='gr'>m</i>" + (i === 0 ? "<sub>" + (k + 1) + "</sub>" : "") + " =", "kg", w, i === 0 && e.m.length > 1 ? String(k) : "")).join("");
+		else box.innerHTML = '<div class="sp-bestaetigt"><span class="sp-haken">✓</span> geprüft: <i class="gr gv">v</i> = ' + hz(PR().ionen[sp.aktuell[i]].v) + "&nbsp;m/s</div>" + e.m.map((w, k) => zahlfeld("sp-m" + k, "<i class='gr'>m</i>" + (i === 0 ? "<sub>" + (k + 1) + "</sub>" : "") + " =", "kg", w, i === 0 && e.m.length > 1 ? String(k) : "")).join("");
 		$("sp-plus").hidden = !(i === 0 && s === "m");
 		box.querySelectorAll("input").forEach(inp => inp.addEventListener("input", () => {
 			const id = inp.id, teil = id.endsWith("-m") ? 0 : 1;
@@ -2421,7 +2428,7 @@ K.nachFontLaden(aktualisiere);
 			$("sp-stand").innerHTML = "<b>Auftrag erledigt!</b>";
 			$("sp-schritt").innerHTML = "Ergebnis";
 			$("sp-auftrag").innerHTML = "Probe A: " + "★".repeat(sterneVon(0)) + "☆".repeat(3 - sterneVon(0)) + ", Probe B: " + "★".repeat(sterneVon(1)) + "☆".repeat(3 - sterneVon(1)) + ". Neue Proben bringen neue Ionen und neue Geschwindigkeiten.";
-			$("sp-rueck").innerHTML = ""; $("sp-rueck").className = "rueckmeldung"; $("sp-rechenweg").innerHTML = ""; $("sp-gefunden").innerHTML = ""; $("sp-weiter").hidden = true; $("sp-protokoll-wrap").hidden = true;
+			hilfeKnopf(); $("sp-rueck").innerHTML = ""; $("sp-rueck").className = "rueckmeldung"; $("sp-rechenweg").innerHTML = ""; $("sp-gefunden").innerHTML = ""; $("sp-weiter").hidden = true; $("sp-protokoll-wrap").hidden = true;
 			lauf.strahl = false; strahlKnopf(); zeichne(); return;
 		}
 		const pr = PR(), geloest = sp.geloest[sp.nr];
@@ -2433,7 +2440,7 @@ K.nachFontLaden(aktualisiere);
 		else { const [t, f] = schrittText(); $("sp-schritt").innerHTML = t; $("sp-frage").innerHTML = f; }
 		$("sp-frage").hidden = geloest;
 		document.querySelector("#spiel .sp-aktion").hidden = geloest;
-		eingaben(); gefundenListe(); protokoll();
+		eingaben(); gefundenListe(); protokoll(); hilfeKnopf();
 		$("sp-weiter").hidden = !geloest;
 		$("sp-weiter").parentNode.hidden = !geloest;
 		$("sp-weiter").textContent = sp.nr === 0 ? "Zur Probe B" : "Zum Ergebnis";
@@ -2449,9 +2456,46 @@ K.nachFontLaden(aktualisiere);
 	}
 	function melde(art, t) { sp.rueck[sp.nr] = art + "|" + t; sichern(); P.zeigeRueckmeldung($("sp-rueck"), art, t); }
 	function fehler(t) {
-		sp.fehler[sp.nr]++; sichern(); kopf();
-		melde("falsch", t + (sp.fehler[sp.nr] <= 3 ? " Das kostet einen Stern." : ""));
+		const i = sp.nr;
+		sp.fehler[i]++; sp.versuch[i]++; sichern(); kopf();
+		const tp = tipp(sp.versuch[i]);
+		melde("falsch", t + (sp.fehler[i] <= 3 ? " Das kostet einen Stern." : "") + (tp ? '<span class="sp-tipp"><b>Tipp:</b> ' + tp + "</span>" : ""));
 		$("sp-eingaben").querySelectorAll("input").forEach(x => x.classList.add("falsch"));
+		hilfeKnopf();
+	}
+	/* Tipps werden mit jedem Fehlversuch im selben Schritt deutlicher (Kast 2026-11-12: "nach endlicher Zeit durchkommen") */
+	const dw = z => de(z, z < 10 ? 2 : 0);
+	function durchSorte() {   /* Sorte, die beim aktuellen B₁ als nächste noch gesucht wird */
+		const pr = PR(), i = sp.nr, frei = pr.ionen.map((o, k) => k).filter(k => !sp.gefunden[i].includes(k));
+		return frei.length ? pr.ionen[frei.reduce((a, k) => Math.abs(pr.ionen[k].v * lauf.B1 * D - lauf.U) < Math.abs(pr.ionen[a].v * lauf.B1 * D - lauf.U) ? k : a, frei[0])] : null;
+	}
+	function tipp(n) {
+		const i = sp.nr, pr = PR();
+		if (n < 2) return "";
+		if (sp.schritt[i] === "v") {
+			if (n === 2) return "Im Wienfilter fliegen Ionen nur geradeaus, wenn <i>F</i><sub>el</sub> = <i>F</i><sub>L</sub> ist. Daraus folgt <i class='gr gv'>v</i> = <i>U</i>/(<i>d</i>" + ZW + "<i>B</i><sub>1</sub>) mit <i>d</i> = 2,0&nbsp;cm = 0,020&nbsp;m.";
+			const o = durchSorte();
+			return "Bei <i>B</i><sub>1</sub> = " + de(lauf.B1, 2) + "&nbsp;T fliegt " + (i === 0 ? "die Probe" : "eine noch fehlende Sorte") + " bei <i>U</i> ≈ " + dw(o.v * lauf.B1 * D) + "&nbsp;V geradeaus durch die Blende. Rechnen Sie mit diesen Werten.";
+		}
+		if (n === 2) return "<i>m</i> = <i>q</i>" + ZW + "<i>B</i><sub>2</sub>" + ZW + "<i>r</i>/<i class='gr gv'>v</i> mit <i>q</i> = 1,602" + ZW + "10<sup>−19</sup>&nbsp;C. Der Radius <i>r</i> ist der halbe Abstand des Auftreffpunkts vom Spalt, in Metern.";
+		const sorten = i === 0 ? pr.ionen : [pr.ionen[sp.aktuell[1]]];
+		const d = sorten.map(o => 2 * mkg(o) * o.v / (QE * lauf.B2) * 100);
+		if (d.some(x => x > DET)) return "Bei <i>B</i><sub>2</sub> = " + de(lauf.B2, 2) + "&nbsp;T " + (sorten.length > 1 ? "landen nicht alle Ionen" : "landet die Sorte nicht") + " auf dem Detektor. Erhöhen Sie <i>B</i><sub>2</sub>.";
+		return "Bei <i>B</i><sub>2</sub> = " + de(lauf.B2, 2) + "&nbsp;T " + (sorten.length > 1 ? "treffen die Sorten" : "trifft die Sorte") + " bei " + d.map(x => de(x, 1) + "&nbsp;cm").join(", ") + " vom Spalt auf, also <i>r</i> = " + d.map(x => de(x / 2, 2) + "&nbsp;cm").join(", ") + ". Rechnen Sie damit.";
+	}
+	function hilfeKnopf() {
+		const z = document.querySelector("#spiel .sp-hilfezeile");
+		if (z) z.hidden = !(sp.nr < 2 && !sp.geloest[sp.nr] && sp.versuch[sp.nr] >= 3);
+	}
+	function zahlPaar(z) { const e = Math.floor(Math.log10(z)); return [(z / Math.pow(10, e)).toFixed(3).replace(".", ","), String(e)]; }
+	function loesungZeigen() {
+		const i = sp.nr, pr = PR(), e = sp.ein[i];
+		if (i > 1 || sp.geloest[i]) return;
+		if (sp.schritt[i] === "v") e.v = zahlPaar(durchSorte().v);
+		else e.m = (i === 0 ? pr.ionen : [pr.ionen[sp.aktuell[1]]]).map(o => zahlPaar(mkg(o)));
+		sp.fehler[i] = Math.max(sp.fehler[i], 3);   /* mit Lösung keine Sterne */
+		sichern(); eingaben(); pruefen();
+		if (sp.rueck[i] && sp.rueck[i].startsWith("gut|")) melde("gut", "Lösung eingetragen: " + sp.rueck[i].slice(4) + " Vollziehen Sie die Rechnung im Heft nach.");
 	}
 
 	/* ---------- Prüfen ---------- */
@@ -2478,7 +2522,7 @@ K.nachFontLaden(aktualisiere);
 				fehler("Diese Geschwindigkeit passt zu keiner Ionensorte der Probe. Fliegen bei Ihrer Einstellung wirklich Ionen geradeaus durch die Blende?");
 				return;
 			}
-			sp.aktuell[i] = k; sp.schritt[i] = "m";
+			sp.aktuell[i] = k; sp.schritt[i] = "m"; sp.versuch[i] = 0;
 			if (i === 1) e.m = [["", ""]];
 			sichern();
 			melde("gut", "Richtig: <i>v</i> = " + hz(pr.ionen[k].v) + "&nbsp;m/s. Weiter mit der Masse.");
@@ -2503,7 +2547,7 @@ K.nachFontLaden(aktualisiere);
 			if (werte.length !== 1 || Math.abs(werte[0] - mkg(o)) / mkg(o) > TOL_M) { fehler("Die Masse passt nicht zu dieser Sorte. Denken Sie daran: <i>r</i> ist der halbe Abstand des Auftreffpunkts vom Spalt."); return; }
 			sp.gefunden[1].push(sp.aktuell[1]); sp.aktuell[1] = -1;
 			if (sp.gefunden[1].length < N_B) {
-				sp.schritt[1] = "v"; e.v = ["", ""]; sichern();
+				sp.schritt[1] = "v"; sp.versuch[1] = 0; e.v = ["", ""]; sichern();
 				melde("gut", "Richtig: Das ist " + o.name + " mit " + de(o.m, 2) + "&nbsp;u. Suchen Sie die nächste Sorte.");
 				zeige(); return;
 			}
@@ -2576,6 +2620,7 @@ K.nachFontLaden(aktualisiere);
 	$("sp-kraefte").addEventListener("click", () => { lauf.kraefte = !lauf.kraefte; $("sp-kraefte").setAttribute("aria-pressed", String(lauf.kraefte)); zeichne(); });
 	$("sp-plus").addEventListener("click", () => { const e = sp.ein[sp.nr]; if (e.m.length < 6) { e.m.push(["", ""]); sichern(); eingaben(); } });
 	$("sp-pruefen").addEventListener("click", pruefen);
+	$("sp-hilfe").addEventListener("click", loesungZeigen);
 	$("sp-weiter").addEventListener("click", () => { if (Date.now() - geprueftUm < 250) return; sp.nr++; sichern(); lauf.treffer = []; lauf.ionen = []; lauf.strahl = false; strahlKnopf(); zeige(); });
 	$("sp-neu").addEventListener("click", () => { neuesSpiel((sp.durchgang || 1) + 1); lauf.treffer = []; lauf.ionen = []; zeige(); });
 	SimUI.bildKnopf("sp-bild", heftbild, () => "Massenspektrometer_" + (PR() ? PR().name.replace(" ", "_") : "Ergebnis") + "_U_" + Math.round(lauf.U) + "V_B2_" + Math.round(lauf.B2 * 1000) + "mT");
