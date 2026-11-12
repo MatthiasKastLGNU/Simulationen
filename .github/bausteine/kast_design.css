@@ -48,7 +48,7 @@ html.kd .tcb.gruen p.aufgabe-text, html.kd .tcb.gruen p.auftrag, html.kd .tcb.gr
 }
 html.kd .tcb.gruen p.aufgabe-text::before, html.kd .tcb.gruen p.auftrag::before, html.kd .tcb.gruen .aufgabentext::before { content: none; }
 /* eigener Auftragskasten (tcb mit .auftrag-text oder Körper #auftrag): kräftiger Rahmen, große Schrift, Symbol im Titel */
-html.kd .auftrag-text, html.kd .tcb-body#auftrag { font-size: 1.1rem; color: #111; line-height: 1.5; }
+html.kd .auftrag-text, html.kd .tcb-body#auftrag, html.kd .tcb.auftrag-kasten > .tcb-body { font-size: 1.1rem; color: #111; line-height: 1.5; }
 html.kd .auftrag-text p { margin: 0; }
 html.kd .auftrag-text .einleitung { margin: 0 0 0.35rem; }
 html.kd .auftrag-text ol { margin: 0; padding-left: 1.6rem; }
@@ -283,6 +283,17 @@ html.kd details.mehr > summary:hover { background: var(--flaeche); color: #333; 
 html.kd details.mehr[open] > summary { color: #333; }
 html.kd details.mehr > .mehr-inhalt { padding: 0.35rem 0 0 0.3rem; line-height: 1.45; }
 html.kd details.mehr > .mehr-inhalt > p { margin: 0 0 0.35rem; }
+/* ---------- Kasten einklappen (Kast 2026-11-12: „dass man viel wegklappen kann, was nicht so wichtig ist. Das ist super!!“)
+   Markup: <div class="tcb blau" data-klapp="zu"> (startet zu) oder data-klapp="auf". Titel antippen klappt; kast_design.js. ---------- */
+html.kd .tcb[data-klapp] > .tcb-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-klapp-text { flex: 1; min-width: 0; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil { flex: none; font-size: 0.85rem; transition: transform 0.15s; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-zu-hinweis { flex: none; font-weight: normal; font-size: 0.8rem; opacity: 0.75; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title { border-bottom-color: transparent; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title > .kd-pfeil { transform: rotate(-90deg); }
+html.kd .tcb[data-klapp]:not(.kd-zu) > .tcb-title > .kd-zu-hinweis { display: none; }
+html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: none !important; }
+@media print { html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: block !important; } html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil, html.kd .kd-zu-hinweis { display: none; } }
 
 /* ---------- Eingabelücken (Spiele, Aufträge): deutlich, Einheit dahinter ---------- */
 html.kd input[type="number"], html.kd input[type="text"].eingabe, html.kd input.eingabe, html.kd .eingabe input {

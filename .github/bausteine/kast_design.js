@@ -294,7 +294,8 @@
 	function auftragOben() {
 		const titel = t => { const e = t.querySelector(":scope > .tcb-title"); return e ? e.textContent.trim() : ""; };
 		document.querySelectorAll(".tcb").forEach(t => {
-			if (!(t.querySelector(":scope > .tcb-body#auftrag") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
+			/* auch der grüne Modus-Hinweiskasten oben (#hinweis-text, v. a. Kl. 12/13): das ist der Auftrag des Modus */
+			if (!(t.querySelector(":scope > .tcb-body#auftrag, :scope > .tcb-body#hinweis-text") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
 			t.classList.add("auftrag-kasten");
 			let v = t.previousElementSibling;
 			/* verborgene Kästen (anderer Modus) und Unsichtbares dazwischen überspringen */
@@ -315,7 +316,33 @@
 			else if (s.dataset.kdFarbe) { s.style.color = ""; delete s.dataset.kdFarbe; }
 		});
 	}
+	/* Kästen einklappen (Kast 2026-11-12: „viel wegklappen, was nicht so wichtig ist“): .tcb[data-klapp="zu"|"auf"].
+	   Zustand je Seite im Sitzungsspeicher (übersteht das Neuladen nach OneNote); nach dem Aufklappen ein resize-Ereignis,
+	   damit Zeichnungen im Kasten ihre Breite neu messen. */
+	function klappen() {
+		document.querySelectorAll(".tcb[data-klapp]").forEach((t, i) => {
+			const ti = t.querySelector(":scope > .tcb-title"); if (!ti || ti.dataset.kdKlapp) return;
+			ti.dataset.kdKlapp = "1";
+			const sp = document.createElement("span"); sp.className = "kd-klapp-text";
+			while (ti.firstChild) sp.appendChild(ti.firstChild);
+			ti.append(sp);
+			ti.insertAdjacentHTML("beforeend", "<span class='kd-zu-hinweis'>antippen zum Öffnen</span><span class='kd-pfeil' aria-hidden='true'>▾</span>");
+			ti.setAttribute("role", "button"); ti.tabIndex = 0;
+			const schluessel = "kd-klapp:" + location.pathname + ":" + (t.id || i);
+			let zu = t.dataset.klapp === "zu";
+			try { const m = sessionStorage.getItem(schluessel); if (m !== null) zu = m === "1"; } catch (e) { }
+			const setze = (z, merken) => {
+				t.classList.toggle("kd-zu", z); ti.setAttribute("aria-expanded", z ? "false" : "true");
+				if (merken) { try { sessionStorage.setItem(schluessel, z ? "1" : "0"); } catch (e) { } }
+				if (!z) requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+			};
+			setze(zu, false);
+			ti.addEventListener("click", e => { if (e.target.closest("button, a, input, select, label")) return; setze(!t.classList.contains("kd-zu"), true); });
+			ti.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setze(!t.classList.contains("kd-zu"), true); } });
+		});
+	}
 	function los() {
+		klappen();
 		auftragOben();
 		indexFarben(document);
 		rollen(document);

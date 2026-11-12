@@ -293,7 +293,7 @@ html.kd .tcb.gruen p.aufgabe-text, html.kd .tcb.gruen p.auftrag, html.kd .tcb.gr
 }
 html.kd .tcb.gruen p.aufgabe-text::before, html.kd .tcb.gruen p.auftrag::before, html.kd .tcb.gruen .aufgabentext::before { content: none; }
 /* eigener Auftragskasten (tcb mit .auftrag-text oder Körper #auftrag): kräftiger Rahmen, große Schrift, Symbol im Titel */
-html.kd .auftrag-text, html.kd .tcb-body#auftrag { font-size: 1.1rem; color: #111; line-height: 1.5; }
+html.kd .auftrag-text, html.kd .tcb-body#auftrag, html.kd .tcb.auftrag-kasten > .tcb-body { font-size: 1.1rem; color: #111; line-height: 1.5; }
 html.kd .auftrag-text p { margin: 0; }
 html.kd .auftrag-text .einleitung { margin: 0 0 0.35rem; }
 html.kd .auftrag-text ol { margin: 0; padding-left: 1.6rem; }
@@ -528,6 +528,17 @@ html.kd details.mehr > summary:hover { background: var(--flaeche); color: #333; 
 html.kd details.mehr[open] > summary { color: #333; }
 html.kd details.mehr > .mehr-inhalt { padding: 0.35rem 0 0 0.3rem; line-height: 1.45; }
 html.kd details.mehr > .mehr-inhalt > p { margin: 0 0 0.35rem; }
+/* ---------- Kasten einklappen (Kast 2026-11-12: „dass man viel wegklappen kann, was nicht so wichtig ist. Das ist super!!“)
+   Markup: <div class="tcb blau" data-klapp="zu"> (startet zu) oder data-klapp="auf". Titel antippen klappt; kast_design.js. ---------- */
+html.kd .tcb[data-klapp] > .tcb-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-klapp-text { flex: 1; min-width: 0; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil { flex: none; font-size: 0.85rem; transition: transform 0.15s; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-zu-hinweis { flex: none; font-weight: normal; font-size: 0.8rem; opacity: 0.75; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title { border-bottom-color: transparent; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title > .kd-pfeil { transform: rotate(-90deg); }
+html.kd .tcb[data-klapp]:not(.kd-zu) > .tcb-title > .kd-zu-hinweis { display: none; }
+html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: none !important; }
+@media print { html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: block !important; } html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil, html.kd .kd-zu-hinweis { display: none; } }
 
 /* ---------- Eingabelücken (Spiele, Aufträge): deutlich, Einheit dahinter ---------- */
 html.kd input[type="number"], html.kd input[type="text"].eingabe, html.kd input.eingabe, html.kd .eingabe input {
@@ -871,7 +882,8 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	function auftragOben() {
 		const titel = t => { const e = t.querySelector(":scope > .tcb-title"); return e ? e.textContent.trim() : ""; };
 		document.querySelectorAll(".tcb").forEach(t => {
-			if (!(t.querySelector(":scope > .tcb-body#auftrag") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
+			/* auch der grüne Modus-Hinweiskasten oben (#hinweis-text, v. a. Kl. 12/13): das ist der Auftrag des Modus */
+			if (!(t.querySelector(":scope > .tcb-body#auftrag, :scope > .tcb-body#hinweis-text") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
 			t.classList.add("auftrag-kasten");
 			let v = t.previousElementSibling;
 			/* verborgene Kästen (anderer Modus) und Unsichtbares dazwischen überspringen */
@@ -892,7 +904,33 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			else if (s.dataset.kdFarbe) { s.style.color = ""; delete s.dataset.kdFarbe; }
 		});
 	}
+	/* Kästen einklappen (Kast 2026-11-12: „viel wegklappen, was nicht so wichtig ist“): .tcb[data-klapp="zu"|"auf"].
+	   Zustand je Seite im Sitzungsspeicher (übersteht das Neuladen nach OneNote); nach dem Aufklappen ein resize-Ereignis,
+	   damit Zeichnungen im Kasten ihre Breite neu messen. */
+	function klappen() {
+		document.querySelectorAll(".tcb[data-klapp]").forEach((t, i) => {
+			const ti = t.querySelector(":scope > .tcb-title"); if (!ti || ti.dataset.kdKlapp) return;
+			ti.dataset.kdKlapp = "1";
+			const sp = document.createElement("span"); sp.className = "kd-klapp-text";
+			while (ti.firstChild) sp.appendChild(ti.firstChild);
+			ti.append(sp);
+			ti.insertAdjacentHTML("beforeend", "<span class='kd-zu-hinweis'>antippen zum Öffnen</span><span class='kd-pfeil' aria-hidden='true'>▾</span>");
+			ti.setAttribute("role", "button"); ti.tabIndex = 0;
+			const schluessel = "kd-klapp:" + location.pathname + ":" + (t.id || i);
+			let zu = t.dataset.klapp === "zu";
+			try { const m = sessionStorage.getItem(schluessel); if (m !== null) zu = m === "1"; } catch (e) { }
+			const setze = (z, merken) => {
+				t.classList.toggle("kd-zu", z); ti.setAttribute("aria-expanded", z ? "false" : "true");
+				if (merken) { try { sessionStorage.setItem(schluessel, z ? "1" : "0"); } catch (e) { } }
+				if (!z) requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+			};
+			setze(zu, false);
+			ti.addEventListener("click", e => { if (e.target.closest("button, a, input, select, label")) return; setze(!t.classList.contains("kd-zu"), true); });
+			ti.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setze(!t.classList.contains("kd-zu"), true); } });
+		});
+	}
 	function los() {
+		klappen();
 		auftragOben();
 		indexFarben(document);
 		rollen(document);
