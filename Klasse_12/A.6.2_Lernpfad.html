@@ -3499,6 +3499,71 @@ function symbolFeld(c, x, y, r, rein, farbe, alpha, dick) {
 	else { c.beginPath(); c.arc(x, y, r * 0.32, 0, 7); c.fill(); }
 	c.restore();
 }
+/* ---------- PLATZ: Feldsymbole nur auf freiem Platz (Kast 2026-11-12: „Es überlappt und so weiter … Das kannst du besser!“) ----------
+   Zwischen PLATZ.start(c) und PLATZ.ende(c) merkt sich der Kontext alles, was gezeichnet wird: gezogene Linien (Bahnen, Pfeile,
+   Leitungen, Umrisse), kleine Flächen (Ladungen, Pfeilspitzen) und Text. Große Flächen (Hintergründe) zählen nicht.
+   PLATZ.feld(…) merkt ein Feldsymbol vor; PLATZ.ende zeichnet nur die, die nichts berühren. PLATZ.still(f): f zeichnen, ohne Platz zu belegen
+   (bewegte Elektronen, sonst flackern die Symbole). PLATZ.frei(c, x, y, r): ist dort Platz? Alles in Gerätepixeln. */
+const PLATZ = (() => {
+	const P = CanvasRenderingContext2D.prototype, O = {};
+	let ctx = null, an = false, pfad = [], teil = null, belegt = [], symbole = [];
+	const tr = (c, x, y) => { const m = c.getTransform(); return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]; };
+	const sk = c => { const m = c.getTransform(); return Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) || 1; };
+	const mit = c => an && c === ctx;
+	const punkt = (c, x, y) => { if (!teil) { teil = []; pfad.push(teil); } teil.push(tr(c, x, y)); };
+	function haken(name, f) { O[name] = P[name]; P[name] = function (...a) { if (mit(this)) f(this, ...a); return O[name].apply(this, a); }; }
+	haken("beginPath", () => { pfad = []; teil = null; });
+	haken("moveTo", (c, x, y) => { teil = [tr(c, x, y)]; pfad.push(teil); });
+	haken("lineTo", (c, x, y) => punkt(c, x, y));
+	haken("closePath", () => { if (teil && teil.length) teil.push(teil[0]); });
+	haken("arc", (c, x, y, r, a0, a1, gg) => {
+		let d = a1 - a0; if (gg) { if (d > 0) d -= 2 * Math.PI * Math.ceil(d / (2 * Math.PI)); } else if (d < 0) d += 2 * Math.PI * Math.ceil(-d / (2 * Math.PI));
+		if (Math.abs(d) > 2 * Math.PI) d = Math.sign(d) * 2 * Math.PI;
+		const n = Math.max(4, Math.ceil(Math.abs(d) * r / 6));
+		for (let i = 0; i <= n; i++) { const w = a0 + d * i / n; punkt(c, x + r * Math.cos(w), y + r * Math.sin(w)); }
+	});
+	haken("bezierCurveTo", (c, x1, y1, x2, y2, x, y) => punkt(c, x, y));
+	haken("quadraticCurveTo", (c, x1, y1, x, y) => punkt(c, x, y));
+	const eck = (c, x, y, w, h) => { teil = [tr(c, x, y), tr(c, x + w, y), tr(c, x + w, y + h), tr(c, x, y + h), tr(c, x, y)]; pfad.push(teil); };
+	haken("rect", eck); haken("roundRect", eck);
+	const linien = (c, liste) => { const h = c.lineWidth * sk(c) / 2; for (const t of liste) for (let i = 1; i < t.length; i++) belegt.push({ s: [t[i - 1], t[i]], h }); };
+	const kleinFlaeche = (c, liste) => {
+		const p = liste.flat(); if (!p.length) return;
+		const xs = p.map(q => q[0]), ys = p.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+		if (x1 - x0 < 46 * sk(c) && y1 - y0 < 46 * sk(c)) belegt.push({ r: [x0, y0, x1, y1] });
+	};
+	haken("stroke", c => linien(c, pfad));
+	haken("fill", c => kleinFlaeche(c, pfad));
+	haken("fillRect", (c, x, y, w, h) => { const a = tr(c, x, y), b = tr(c, x + w, y + h); if (Math.abs(b[0] - a[0]) < 46 * sk(c) || Math.abs(b[1] - a[1]) < 46 * sk(c)) belegt.push({ r: [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1])] }); });
+	haken("strokeRect", (c, x, y, w, h) => linien(c, [[tr(c, x, y), tr(c, x + w, y), tr(c, x + w, y + h), tr(c, x, y + h), tr(c, x, y)]]));
+	haken("fillText", (c, t, x, y) => {
+		const m = O.measureText.call(c, t), b = m.width, hh = (m.actualBoundingBoxAscent || 10) + (m.actualBoundingBoxDescent || 3);
+		const al = c.textAlign, x0 = al === "center" ? x - b / 2 : al === "right" || al === "end" ? x - b : x;
+		const bl = c.textBaseline, yo = bl === "middle" ? y - hh / 2 : bl === "top" || bl === "hanging" ? y : y - hh;
+		const p = [tr(c, x0, yo), tr(c, x0 + b, yo), tr(c, x0 + b, yo + hh), tr(c, x0, yo + hh)];
+		belegt.push({ r: [Math.min(...p.map(q => q[0])), Math.min(...p.map(q => q[1])), Math.max(...p.map(q => q[0])), Math.max(...p.map(q => q[1]))] });
+	});
+	O.measureText = P.measureText;
+	function abstand(px, py, b) {
+		if (b.r) { const dx = Math.max(b.r[0] - px, 0, px - b.r[2]), dy = Math.max(b.r[1] - py, 0, py - b.r[3]); return Math.hypot(dx, dy); }
+		const [[x1, y1], [x2, y2]] = b.s, vx = x2 - x1, vy = y2 - y1, l2 = vx * vx + vy * vy;
+		const t = l2 ? Math.max(0, Math.min(1, ((px - x1) * vx + (py - y1) * vy) / l2)) : 0;
+		return Math.hypot(px - x1 - t * vx, py - y1 - t * vy) - b.h;
+	}
+	const freiG = (px, py, rg) => belegt.every(b => abstand(px, py, b) > rg);
+	return {
+		start(c) { ctx = c; an = true; pfad = []; teil = null; belegt = []; symbole = []; },
+		feld(c, x, y, r, rein, farbe, alpha, dick) { const [gx, gy] = tr(c, x, y); symbole.push({ m: c.getTransform(), x, y, r, rein, farbe, alpha, dick, gx, gy, gr: (r + 4) * sk(c) }); },
+		frei(c, x, y, r) { const [gx, gy] = tr(c, x, y); return freiG(gx, gy, r * sk(c)); },
+		call(f) { f(); },
+		still(f) { const war = an; an = false; try { f(); } finally { an = war; } },
+		ende(c) {
+			an = false; const m0 = c.getTransform();
+			for (const s of symbole) if (freiG(s.gx, s.gy, s.gr)) { c.setTransform(s.m); symbolFeld(c, s.x, s.y, s.r, s.rein, s.farbe, s.alpha, s.dick); }
+			c.setTransform(m0); symbole = []; ctx = null;
+		}
+	};
+})();
 /* Formelzeichen kursiv, Index klein und aufrecht; liefert die Breite */
 function zeichen(c, x, y, haupt, tief, farbe, g, ausr) {
 	c.textBaseline = "middle";
@@ -3529,7 +3594,8 @@ const RUHE_S = [[0.1, 0.42], [0.2, 0.34], [0.2, 0.66], [0.8, 0.34], [0.8, 0.66],
         meter: null|"analog"|"digital"|"symbol", wert, masse, feldText } */
 function szene(c, B, H, V, o) {
 	const g = geo(B, o.meter), w = W(V), { px, py, pw, ph, cx, cy, xr } = g;
-	const X = u => px + u * pw, Y = ww => py + ww * ph;
+	const X = u => px + u * pw, Y = ww => py + ww * ph, bewegt = !!o.elektronen;
+	PLATZ.start(c);
 	c.lineCap = "round"; c.lineJoin = "round";
 	/* Zuleitungen mit Buchsen und Stromrichtung */
 	c.strokeStyle = F.draht; c.lineWidth = 3;
@@ -3549,8 +3615,8 @@ function szene(c, B, H, V, o) {
 	/* Magnetfeld: Symbole im Raster, die Mitte bleibt frei für die Pfeile am Elektron */
 	if (o.feld > 0) {
 		const r = 4.5 + 3 * o.feld;
-		for (const u of (g.schmal && o.mikro ? [0.09, 0.91] : [0.083, 0.25, 0.75, 0.917])) for (const ww of [0.24, 0.76]) symbolFeld(c, X(u), Y(ww), r, V.sB > 0, F.B, 0.35 + 0.6 * o.feld);
-		if (!o.mikro) for (const u of [0.417, 0.583]) for (const ww of [0.24, 0.76]) symbolFeld(c, X(u), Y(ww), r, V.sB > 0, F.B, 0.35 + 0.6 * o.feld);
+		const nx = g.schmal ? 5 : 8, wws = o.mikro ? [0.24, 0.76] : [0.27, 0.73];
+		for (let i = 0; i < nx; i++) for (const ww of wws) PLATZ.feld(c, X((i + 0.5) / nx), Y(ww), r, V.sB > 0, F.B, 0.35 + 0.6 * o.feld);
 		symbolFeld(c, px + 8, 20, 7.5, V.sB > 0, F.B, 1, 1.7);
 		const bb = zeichen(c, px + 21, 20, "B", "", F.B, g.g + 2);
 		c.font = (g.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; if (o.feldText) c.fillText(o.feldText, px + 27 + bb, 20.5);   /* Kreuz/Punkt nie in Worten verraten (Kast 2026-11-12) */
@@ -3564,13 +3630,14 @@ function szene(c, B, H, V, o) {
 	/* Kantenladungen */
 	const nL = Math.round(q * 8);
 	for (let i = 0; i < nL; i++) {
-		const u = 0.1 + ((i * 3) % 8) * 0.8 / 7;
+		const u = (o.masse ? 0.17 : 0.1) + ((i * 3) % 8) * (o.masse ? 0.74 : 0.8) / 7;
 		ladung(c, X(u), yK, 6.5, false); ladung(c, X(u), yP, 6.5, true);
 	}
-	/* Elektronen */
-	if (o.mikro) for (const e of (o.elektronen || (g.schmal ? RUHE_S : RUHE).map(p => ({ u: p[0], w: p[1] })))) if (!e.fokus && e.u > (o.masse ? 0.13 : 0.015) && e.u < 0.985) elektron(c, X(e.u), Y(e.w), 5.5);
+	/* bewegte Elektronen: belegen keinen Platz, sonst flackern die Feldsymbole */
+	if (o.mikro && bewegt) PLATZ.still(() => { for (const e of o.elektronen) if (!e.fokus && e.u > 0.015 && e.u < 0.985) elektron(c, X(e.u), Y(e.w), 5.5); });
 	/* das betrachtete Elektron mit seinen Pfeilen */
-	if (o.fokus) {
+	if (o.fokus) PLATZ[bewegt ? "still" : "call"](() => fokusZeichnen());
+	function fokusZeichnen() {
 		const fx = X(o.fokus.u), fy = Y(o.fokus.w), LF = ph * 0.3, Lv = g.schmal ? 22 : 30, z = o.zeig || {}, R = LP.RICHT;
 		const stueck = (k, farbe, kontur, L, name, tief, blass) => {
 			if (k === "rein" || k === "raus") { symbolFeld(c, fx + 24, fy - 22, 9, k === "rein", farbe, blass ? 0.6 : 1, 2); zeichen(c, fx + 37, fy - 22, name, tief, farbe, g.g + 1); return; }
@@ -3613,6 +3680,9 @@ function szene(c, B, H, V, o) {
 		c.moveTo(cx, py); c.lineTo(cx, py - 10); c.lineTo(xr, py - 10); c.lineTo(xr, cy - 4.5); c.arc(xr, cy, 4.5, -Math.PI / 2, Math.PI / 2); c.lineTo(xr, ym); c.lineTo(m.x + m.b, ym); c.stroke();
 		for (const yy of [py, py + ph]) { c.fillStyle = "#222"; c.beginPath(); c.arc(cx, yy, 3, 0, 7); c.fill(); }
 	}
+	/* ruhende Elektronen nur dort, wo nichts anderes liegt (Kast 2026-11-12: nichts überlappen) */
+	if (o.mikro && !bewegt) for (const p of (g.schmal ? RUHE_S : RUHE)) if (p[0] > (o.masse ? 0.13 : 0.015) && PLATZ.frei(c, X(p[0]), Y(p[1]), 9)) elektron(c, X(p[0]), Y(p[1]), 5.5);
+	PLATZ.ende(c);
 }
 
 /* ---------- bewegte Elektronen ---------- */
@@ -3698,7 +3768,7 @@ function vergleich(c, B, H, api, dt) {
 		const py = ys[k], cy = py + ph / 2;
 		c.font = "bold " + (schmal ? 13 : 14) + "px " + SCHRIFT; c.textAlign = "left"; c.textBaseline = "middle"; c.fillStyle = "#222"; c.fillText(r.name, px, py - 12);
 		const nb = c.measureText(r.name).width; c.font = (schmal ? 12 : 13) + "px " + SCHRIFT; c.fillStyle = F.grau; c.fillText(schmal ? "" : ": " + r.zusatz, px + nb, py - 12);
-		if (fertig) { c.textAlign = "right"; c.fillStyle = F.U; c.font = "bold " + (schmal ? 12 : 13) + "px " + SCHRIFT; c.fillText("Hall-Spannung: " + r.uh, px + pw, py - 12); }
+		if (fertig) { c.textAlign = "right"; c.fillStyle = F.U; c.font = "bold " + (schmal ? 12 : 13) + "px " + SCHRIFT; c.fillText(schmal ? "Hall: " + r.uh.replace("Mikrovolt", "µV").replace("Millivolt", "mV") : "Hall-Spannung: " + r.uh, px + pw, py - 12); }
 		c.strokeStyle = F.draht; c.lineWidth = 3; c.beginPath(); c.moveTo(11, cy); c.lineTo(px, cy); c.moveTo(px + pw, cy); c.lineTo(B - 11, cy); c.stroke();
 		for (const x of [8, B - 8]) { c.fillStyle = "#fff"; c.lineWidth = 1.8; c.beginPath(); c.arc(x, cy, 4.2, 0, 7); c.fill(); c.stroke(); }
 		for (const xm of [(12 + px) / 2, (px + pw + B - 12) / 2]) { const d = V.sI * 7; c.fillStyle = F.I; c.beginPath(); c.moveTo(xm + d, cy); c.lineTo(xm - d, cy - 6.5); c.lineTo(xm - d, cy + 6.5); c.closePath(); c.fill(); zeichen(c, xm, cy - 17, "I", "", F.I, 14, "center"); }
@@ -3715,7 +3785,7 @@ function vergleich(c, B, H, api, dt) {
 		c.restore();
 	});
 	c.font = "12px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle";
-	c.fillText(fertig ? "schematisch: gleiche Stromstärke, gleiches Magnetfeld" : "schematisch: beide Plättchen bei gleicher Stromstärke", px, ys[1] + ph + 18);
+	c.fillText(schmal ? "schematisch, gleiche Stromstärke" : fertig ? "schematisch: gleiche Stromstärke, gleiches Magnetfeld" : "schematisch: beide Plättchen bei gleicher Stromstärke", px, ys[1] + ph + 18);
 }
 
 /* ==========================================================================
@@ -4003,9 +4073,17 @@ const UE = {
 			bl.push({ art: "text", groesse: 21, teile: [{ t: name + (i.selbst ? " (" + SELBST[i.selbst] + ")" : "") + ": ", fett: true, farbe: "#6B5200" }, { t: "„" + i.t.replace(/\s+/g, " ") + "“", kursiv: true }] }); }
 		return bl;
 	},
-	/* Bild links (zeichne(c, B, H) in der Größe sb × sh), nummerierte Schritte rechts im Kasten; ohne Schritte nur das Bild, mittig */
+	/* Bild groß über die ganze Breite (zeichne(c, B, H) in der Größe sb × sh, hochskaliert), darunter die nummerierten Schritte im Kasten
+	   (Kast 2026-11-12: „In der Übersicht für das Heft sind die Bilder echt nicht schön und klein“) */
 	bildUndSchritte(api, zeichne, sb, sh, schritte, titel) {
-		const GB = 928, g = 20, zh = 26, tx = sb + 26, tb = GB - tx - 16;
+		const GB = 928, k = (GB - 24) / sb, bh = Math.round(sh * k) + 8;
+		const bild = api.bild(GB, bh, c => { c.translate(12, 4); c.scale(k, k); zeichne(c, sb, sh); });
+		if (!schritte) return bild;
+		const kasten = UE.schritte(api, schritte, titel, GB), kh = kasten.height / 2;
+		return api.bild(GB, bh + 10 + kh, c => { c.drawImage(bild, 0, 0, GB, bh); c.drawImage(kasten, 0, bh + 10, GB, kh); });
+	},
+	schritte(api, schritte, titel, GB) {
+		const g = 20, zh = 26, tx = 30, tb = GB - tx - 16, sb = 0, sh = 0;
 		const mess = document.createElement("canvas").getContext("2d"); mess.font = g + "px " + SCHRIFT;
 		const zeilen = [];
 		(schritte || []).forEach((s, i) => {
@@ -4015,10 +4093,8 @@ const UE = {
 			}
 			zeilen.push({ nr: erste ? i + 1 : 0, t: z, ende: true });
 		});
-		const kopfH = titel ? 32 : 0, th = schritte ? kopfH + zeilen.length * zh + zeilen.filter(z => z.ende).length * 5 + 22 : 0, H = Math.max(sh, th) + 4;
+		const kopfH = titel ? 32 : 0, th = kopfH + zeilen.length * zh + zeilen.filter(z => z.ende).length * 5 + 22, H = th + 4;
 		return api.bild(GB, H, c => {
-			c.save(); c.translate(schritte ? 0 : (GB - sb) / 2, (H - sh) / 2); zeichne(c, sb, sh); c.restore();
-			if (!schritte) return;
 			const y0 = (H - th) / 2;
 			c.fillStyle = "#F6F6FB"; c.strokeStyle = "#0000BF"; c.lineWidth = 2; c.beginPath(); c.roundRect(tx - 14, y0 + 1, GB - tx + 12, th - 2, 8); c.fill(); c.stroke();
 			c.textBaseline = "middle"; c.textAlign = "left"; let y = y0 + 12;
@@ -4037,11 +4113,11 @@ function uebersicht(api) {
 	const V = api.V, w = W(V), f = api.fertig, bl = [];
 	const o = { mikro: f(0), strom: true, feld: 1, q: f(4) ? 1 : f(2) ? 0.5 : 0, fokus: f(1) ? { u: 0.5, w: 0.5 } : null,
 		zeig: { v: f(1), FL: f(1), E: f(3), Fel: f(3) }, FelAnteil: f(4) ? 1 : 0.5, meter: "symbol", masse: f(5) };
-	const sb = 400, sh = geo(sb, "symbol").H;
+	const sb = 600, sh = geo(sb, "symbol").H;
 	const k = api.antwort("kette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 	bl.push(UE.kopf("1", "Aufbau und Erklärung", f(4) ? "Kette: " + UE.kette(k) : ""));
 	bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szene(c, B, H, V, o), sb, sh, f(4) ? g : null, "So entsteht die Hall-Spannung") });
-	if (f(4)) bl.push(UE.zeile([{ t: "In meinem Bild: Elektronen driften " + w.richtV + ", Feld " + w.feld + ", Lorentzkraft " + w.richtK + ": " + w.kanteK + " negativ, " + w.kanteP + " positiv.", farbe: "#444" }], 21));
+	if (f(4)) bl.push(UE.zeile([{ t: "In meinem Bild: Elektronen driften " + w.richtV + ", Lorentzkraft " + w.richtK + ": " + w.kanteK + " negativ, " + w.kanteP + " positiv.", farbe: "#444" }], 21));
 	else bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
 	if (f(5)) bl.push(UE.merke([{ t: "Gleichgewicht F" }, { t: "L", tief: true }, { t: " = F" }, { t: "el", tief: true }, { t: "   ⇒   e · v · B = e · U" }, { t: "H", tief: true }, { t: " / b   ⇒   " }, { t: "U", fett: true }, { t: "H", tief: true, fett: true }, { t: " = b · v · B", fett: true }]));
 	else bl.push(UE.offen("2", "Merke"));
@@ -4126,6 +4202,7 @@ const PFAD_WIEN = (() => {
 	const TEMPO = 0.62;   /* Zeiteinheiten je Sekunde: ein Teilchen mit v0 braucht etwa 1,6 s durch die Platten */
 	function szeneW(c, B, H, V, o) {
 		const G = geoW(B), w = WW(V), { px, pw, ph, py, cy, xb, x0 } = G;
+		PLATZ.start(c);
 		c.lineCap = "round"; c.lineJoin = "round";
 		/* Achse */
 		c.strokeStyle = "#C2C7CD"; c.lineWidth = 1; c.setLineDash([5, 5]); c.beginPath(); c.moveTo(x0, cy); c.lineTo(B - 6, cy); c.stroke(); c.setLineDash([]);
@@ -4133,11 +4210,12 @@ const PFAD_WIEN = (() => {
 		c.fillStyle = o.E || o.B ? "#FBFBF6" : "#FAFAFA"; c.fillRect(px, py, pw, ph);
 		if (o.B || (o.vorschau && (o.vorschau.B === "rein" || o.vorschau.B === "raus"))) {
 			const rein = o.B ? w.B === "rein" : o.vorschau.B === "rein", al = o.B ? 0.85 : 0.4;
-			for (const u of (G.schmal ? (o.fokus ? [0.75] : [0.25, 0.75]) : (o.fokus ? [0.495, 0.745] : [0.245, 0.495, 0.745]))) for (const ww of [0.22, 0.78]) symbolFeld(c, px + u * pw, py + ww * ph, 6.5, rein, F.B, al);
+			/* Punkte bzw. Kreuze genau zwischen den Feldpfeilen, drei Reihen; belegte Stellen bleiben frei */
+			for (const u of (G.schmal ? [0.31, 0.69] : [0.245, 0.495, 0.745])) for (const ww of [0.2, 0.5, 0.8]) PLATZ.feld(c, px + u * pw, py + ww * ph, 6.5, rein, F.B, al);
 		} else if (o.vorschau && o.vorschau.B) { const r = LP.RICHT[o.vorschau.B], mx = px + 0.72 * pw; pfeilForm(c, mx - r.dx * 24, cy - 26 - r.dy * 24 + 26, mx + r.dx * 24, cy + r.dy * 24, F.B, F.B, 4, true); }
 		if (o.E) {
 			const d = V.sE > 0 ? 1 : -1;
-			c.save(); c.globalAlpha = 0.85;
+			c.save(); c.globalAlpha = (o.schuesse || []).some(s => s.t >= 0) ? 0.5 : 0.85;
 			for (const u of (G.schmal ? [0.12, 0.5, 0.88] : [0.12, 0.37, 0.62, 0.87])) pfeilForm(c, px + u * pw, cy - d * (ph / 2 - 7), px + u * pw, cy + d * (ph / 2 - 7), F.E, F.Ek, 2.2);
 			c.restore();
 		}
@@ -4155,7 +4233,7 @@ const PFAD_WIEN = (() => {
 		const gq = c.createLinearGradient(0, cy - 18, 0, cy + 18); gq.addColorStop(0, "#EEF0F3"); gq.addColorStop(1, "#C9CED4");
 		c.fillStyle = gq; c.strokeStyle = "#6B737C"; c.lineWidth = 1.4; c.beginPath(); c.roundRect(5, cy - 18, qb - 5, 36, 5); c.fill(); c.stroke();
 		c.fillStyle = "#6B737C"; c.fillRect(qb, cy - 5, 6, 10);
-		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#333"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Quelle", 5 + (qb - 5) / 2, cy + 0.5);
+		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#333"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Quelle", 5 + (qb - 5) / 2, G.schmal ? cy + 30 : cy + 0.5);
 		/* Blende */
 		c.fillStyle = "#3D444C"; c.fillRect(xb - 3, py - 10, 6, cy - G.loch - py + 10); c.fillRect(xb - 3, cy + G.loch, 6, py + ph + 10 - cy - G.loch);
 		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "center"; c.fillText("Blende", xb, py + ph + 22);
@@ -4172,7 +4250,7 @@ const PFAD_WIEN = (() => {
 			const e = b.pts[n];
 			if (!s.fertig || !b.ok) teilchen(c, e[0], cy - e[1], 5.5, V.tq);
 			if (s.text && s.fertig) { c.font = "bold " + (G.g - 1) + "px " + SCHRIFT; c.fillStyle = farbe; c.textBaseline = "middle";
-				if (b.ok) { c.textAlign = "right"; c.fillText(s.text, B - 4, cy - 12); } else { c.textAlign = "right"; c.fillText(s.text, e[0] - 9, cy - e[1] + (e[1] > 0 ? 13 : -13)); } }
+				if (b.ok) { c.textAlign = "right"; c.fillText(s.text, B - 4, cy - 12); } else { c.textAlign = "left"; c.fillText(s.text, xb + 9, cy - Math.sign(e[1]) * Math.max(Math.abs(e[1]), G.loch + 16)); } }
 		}
 		/* betrachtetes Teilchen mit Pfeilen */
 		if (o.fokus) {
@@ -4196,6 +4274,7 @@ const PFAD_WIEN = (() => {
 		if (o.E) { pfeilForm(c, lx, ly, lx + 18, ly, F.E, F.Ek, 2.2); lx += 23; lx += zeichen(c, lx, ly, "E", "", F.E, G.g + 1); wort(o.werte ? " = " + o.werte.E : (G.schmal ? "" : " elektrisches Feld")); lx += 16; }
 		if (o.B) { symbolFeld(c, lx + 7, ly, 6.5, w.B === "rein", F.B, 1, 1.6); lx += 18; lx += zeichen(c, lx, ly, "B", "", F.B, G.g + 1); wort(o.werte ? " = " + o.werte.B : (G.schmal ? "" : " Magnetfeld"));   /* Kreuz/Punkt nie in Worten verraten (Kast 2026-11-12) */ }
 		if (!o.E && !o.B) { c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.fillText("Felder ausgeschaltet", lx, ly); }
+		PLATZ.ende(c);
 	}
 	const tick = (L, dt) => { for (const s of (L.schuesse || [])) if (!s.fertig) s.t += (dt || 0) * TEMPO; };
 	const laeuft = api => (api.lokal.schuesse || []).some(s => !s.fertig);
@@ -4357,11 +4436,11 @@ const PFAD_WIEN = (() => {
 
 	function uebersicht(api) {
 		const V = api.V, w = WW(V), f = api.fertig, bl = [];
-		const sb = 480, sh = geoW(sb).H, k = api.antwort("wkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
+		const sb = 620, sh = geoW(sb).H, k = api.antwort("wkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 		const o = { E: f(1), B: f(2), schuesse: f(4) ? [alt(1, BEIDE, "v = E/B"), alt(1.3, BEIDE, "v > E/B"), alt(0.7, BEIDE, "v < E/B")] : [], fokus: !f(4), zeig: { v: true, Fel: f(1), FL: f(2) } };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", f(4) ? "Kette: " + UE.kette(k) : ""));
 		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneW(c, B, H, V, o), sb, sh, f(4) ? g : null, "So filtert der Wienfilter") });
-		if (f(2)) bl.push(UE.zeile([{ t: "In meinem Bild: " + w.mehr + ", elektrisches Feld " + w.nE + ", elektrische Kraft " + w.nFel + ", Lorentzkraft " + w.nFL + ", Magnetfeld " + w.nB + ".", farbe: "#444" }], 21));
+		if (f(2)) bl.push(UE.zeile([{ t: "In meinem Bild: " + w.mehr + ", elektrisches Feld " + w.nE + ", elektrische Kraft " + w.nFel + ", Lorentzkraft " + w.nFL + ".", farbe: "#444" }], 21));
 		if (!f(4)) bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
 		if (f(3)) bl.push(UE.merke([{ t: "F" }, { t: "el", tief: true }, { t: " = F" }, { t: "L", tief: true }, { t: "   ⇒   q · E = q · v · B   ⇒   " }, { t: "v = E / B", fett: true }, { t: "   (unabhängig von Ladung und Masse)" }]));
 		else bl.push(UE.offen("2", "Merke"));
@@ -4421,12 +4500,13 @@ const PFAD_MS = (() => {
 	function szeneM(c, B, H, V, o) {
 		const G = geoM(B), w = WM(V), { py, hR, xw, pxcm, xl, xr } = G, auf = hochR(V), s = auf ? -1 : 1;
 		const ys = auf ? py + hR - 24 : py + 24;
+		PLATZ.start(c);
 		c.lineCap = "round"; c.lineJoin = "round";
 		/* Feldbereich */
 		const gf = c.createLinearGradient(xw, 0, xr, 0); gf.addColorStop(0, "#F3FAFB"); gf.addColorStop(1, "#FBFDFD");
 		c.fillStyle = gf; c.fillRect(xw, py, xr - xw - 6, hR); c.strokeStyle = "#CFE3E6"; c.lineWidth = 1; c.strokeRect(xw, py, xr - xw - 6, hR);
 		const dx = G.schmal ? 46 : 56;
-		for (let x = xw + dx * 0.62; x < xr - 16; x += dx) for (let y = py + 26; y < py + hR - 8; y += dx) symbolFeld(c, x, y, 5.5, V.sB > 0, F.B, 0.42);
+		for (let x = xw + dx * 0.62; x < xr - 16; x += dx) for (let y = py + 26; y < py + hR - 8; y += dx) PLATZ.feld(c, x, y, 5.5, V.sB > 0, F.B, 0.42);
 		symbolFeld(c, xw + 12, 15, 7, V.sB > 0, F.B, 1, 1.7); const bb = zeichen(c, xw + 24, 15, "B", "", F.B, G.g + 2);
 		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; /* keine Worte zur Feldrichtung (Kast 2026-11-12) */
 		/* Quelle, Filter, Strahl */
@@ -4442,7 +4522,7 @@ const PFAD_MS = (() => {
 		/* Detektorwand mit Spalt */
 		c.fillStyle = "#3D444C"; c.fillRect(xw - 4, py, 7, ys - 6 - py); c.fillRect(xw - 4, ys + 6, 7, py + hR - ys - 6);
 		c.fillStyle = "#F7E9A8"; if (auf) c.fillRect(xw + 3, py, 3, ys - 6 - py); else c.fillRect(xw + 3, ys + 6, 3, py + hR - ys - 6);
-		c.save(); c.translate(xw - (o.lineal ? 38 : 12), auf ? py + 46 : py + hR - 46); c.rotate(-Math.PI / 2); c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Detektor", 0, 0); c.restore();
+		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "right"; c.textBaseline = "middle"; c.fillText("Detektor", xw - 10, auf ? py - 14 : py + hR + 12);
 		if (o.lineal) {
 			c.strokeStyle = "#555"; c.fillStyle = "#555"; c.lineWidth = 1; c.font = (G.g - 3) + "px " + SCHRIFT; c.textAlign = "right"; c.textBaseline = "middle";
 			for (let i = 1; i <= 20; i++) { const y = ys + s * i * pxcm, lang = i % 5 === 0; c.beginPath(); c.moveTo(xw - 5, y); c.lineTo(xw - (lang ? 13 : 9), y); c.stroke(); if (lang) c.fillText(String(i), xw - 16, y + 0.5); }
@@ -4458,11 +4538,12 @@ const PFAD_MS = (() => {
 			else { c.fillStyle = b.io.farbe || ROT; c.beginPath(); c.arc(xw + 4.5, e[1], 4.2, 0, 7); c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.2; c.stroke(); }
 		}
 		const fertigB = bahnen.filter(b => b.phi >= Math.PI);
-		fertigB.forEach(b => {
-			const e = b.P(Math.PI), t = [b.io.name, b.io.wert].filter(Boolean).join(": "); if (!t) return;
-			const aussen = fertigB.length < 2 || b.io.d >= Math.max(...fertigB.map(x => x.io.d));
-			c.font = "bold " + (G.g - 1) + "px " + SCHRIFT; c.fillStyle = b.io.farbe === DUNKEL ? DUNKEL : "#B01E1E"; c.textAlign = "left"; c.textBaseline = "middle";
-			c.fillText(t, xw + 13, e[1] + (fertigB.length < 2 ? 0 : aussen ? s * 11 : -s * 12));
+		const schilder = fertigB.map(b => ({ b, y: b.P(Math.PI)[1], t: [b.io.name, b.io.wert].filter(Boolean).join(": ") })).filter(l => l.t).sort((a, b) => a.y - b.y);
+		for (let i = 1; i < schilder.length; i++) if (schilder[i].y - schilder[i - 1].y < 19) { const m = (schilder[i].y + schilder[i - 1].y) / 2; schilder[i - 1].y = m - 9.5; schilder[i].y = m + 9.5; }
+		const xs = xw - (o.lineal ? (G.schmal ? 30 : 36) : 14);
+		schilder.forEach(l => {
+			c.font = "bold " + (G.schmal ? 11 : G.g - 1) + "px " + SCHRIFT; c.fillStyle = l.b.io.farbe === DUNKEL ? DUNKEL : "#B01E1E"; c.textAlign = "right"; c.textBaseline = "middle";
+			c.fillText(l.t, xs, l.y);
 		});
 		const b0 = bahnen[0];
 		if (o.kraefte && b0 && b0.phi >= Math.PI) for (const f of [0.25, 0.5, 0.75].map(x => x * Math.PI)) {
@@ -4476,12 +4557,15 @@ const PFAD_MS = (() => {
 			c.strokeStyle = "#111"; c.lineWidth = 1.3; c.setLineDash([5, 4]); c.beginPath(); c.moveTo(xw + 3, my); c.lineTo(pr[0], pr[1]); c.stroke(); c.setLineDash([]);
 			c.fillStyle = "#111"; c.beginPath(); c.arc(xw + 3, my, 3.2, 0, 7); c.fill();
 			c.font = "bold " + G.g + "px " + SCHRIFT; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText("M", xw + 10, my - s * 11);
-			zeichen(c, (xw + pr[0]) / 2 + 6, (my + pr[1]) / 2 + s * 13, "r", "", "#111", G.g + 3);
+			{ const lx = pr[0] - xw - 3, ly = pr[1] - my, ll = Math.hypot(lx, ly) || 1, nx = -ly / ll, ny = lx / ll, k = nx > 0 ? 1 : -1;
+				zeichen(c, (xw + 3 + pr[0]) / 2 + k * nx * 12, (my + pr[1]) / 2 + k * ny * 12, "r", "", "#111", G.g + 3, "center"); }
 			const xm = xw - 14, ye = b0.P(Math.PI)[1]; c.strokeStyle = "#111"; c.lineWidth = 1.4; c.beginPath(); c.moveTo(xm, ys - s * 7); c.lineTo(xm, ye); c.moveTo(xm - 4, ys - s * 7); c.lineTo(xm + 4, ys - s * 7); c.moveTo(xm - 4, ye); c.lineTo(xm + 4, ye); c.stroke();
 			c.font = "italic bold " + (G.g + 1) + "px " + SCHRIFT; c.textAlign = "right"; c.fillStyle = "#111"; c.fillText("d = 2r", xm - 6, my);
 		}
-		if (o.hinweis && b0 && b0.phi >= Math.PI) { c.font = "bold " + (G.g - 1) + "px " + SCHRIFT; c.fillStyle = "#B01E1E"; c.textAlign = "left"; c.textBaseline = "middle";
-			o.hinweis.forEach((t, i) => c.fillText(t, xw + 16, ys + s * b0.rp + (i - (o.hinweis.length - 1) / 2) * 18)); }
+		if (o.hinweis && b0 && b0.phi >= Math.PI) { c.font = "bold " + (G.g - 1) + "px " + SCHRIFT; c.fillStyle = "#B01E1E"; c.textAlign = "right"; c.textBaseline = "middle";
+			const zl = []; for (const satz of o.hinweis) { let z = ""; for (const w of satz.split(" ")) { if (z && c.measureText(z + " " + w).width > xw - 22) { zl.push(z); z = w; } else z = z ? z + " " + w : w; } zl.push(z); }
+			const halb = (zl.length - 1) * 9, frei = ys + s * (40 + halb), y0 = s < 0 ? Math.min(ys + s * b0.rp, frei) : Math.max(ys + s * b0.rp, frei);   /* nie auf Quelle und Filter */
+			zl.forEach((t, i) => c.fillText(t, xw - 16, y0 + (i - (zl.length - 1) / 2) * 18)); }
 		/* Ion am Spalt mit Pfeilen */
 		if (o.fokus) {
 			const fx = xw + 20, fy = ys, z = o.zeig || {}, vs = o.vorschau || {}, R = LP.RICHT, LF = 42;
@@ -4496,6 +4580,7 @@ const PFAD_MS = (() => {
 			if (z.FL) stueck(w.FL, F.F, F.Fk, LF, "F", "L");
 			ion(c, fx, fy, 8);
 		}
+		PLATZ.ende(c);
 	}
 	const lauf = api => api.lokal.t != null && api.lokal.t < 6;
 	const zeit = (api, dt) => { const L = api.lokal; if (L.t != null && L.t < 6) L.t += dt || 0; return L.t == null ? 99 : L.t; };
@@ -4621,11 +4706,11 @@ const PFAD_MS = (() => {
 
 	function uebersicht(api) {
 		const V = api.V, w = WM(V), f = api.fertig, bl = [];
-		const sb = 480, sh = geoM(sb).H, k = api.antwort("mskette"), g = STATIONEN[3].teile.find(t => t.art === "kette").glieder;
+		const sb = 620, sh = geoM(sb).H, k = api.antwort("mskette"), g = STATIONEN[3].teile.find(t => t.art === "kette").glieder;
 		const o = { fokus: !f(1), zeig: { v: true }, ionen: f(1) ? [{ d: 14 }] : [], kraefte: f(1), radius: f(2) };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", f(3) ? "Kette: " + UE.kette(k) : ""));
 		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneM(c, B, H, V, o), sb, sh, f(3) ? g : null, "So arbeitet das Massenspektrometer") });
-		if (f(1)) bl.push(UE.zeile([{ t: "In meinem Bild: positive Ionen, Magnetfeld " + w.nB + ", Lorentzkraft am Spalt " + w.nFL + ". Sie wirkt als Zentripetalkraft: Kreisbahn.", farbe: "#444" }], 21));
+		if (f(1)) bl.push(UE.zeile([{ t: "In meinem Bild: positive Ionen, Lorentzkraft am Spalt " + w.nFL + ". Sie wirkt als Zentripetalkraft: Kreisbahn.", farbe: "#444" }], 21));
 		if (!f(3)) bl.push(UE.offen("", "Erklärung als Kette (Station 4)"));
 		if (f(2)) bl.push(UE.merke([{ t: "F" }, { t: "L", tief: true }, { t: " = F" }, { t: "Z", tief: true }, { t: "   ⇒   q · v · B = m · v² / r   ⇒   " }, { t: "r = m · v / (q · B)", fett: true }, { t: "   Bei gleichem q, v und B gilt r ~ m. Auftreffort: d = 2r." }]));
 		else bl.push(UE.offen("2", "Merke"));
@@ -4664,7 +4749,7 @@ const PFAD_ZYK = (() => {
 
 	function geoZ(B) {
 		const schmal = B < 520, R = Math.round(Math.max(108, Math.min(150, B * 0.3))), gw = 9;
-		return { B, schmal, R, gw, cx: Math.round(B / 2), cy: 30 + R, H: 30 + 2 * R + 48, g: schmal ? 13 : 14 };
+		return { B, schmal, R, gw, cx: Math.round(B / 2), cy: 30 + R, H: 30 + 2 * R + 66, g: schmal ? 13 : 14, xd: R + gw + 20 };
 	}
 	function proton(c, x, y, rad) {
 		c.fillStyle = ROT; c.beginPath(); c.arc(x, y, rad, 0, 7); c.fill(); c.strokeStyle = DUNKEL; c.lineWidth = 1; c.stroke();
@@ -4684,7 +4769,8 @@ const PFAD_ZYK = (() => {
 	}
 	/* o: { t, rho, nMax, feld, fokus, zeig: { v, FL }, vorschau, energie, hinweis } */
 	function szeneZ(c, B, H, V, o) {
-		const G = geoZ(B), w = WZ(V), { R, gw, cx, cy } = G, s = dreh(V), rho = o.rho == null ? 1 : o.rho;
+		const G = geoZ(B), w = WZ(V), { R, gw, cx, cy, xd } = G, s = dreh(V), rho = o.rho == null ? 1 : o.rho;
+		PLATZ.start(c);
 		c.lineCap = "round"; c.lineJoin = "round";
 		/* Magnetpol und Duanten */
 		c.fillStyle = "#F3FAFB"; c.strokeStyle = "#CFE3E6"; c.lineWidth = 1; c.beginPath(); c.arc(cx, cy, R + gw + 9, 0, 7); c.fill(); c.stroke();
@@ -4696,18 +4782,18 @@ const PFAD_ZYK = (() => {
 		}
 		const dx = G.schmal ? 40 : 46;
 		for (let i = -4; i <= 3; i++) for (let j = -3; j <= 3; j++) { const px = cx + (i + 0.5) * dx, py = cy + j * dx;
-			if (Math.abs(px - cx) < gw + 9 || Math.hypot(px - cx - Math.sign(px - cx) * gw, py - cy) > R - 10) continue; symbolFeld(c, px, py, 5, V.sB > 0, F.B, 0.36); }
+			if (Math.abs(px - cx) < gw + 9 || Math.hypot(px - cx - Math.sign(px - cx) * gw, py - cy) > R - 10) continue; PLATZ.feld(c, px, py, 5, V.sB > 0, F.B, 0.4); }
 		symbolFeld(c, 14, 15, 7, V.sB > 0, F.B, 1, 1.7); const bb = zeichen(c, 26, 15, "B", "", F.B, G.g + 2);
 		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; /* keine Worte zur Feldrichtung (Kast 2026-11-12) */
 		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#555"; c.textAlign = "center";
-		if ((o.t || 0) < 1) { c.fillText("Duant", cx - gw - R * 0.55, cy - R * 0.5); c.fillText("Duant", cx + gw + R * 0.55, cy - R * 0.5); }
-		else if (!G.schmal) { const ra = (R + gw + 15) * 0.72; c.textAlign = "right"; c.fillText("Duant", cx - ra, cy - ra - 4); c.textAlign = "left"; c.fillText("Duant", cx + ra, cy - ra - 4); }
+		if (!(G.schmal && o.energie)) { const ra = (R + gw + 15) * 0.72; c.textAlign = "right"; c.fillText("Duant", cx - ra, cy - ra - 4); c.textAlign = "left"; c.fillText("Duant", cx + ra, cy - ra - 4); }
 		/* Wechselspannung */
-		const yq = cy + R + 28;
-		c.strokeStyle = F.draht; c.lineWidth = 1.6; c.beginPath(); c.moveTo(cx - gw - R * 0.5, cy + R * 0.86); c.lineTo(cx - gw - R * 0.5, yq); c.lineTo(cx - 13, yq); c.moveTo(cx + 13, yq); c.lineTo(cx + gw + R * 0.5, yq); c.lineTo(cx + gw + R * 0.5, cy + R * 0.86); c.stroke();
+		const yq = cy + R + 30;
+		c.strokeStyle = F.draht; c.lineWidth = 1.6; c.beginPath(); c.moveTo(cx - gw - R + 2, cy); c.lineTo(cx - xd, cy); c.lineTo(cx - xd, yq); c.lineTo(cx - 13, yq); c.moveTo(cx + 13, yq); c.lineTo(cx + xd, yq); c.lineTo(cx + xd, cy); c.lineTo(cx + gw + R - 2, cy); c.stroke();
+		for (const d of [-1, 1]) { c.fillStyle = F.draht; c.beginPath(); c.arc(cx + d * (gw + R - 2), cy, 2.8, 0, 7); c.fill(); }
 		c.fillStyle = "#fff"; c.beginPath(); c.arc(cx, yq, 13, 0, 7); c.fill(); c.stroke();
 		c.strokeStyle = F.U; c.lineWidth = 1.8; c.beginPath(); c.moveTo(cx - 7, yq); c.bezierCurveTo(cx - 3, yq - 9, cx - 1, yq - 9, cx, yq); c.bezierCurveTo(cx + 1, yq + 9, cx + 3, yq + 9, cx + 7, yq); c.stroke();
-		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = F.grau; if (!G.schmal) { c.textAlign = "left"; c.fillText("Wechselspannung", cx + gw + R * 0.5 + 8, yq); } else if (!o.energie) { c.textAlign = "right"; c.fillText("Wechselspannung", cx - gw - R * 0.5 - 8, yq); }
+		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("Wechselspannung", cx, yq + 24);
 		/* Bahn */
 		const L = spirale(G, V, rho, o.nMax || 40), t = Math.max(0, o.t || 0), kJ = Math.min(L.length - 1, Math.floor(t)), h = L[kJ];
 		const P = (hh, phi) => hh.rechts ? [cx + gw + hh.r * Math.sin(phi), hh.y + s * hh.r * (1 - Math.cos(phi))] : [cx - gw - hh.r * Math.sin(phi), hh.y - s * hh.r * (1 - Math.cos(phi))];
@@ -4723,14 +4809,17 @@ const PFAD_ZYK = (() => {
 		else { const phi = Math.min(Math.PI, (t - kJ) * Math.PI); pos = P(h, phi); vel = h.rechts ? [Math.cos(phi), s * Math.sin(phi)] : [-Math.cos(phi), -s * Math.sin(phi)]; mitte = h.rechts ? [cx + gw, h.y + s * h.r] : [cx - gw, h.y - s * h.r]; }
 		c.stroke(); c.globalAlpha = 1;
 		if (h.aus) { const d = h.rechts ? 1 : -1, xt = cx + d * (gw + R * 0.5 + 44); c.fillStyle = "#3D444C"; c.fillRect(xt - 3, h.y - 14, 6, 28);
-			c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#555"; c.textAlign = d > 0 ? "left" : "right"; c.textBaseline = "middle"; c.fillText("Ziel", xt + d * 8, h.y); }
+			c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#555"; c.textBaseline = "middle";
+			if (gw + R * 0.5 + 44 + 8 + c.measureText("Ziel").width < xd - 6) { c.textAlign = d > 0 ? "left" : "right"; c.fillText("Ziel", xt + d * 8, h.y); }
+			else { c.textAlign = "center"; c.fillText("Ziel", xt, h.y + (h.y > cy ? -24 : 24)); } }
 		/* elektrisches Feld im Spalt und Polung */
 		if (o.feld && !h.aus) {
 			const nachLinks = h.rechts, gut = h.gut >= 0, dir = (nachLinks ? -1 : 1) * (gut ? 1 : -1);
 			for (const yy of [cy - R * 0.55, cy, cy + R * 0.55]) pfeilForm(c, cx - dir * (gw + 5), yy, cx + dir * (gw + 5), yy, F.E, F.Ek, 3);
 			zeichen(c, cx, cy - R - 12, "E", "", F.E, G.g + 2, "center");
-			const zeichenP = (x, plus) => { c.strokeStyle = plus ? F.plus : F.minus; c.lineWidth = 2.2; c.beginPath(); c.moveTo(x - 6, cy + R * 0.86 - 22); c.lineTo(x + 6, cy + R * 0.86 - 22); if (plus) { c.moveTo(x, cy + R * 0.86 - 28); c.lineTo(x, cy + R * 0.86 - 16); } c.stroke(); };
-			zeichenP(cx - gw - R * 0.5, dir > 0); zeichenP(cx + gw + R * 0.5, dir < 0);
+			const zeichenP = (x, plus) => { const y = cy + R * 0.45; c.strokeStyle = plus ? F.plus : F.minus; c.lineWidth = 2.4; c.beginPath(); c.moveTo(x - 6, y); c.lineTo(x + 6, y); if (plus) { c.moveTo(x, y - 6); c.lineTo(x, y + 6); } c.stroke(); };
+			const ax = cx + xd + 22 < B ? xd + 13 : xd - 12;
+			zeichenP(cx - ax, dir > 0); zeichenP(cx + ax, dir < 0);
 		}
 		c.fillStyle = "#222"; c.beginPath(); c.arc(cx, L[0].y, 3, 0, 7); c.fill();
 		/* Teilchen mit Pfeilen */
@@ -4748,8 +4837,10 @@ const PFAD_ZYK = (() => {
 			const zl = (G.schmal ? [["Energie:", "#555", false], [wert, "#222", true], [n + (n === 1 ? " Durchlauf" : " Durchläufe"), "#555", false]] : [["Energie: " + wert, "#222", true], [n + (n === 1 ? " Spaltdurchlauf" : " Spaltdurchläufe"), "#555", false]]);
 			if (o.hinweis) zl.push([o.hinweis, o.hinweisFarbe || "#B0483A", true]);
 			c.textAlign = "left"; c.textBaseline = "middle";
-			zl.forEach(([t2, fa, fett], i) => { c.font = (fett ? "bold " : "") + (fett ? G.g : G.g - 1) + "px " + SCHRIFT; c.fillStyle = fa; c.fillText(t2, 8, H - 12 - (zl.length - 1 - i) * 18); });
+			if (G.schmal) c.textAlign = "right";
+			zl.forEach(([t2, fa, fett], i) => { c.font = (fett ? "bold " : "") + (fett ? G.g : G.g - 1) + "px " + SCHRIFT; c.fillStyle = fa; if (G.schmal) c.fillText(t2, B - 6, 14 + i * 18); else c.fillText(t2, 8, H - 12 - (zl.length - 1 - i) * 18); });
 		}
+		PLATZ.ende(c);
 		return { fertig, n: L.length };
 	}
 	const hoehe = B => geoZ(B).H;
@@ -4931,11 +5022,11 @@ const PFAD_ZYK = (() => {
 
 	function uebersicht(api) {
 		const V = api.V, w = WZ(V), fe = api.fertig, bl = [];
-		const sb = 470, sh = geoZ(sb).H, k = api.antwort("zkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
+		const sb = 700, sh = geoZ(sb).H, k = api.antwort("zkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 		const o = { t: fe(3) ? 99 : fe(2) ? 3.999 : fe(1) ? 1 : 0, feld: fe(2), fokus: !fe(1), zeig: { v: !fe(3) }, energie: fe(3) };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", fe(4) ? "Kette: " + UE.kette(k) : ""));
 		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneZ(c, B, H, V, o), sb, sh, fe(4) ? g : null, "So arbeitet das Zyklotron") });
-		if (fe(1)) bl.push(UE.zeile([{ t: "In meinem Bild: Protonen, Magnetfeld " + w.nB + ", Lorentzkraft beim Eintritt in den rechten Duanten " + w.nFL + ".", farbe: "#444" }], 21));
+		if (fe(1)) bl.push(UE.zeile([{ t: "In meinem Bild: Protonen, Lorentzkraft beim Eintritt in den rechten Duanten " + w.nFL + ".", farbe: "#444" }], 21));
 		if (!fe(4)) bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
 		if (fe(4)) bl.push(UE.merke([{ t: "T = 2π · r / v  mit  r = m · v / (q · B)   ⇒   T = 2π · m / (q · B)   ⇒   " }, { t: "f = q · B / (2π · m)", fett: true }, { t: "   Die Umlaufdauer hängt nicht von v und r ab. Die Wechselspannung hat die Zyklotronfrequenz." }]));
 		else bl.push(UE.offen("2", "Merke"));
