@@ -3555,11 +3555,11 @@ function diagramm(c, B, H, V, lab, ohneTitel) {
 }
 /* Tabelle und Diagramm als ein Bild für die Übersicht */
 function laborBild(api) {
-	const lab = api.S.daten.lab, V = api.V, m = lab.mess.slice().sort((a, b) => a.B - b.B).slice(0, 8);
-	const fk = 1.45, LB = 928 / fk, LH = 262;
+	const lab = api.S.daten.lab, V = api.V, m = lab.mess.slice().sort((a, b) => a.B - b.B).slice(0, 6);
+	const fk = 1.2, LB = 928 / fk, LH = 196;
 	return api.bild(928, Math.round(LH * fk), (c) => {
 		c.scale(fk, fk);
-		const x0 = 8, y0 = 16, zh = 24, sp = [86, 104];
+		const x0 = 60, y0 = 10, zh = 24, sp = [86, 104];
 		c.fillStyle = "#F2F3F5"; c.fillRect(x0, y0, sp[0] + sp[1], zh);
 		c.font = "14px " + SCHRIFT; c.textBaseline = "middle"; c.fillStyle = "#333"; c.textAlign = "left";
 		let bz = zeichen(c, x0 + 22, y0 + zh / 2, "B", "", F.B, 14); c.font = "14px " + SCHRIFT; c.fillStyle = "#333"; c.fillText(" in T", x0 + 22 + bz, y0 + zh / 2);
@@ -3569,7 +3569,7 @@ function laborBild(api) {
 		c.strokeStyle = "#B5BBC2"; c.lineWidth = 1;
 		for (let i = 0; i <= m.length + 1; i++) { c.beginPath(); c.moveTo(x0, y0 + i * zh); c.lineTo(x0 + sp[0] + sp[1], y0 + i * zh); c.stroke(); }
 		for (const x of [x0, x0 + sp[0], x0 + sp[0] + sp[1]]) { c.beginPath(); c.moveTo(x, y0); c.lineTo(x, y0 + (m.length + 1) * zh); c.stroke(); }
-		c.save(); c.translate(216, 0); diagramm(c, LB - 222, LH - 4, V, lab); c.restore();
+		c.save(); c.translate(300, 0); diagramm(c, LB - 340, LH - 2, V, lab); c.restore();
 	});
 }
 
@@ -3926,7 +3926,7 @@ function uebersicht(api) {
 	const V = api.V, w = W(V), f = api.fertig, bl = [];
 	const o = { mikro: f(0), strom: true, feld: 1, q: f(4) ? 1 : f(2) ? 0.5 : 0, fokus: f(1) ? { u: 0.5, w: 0.5 } : null,
 		zeig: { v: f(1), FL: f(1), E: f(3), Fel: f(3) }, FelAnteil: f(4) ? 1 : 0.5, meter: "symbol", masse: f(5) };
-	const sb = 480, sh = geo(sb, "symbol").H;
+	const sb = 400, sh = geo(sb, "symbol").H;
 	const k = api.antwort("kette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 	bl.push(UE.kopf("1", "Aufbau und Erklärung", f(4) ? "Kette: " + UE.kette(k) : ""));
 	bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szene(c, B, H, V, o), sb, sh, f(4) ? g : null, "So entsteht die Hall-Spannung") });
@@ -3943,11 +3943,11 @@ function uebersicht(api) {
 	} else bl.push(UE.offen("3", "Meine Messung"));
 	if (f(6) || f(7) || f(8)) {
 		bl.push(UE.kopf("4", "Die Hall-Sonde"));
-		if (f(6)) bl.push(UE.zeile([{ t: "Prinzip: ", fett: true }, { t: "Bei festem Strom ist U" }, { t: "H", tief: true }, { t: " ~ B. Nach einer Kalibrierung liest man aus der Hall-Spannung die Flussdichte ab." }]));
-		if (f(7)) bl.push(UE.zeile([{ t: "Halbleiter statt Metall: ", fett: true }, { t: "wenige frei bewegliche Ladungsträger, bei gleicher Stromstärke viel größere Driftgeschwindigkeit, Hall-Spannung in Millivolt statt Mikrovolt." }]));
-		if (f(8)) bl.push(UE.zeile([{ t: "Im Einsatz: ", fett: true }, { t: "Feld senkrecht zur Plättchenfläche: größte Anzeige. Feldlinien parallel zur Stromrichtung: keine Hall-Spannung. Feld umgepolt: Vorzeichen wechselt. Der Strom muss konstant sein. Beispiele: Teslameter, Kompass im Smartphone, Drehzahlsensor (ABS), Stromzange." }]));
+		if (f(6)) bl.push(UE.zeile([{ t: "Prinzip: ", fett: true }, { t: "Bei festem Strom ist U" }, { t: "H", tief: true }, { t: " ~ B. Nach einer Kalibrierung liest man aus der Hall-Spannung die Flussdichte ab." }], 21));
+		if (f(7)) bl.push(UE.zeile([{ t: "Halbleiter statt Metall: ", fett: true }, { t: "wenige Ladungsträger driften bei gleicher Stromstärke viel schneller: Millivolt statt Mikrovolt." }], 21));
+		if (f(8)) bl.push(UE.zeile([{ t: "Im Einsatz: ", fett: true }, { t: "Feld senkrecht zur Plättchenfläche: größte Anzeige. Feld parallel zum Strom: keine Hall-Spannung. Umgepolt: Vorzeichen wechselt. Strom konstant halten. Beispiele: Teslameter, Smartphone-Kompass, ABS-Sensor, Stromzange." }], 21));
 	} else bl.push(UE.offen("4", "Die Hall-Sonde"));
-	return bl.concat(UE.ideen(api, [["vermutung", "Meine Vermutung am Anfang"], ["messidee", "Unbekanntes Feld messen"], ["groesser", "Größere Hall-Spannung"]]));
+	return bl.concat(UE.ideen(api, [["vermutung", "Meine Vermutung am Anfang"], ["messidee", "Unbekanntes Feld messen"]]));
 }
 function abschluss(box, api) {
 	const i = api.idee("vermutung"); if (!i) return;
@@ -4801,16 +4801,19 @@ const PFAD_ZYK = (() => {
 					const e = szeneZ(c, B, H, api.V, { t, rho: L.rho, nMax: a ? 26 : 40, feld: true, energie: true, hinweis: a ? "außer Takt" : "im Takt", hinweisFarbe: a ? "#B0483A" : "#2E7D32" });
 					if (L.tEnd > e.n + 1) L.tEnd = e.n + 1; if (L.t > L.tEnd) L.t = L.tEnd; } },
 			teile: [
-				{ art: "text", html: "<p>Nähert sich die Geschwindigkeit eines Teilchens der Lichtgeschwindigkeit, wird es nach der Relativitätstheorie immer träger: Seine Masse " + m + " nimmt zu. Bei Protonen macht sich das ab einigen Megaelektronenvolt bemerkbar.</p>" },
-				{ art: "wahl", id: "relativ", frage: "Was bedeutet die wachsende Masse für das Zyklotron?",
+				{ art: "text", html: "<p>Nähert sich die Geschwindigkeit eines Teilchens der Lichtgeschwindigkeit, gilt für seinen Impuls nach der Relativitätstheorie " + '<i class="gr">p</i>' + " = γ · " + m + " · " + Z.v + ". Der Lorentzfaktor γ ist größer als 1 und wächst mit der Geschwindigkeit: Das Teilchen lässt sich immer schwerer ablenken. Im Kraftansatz steht dann γ · " + m + " an der Stelle von " + m + ":</p>" + formel(q + " · " + Z.v + " · " + Z.B + " =", bruch("γ · " + m + " · " + Z.v + "<sup>2</sup>", r)) },
+				{ art: "wahl", id: "zgamma", karten: true, frage: "Wie lautet damit die Umlauffrequenz? " + f + " = …",
+					optionen: [{ t: bruch(q + " · " + Z.B, "2π · γ · " + m), ok: true }, { t: bruch("γ · " + q + " · " + Z.B, "2π · " + m) }, { t: bruch(q + " · " + Z.B, "2π · " + m) }, { t: bruch(q + " · " + Z.B, "2π · γ<sup>2</sup> · " + m) }],
+					erkl: "Die Herleitung läuft wie in Station 5, nur mit γ · " + m + " statt " + m + ": " + r + " = γ · " + m + " · " + Z.v + " / (" + q + " · " + Z.B + "), also " + T + " = 2π · γ · " + m + " / (" + q + " · " + Z.B + ")." },
+				{ art: "wahl", id: "relativ", frage: "Was bedeutet das für das Zyklotron, wenn die Teilchen sehr schnell werden?",
 					optionen: [
 						{ t: "Die Umlauffrequenz sinkt. Das Teilchen kommt zu spät zum Spalt und gerät außer Takt.", ok: true },
 						{ t: "Die Umlauffrequenz steigt. Das Teilchen kommt zu früh zum Spalt." },
-						{ t: "Nichts: Die Masse kürzt sich bei der Umlaufdauer heraus." },
+						{ t: "Nichts: Der Lorentzfaktor kürzt sich bei der Umlaufdauer heraus." },
 						{ t: "Der Bahnradius schrumpft, das Teilchen fällt zur Mitte zurück." }
 					],
 					nach(api) { api.lokal.rho = 0.93; setze(api, 0, 30); },
-					erkl: "Wegen " + f + " = " + q + " · " + Z.B + " / (2π · " + m + ") sinkt die Umlauffrequenz, wenn die Masse wächst. Die Wechselspannung mit ihrer festen Frequenz polt dann zu früh um. Das Bild zeigt den Effekt vergröbert: Das Teilchen wird nicht mehr bei jedem Durchlauf beschleunigt." },
+					erkl: "Wegen " + f + " = " + q + " · " + Z.B + " / (2π · γ · " + m + ") sinkt die Umlauffrequenz, wenn γ mit der Geschwindigkeit wächst. Die Wechselspannung mit ihrer festen Frequenz polt dann zu früh um. Das Bild zeigt den Effekt vergröbert: Das Teilchen wird nicht mehr bei jedem Durchlauf beschleunigt." },
 				{ art: "text", html: "<p>Deshalb beschleunigt man im klassischen Zyklotron vor allem schwere Teilchen wie Protonen und Deuteronen, und nur bis zu mäßigen Energien. Wie die Technik diese Grenze überwindet, untersuchen Sie auf dem Arbeitsblatt.</p>" }
 			] }
 	];
@@ -4832,7 +4835,7 @@ const PFAD_ZYK = (() => {
 			bl.push(UE.zeile([{ t: "Je Spaltdurchlauf wächst die Energie um q · U, nach N Durchläufen sind es N · q · U. Falsche Frequenz: Das Proton gerät außer Takt und wird wieder abgebremst. Doppelte Spannung: halb so viele Umläufe, gleiche Endenergie." }]));
 		} else bl.push(UE.offen("3", "Mein Zyklotron"));
 		if (fe(6)) { bl.push(UE.kopf("4", "Die Grenze des Zyklotrons"));
-			bl.push(UE.zeile([{ t: "Bei sehr hohen Geschwindigkeiten nimmt die Masse zu (Relativitätstheorie). Die Umlauffrequenz f = q · B / (2π · m) sinkt, das Teilchen gerät außer Takt. Klassische Zyklotrone beschleunigen deshalb vor allem Protonen und Deuteronen bis zu mäßigen Energien." }]));
+			bl.push(UE.zeile([{ t: "Bei sehr hohen Geschwindigkeiten gilt p = γ · m · v (Relativitätstheorie). Die Umlauffrequenz f = q · B / (2π · γ · m) sinkt mit wachsendem γ, das Teilchen gerät außer Takt. Klassische Zyklotrone beschleunigen deshalb vor allem Protonen und Deuteronen bis zu mäßigen Energien." }]));
 		} else bl.push(UE.offen("4", "Die Grenze des Zyklotrons"));
 		return bl.concat(UE.ideen(api, [["zykidee", "Meine Vermutung am Anfang"]]));
 	}
