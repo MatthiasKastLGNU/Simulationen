@@ -72,7 +72,7 @@ Siebensegment-Ziffern auf grünlichem LCD, Gehäuse mit Schatten, farbiger Strei
 
 ## Aufbau eines Kastens (immer diese Reihenfolge)
 
-1. Auftrag (`p.auftrag`): ein bis zwei Sätze, was zu tun ist
+1. Auftrag (`p.auftrag`): ein bis zwei Sätze, was zu tun ist. **Seit 2026-11-12 als großer grüner Kasten** (Kast: „Aufgabenstellung muss auch immer viel prominenter sein. Allgemeine Regel!“): Der Baustein zeichnet `p.auftrag`, `div.auftrag`, `p.hinweis#auftrag`, `.sp-auftrag`, `p.aufgabe-text`, `.aufgabentext` als Kasten mit Symbol (in einem grünen `tcb` nur große Schrift). Ein eigener Auftragskasten über der Simulation: `<div class="tcb gruen auftrag-kasten"><div class="tcb-title">Ihr Auftrag: …</div><div class="tcb-body auftrag-text"><ol><li>…</li></ol></div></div>` (mehrere Schritte als `ol`, optional `p.einleitung`). Kästen „Auftrag“, „Beobachtungsauftrag“, „Ausprobieren“ oder mit `.tcb-body#auftrag`, die direkt hinter einem Simulationskasten stehen, setzt der Baustein darüber (`data-bleibt` verhindert das).
 2. Bild (Canvas)
 3. Werkzeugleiste direkt darunter rechts
 4. Werte (Hauptwert zuerst)

@@ -287,7 +287,23 @@
 		const s = p.toFixed(2) + "%"; if (r.style.getPropertyValue("--anteil") !== s) r.style.setProperty("--anteil", s);
 	}
 	const alleSchienen = () => document.querySelectorAll('input[type="range"]').forEach(r => { reglerFarbe(r); schiene(r); });
+	/* Auftrag prominent und oben (Kast 2026-11-12: „Man übersieht den Auftrag“, „Aufgabenstellung muss auch immer viel
+	   prominenter sein. Allgemeine Regel!“): Ein Kasten „Auftrag“, „Beobachtungsauftrag“ oder „Ausprobieren“ (bzw. mit
+	   Körper #auftrag) wird als Auftragskasten gezeichnet; steht er direkt hinter einem Simulationskasten, kommt er
+	   darüber. Steht etwas anderes dazwischen (z. B. eine Vorhersage), bleibt die Reihenfolge des Autors. */
+	function auftragOben() {
+		const titel = t => { const e = t.querySelector(":scope > .tcb-title"); return e ? e.textContent.trim() : ""; };
+		document.querySelectorAll(".tcb").forEach(t => {
+			if (!(t.querySelector(":scope > .tcb-body#auftrag") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
+			t.classList.add("auftrag-kasten");
+			let v = t.previousElementSibling;
+			/* verborgene Kästen (anderer Modus) und Unsichtbares dazwischen überspringen */
+			while (v && (!v.classList.contains("tcb") || v.offsetHeight === 0)) { if (!v.classList.contains("tcb") && v.offsetHeight > 0 && !v.matches("script, style")) return; v = v.previousElementSibling; }
+			if (v && /^Simulation\b/.test(titel(v)) && !t.dataset.bleibt) v.before(t);
+		});
+	}
 	function los() {
+		auftragOben();
 		rollen(document);
 		alleSchienen();
 		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);

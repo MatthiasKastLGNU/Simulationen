@@ -550,9 +550,39 @@ html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { col
 html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
 html.kd .gphi { color: var(--f-phi-m); }
 
-/* ---------- Auftrag: was ist zu tun? (oben im Kasten, normale Schrift) ---------- */
-html.kd p.auftrag, html.kd .auftrag-text, html.kd p.hinweis#auftrag {
-	font-size: 1rem; color: #111; margin: 0 0 0.6rem; line-height: 1.45;
+/* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
+   immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
+   div.auftrag, p.hinweis#auftrag, .sp-auftrag, p.aufgabe-text, .aufgabentext; in grünen Kästen nur große Schrift. ---------- */
+html.kd p.auftrag, html.kd div.auftrag, html.kd p.hinweis#auftrag, html.kd .sp-auftrag, html.kd p.aufgabe-text, html.kd .aufgabentext {
+	position: relative; font-size: 1.1rem; color: #111; line-height: 1.5; margin: 0 0 0.75rem;
+	padding: 0.55rem 0.8rem 0.55rem 2.55rem; background: #F3F8EF;
+	border: 2px solid #295C06; border-left-width: 6px; border-radius: 2mm; box-shadow: 0 2px 6px rgba(41,92,6,0.12);
+}
+html.kd p.auftrag::before, html.kd div.auftrag::before, html.kd p.hinweis#auftrag::before, html.kd .sp-auftrag::before, html.kd p.aufgabe-text::before, html.kd .aufgabentext::before {
+	content: ""; position: absolute; left: 0.62rem; top: 0.68rem; width: 1.3rem; height: 1.3rem; background: #295C06;
+	-webkit-mask: var(--kd-auftrag-symbol) center / contain no-repeat; mask: var(--kd-auftrag-symbol) center / contain no-repeat;
+}
+html.kd { --kd-auftrag-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E"); }
+html.kd p.auftrag:empty, html.kd div.auftrag:empty, html.kd .sp-auftrag:empty, html.kd p.aufgabe-text:empty, html.kd .aufgabentext:empty { display: none; }
+/* schon in einem grünen Aufgabenkasten: kein Kasten im Kasten, nur große Schrift */
+html.kd .tcb.gruen p.aufgabe-text, html.kd .tcb.gruen p.auftrag, html.kd .tcb.gruen .aufgabentext {
+	padding: 0; background: none; border: none; box-shadow: none; border-radius: 0;
+}
+html.kd .tcb.gruen p.aufgabe-text::before, html.kd .tcb.gruen p.auftrag::before, html.kd .tcb.gruen .aufgabentext::before { content: none; }
+/* eigener Auftragskasten (tcb mit .auftrag-text oder Körper #auftrag): kräftiger Rahmen, große Schrift, Symbol im Titel */
+html.kd .auftrag-text, html.kd .tcb-body#auftrag { font-size: 1.1rem; color: #111; line-height: 1.5; }
+html.kd .auftrag-text p { margin: 0; }
+html.kd .auftrag-text .einleitung { margin: 0 0 0.35rem; }
+html.kd .auftrag-text ol { margin: 0; padding-left: 1.6rem; }
+html.kd .auftrag-text ol li { margin: 0.12rem 0; padding-left: 0.15rem; }
+html.kd .auftrag-text ol li::marker { color: #295C06; font-weight: bold; }
+html.kd .tcb.auftrag-kasten, html.kd .tcb:has(> .tcb-body#auftrag), html.kd .tcb:has(> .tcb-body.auftrag-text) { border-width: 2.5px; box-shadow: 0 2px 8px rgba(41,92,6,0.13); }
+html.kd .tcb.auftrag-kasten > .tcb-title, html.kd .tcb:has(> .tcb-body#auftrag) > .tcb-title, html.kd .tcb:has(> .tcb-body.auftrag-text) > .tcb-title {
+	font-size: 1.12rem; padding: 0.35rem 0.9rem; display: flex; align-items: center; gap: 0.45rem;
+}
+html.kd .tcb.auftrag-kasten > .tcb-title:not(:has(svg))::before, html.kd .tcb:has(> .tcb-body#auftrag) > .tcb-title:not(:has(svg))::before, html.kd .tcb:has(> .tcb-body.auftrag-text) > .tcb-title:not(:has(svg))::before {
+	content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: currentColor;
+	-webkit-mask: var(--kd-auftrag-symbol) center / contain no-repeat; mask: var(--kd-auftrag-symbol) center / contain no-repeat;
 }
 
 /* ---------- 1 Modus: Leiste über dem Kasten (Segmentleiste) ---------- */
@@ -1111,7 +1141,23 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		const s = p.toFixed(2) + "%"; if (r.style.getPropertyValue("--anteil") !== s) r.style.setProperty("--anteil", s);
 	}
 	const alleSchienen = () => document.querySelectorAll('input[type="range"]').forEach(r => { reglerFarbe(r); schiene(r); });
+	/* Auftrag prominent und oben (Kast 2026-11-12: „Man übersieht den Auftrag“, „Aufgabenstellung muss auch immer viel
+	   prominenter sein. Allgemeine Regel!“): Ein Kasten „Auftrag“, „Beobachtungsauftrag“ oder „Ausprobieren“ (bzw. mit
+	   Körper #auftrag) wird als Auftragskasten gezeichnet; steht er direkt hinter einem Simulationskasten, kommt er
+	   darüber. Steht etwas anderes dazwischen (z. B. eine Vorhersage), bleibt die Reihenfolge des Autors. */
+	function auftragOben() {
+		const titel = t => { const e = t.querySelector(":scope > .tcb-title"); return e ? e.textContent.trim() : ""; };
+		document.querySelectorAll(".tcb").forEach(t => {
+			if (!(t.querySelector(":scope > .tcb-body#auftrag") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
+			t.classList.add("auftrag-kasten");
+			let v = t.previousElementSibling;
+			/* verborgene Kästen (anderer Modus) und Unsichtbares dazwischen überspringen */
+			while (v && (!v.classList.contains("tcb") || v.offsetHeight === 0)) { if (!v.classList.contains("tcb") && v.offsetHeight > 0 && !v.matches("script, style")) return; v = v.previousElementSibling; }
+			if (v && /^Simulation\b/.test(titel(v)) && !t.dataset.bleibt) v.before(t);
+		});
+	}
 	function los() {
+		auftragOben();
 		rollen(document);
 		alleSchienen();
 		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);
