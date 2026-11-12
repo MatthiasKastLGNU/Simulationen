@@ -1273,6 +1273,10 @@ html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); 
 html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
 html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
 html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
@@ -2017,7 +2021,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<span class="knopfleiste"><button id="btn-messwert" class="haupt" data-icon="notieren" data-text="notieren" title="Messwert notieren"></button></span>
 				</div>
 			</div>
-			<p class="fussnote" id="fussnote-zeit"></p>
+			<div id="fussnote-zeit"></div>
 			<div class="tabelle-wrap">
 				<table class="messtabelle" id="tabelle-simulation">
 					<thead><tr><th>Nr.</th><th><i class="gr">r</i> in cm</th><th><i class="gr">U</i> in kV</th><th><i class="gr">Q</i><sub>oben</sub>&thinsp;/&thinsp;<i class="gr">Q</i><sub>unten</sub></th><th>&Delta;<i class="gr">m</i> in g</th><th><i class="gr">F</i> in mN</th><th>Zeit nach dem Laden</th></tr></thead>
@@ -2272,8 +2276,13 @@ function aktualisiere() {
 	document.getElementById("wert-rk").innerHTML = P.de(zustand.R, 1) + "&nbsp;cm";
 	document.getElementById("wert-feuchte").innerHTML = zustand.feuchte + "&nbsp;%";
 	const min = Math.floor(zustand.tSeit / 60), sek = Math.floor(zustand.tSeit % 60);
-	document.getElementById("fussnote-zeit").innerHTML = "Zeit seit dem Laden: " + min + "&nbsp;min " + sek + "&nbsp;s (Zeitraffer 10-fach). Durch die Luft flie&szlig;t Ladung ab; bei hoher Luftfeuchte schneller." +
-		(zustand.modus === "erkunden" ? " Ladung einer Kugel direkt nach dem Laden (Messverst&auml;rker): <i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC" + (NUR_MESSEN ? "." : ", das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV.") + " Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>." : "");
+	/* Zeit und Ladung als Wertkarten, Erklärung eingeklappt unter „Modell“ (Kast 2026-11-12: „Ja, unbedingt!“) */
+	const erk = zustand.modus === "erkunden";
+	KastWerte.karten(document.getElementById("fussnote-zeit"), [
+		{ titel: "Zeit seit dem Laden", wert: min + "&nbsp;min " + sek + "&nbsp;s" },
+		erk ? { titel: "Ladung einer Kugel nach dem Laden", wert: "<i class='gr'>Q</i> = " + P.de(ladung(zustand.R, zustand.U) * 1e9, 1) + "&nbsp;nC" } : null
+	], "<p>Die Zeit läuft im Zeitraffer (10-fach). Durch die Luft flie&szlig;t Ladung ab, bei hoher Luftfeuchte schneller.</p>" +
+		(erk ? "<p>Die Ladung direkt nach dem Laden misst ein Messverst&auml;rker" + (NUR_MESSEN ? "." : "; das sind " + P.de(ladung(zustand.R, 1) * 1e9, 2) + "&nbsp;nC je kV.") + " Die Waage zeigt &Delta;<i class='gr'>m</i> an, es gilt <i class='gr'>F</i> = &Delta;<i class='gr'>m</i>&thinsp;&middot;&thinsp;<i class='gr'>g</i>.</p>" : ""), "Modell");
 	zeichneAufbau(gA, WA, HA, Object.assign({}, z, { r: zustand.r }), anzeigeMasse());
 	zeichneDiagramm();
 }

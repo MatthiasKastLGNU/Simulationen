@@ -211,6 +211,10 @@ html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); 
 html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
 html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
 html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
@@ -959,16 +963,18 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<label class="haken"><input type="checkbox" id="h-knoten" checked> Knotenflächen</label>
 				</div></div>
 			</div>
-			<div class="zweispaltig" style="margin-top:0.9rem">
-				<div>
-					<div class="bildtitel"><b>Abstand vom Kern</b>: Wahrscheinlichkeit für den Abstand <i class="gr">r</i></div>
+			<!-- Energieniveaus über die ganze Breite, Abstand vom Kern eingeklappt (Kast 2026-11-12: „Abstand vom Kern braucht man glaub nicht … Einklappen. Lieber das mit den Energieniveaus über die ganze Breite“) -->
+			<div style="margin-top:0.9rem">
+				<div class="bildtitel"><b>Energieniveaus</b>: Orbital antippen zum Auswählen</div>
+				<div class="leinwand" id="e-leinwand"><canvas id="e-canvas" class="sim klick"></canvas></div>
+			</div>
+			<details class="mehr" id="radial-mehr" style="margin-top:0.7rem">
+				<summary>Abstand vom Kern</summary>
+				<div class="mehr-inhalt">
+					<div class="bildtitel">Wahrscheinlichkeit für den Abstand <i class="gr">r</i></div>
 					<div class="leinwand" id="r-leinwand"><canvas id="r-canvas" class="sim"></canvas></div>
 				</div>
-				<div>
-					<div class="bildtitel"><b>Energieniveaus</b>: Orbital antippen zum Auswählen</div>
-					<div class="leinwand" id="e-leinwand"><canvas id="e-canvas" class="sim klick"></canvas></div>
-				</div>
-			</div>
+			</details>
 		</div>
 	</div>
 
@@ -1333,6 +1339,7 @@ const cW = document.getElementById("w-canvas"), ctxW = cW.getContext("2d");
 const cS = document.getElementById("s-canvas"), ctxS = cS.getContext("2d");
 const cR = document.getElementById("r-canvas"), ctxR = cR.getContext("2d");
 const cE = document.getElementById("e-canvas"), ctxE = cE.getContext("2d");
+document.getElementById("radial-mehr").addEventListener("toggle", e => { if (e.target.open) layout(); });
 let WW = 400, HW = 400, WS = 400, HS = 400, WR = 400, HR = 260, WE = 400, HE = 260;
 const R_FEST = 2.5 / A0; // halbe Bildbreite 2,5 nm
 function ausdehnung() { return ek.lupe ? Math.min(R_FEST, Math.max(4, ek.o.r99 * 1.08)) : R_FEST; }
@@ -1784,8 +1791,8 @@ function layout() {
 	if (modus === "erkunden") {
 		({ W: WW, H: HW } = skaliere(cW, ctxW, 1));
 		({ W: WS, H: HS } = skaliere(cS, ctxS, 1));
-		({ W: WR, H: HR } = skaliere(cR, ctxR, w => w < 400 ? 0.7 : 0.62));
-		({ W: WE, H: HE } = skaliere(cE, ctxE, w => w < 400 ? 0.82 : 0.62));
+		({ W: WR, H: HR } = skaliere(cR, ctxR, w => w < 400 ? 0.7 : w > 640 ? 0.4 : 0.62));
+		({ W: WE, H: HE } = skaliere(cE, ctxE, w => w < 400 ? 0.82 : w > 640 ? 0.36 : 0.62));
 		zeichneAlles();
 	} else {
 		({ W: WT, H: HT } = skaliere(cT, ctxT, 1));

@@ -613,6 +613,10 @@ html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); 
 html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
 html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
 html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
@@ -1389,11 +1393,11 @@ window.KI = (function () {
 	KI.versuchsStatus = v => "<span>Versuch " + (v + 1) + "</span>" + (v >= 3 ? "<span>ohne Sterne</span>" : "");
 	KI.ordnenHinweis = function (r, was) {
 		const v = r.fehlversuche;
-		if (v) return '<p class="rundenhinweis">' + KI.du("Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ", "Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ") + (v >= 3 ? "Sterne gibt es hier nicht mehr." : "Jeder weitere kostet einen Stern.") + "</p>";
-		return KI.rundenHinweis(r, KI.du("Beim Prüfen erfährst du nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern.", "Beim Prüfen erfahren Sie nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da. Jeder Fehlversuch kostet einen Stern."));
+		if (v) return '<p class="rundenhinweis">' + KI.du("Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ", "Bisher " + v + (v === 1 ? " Fehlversuch" : " Fehlversuche") + ". ") + "</p>";
+		return KI.rundenHinweis(r, KI.du("Beim Prüfen erfährst du nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da.", "Beim Prüfen erfahren Sie nur, wie viele " + was + " falsch sind. Dann liegt alles wieder gemischt da."));
 	};
 	KI.ordnenFehler = function (v, anzahlText) {
-		return anzahlText + (KI.ordnenLiegenLassen(v) ? "" : " Alles liegt wieder gemischt da.") + (v === 3 ? " Ab jetzt gibt es keine Sterne mehr." : "");
+		return anzahlText + (KI.ordnenLiegenLassen(v) ? "" : " Alles liegt wieder gemischt da.");
 	};
 	/* Ordnen (Kast 2026-10-28): Nach Fehlversuch 1 und 2 liegt alles gemischt da, ab dem dritten (dann ohne Sterne) bleibt die
 	   Zuordnung liegen, damit man nicht alles neu ziehen muss. Nach dem zweiten Fehlversuch EIN Tipp, einmal je Runde, ohne
@@ -2094,7 +2098,8 @@ window.KI = (function () {
 
 	/* ==========================================================================
 	   Baustein: Kausalkette ordnen. Falsche Glieder kommen in den Korb.
-	   cfg: { id, ketten:[{ name, titel, auftrag, schritte:[String], falsche:[String] }] }
+	   cfg: { id, ketten:[{ name, titel, auftrag, schritte:[String], falsche:[String] }], fertig?, ohneNeu? }
+	   fertig({ fehlversuche, tipp, sterne }) wird nach der richtigen Kette aufgerufen (2026-11-11, für Lernpfade); ohneNeu: kein Neustart-Knopf
 	   ========================================================================== */
 	KI.kette = function (behaelter, cfg) {
 		const kopf = kopfzeile(behaelter, cfg.ketten, cfg.id, starte);
@@ -2211,11 +2216,12 @@ window.KI = (function () {
 				plaetze.forEach(p => p.querySelector(".karte").classList.add("richtig"));
 				vorrat.querySelectorAll(".karte").forEach(k => korb.appendChild(k));
 				behaelter.querySelectorAll(".karte").forEach(k => k.dataset.gesperrt = "1");
-				pruefKnopf.disabled = true; neuKnopf.hidden = false;
+				pruefKnopf.disabled = true; neuKnopf.hidden = !!cfg.ohneNeu;
 				KI.speicher.schreib("sterne_" + cfg.id + "_" + nr, Math.max(s, KI.speicher.lies("sterne_" + cfg.id + "_" + nr, 0)));
 				KI.bestwert(cfg.id, s); kopf.markiere(nr);
 				if (s) KI.funken(rueck, 18);
 				heft.hidden = false; versuchsStatus();
+				if (cfg.fertig) cfg.fertig({ fehlversuche: v, tipp: !!(bilanz && /Tipp/.test(bilanz.teile[0].t) && !/ohne Tipp/.test(bilanz.teile[0].t)), sterne: s });
 				return;
 			}
 			const v = runde.fehlversuch();
@@ -2813,7 +2819,7 @@ window.KI = (function () {
 		function sterne(f) { return f === 0 ? 3 : f === 1 ? 1 : 0; }
 		function hinweisZeigen() {
 			const v = runde.fehlversuche;
-			if (st.art !== "ordnen") { hinweis.innerHTML = KI.rundenHinweis(runde, KI.du("Jeder Fehlgriff kostet Sterne.", "Jeder Fehlgriff kostet Sterne.")); return; }
+			if (st.art !== "ordnen") { hinweis.innerHTML = KI.rundenHinweis(runde, ""); return; }
 			hinweis.innerHTML = KI.ordnenHinweis(runde, "Bilder");
 		}
 		function geschafft(text) {

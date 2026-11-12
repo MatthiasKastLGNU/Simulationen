@@ -1183,6 +1183,10 @@ html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); 
 html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
 html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
 html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),

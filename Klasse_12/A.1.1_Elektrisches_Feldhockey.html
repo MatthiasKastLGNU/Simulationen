@@ -769,6 +769,10 @@ html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); 
 html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
 html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
 html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
@@ -1509,7 +1513,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 						<label class="chip" title="Bahn des Pucks zeigen"><input type="checkbox" id="zeige-spur" checked><span data-chipicon="bahn"></span>Bahn</label>
 					</span>
 				</div>
-				<div class="zeile"><span class="meldung" id="meldung">Platzieren Sie Ladungen und klicken Sie auf Start. Drei Sterne gibt es mit höchstens 1 Ladung.</span></div>
+				<div class="zeile"><span class="meldung" id="meldung">Platzieren Sie Ladungen und klicken Sie auf Start. Schaffen Sie es mit höchstens 1 Ladung?</span></div>
 			</div>
 			<p class="fussnote">Eine Ladung entfernen Sie, indem Sie sie zurück in die Leiste ziehen.</p>
 <details class="mehr"><summary>Modell</summary><div class="mehr-inhalt"><p>Die Kraft zwischen zwei Ladungen folgt dem Coulombgesetz (proportional zu 1/<i class="gr">r</i>²). Die Einheiten sind willkürlich gewählt.</p></div></details>
@@ -1539,7 +1543,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	function zeigeRekorde() {
 		REKORD.forEach((r, i) => { document.getElementById("rekord-" + i).innerHTML = "<b>" + "★".repeat(r) + "</b>" + "★".repeat(3 - r); });
 	}
-	function zielText() { return "Drei Sterne gibt es mit höchstens " + ladungWort(PAR[zustand.stufe]) + "."; }
+	function zielText() { return "Schaffen Sie es mit höchstens " + ladungWort(PAR[zustand.stufe]) + "?"; }
 
 	const STUFEN = [
 		[],
@@ -1796,7 +1800,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		ctx.font = Math.round(0.22 * s) + "px " + K.SCHRIFT;
 		const hinweis = !e.gut ? "Verschieben Sie Ladungen und starten Sie erneut."
 			: zustand.sterne === 3 ? (zustand.stufe < 3 ? "Perfekt! Probieren Sie die nächste Stufe." : "Perfekt! Meisterleistung.")
-			: "Für drei Sterne reichen " + ladungWort(PAR[zustand.stufe]) + ". Geht es mit weniger?";
+			: "Es geht auch mit " + ladungWort(PAR[zustand.stufe]) + ". Schaffen Sie das?";
 		ctx.fillText(hinweis, X, Y + 0.8 * s);
 		ctx.restore();
 	}
