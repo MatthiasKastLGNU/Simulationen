@@ -583,6 +583,12 @@ html.kd i.gB, html.kd .gB { color: var(--f-B); } html.kd i.gv, html.kd .gv { col
 html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { color: var(--f-a); }
 html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
 html.kd .gphi { color: var(--f-phi-m); }
+/* Index in der Farbe des Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie vorkommen!“).
+   Andere Färbungen (style, eigene Klassen, nachgeladene Texte) gleicht kast_design.js an. */
+html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); } html.kd .gB + sub { color: var(--f-B); }
+html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
+html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
+html.kd .gphi + sub { color: var(--f-phi-m); }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
@@ -1190,8 +1196,22 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			if (v && /^Simulation\b/.test(titel(v)) && !t.dataset.bleibt) v.before(t);
 		});
 	}
+	/* Index in der Farbe seines Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie
+	   vorkommen!“): Folgt ein <sub> direkt (nur Leerraum dazwischen) auf ein Element, dessen Farbe von der Umgebung
+	   abweicht, bekommt der Index dieselbe Farbe. Gilt auch für Texte, die später per Skript entstehen. */
+	function indexFarben(wurzel) {
+		(wurzel || document).querySelectorAll("sub").forEach(s => {
+			let v = s.previousSibling;
+			while (v && v.nodeType === 3 && !v.textContent.trim()) v = v.previousSibling;
+			if (!v || v.nodeType !== 1 || !s.parentElement) return;
+			const fz = getComputedStyle(v).color, fu = getComputedStyle(s.parentElement).color;
+			if (fz !== fu) { if (!s.style.color || s.dataset.kdFarbe) { s.style.color = fz; s.dataset.kdFarbe = "1"; } }
+			else if (s.dataset.kdFarbe) { s.style.color = ""; delete s.dataset.kdFarbe; }
+		});
+	}
 	function los() {
 		auftragOben();
+		indexFarben(document);
 		rollen(document);
 		alleSchienen();
 		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);
@@ -1201,6 +1221,9 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			if (ms.every(m => m.target.closest && m.target.closest("table"))) return;
 			clearTimeout(warte); warte = setTimeout(() => { rollen(document); alleSchienen(); }, 30);
 		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "aria-pressed"] });
+		let warteIndex = null;   /* auch in Tabellen und nachgeladenen Texten (eigener Beobachter, ohne Tabellenfilter) */
+		new MutationObserver(() => { clearTimeout(warteIndex); warteIndex = setTimeout(() => indexFarben(document), 40); })
+			.observe(document.body, { childList: true, subtree: true });
 		const start = Date.now();
 		new MutationObserver(ms => {
 			if (Date.now() - start < 2000) return;

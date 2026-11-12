@@ -21,6 +21,12 @@ html.kd i.gB, html.kd .gB { color: var(--f-B); } html.kd i.gv, html.kd .gv { col
 html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { color: var(--f-a); }
 html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
 html.kd .gphi { color: var(--f-phi-m); }
+/* Index in der Farbe des Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie vorkommen!“).
+   Andere Färbungen (style, eigene Klassen, nachgeladene Texte) gleicht kast_design.js an. */
+html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); } html.kd .gB + sub { color: var(--f-B); }
+html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
+html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
+html.kd .gphi + sub { color: var(--f-phi-m); }
 
 /* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
    immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),

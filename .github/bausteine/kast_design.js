@@ -302,8 +302,22 @@
 			if (v && /^Simulation\b/.test(titel(v)) && !t.dataset.bleibt) v.before(t);
 		});
 	}
+	/* Index in der Farbe seines Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie
+	   vorkommen!“): Folgt ein <sub> direkt (nur Leerraum dazwischen) auf ein Element, dessen Farbe von der Umgebung
+	   abweicht, bekommt der Index dieselbe Farbe. Gilt auch für Texte, die später per Skript entstehen. */
+	function indexFarben(wurzel) {
+		(wurzel || document).querySelectorAll("sub").forEach(s => {
+			let v = s.previousSibling;
+			while (v && v.nodeType === 3 && !v.textContent.trim()) v = v.previousSibling;
+			if (!v || v.nodeType !== 1 || !s.parentElement) return;
+			const fz = getComputedStyle(v).color, fu = getComputedStyle(s.parentElement).color;
+			if (fz !== fu) { if (!s.style.color || s.dataset.kdFarbe) { s.style.color = fz; s.dataset.kdFarbe = "1"; } }
+			else if (s.dataset.kdFarbe) { s.style.color = ""; delete s.dataset.kdFarbe; }
+		});
+	}
 	function los() {
 		auftragOben();
+		indexFarben(document);
 		rollen(document);
 		alleSchienen();
 		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);
@@ -313,6 +327,9 @@
 			if (ms.every(m => m.target.closest && m.target.closest("table"))) return;
 			clearTimeout(warte); warte = setTimeout(() => { rollen(document); alleSchienen(); }, 30);
 		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "aria-pressed"] });
+		let warteIndex = null;   /* auch in Tabellen und nachgeladenen Texten (eigener Beobachter, ohne Tabellenfilter) */
+		new MutationObserver(() => { clearTimeout(warteIndex); warteIndex = setTimeout(() => indexFarben(document), 40); })
+			.observe(document.body, { childList: true, subtree: true });
 		const start = Date.now();
 		new MutationObserver(ms => {
 			if (Date.now() - start < 2000) return;
