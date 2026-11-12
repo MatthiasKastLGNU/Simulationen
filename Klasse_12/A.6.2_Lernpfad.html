@@ -495,6 +495,11 @@ button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
 .wahlkarte:hover { border-color: #7A7AD0; }
 .status span { white-space: nowrap; }
 @media (max-width: 560px) { .wahlreihe { grid-template-columns: 1fr; } .fstext { font-size: 1rem; padding: 0.5rem 0.6rem; } }
+
+/* Brüche in Texten und Rückmeldungen (KI.bruch; Kast 2026-11-12: „Brüche und so weiter statt geteilt“) */
+.bruch { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.2; margin: 0 0.12em; }
+.bruch > span:first-child { border-bottom: 1px solid currentColor; padding: 0 0.3em 0.08em; }
+.bruch > span:last-child { padding: 0.08em 0.3em 0; }
 /* Kast-Lernpfad (2026-11-11): Stationen, Prüfsteine, Ideenfragen, Übersicht. Knöpfe, Karten und Rückmeldungen kommen aus kast_design.css. */
 [hidden] { display: none !important; }
 .lp-kopf { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
@@ -563,6 +568,9 @@ html.kd button.neben.lp-neu { width: auto; padding: 0 0.7rem; gap: 0.4rem; displ
 .lp-regler input[type=range] { flex: 1 1 9rem; min-width: 8rem; }
 @media (max-width: 560px) { html.kd .lp-schritt, .lp-schritt { width: 1.62rem; height: 1.62rem; font-size: 0.82rem; } .lp-schritte { gap: 0.18rem; } .lp-optionen.karten { grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr)); } }
 .lp-kettefertig { max-width: 34rem; }
+
+/* Merke: Formeln rot (Kast 2026-11-12: „Formeln beim Merke gerne rot“) */
+.lp-merketext .formelzeile, .lp-merketext .formelzeile * { color: #BF0000 !important; }
 /* A.6.2 Lernpfad: Formelzeilen mit echten Brüchen */
 .formelzeile { display: flex; align-items: center; justify-content: center; gap: 0.35em; flex-wrap: wrap; font-size: 1.05rem; line-height: 1.3; margin: 0.5rem 0 0.35rem; }
 .bruch { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; }
@@ -1747,11 +1755,17 @@ window.KI = (function () {
 		const aus = [];
 		(function lauf(knoten, stil) {
 			for (const k of knoten.childNodes) {
-				if (k.nodeType === 3) { if (k.nodeValue) aus.push(Object.assign({}, stil, { t: k.nodeValue.replace(/\s+/g, " ") })); continue; }
+				if (k.nodeType === 3) { if (k.nodeValue) aus.push(Object.assign({}, stil, { t: k.nodeValue.replace(/[ \t\r\n]+/g, " ") })); continue; }
 				if (k.nodeType !== 1) continue;
 				const n = k.nodeName.toLowerCase(), s = Object.assign({}, stil);
 				if (n === "br") { aus.push(Object.assign({}, stil, { t: "\n" })); continue; }
 				if (n === "svg" || n === "script" || n === "style") continue;
+				if (k.classList && k.classList.contains("bruch") && k.children.length === 2) {
+					/* Bruch: <span class="bruch"><span>Zähler</span><span>Nenner</span></span> (Kast 2026-11-12: „Brüche statt geteilt“) */
+					const teilVon = e => { const alt = aus.length; lauf(e, Object.assign({}, stil, { hoch: false, tief: false })); return aus.splice(alt); };
+					aus.push(Object.assign({}, stil, { t: "", bruch: { z: teilVon(k.children[0]), n: teilVon(k.children[1]) } }));
+					continue;
+				}
 				if (n === "i" || n === "em") s.kursiv = true;
 				if (n === "b" || n === "strong") s.fett = true;
 				if (n === "sub") s.tief = true;
@@ -1765,6 +1779,8 @@ window.KI = (function () {
 	};
 	/* reiner Text ohne Tags (für Überschriften, die ohne Formatierung gezeichnet werden) */
 	KI.reinText = function (t) { return KI.htmlTeile({ t: t }).map(x => x.t).join("").replace(/\n/g, " "); };
+	/* HTML-Bruch für Texte und Rückmeldungen (Kast 2026-11-12: „Brüche und so weiter statt geteilt“) */
+	KI.bruch = (z, n) => '<span class="bruch"><span class="z">' + z + '</span><span class="n">' + n + "</span></span>";
 	KI.blattBild = async function (bloecke) {
 		await (document.fonts ? document.fonts.ready : Promise.resolve());
 		const B = 1000, R = 36;
@@ -1784,10 +1800,40 @@ window.KI = (function () {
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
 		function teilFont(t, g) { return font(t.tief || t.hoch ? Math.round(g * 0.7) : g, t.fett, t.kursiv); }
 		function teilY(t, g) { return t.tief ? g * 0.22 : t.hoch ? -g * 0.38 : 0; }
+		/* Brüche: Zähler und Nenner in 0,85-facher Größe übereinander, Bruchstrich auf Höhe der Rechenzeichen */
+		const BG = 0.85;
+		function reiheBreite(teile, g) { let b = 0; for (const s of teile) { ctx.font = teilFont(s, g); b += ctx.measureText(String(s.t)).width; } return b; }
+		function bruchBreite(t, g) { const gb = g * BG; return Math.max(reiheBreite(t.bruch.z, gb), reiheBreite(t.bruch.n, gb)) + g * 0.4; }
+		function zeichneReihe(teile, x, yb, g, standardFarbe) { for (const s of teile) { ctx.font = teilFont(s, g); ctx.fillStyle = s.farbe || standardFarbe || "#111"; ctx.fillText(String(s.t), x, yb + teilY(s, g)); x += ctx.measureText(String(s.t)).width; } }
+		function zeichneBruch(t, x, yb, g, wb, standardFarbe) {
+			const gb = g * BG, ya = yb - g * 0.3, bz = reiheBreite(t.bruch.z, gb), bn = reiheBreite(t.bruch.n, gb);
+			zeichneReihe(t.bruch.z, x + (wb - bz) / 2, ya - g * (t.bruch.z.some(s => s.tief) ? 0.36 : 0.2), gb, t.farbe || standardFarbe);
+			zeichneReihe(t.bruch.n, x + (wb - bn) / 2, ya + g * 0.2 + gb * 0.72, gb, t.farbe || standardFarbe);
+			ctx.fillStyle = t.farbe || standardFarbe || "#111"; ctx.fillRect(x + g * 0.12, ya - Math.max(0.8, g * 0.03), wb - g * 0.24, Math.max(1.6, g * 0.06));
+		}
+		/* Zeilenhöhen: Zeilen mit Bruch bekommen oben und unten Luft */
+		const BU = 0.4;
+		function mitBruch(z) { return !!z && z.some(s => s.t.bruch); }
+		function bruchOben(z) { return !mitBruch(z) ? 0 : z.some(s => s.t.bruch && s.t.bruch.z.some(u => u.tief)) ? 0.56 : 0.42; }
+		function zeilenHoehe(zeilen, g, zh) { return zeilen.reduce((a, z) => a + zh + (mitBruch(z) ? (bruchOben(z) + BU) * g : 0), 0); }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
 			const zeilen = [[]]; let x = 0;
 			for (const t of [].concat(...teile.map(KI.htmlTeile))) {
+				if (t.bruch) {
+					const wb = bruchBreite(t, g), z = zeilen[zeilen.length - 1];
+					if (x + wb > breite && x > 0) {
+						const kurz = s => !s.t.bruch && (s.w.length <= 2 || /^[0-9,.\u00b2\u00b3\u00b9\u2070-\u209f·−-]+$/.test(s.w));
+						let a = z.length, frei = false;
+						while (a > 0) { const s = z[a - 1]; if (s.w === " ") { frei = true; a--; continue; } if (!frei || kurz(s)) { frei = false; a--; continue; } break; }
+						if (a === 0) a = z.length;
+						while (a < z.length && z[a].w === " ") a++;
+						const mit = z.splice(a); while (z.length && z[z.length - 1].w === " ") z.pop();
+						const x0 = mit.length ? mit[0].x : 0; mit.forEach(m => m.x -= x0);
+						zeilen.push(mit); x = mit.length ? mit[mit.length - 1].x + mit[mit.length - 1].wb : 0;
+					}
+					zeilen[zeilen.length - 1].push({ w: "", t, x, wb }); x += wb; continue;
+				}
 				const woerter = String(t.t).split(/( |\n)/);
 				for (const w of woerter) {
 					if (w === "") continue;
@@ -1814,8 +1860,9 @@ window.KI = (function () {
 		function hoehe(b) {
 			const g = b.groesse || 26;
 			if (b.art === "titel") return 58;
-			if (b.art === "text") return umbrechen(b.teile, B - 2 * R, g).length * g * 1.45 + 8;
-			if (b.art === "kasten") return umbrechen(b.teile, B - 2 * R - 36, g).length * g * 1.4 + 26;
+			if (b.art === "text") return zeilenHoehe(umbrechen(b.teile, B - 2 * R, g), g, g * 1.45) + 8;
+			if (b.art === "kasten") return zeilenHoehe(umbrechen(b.teile, B - 2 * R - 36, g), g, g * 1.4) + 26;
+			if (b.art === "liste") return listeMasse(b).h + 14;
 			if (b.art === "pfeil") return 34;
 			if (b.art === "reihe") return 184;
 			if (b.art === "bild") { const q = b.quelle.ohneKast || b.quelle; return q.height * (B - 2 * R) / q.width + 10; }
@@ -1824,21 +1871,35 @@ window.KI = (function () {
 			if (b.art === "film") return filmMasse(b).h + 12;
 			return 0;
 		}
+		/* nummerierte Liste im Kasten (Schritte einer Erklärung), Text mit Brüchen: {art:"liste", titel, punkte:[html], groesse} */
+		function listeMasse(b) {
+			const g = b.groesse || 22, zh = g * 1.36, tb = B - 2 * R - 74;
+			const punkte = b.punkte.map(p => umbrechen([{ t: p }], tb, g));
+			const kopf = b.titel ? g * 1.75 : 0;
+			const h = 16 + kopf + punkte.reduce((a, z) => a + zeilenHoehe(z, g, zh) + g * 0.3, 0) + 8;
+			return { g, zh, punkte, kopf, h };
+		}
 		let H = R;
 		for (const b of bloecke) H += hoehe(b);
 		H += 50;
-		c.width = B; c.height = H;
+		/* hohe Auflösung (Kast 2026-11-12: Bilder „verwaschen“), Fläche unter 15 Mio. Pixel (Grenze von Safari auf dem iPad) */
+		const F = Math.max(1, Math.min(2.5, Math.sqrt(15e6 / (B * H))));
+		c.width = Math.round(B * F); c.height = Math.round(H * F); ctx.setTransform(F, 0, 0, F, 0, 0); c.massstab = F;
 		ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, B, H);
 		ctx.textBaseline = "alphabetic";
 		let y = R;
 		function zeichneZeilen(zeilen, x0, y0, g, zh, standardFarbe) {
-			zeilen.forEach((z, i) => {
+			let yz = y0;
+			zeilen.forEach(z => {
+				const br = mitBruch(z), yb = yz + g + bruchOben(z) * g;
 				for (const s of z) {
+					if (s.t.bruch) { zeichneBruch(s.t, x0 + s.x, yb, g, s.wb, standardFarbe); continue; }
 					ctx.font = teilFont(s.t, g);
 					ctx.fillStyle = s.t.farbe || standardFarbe || "#111";
-					ctx.fillText(s.w, x0 + s.x, y0 + i * zh + g + teilY(s.t, g));
-					if (s.t.unterstrich && s.w !== " ") { ctx.fillRect(x0 + s.x, y0 + i * zh + g + 4, s.wb, 2); }
+					ctx.fillText(s.w, x0 + s.x, yb + teilY(s.t, g));
+					if (s.t.unterstrich && s.w !== " ") { ctx.fillRect(x0 + s.x, yb + 4, s.wb, 2); }
 				}
+				yz += zh + (br ? (bruchOben(z) + BU) * g : 0);
 			});
 		}
 		for (const b of bloecke) {
@@ -1852,6 +1913,19 @@ window.KI = (function () {
 				ctx.fillStyle = b.hg || "#F6F6FB"; ctx.strokeStyle = b.rand || "#0000BF"; ctx.lineWidth = 2.5;
 				ctx.beginPath(); ctx.roundRect(R, y + 2, B - 2 * R, h - 6, 8); ctx.fill(); ctx.stroke();
 				zeichneZeilen(umbrechen(b.teile, B - 2 * R - 36, g), R + 18, y + 10, g, g * 1.4);
+			} else if (b.art === "liste") {
+				const m = listeMasse(b), x0 = R, bb = B - 2 * R;
+				ctx.fillStyle = b.hg || "#F6F6FB"; ctx.strokeStyle = b.rand || "#0000BF"; ctx.lineWidth = 2.5;
+				ctx.beginPath(); ctx.roundRect(x0, y + 2, bb, m.h, 8); ctx.fill(); ctx.stroke();
+				let yy = y + 12;
+				if (b.titel) { ctx.font = font(m.g, true); ctx.fillStyle = b.rand || "#0000BF"; ctx.fillText(KI.reinText(b.titel), x0 + 20, yy + m.g); yy += m.kopf; }
+				m.punkte.forEach((z, i) => {
+					const ym = yy + bruchOben(z[0]) * m.g + m.g * 0.68;
+					ctx.fillStyle = b.rand || "#0000BF"; ctx.beginPath(); ctx.arc(x0 + 32, ym, m.g * 0.52, 0, 7); ctx.fill();
+					ctx.fillStyle = "#fff"; ctx.font = font(Math.round(m.g * 0.7), true); ctx.textAlign = "center"; ctx.fillText(String(i + 1), x0 + 32, ym + m.g * 0.25); ctx.textAlign = "left";
+					zeichneZeilen(z, x0 + 56, yy, m.g, m.zh);
+					yy += zeilenHoehe(z, m.g, m.zh) + m.g * 0.3;
+				});
 			} else if (b.art === "pfeil") {
 				ctx.strokeStyle = "#0000BF"; ctx.fillStyle = "#0000BF"; ctx.lineWidth = 3;
 				ctx.beginPath(); ctx.moveTo(B / 2, y + 2); ctx.lineTo(B / 2, y + 22); ctx.stroke();
@@ -3161,9 +3235,9 @@ window.LP = (function () {
 			fertig: i => S.weit > i,
 			antwort: id => S.antw[id], idee: id => S.ideen[id],
 			geaendert() { merke(); beobachter.forEach(f => f()); lokal.dirty = true; },
-			/* Bild für die Übersicht: zeichne(c, B, H) auf weißem Grund, doppelte Auflösung */
+			/* Bild für die Übersicht: zeichne(c, B, H) auf weißem Grund, dreifache Auflösung (die Übersicht wird 2,5-fach gezeichnet; Kast 2026-11-12: „verwaschen“) */
 			bild(breite, hoehe, zeichne) {
-				const c = document.createElement("canvas"), f = 2; c.width = breite * f; c.height = hoehe * f;
+				const c = document.createElement("canvas"), f = 3; c.width = breite * f; c.height = hoehe * f;
 				const x = c.getContext("2d"); x.setTransform(f, 0, 0, f, 0, 0); x.fillStyle = "#fff"; x.fillRect(0, 0, breite, hoehe); zeichne(x, breite, hoehe);
 				return c;
 			}
@@ -3451,8 +3525,10 @@ const Z = {
 	UH: '<i class="gr">U</i><sub>H</sub>', FL: '<span class="gF"><i class="gr">F</i><sub>L</sub></span>', Fel: '<span class="gF"><i class="gr">F</i><sub>el</sub></span>',
 	b: '<i class="gr">b</i>', e: '<i class="gr">e</i>'
 };
-const bruch = (z, n) => '<span class="bruch"><span class="z">' + z + '</span><span class="n">' + n + "</span></span>";
+const bruch = (z, n) => '<span class="bruch"><span class="z">' + z + '</span><span class="n">' + n + "</span></span>";   /* Brüche statt „/“ überall: Text, Rückmeldung, Merke, Bild (Kast 2026-11-12) */
 const formel = (...teile) => '<div class="formelzeile">' + teile.map(t => "<span>" + t + "</span>").join("") + "</div>";
+/* Einheiten als Bruch (Kast 2026-11-12: „Bei Einheiten wie m/s in der Regel auch allgemein Brüche!“) */
+const EH = { ms: bruch("m", "s"), mms: bruch("mm", "s"), kVm: bruch("kV", "m"), Vm: bruch("V", "m") };
 
 /* ---------- Variante der Gruppe ---------- */
 function variante() {
@@ -3574,6 +3650,21 @@ function zeichen(c, x, y, haupt, tief, farbe, g, ausr) {
 	c.font = "italic bold " + g + "px " + SCHRIFT; c.fillText(haupt, x0, y);
 	if (tief) { c.font = "bold " + Math.round(g * 0.72) + "px " + SCHRIFT; c.fillText(tief, x0 + b1 + 1, y + g * 0.28); }
 	return b1 + b2;
+}
+/* Bruch im Bild: vor (z. B. "v >"), dann Zähler über Nenner, senkrecht mittig um y; Buchstaben kursiv; liefert die Breite
+   (Kast 2026-11-12: „Brüche und so weiter statt geteilt“, auch in Skizzen) */
+function bruchZeichen(c, x, y, vor, z, n, farbe, g, ausr, einheit) {
+	const gb = Math.round(g * 0.9), teile = s => String(s).split(/(\s+)/).filter(Boolean);
+	const fontFuer = (w, gr) => einheit ? gr + "px " + SCHRIFT : (/^[A-Za-z]$/.test(w) ? "italic " : "") + "bold " + gr + "px " + SCHRIFT;
+	const breite = (s, gr) => { let b = 0; for (const w of teile(s)) { c.font = fontFuer(w, gr); b += c.measureText(w).width; } return b; };
+	const schreib = (s, xx, yy, gr) => { for (const w of teile(s)) { c.font = fontFuer(w, gr); c.fillText(w, xx, yy); xx += c.measureText(w).width; } };
+	const bv = vor ? breite(vor, g) + g * 0.2 : 0, bz = breite(z, gb), bn = breite(n, gb), bb = Math.max(bz, bn) + g * 0.4;
+	const ges = bv + bb, x0 = ausr === "right" ? x - ges : ausr === "center" ? x - ges / 2 : x;
+	c.save(); c.fillStyle = farbe; c.textAlign = "left"; c.textBaseline = "middle";
+	if (vor) schreib(vor, x0, y, g);
+	const xb = x0 + bv; c.fillRect(xb + g * 0.12, y - (einheit ? 0.6 : 0.9), bb - g * 0.24, einheit ? 1.2 : 1.8);
+	c.textBaseline = "alphabetic"; schreib(z, xb + (bb - bz) / 2, y - g * 0.24, gb); schreib(n, xb + (bb - bn) / 2, y + g * 0.24 + gb * 0.74, gb);
+	c.restore(); return ges;
 }
 function elektron(c, x, y, r) {
 	c.fillStyle = F.minus; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
@@ -3990,19 +4081,19 @@ const STATIONEN = [
 					api.beobachte(neu); window.addEventListener("resize", neu);
 					zeig();
 				} },
-			{ art: "zahl", id: "drift", einheit: "mm/s", vor: Z.v + " =", tol: 0.03,
+			{ art: "zahl", id: "drift", einheit: EH.mms, vor: Z.v + " =", tol: 0.03,
 				frage: "Bestimmen Sie aus einer Ihrer Messungen die Driftgeschwindigkeit " + Z.v + " der Elektronen im Plättchen.",
 				soll: api => api.V.v,
 				bereit: api => messpunkte(api) >= 4 ? null : "Erst mindestens vier Messwerte mit Magnetfeld notieren.",
 				diagnose(wert, soll) {
 					const f = wert / soll;
-					for (const k of [1e-3, 1e3, 1e-6, 1e6, 10, 0.1, 100, 0.01]) if (Math.abs(f / k - 1) < 0.05) return "Die Ziffern stimmen, aber die Zehnerpotenz nicht: 1 µV = 10⁻⁶ V, 1 mm = 10⁻³ m, gesucht ist der Wert in mm/s.";
+					for (const k of [1e-3, 1e3, 1e-6, 1e6, 10, 0.1, 100, 0.01]) if (Math.abs(f / k - 1) < 0.05) return "Die Ziffern stimmen, aber die Zehnerpotenz nicht: 1 µV = 10⁻⁶ V, 1 mm = 10⁻³ m, gesucht ist der Wert in " + EH.mms + ".";
 					return "Der Weg: die Formel nach der Driftgeschwindigkeit auflösen und Spannung, Höhe und Flussdichte in Grundeinheiten einsetzen.";
 				},
 				erkl: api => { const V = api.V, p = lab(api).mess.filter(x => x.B > 0).sort((a, b) => b.B - a.B)[0] || { B: 1, U: UH(V, 1) };
-					return formel(Z.v + " =", bruch(Z.UH, Z.b + " · " + Z.B), "=", bruch(de(p.U) + " · 10<sup>−6</sup> V", de(V.b / 1000, 3) + " m · " + de(p.B) + " T"), "= " + de(V.v) + " mm/s") + "Die Elektronen driften also nur Bruchteile eines Millimeters pro Sekunde, langsamer als eine Schnecke kriecht."; } },
+					return formel(Z.v + " =", bruch(Z.UH, Z.b + " · " + Z.B), "=", bruch(de(p.U) + " · 10<sup>−6</sup> V", de(V.b / 1000, 3) + " m · " + de(p.B) + " T"), "= " + de(V.v) + " " + EH.mms) + "Die Elektronen driften also nur Bruchteile eines Millimeters pro Sekunde, langsamer als eine Schnecke kriecht."; } },
 			{ art: "idee", id: "messidee", frage: "Wie können Sie mit diesem Plättchen die Flussdichte eines Magnetfelds messen, das Sie nicht kennen? Beschreiben Sie Ihr Vorgehen.",
-				muster: "Bei festem Strom ist die Hall-Spannung proportional zur Flussdichte: " + Z.UH + " ~ " + Z.B + ". Die Messreihe von eben ist die <b>Kalibrierung</b>. Hält man das Plättchen in das unbekannte Feld, liest man zur gemessenen Hall-Spannung die Flussdichte an der Geraden ab oder berechnet sie mit " + Z.B + " = " + Z.UH + " / (" + Z.b + " · " + Z.v + "). Ein solches Plättchen mit Spannungsmesser heißt <b>Hall-Sonde</b>." },
+				muster: "Bei festem Strom ist die Hall-Spannung proportional zur Flussdichte: " + Z.UH + " ~ " + Z.B + ". Die Messreihe von eben ist die <b>Kalibrierung</b>. Hält man das Plättchen in das unbekannte Feld, liest man zur gemessenen Hall-Spannung die Flussdichte an der Geraden ab oder berechnet sie mit " + Z.B + " = " + bruch(Z.UH, Z.b + " · " + Z.v) + ". Ein solches Plättchen mit Spannungsmesser heißt <b>Hall-Sonde</b>." },
 			{ art: "eigen", fertig: api => lab(api).unbekannt,
 				bau(box, api, weiter) {
 					if (lab(api).unbekannt) { box.appendChild(el("p", "", "Das Plättchen steckt jetzt zwischen den Polen eines Dauermagneten. Seine Flussdichte kennen Sie nicht.")); return; }
@@ -4014,7 +4105,7 @@ const STATIONEN = [
 				frage: "Bestimmen Sie die Flussdichte des Dauermagneten aus der angezeigten Hall-Spannung.",
 				soll: api => api.V.bx,
 				diagnose(wert, soll) { return Math.abs(wert / soll / 1000 - 1) < 0.05 ? "Gefragt ist der Wert in Tesla, nicht in Millitesla." : "Der Weg führt über die Messreihe: Zu jeder Hall-Spannung gehört an der Geraden genau eine Flussdichte."; },
-				erkl: api => { const V = api.V; return formel(Z.B + " =", bruch(Z.UH, Z.b + " · " + Z.v), "=", bruch(de(UH(V, V.bx)) + " · 10<sup>−6</sup> V", de(V.b / 1000, 3) + " m · " + de(V.v / 1000, 5) + " m/s"), "= " + de(V.bx) + " T") + "Genauso gut: an der Geraden im Diagramm ablesen. So arbeitet jede Hall-Sonde."; } }
+				erkl: api => { const V = api.V; return formel(Z.B + " =", bruch(Z.UH, Z.b + " · " + Z.v), "=", bruch(de(UH(V, V.bx)) + " · 10<sup>−6</sup> V", de(V.b / 1000, 3) + " m · " + de(V.v / 1000, 5) + " " + EH.ms), "= " + de(V.bx) + " T") + "Genauso gut: an der Geraden im Diagramm ablesen. So arbeitet jede Hall-Sonde."; } }
 		] },
 
 	/* ---------- 8 ---------- */
@@ -4061,10 +4152,10 @@ const SELBST = { ja: "traf es", teils: "traf es teilweise", nein: "ging in eine 
 const UE = {
 	kopf: (nr, name, zusatz) => ({ art: "text", groesse: 24, teile: [{ t: nr + "  " + name, fett: true, farbe: "#0000BF" }].concat(zusatz ? [{ t: "   " + zusatz, farbe: "#808080" }] : []) }),
 	offen: (nr, name) => ({ art: "text", groesse: 22, teile: [{ t: nr + "  " + name + ": noch offen", farbe: "#A9AFB6" }] }),
-	merke: teile => ({ art: "kasten", rand: "#BF0000", hg: "#FBF2F2", groesse: 25, teile: [{ t: "2  Merke: ", fett: true, farbe: "#BF0000" }].concat(teile) }),
-	zeile: (teile, g) => ({ art: "text", groesse: g || 22, teile }),
+	merke: teile => ({ art: "kasten", rand: "#BF0000", hg: "#FBF2F2", groesse: 25, teile: [{ t: "2  Merke: ", fett: true, farbe: "#BF0000" }].concat(teile.map(p => p.fett ? Object.assign({ farbe: "#BF0000" }, p) : p)) }),   /* nur die Endformel (fett) rot (Kast 2026-11-12: „Endformel rot reicht in der Regel allgemein“) */
+	zeile: (teile, g) => ({ art: "text", groesse: g || 22, teile: teile.flat() }),
 	kette: k => k.v === 0 ? "auf Anhieb richtig geordnet" : k.v + (k.v === 1 ? " Fehlversuch" : " Fehlversuche") + (k.tipp ? ", 1 Tipp" : ""),
-	wert: (a, einheit) => ({ t: "   (mein Wert: " + a.text + (einheit ? " " + einheit : "") + ")", farbe: a.ok ? "#2E7D32" : "#C62828" }),
+	wert: (a, einheit) => [{ t: "   " }, { t: "(mein&nbsp;Wert:&nbsp;" + a.text + (einheit ? "&nbsp;" + String(einheit).replace(/ (?![^<]*>)/g, "&nbsp;") : "") + ")", farbe: a.ok ? "#2E7D32" : "#C62828" }],
 	ideen(api, liste) {
 		const da = liste.filter(([id]) => api.idee(id)), bl = [];
 		if (!da.length) return bl;
@@ -4078,9 +4169,7 @@ const UE = {
 	bildUndSchritte(api, zeichne, sb, sh, schritte, titel) {
 		const GB = 928, k = (GB - 24) / sb, bh = Math.round(sh * k) + 8;
 		const bild = api.bild(GB, bh, c => { c.translate(12, 4); c.scale(k, k); zeichne(c, sb, sh); });
-		if (!schritte) return bild;
-		const kasten = UE.schritte(api, schritte, titel, GB), kh = kasten.height / 2;
-		return api.bild(GB, bh + 10 + kh, c => { c.drawImage(bild, 0, 0, GB, bh); c.drawImage(kasten, 0, bh + 10, GB, kh); });
+		return [{ art: "bild", quelle: bild }].concat(schritte ? [{ art: "abstand", h: 4 }, { art: "liste", titel, punkte: schritte, groesse: 22 }, { art: "abstand", h: 6 }] : []);
 	},
 	schritte(api, schritte, titel, GB) {
 		const g = 20, zh = 26, tx = 30, tb = GB - tx - 16, sb = 0, sh = 0;
@@ -4116,16 +4205,16 @@ function uebersicht(api) {
 	const sb = 600, sh = geo(sb, "symbol").H;
 	const k = api.antwort("kette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 	bl.push(UE.kopf("1", "Aufbau und Erklärung", f(4) ? "Kette: " + UE.kette(k) : ""));
-	bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szene(c, B, H, V, o), sb, sh, f(4) ? g : null, "So entsteht die Hall-Spannung") });
+	bl.push(...UE.bildUndSchritte(api, (c, B, H) => szene(c, B, H, V, o), sb, sh, f(4) ? g : null, "So entsteht die Hall-Spannung"));
 	if (f(4)) bl.push(UE.zeile([{ t: "In meinem Bild: Elektronen driften " + w.richtV + ", Lorentzkraft " + w.richtK + ": " + w.kanteK + " negativ, " + w.kanteP + " positiv.", farbe: "#444" }], 21));
 	else bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
-	if (f(5)) bl.push(UE.merke([{ t: "Gleichgewicht F" }, { t: "L", tief: true }, { t: " = F" }, { t: "el", tief: true }, { t: "   ⇒   e · v · B = e · U" }, { t: "H", tief: true }, { t: " / b   ⇒   " }, { t: "U", fett: true }, { t: "H", tief: true, fett: true }, { t: " = b · v · B", fett: true }]));
+	if (f(5)) bl.push(UE.merke([{ t: "Gleichgewicht ", text: true }, { t: "F" }, { t: "L", tief: true }, { t: " = F" }, { t: "el", tief: true }, { t: "   ⇒   " }, { t: "e · v · B = e · " + bruch("U<sub>H</sub>", "b") }, { t: "   ⇒   " }, { t: "U", fett: true }, { t: "H", tief: true, fett: true }, { t: " = b · v · B", fett: true }]));
 	else bl.push(UE.offen("2", "Merke"));
 	if (f(6)) {
 		const a = api.antwort("drift"), u = api.antwort("unbekannt");
 		bl.push(UE.kopf("3", "Meine Messung", "Kupferplättchen, b = " + V.b + " mm, fester Strom"));
 		bl.push({ art: "bild", quelle: laborBild(api) });
-		bl.push(UE.zeile([{ t: "Driftgeschwindigkeit: v = U" }, { t: "H", tief: true }, { t: " / (b · B) = " + de(V.v) + " mm/s" }, UE.wert(a, "mm/s")]));
+		bl.push(UE.zeile([{ t: "Driftgeschwindigkeit:   " }, { t: "v = " + bruch("U<sub>H</sub>", "b · B") + " = " + de(V.v) + " " + EH.mms }, UE.wert(a, EH.mms)]));
 		bl.push(UE.zeile([{ t: "Unbekanntes Feld: U" }, { t: "H", tief: true }, { t: " = " + de(UH(V, V.bx)) + " µV   ⇒   B = " + de(V.bx) + " T" }, UE.wert(u, "T")]));
 	} else bl.push(UE.offen("3", "Meine Messung"));
 	if (f(6) || f(7) || f(8)) {
@@ -4169,12 +4258,12 @@ const PFAD_WIEN = (() => {
 			ein: V.tq > 0 ? "Proton" : "Elektron", mehr: V.tq > 0 ? "Protonen" : "Elektronen", andere: V.tq > 0 ? "Elektronen" : "Protonen",
 			hand: V.tq > 0 ? "rechte Hand" : "linke Hand", ladung: V.tq > 0 ? "positiv" : "negativ" };
 	};
-	const zehn6 = '· 10<sup>6</sup> m/s';
+	const zehn6 = '· 10<sup>6</sup> ' + EH.ms;
 
 	/* ---------- Zeichnen ---------- */
 	function geoW(B) {
 		const schmal = B < 520, px = Math.round(B * 0.2), pw = Math.round(B * (schmal ? 0.57 : 0.6)), ph = Math.round(Math.max(118, Math.min(168, B * 0.3))), py = 36;
-		return { B, schmal, px, pw, ph, py, cy: py + ph / 2, xb: px + pw + Math.round(B * 0.07), x0: px - Math.round(B * 0.055), loch: 7, H: py + ph + 50, g: schmal ? 13 : 14 };
+		return { B, schmal, px, pw, ph, py, cy: py + ph / 2, xb: px + pw + Math.round(B * 0.07), x0: px - Math.round(B * 0.055), loch: 7, H: py + ph + 60, g: schmal ? 13 : 14 };
 	}
 	function teilchen(c, x, y, r, tq) {
 		if (tq < 0) { elektron(c, x, y, r); return; }
@@ -4249,8 +4338,9 @@ const PFAD_WIEN = (() => {
 			c.beginPath(); for (let i = 0; i <= n; i += 3) { const p = b.pts[i]; if (i) c.lineTo(p[0], cy - p[1]); else c.moveTo(p[0], cy - p[1]); } c.lineTo(b.pts[n][0], cy - b.pts[n][1]); c.stroke(); c.globalAlpha = 1;
 			const e = b.pts[n];
 			if (!s.fertig || !b.ok) teilchen(c, e[0], cy - e[1], 5.5, V.tq);
-			if (s.text && s.fertig) { c.font = "bold " + (G.g - 1) + "px " + SCHRIFT; c.fillStyle = farbe; c.textBaseline = "middle";
-				if (b.ok) { c.textAlign = "right"; c.fillText(s.text, B - 4, cy - 12); } else { c.textAlign = "left"; c.fillText(s.text, xb + 9, cy - Math.sign(e[1]) * Math.max(Math.abs(e[1]), G.loch + 16)); } }
+			if (s.text && s.fertig) { const gg = G.g, [vor, zz, nn] = s.text;   /* Beschriftung als Bruch: v > E über B */
+				if (b.ok) bruchZeichen(c, B - 4, cy - gg - 5, vor, zz, nn, farbe, gg, "right");
+				else bruchZeichen(c, xb + 10, cy - Math.sign(e[1]) * Math.max(Math.abs(e[1]), G.loch + gg + 8), vor, zz, nn, farbe, gg); }
 		}
 		/* betrachtetes Teilchen mit Pfeilen */
 		if (o.fokus) {
@@ -4271,7 +4361,7 @@ const PFAD_WIEN = (() => {
 		/* Legende unter dem Aufbau */
 		let lx = px; const ly = py + ph + 38; c.textBaseline = "middle";
 		const wort = t => { c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = "#444"; c.textAlign = "left"; c.fillText(t, lx, ly + 0.5); lx += c.measureText(t).width; };
-		if (o.E) { pfeilForm(c, lx, ly, lx + 18, ly, F.E, F.Ek, 2.2); lx += 23; lx += zeichen(c, lx, ly, "E", "", F.E, G.g + 1); wort(o.werte ? " = " + o.werte.E : (G.schmal ? "" : " elektrisches Feld")); lx += 16; }
+		if (o.E) { pfeilForm(c, lx, ly, lx + 18, ly, F.E, F.Ek, 2.2); lx += 23; lx += zeichen(c, lx, ly, "E", "", F.E, G.g + 1); if (o.werte && / kV\/m$/.test(o.werte.E)) { wort(" = " + o.werte.E.replace(/ kV\/m$/, " ")); lx += bruchZeichen(c, lx, ly, "", "kV", "m", "#444", G.g - 1, "left", true); } else wort(o.werte ? " = " + o.werte.E : (G.schmal ? "" : " elektrisches Feld")); lx += 16; }
 		if (o.B) { symbolFeld(c, lx + 7, ly, 6.5, w.B === "rein", F.B, 1, 1.6); lx += 18; lx += zeichen(c, lx, ly, "B", "", F.B, G.g + 1); wort(o.werte ? " = " + o.werte.B : (G.schmal ? "" : " Magnetfeld"));   /* Kreuz/Punkt nie in Worten verraten (Kast 2026-11-12) */ }
 		if (!o.E && !o.B) { c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.fillText("Felder ausgeschaltet", lx, ly); }
 		PLATZ.ende(c);
@@ -4280,7 +4370,7 @@ const PFAD_WIEN = (() => {
 	const laeuft = api => (api.lokal.schuesse || []).some(s => !s.fertig);
 	const alt = (k, mit, text) => ({ k, mit, t: 99, text });
 	const BEIDE = { E: true, B: true }, NURE = { E: true, B: false };
-	const vText = (V, k) => de(k * V.v0, 1) + " · 10⁶ m/s";
+	const vText = (V, k) => de(k * V.v0, 1) + " · 10<sup>6</sup> " + EH.ms;
 
 	const STATIONEN = [
 		/* ---------- 1 ---------- */
@@ -4348,8 +4438,8 @@ const PFAD_WIEN = (() => {
 				zeichne(c, B, H, api, dt) { const L = api.lokal; tick(L, dt);
 					szeneW(c, B, H, api.V, { E: true, B: true, schuesse: L.schuesse, fokus: !L.schuesse.length, zeig: { v: true, Fel: true, FL: true }, FLk: 1 }); } },
 			teile: [
-				{ art: "text", html: "<p>Für " + Z.v + " = " + Z.E + " / " + Z.B + " gleichen sich die Kräfte aus. Sagen Sie vorher, was mit den anderen Teilchen geschieht. Nach jeder Antwort startet ein solches Teilchen.</p>" },
-				{ art: "wahl", id: "schnell", frage: api => "Ein " + WW(api.V).ein + " ist <b>schneller</b> als " + Z.E + " / " + Z.B + ". Wohin wird es abgelenkt?",
+				{ art: "text", html: "<p>Für " + Z.v + " = " + bruch(Z.E, Z.B) + " gleichen sich die Kräfte aus. Sagen Sie vorher, was mit den anderen Teilchen geschieht. Nach jeder Antwort startet ein solches Teilchen.</p>" },
+				{ art: "wahl", id: "schnell", frage: api => "Ein " + WW(api.V).ein + " ist <b>schneller</b> als " + bruch(Z.E, Z.B) + ". Wohin wird es abgelenkt?",
 					optionen: api => { const w = WW(api.V); return [
 						{ t: "In Richtung der Lorentzkraft (" + w.nFL + "): Sie ist jetzt größer als die elektrische Kraft.", ok: true },
 						{ t: "In Richtung der elektrischen Kraft (" + w.nFel + "): Sie ist jetzt größer als die Lorentzkraft." },
@@ -4357,7 +4447,7 @@ const PFAD_WIEN = (() => {
 					]; },
 					nach(api) { api.lokal.schuesse.push({ k: 1.3, mit: BEIDE, t: 0 }); },
 					erkl: "Die Lorentzkraft wächst mit der Geschwindigkeit, die elektrische Kraft nicht. Bei zu großer Geschwindigkeit überwiegt die Lorentzkraft." },
-				{ art: "wahl", id: "langsam", frage: api => "Ein " + WW(api.V).ein + " ist <b>langsamer</b> als " + Z.E + " / " + Z.B + ". Wohin wird es abgelenkt?",
+				{ art: "wahl", id: "langsam", frage: api => "Ein " + WW(api.V).ein + " ist <b>langsamer</b> als " + bruch(Z.E, Z.B) + ". Wohin wird es abgelenkt?",
 					optionen: api => { const w = WW(api.V); return [
 						{ t: "In Richtung der elektrischen Kraft (" + w.nFel + "): Die Lorentzkraft ist jetzt kleiner.", ok: true },
 						{ t: "In Richtung der Lorentzkraft (" + w.nFL + "): Langsame Teilchen sind länger im Magnetfeld." },
@@ -4371,7 +4461,7 @@ const PFAD_WIEN = (() => {
 						box.appendChild(el("p", "auftrag", "Probieren Sie es aus: Schießen Sie mindestens drei Teilchen mit verschiedenen Geschwindigkeiten ein. Der Filter ist auf " + vText(V, 1) + " eingestellt."));
 						const rz = el("label", "lp-regler"); rz.innerHTML = '<span>Geschwindigkeit ' + Z.v + '</span><input type="range" min="0.5" max="1.5" step="0.1" aria-label="Geschwindigkeit"><span class="wert"></span>';
 						const reg = rz.querySelector("input"), wert = rz.querySelector(".wert"); reg.value = L.k; box.appendChild(rz);
-						const zeig = () => { wert.textContent = vText(V, parseFloat(reg.value)); }; zeig();
+						const zeig = () => { wert.innerHTML = vText(V, parseFloat(reg.value)); }; zeig();
 						reg.addEventListener("input", () => { L.k = parseFloat(reg.value); zeig(); });
 						const z = el("div", "lp-zahlzeile"), b = KI.hauptKnopf("weiter", "Teilchen starten"), info = el("span", "fussnote"); z.appendChild(b); z.appendChild(info); box.appendChild(z);
 						const stand = () => { info.textContent = d.w5.length + (d.w5.length === 1 ? " Teilchen" : " Teilchen") + " gestartet"; }; stand();
@@ -4386,7 +4476,7 @@ const PFAD_WIEN = (() => {
 					glieder: [
 						"Im Filter wirken auf jedes Teilchen die elektrische Kraft und die Lorentzkraft in entgegengesetzte Richtungen.",
 						"Die elektrische Kraft ist für jede Geschwindigkeit gleich groß, die Lorentzkraft wächst mit der Geschwindigkeit.",
-						"Nur bei einer Geschwindigkeit sind beide Kräfte gleich groß: v = E / B.",
+						"Nur bei einer Geschwindigkeit sind beide Kräfte gleich groß: " + Z.v + " = " + bruch(Z.E, Z.B) + ".",
 						"Diese Teilchen fliegen geradeaus durch die Blende.",
 						"Schnellere und langsamere Teilchen werden zu verschiedenen Seiten abgelenkt und bleiben hängen."
 					],
@@ -4407,17 +4497,17 @@ const PFAD_WIEN = (() => {
 					if (zweit && !L.zweit) { L.zweit = true; } } },
 			teile: [
 				{ art: "text", html: api => "<p>Für einen Versuch werden " + WW(api.V).mehr + " mit der Geschwindigkeit " + Z.v + " = " + de(api.V.v0, 1) + " " + zehn6 + " gebraucht. Das Magnetfeld des Filters hat die Flussdichte " + Z.B + " = " + api.V.Bm + " mT.</p>" },
-				{ art: "zahl", id: "Ewert", einheit: "kV/m", vor: Z.E + " =", tol: 0.02,
+				{ art: "zahl", id: "Ewert", einheit: EH.kVm, vor: Z.E + " =", tol: 0.02,
 					frage: "Berechnen Sie die elektrische Feldstärke, auf die der Kondensator eingestellt werden muss. Danach startet ein Teilchen mit der gewünschten Geschwindigkeit durch Ihren Filter.",
 					soll: api => api.V.v0 * api.V.Bm,
 					nach(api) { const a = api.antwort("Ewert"), soll = api.V.v0 * api.V.Bm; api.lokal.schuesse = [{ k: 1, mit: { E: true, B: true, eFak: Math.max(0, Math.min(3, a.wert / soll)) }, t: 0, erst: true }]; },
-					diagnose(wert, soll) { for (const k of [1e3, 1e-3, 1e6, 1e-6]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht: 1 mT = 10⁻³ T, gefragt ist der Wert in kV/m."; return "Der Weg: die Bedingung für die Geschwindigkeit nach der Feldstärke auflösen."; },
-					erkl: api => { const V = api.V; return formel(Z.E + " = " + Z.v + " · " + Z.B, "= " + de(V.v0, 1) + " · 10<sup>6</sup> m/s · " + V.Bm + " · 10<sup>−3</sup> T", "= " + de(V.v0 * V.Bm, 0) + " kV/m"); } },
+					diagnose(wert, soll) { for (const k of [1e3, 1e-3, 1e6, 1e-6]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht: 1 mT = 10⁻³ T, gefragt ist der Wert in " + EH.kVm + "."; return "Der Weg: die Bedingung für die Geschwindigkeit nach der Feldstärke auflösen."; },
+					erkl: api => { const V = api.V; return formel(Z.E + " = " + Z.v + " · " + Z.B, "= " + de(V.v0, 1) + " · 10<sup>6</sup> " + EH.ms + " · " + V.Bm + " · 10<sup>−3</sup> T", "= " + de(V.v0 * V.Bm, 0) + " " + EH.kVm); } },
 				{ art: "zahl", id: "vwert", einheit: zehn6, vor: Z.v + " =", tol: 0.02,
-					frage: api => "Der Filter wird neu eingestellt (Werte im Bild): " + Z.E + " = " + de(api.V.v2 * api.V.B2, 0) + " kV/m und " + Z.B + " = " + api.V.B2 + " mT. Berechnen Sie die Geschwindigkeit der Teilchen hinter der Blende.",
+					frage: api => "Der Filter wird neu eingestellt (Werte im Bild): " + Z.E + " = " + de(api.V.v2 * api.V.B2, 0) + " " + EH.kVm + " und " + Z.B + " = " + api.V.B2 + " mT. Berechnen Sie die Geschwindigkeit der Teilchen hinter der Blende.",
 					soll: api => api.V.v2,
 					nach(api) { api.lokal.schuesse = [{ k: 1, mit: BEIDE, t: 0 }]; },
-					diagnose(wert, soll) { for (const k of [1e6, 1e3, 1e-3, 10, 0.1]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht. Einzutragen ist nur die Zahl vor · 10⁶ m/s."; return "Der Weg: Feldstärke durch Flussdichte, beide in Grundeinheiten."; },
+					diagnose(wert, soll) { for (const k of [1e6, 1e3, 1e-3, 10, 0.1]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht. Einzutragen ist nur die Zahl vor · 10<sup>6</sup> " + EH.ms + "."; return "Der Weg: Feldstärke durch Flussdichte, beide in Grundeinheiten."; },
 					erkl: api => { const V = api.V; return formel(Z.v + " =", bruch(Z.E, Z.B), "=", bruch(de(V.v2 * V.B2, 0) + " · 10<sup>3</sup> V/m", V.B2 + " · 10<sup>−3</sup> T"), "= " + de(V.v2, 1) + " " + zehn6); } },
 				{ art: "wahl", id: "ladung", frage: api => "Statt " + WW(api.V).mehr + " treten nun " + WW(api.V).andere + " mit genau dieser Geschwindigkeit in den unveränderten Filter. Was geschieht?",
 					optionen: [
@@ -4426,10 +4516,10 @@ const PFAD_WIEN = (() => {
 						{ t: "Sie werden abgelenkt: Ihre Masse ist eine andere, also passt die Geschwindigkeit nicht mehr." },
 						{ t: "Sie fliegen nur dann geradeaus, wenn das Magnetfeld umgepolt wird." }
 					],
-					erkl: "In " + Z.v + " = " + Z.E + " / " + Z.B + " kommen weder Ladung noch Masse vor. Mit dem Vorzeichen der Ladung wechseln beide Kräfte ihre Richtung, das Gleichgewicht bleibt." },
+					erkl: "In " + Z.v + " = " + bruch(Z.E, Z.B) + " kommen weder Ladung noch Masse vor. Mit dem Vorzeichen der Ladung wechseln beide Kräfte ihre Richtung, das Gleichgewicht bleibt." },
 				{ art: "wahl", id: "doppelt", karten: true, fest: true, frage: "Feldstärke " + Z.E + " und Flussdichte " + Z.B + " werden beide verdoppelt. Die durchgelassene Geschwindigkeit ist dann …",
 					optionen: ["unverändert", "doppelt so groß", "halb so groß", "viermal so groß"].map((t, i) => ({ t, ok: i === 0 })),
-					erkl: "Der Quotient " + Z.E + " / " + Z.B + " bleibt gleich. Die Kräfte sind zwar doppelt so groß, aber das Gleichgewicht gilt für dieselbe Geschwindigkeit. Abweichende Teilchen werden nun stärker abgelenkt: Der Filter trennt schärfer." },
+					erkl: "Der Quotient " + bruch(Z.E, Z.B) + " bleibt gleich. Die Kräfte sind zwar doppelt so groß, aber das Gleichgewicht gilt für dieselbe Geschwindigkeit. Abweichende Teilchen werden nun stärker abgelenkt: Der Filter trennt schärfer." },
 				{ art: "text", html: "<p>Der Filter sortiert nach der <b>Geschwindigkeit</b>, nicht nach Masse oder Ladung. Genau deshalb steht er am Eingang des Massenspektrometers.</p>" }
 			] }
 	];
@@ -4437,18 +4527,18 @@ const PFAD_WIEN = (() => {
 	function uebersicht(api) {
 		const V = api.V, w = WW(V), f = api.fertig, bl = [];
 		const sb = 620, sh = geoW(sb).H, k = api.antwort("wkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
-		const o = { E: f(1), B: f(2), schuesse: f(4) ? [alt(1, BEIDE, "v = E/B"), alt(1.3, BEIDE, "v > E/B"), alt(0.7, BEIDE, "v < E/B")] : [], fokus: !f(4), zeig: { v: true, Fel: f(1), FL: f(2) } };
+		const o = { E: f(1), B: f(2), schuesse: f(4) ? [alt(1, BEIDE, ["v =", "E", "B"]), alt(1.3, BEIDE, ["v >", "E", "B"]), alt(0.7, BEIDE, ["v <", "E", "B"])] : [], fokus: !f(4), zeig: { v: true, Fel: f(1), FL: f(2) } };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", f(4) ? "Kette: " + UE.kette(k) : ""));
-		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneW(c, B, H, V, o), sb, sh, f(4) ? g : null, "So filtert der Wienfilter") });
+		bl.push(...UE.bildUndSchritte(api, (c, B, H) => szeneW(c, B, H, V, o), sb, sh, f(4) ? g : null, "So filtert der Wienfilter"));
 		if (f(2)) bl.push(UE.zeile([{ t: "In meinem Bild: " + w.mehr + ", elektrisches Feld " + w.nE + ", elektrische Kraft " + w.nFel + ", Lorentzkraft " + w.nFL + ".", farbe: "#444" }], 21));
 		if (!f(4)) bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
-		if (f(3)) bl.push(UE.merke([{ t: "F" }, { t: "el", tief: true }, { t: " = F" }, { t: "L", tief: true }, { t: "   ⇒   q · E = q · v · B   ⇒   " }, { t: "v = E / B", fett: true }, { t: "   (unabhängig von Ladung und Masse)" }]));
+		if (f(3)) bl.push(UE.merke([{ t: "F" }, { t: "el", tief: true }, { t: " = F" }, { t: "L", tief: true }, { t: "   ⇒   q · E = q · v · B   ⇒   " }, { t: "v = " + bruch("E", "B"), fett: true }, { t: "\nunabhängig von Ladung und Masse", text: true }]));
 		else bl.push(UE.offen("2", "Merke"));
 		if (f(5)) {
 			const a = api.antwort("Ewert"), b = api.antwort("vwert");
 			bl.push(UE.kopf("3", "Den Filter einstellen"));
-			bl.push(UE.zeile([{ t: "Gewünscht v = " + de(V.v0, 1) + " · 10⁶ m/s bei B = " + V.Bm + " mT:   E = v · B = " + de(V.v0 * V.Bm, 0) + " kV/m" }, UE.wert(a, "kV/m")]));
-			bl.push(UE.zeile([{ t: "Eingestellt E = " + de(V.v2 * V.B2, 0) + " kV/m, B = " + V.B2 + " mT:   v = E / B = " + de(V.v2, 1) + " · 10⁶ m/s" }, UE.wert(b, "· 10⁶ m/s")]));
+			bl.push(UE.zeile([{ t: "Gewünscht v = " + de(V.v0, 1) + " · 10⁶ " }, { t: EH.ms }, { t: " bei B = " + V.Bm + " mT:   E = v · B = " + de(V.v0 * V.Bm, 0) + " " }, { t: EH.kVm }, UE.wert(a, EH.kVm)]));
+			bl.push(UE.zeile([{ t: "Eingestellt E = " + de(V.v2 * V.B2, 0) + " " }, { t: EH.kVm }, { t: ", B = " + V.B2 + " mT:   " }, { t: "v = " + bruch("E", "B") + " = " + bruch(de(V.v2 * V.B2, 0) + " kV/m", V.B2 + " mT") + " = " + de(V.v2, 1) + " · 10⁶ " + EH.ms }, UE.wert(b, "· 10⁶ " + EH.ms)]));
 			bl.push(UE.kopf("4", "Der Filter in der Praxis"));
 			bl.push(UE.zeile([{ t: "Der Filter sortiert nur nach der Geschwindigkeit: Vorzeichen der Ladung und Masse spielen keine Rolle. E und B gemeinsam vergrößert: gleiche Geschwindigkeit, schärfere Trennung. Einsatz: am Eingang des Massenspektrometers." }]));
 		} else { bl.push(UE.offen("3", "Den Filter einstellen")); bl.push(UE.offen("4", "Der Filter in der Praxis")); }
@@ -4484,7 +4574,7 @@ const PFAD_MS = (() => {
 	const hochR = V => V.sB > 0;                                                 /* Halbkreis nach oben */
 	const WM = V => ({ FL: hochR(V) ? "o" : "u", nFL: hochR(V) ? "nach oben" : "nach unten", nB: V.sB > 0 ? "in die Zeichenebene hinein" : "aus der Zeichenebene heraus", kB: V.sB > 0 ? "in die Ebene hinein" : "aus der Ebene heraus" });
 	const masseU = V => V.Bu * (V.du / 200) / (V.v * 1e5) / KONST;
-	const zehn5 = '· 10<sup>5</sup> m/s';
+	const zehn5 = '· 10<sup>5</sup> ' + EH.ms;
 	const ROT = "#E03030", DUNKEL = "#8E1414";
 
 	/* ---------- Zeichnen ---------- */
@@ -4516,7 +4606,7 @@ const PFAD_MS = (() => {
 			c.fillStyle = gq; c.strokeStyle = "#6B737C"; c.lineWidth = 1.3; c.beginPath(); c.roundRect(x1, ys - hh, x2 - x1, 2 * hh, 4); c.fill(); c.stroke();
 			c.font = (G.g - 3) + "px " + SCHRIFT; c.fillStyle = "#333"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(text, (x1 + x2) / 2, ys + s * (hh + 10)); };
 		kasten(xl + 5, xq2, 15, "Quelle", "#EEF0F3", "#C9CED4");
-		kasten(xf1, xf2, 15, G.schmal ? "Filter" : "Filter: v = E/B", "#FFF6E2", "#F2DDB0");
+		kasten(xf1, xf2, 15, G.schmal ? "Filter" : "Wienfilter", "#FFF6E2", "#F2DDB0");
 		c.strokeStyle = ROT; c.lineWidth = 2; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(xf1 + 3, ys); c.lineTo(xf2 - 3, ys); c.stroke(); c.globalAlpha = 1;
 		symbolFeld(c, (xf1 + xf2) / 2, ys - 8, 3.6, true, F.B, 0.9, 1); pfeilForm(c, (xf1 + xf2) / 2 - 12, ys + 4, (xf1 + xf2) / 2 - 12, ys + 12, F.E, F.Ek, 1.6);
 		/* Detektorwand mit Spalt */
@@ -4642,7 +4732,7 @@ const PFAD_MS = (() => {
 						{ t: "Es hat die größere Geschwindigkeit." },
 						{ t: "Es hat die größere Ladung." }
 					],
-					erkl: "Wegen " + r + " = " + m + " · " + Z.v + " / (" + q + " · " + Z.B + ") landen ein schweres, langsames und ein leichtes, schnelles Ion an derselben Stelle. Erst wenn alle Ionen gleich schnell sind, verrät der Radius die Masse." },
+					erkl: "Wegen " + r + " = " + bruch(m + " · " + Z.v, q + " · " + Z.B) + " landen ein schweres, langsames und ein leichtes, schnelles Ion an derselben Stelle. Erst wenn alle Ionen gleich schnell sind, verrät der Radius die Masse." },
 				{ art: "kette", id: "mskette", titel: "So arbeitet das Massenspektrometer", frage: "Sichern Sie den Gedankengang: Ordnen Sie, wie das Massenspektrometer Massen bestimmt. Zwei Kärtchen gehören nicht dazu.",
 					glieder: [
 						"Die Quelle erzeugt Ionen gleicher Ladung.",
@@ -4673,7 +4763,7 @@ const PFAD_MS = (() => {
 					frage: "Bestimmen Sie aus den beiden Auftrefforten, um welchen Faktor sich die Massen unterscheiden (zwei Nachkommastellen).",
 					soll: api => api.V.d2 / api.V.d1,
 					diagnose(wert, soll) { return Math.abs(wert * soll - 1) < 0.006 ? "Das ist der Kehrwert: Gefragt ist äußere Masse durch innere Masse." : "Der Weg: Die Masse ist proportional zum Radius und damit zum Abstand des Auftrefforts vom Spalt."; },
-					erkl: api => { const V = api.V; return formel(bruch(m + "<sub>außen</sub>", m + "<sub>innen</sub>"), "=", bruch(r + "<sub>außen</sub>", r + "<sub>innen</sub>"), "=", bruch(de(V.d2) + " cm", de(V.d1) + " cm"), "= " + de(V.d2 / V.d1)) + "Das passt zu den Massenzahlen " + V.paar[3] + " und " + V.paar[2] + ": " + V.paar[3] + " / " + V.paar[2] + " = " + de(V.paar[3] / V.paar[2]) + "."; } }
+					erkl: api => { const V = api.V; return formel(bruch(m + "<sub>außen</sub>", m + "<sub>innen</sub>"), "=", bruch(r + "<sub>außen</sub>", r + "<sub>innen</sub>"), "=", bruch(de(V.d2) + " cm", de(V.d1) + " cm"), "= " + de(V.d2 / V.d1)) + "Das passt zu den Massenzahlen " + V.paar[3] + " und " + V.paar[2] + ": " + bruch(V.paar[3], V.paar[2]) + " = " + de(V.paar[3] / V.paar[2]) + "."; } }
 			] },
 		/* ---------- 6 ---------- */
 		{ name: "Masse bestimmen", titel: "Ein unbekanntes Ion bestimmen",
@@ -4689,7 +4779,7 @@ const PFAD_MS = (() => {
 					diagnose(wert, soll) {
 						if (Math.abs(wert / soll / 2 - 1) < 0.03) return "Der Auftreffort liegt einen Durchmesser vom Spalt entfernt, nicht einen Radius.";
 						if (Math.abs(wert / soll * 2 - 1) < 0.03) return "Der Radius ist der halbe Abstand des Auftrefforts, nicht ein Viertel.";
-						for (const k of [100, 0.01, 1000, 0.001, 10, 0.1]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht: Abstand in Meter, Geschwindigkeit in m/s einsetzen.";
+						for (const k of [100, 0.01, 1000, 0.001, 10, 0.1]) if (Math.abs(wert / soll / k - 1) < 0.03) return "Die Ziffern stimmen, die Zehnerpotenz nicht: Abstand in Meter, Geschwindigkeit in " + EH.ms + " einsetzen.";
 						return "Der Weg: die Formel für den Bahnradius nach der Masse auflösen, die Masse in Kilogramm berechnen und durch 1,661 · 10⁻²⁷ kg teilen.";
 					},
 					erkl: api => { const V = api.V, kg = masseU(V) * 1.66054e-27, ex = Math.floor(Math.log10(kg));
@@ -4709,21 +4799,21 @@ const PFAD_MS = (() => {
 		const sb = 620, sh = geoM(sb).H, k = api.antwort("mskette"), g = STATIONEN[3].teile.find(t => t.art === "kette").glieder;
 		const o = { fokus: !f(1), zeig: { v: true }, ionen: f(1) ? [{ d: 14 }] : [], kraefte: f(1), radius: f(2) };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", f(3) ? "Kette: " + UE.kette(k) : ""));
-		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneM(c, B, H, V, o), sb, sh, f(3) ? g : null, "So arbeitet das Massenspektrometer") });
+		bl.push(...UE.bildUndSchritte(api, (c, B, H) => szeneM(c, B, H, V, o), sb, sh, f(3) ? g : null, "So arbeitet das Massenspektrometer"));
 		if (f(1)) bl.push(UE.zeile([{ t: "In meinem Bild: positive Ionen, Lorentzkraft am Spalt " + w.nFL + ". Sie wirkt als Zentripetalkraft: Kreisbahn.", farbe: "#444" }], 21));
 		if (!f(3)) bl.push(UE.offen("", "Erklärung als Kette (Station 4)"));
-		if (f(2)) bl.push(UE.merke([{ t: "F" }, { t: "L", tief: true }, { t: " = F" }, { t: "Z", tief: true }, { t: "   ⇒   q · v · B = m · v² / r   ⇒   " }, { t: "r = m · v / (q · B)", fett: true }, { t: "   Bei gleichem q, v und B gilt r ~ m. Auftreffort: d = 2r." }]));
+		if (f(2)) bl.push(UE.merke([{ t: "F" }, { t: "L", tief: true }, { t: " = F" }, { t: "Z", tief: true }, { t: "   ⇒   " }, { t: "q · v · B = " + bruch("m · v²", "r") }, { t: "   ⇒   " }, { t: "r = " + bruch("m · v", "q · B"), fett: true }, { t: "\nBei gleichem q, v und B gilt r ~ m. Auftreffort: d = 2r.", text: true }]));
 		else bl.push(UE.offen("2", "Merke"));
 		if (f(4)) {
 			const a = api.antwort("verh");
 			bl.push(UE.kopf("3", "Meine Messungen"));
-			bl.push(UE.zeile([{ t: "Zwei Isotope (" + V.paar[0] + "): ", fett: true }, { t: "Auftrefforte " + de(V.d1) + " cm und " + de(V.d2) + " cm. Das schwerere Isotop läuft außen. Massenverhältnis = Verhältnis der Abstände = " + de(V.d2 / V.d1) }, UE.wert(a, "")]));
+			bl.push(UE.zeile([{ t: "Zwei Isotope (" + V.paar[0] + "): ", fett: true }, { t: "Auftrefforte " + de(V.d1) + " cm und " + de(V.d2) + " cm. Das schwerere Isotop läuft außen. Massenverhältnis " }, { t: bruch("m<sub>außen</sub>", "m<sub>innen</sub>") + " = " + bruch("d<sub>außen</sub>", "d<sub>innen</sub>") + " = " + bruch(de(V.d2) + " cm", de(V.d1) + " cm") + " = " + de(V.d2 / V.d1) }, UE.wert(a, "")]));
 		} else bl.push(UE.offen("3", "Meine Messungen"));
 		if (f(5)) {
 			const a = api.antwort("masse"), u = UNB[V.ui];
-			bl.push(UE.zeile([{ t: "Unbekanntes Ion: ", fett: true }, { t: "v = " + de(V.v, 1) + " · 10⁵ m/s, B = " + bText(V.Bu) + ", d = " + de(V.du) + " cm   ⇒   m = q · B · r / v = " + de(masseU(V), 1) + " u" }, UE.wert(a, "u"), { t: "   Es ist " + ionName(u[0], u[1]) + "." }]));
+			bl.push(UE.zeile([{ t: "Unbekanntes Ion: ", fett: true }, { t: "v = " + de(V.v, 1) + " · 10⁵ " }, { t: EH.ms }, { t: ", B = " + bText(V.Bu) + ", d = " + de(V.du) + " cm   ⇒   " }, { t: "m = " + bruch("q · B · r", "v") + " = " + de(masseU(V), 1) + " u" }, UE.wert(a, "u"), { t: "   Es ist " + ionName(u[0], u[1]) + "." }]));
 			bl.push(UE.kopf("4", "Das Massenspektrometer in der Praxis"));
-			bl.push(UE.zeile([{ t: "Ohne Geschwindigkeitsfilter wäre der Radius nicht eindeutig (r hängt von m · v ab). Doppelte Ladung: halber Radius. Gemessen wird also m/q. Einsatz: Isotope trennen, Stoffe nachweisen, Altersbestimmung." }]));
+			bl.push(UE.zeile([{ t: "Ohne Geschwindigkeitsfilter wäre der Radius nicht eindeutig (r hängt von m · v ab). Doppelte Ladung: halber Radius. Gemessen wird also " }, { t: bruch("m", "q") }, { t: ". Einsatz: Isotope trennen, Stoffe nachweisen, Altersbestimmung." }]));
 		} else bl.push(UE.offen("4", "Das Massenspektrometer in der Praxis"));
 		return bl.concat(UE.ideen(api, [["msidee", "Meine Vermutung am Anfang"]]));
 	}
@@ -4780,9 +4870,9 @@ const PFAD_ZYK = (() => {
 			if (li) c.arc(cx - gw, cy, R, Math.PI / 2, Math.PI * 1.5); else c.arc(cx + gw, cy, R, -Math.PI / 2, Math.PI / 2);
 			c.closePath(); c.fill(); c.stroke();
 		}
-		const dx = G.schmal ? 40 : 46;
-		for (let i = -4; i <= 3; i++) for (let j = -3; j <= 3; j++) { const px = cx + (i + 0.5) * dx, py = cy + j * dx;
-			if (Math.abs(px - cx) < gw + 9 || Math.hypot(px - cx - Math.sign(px - cx) * gw, py - cy) > R - 10) continue; PLATZ.feld(c, px, py, 5, V.sB > 0, F.B, 0.4); }
+		const dx = G.schmal ? 34 : 38;
+		for (let i = -6; i <= 5; i++) for (let j = -5; j <= 5; j++) { const px = cx + (i + 0.5) * dx, py = cy + j * dx;
+			if (Math.hypot(px - cx, py - cy) > R + gw + 1) continue; symbolFeld(c, px, py, 5, V.sB > 0, F.B, 0.5); }
 		symbolFeld(c, 14, 15, 7, V.sB > 0, F.B, 1, 1.7); const bb = zeichen(c, 26, 15, "B", "", F.B, G.g + 2);
 		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; /* keine Worte zur Feldrichtung (Kast 2026-11-12) */
 		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#555"; c.textAlign = "center";
@@ -4837,8 +4927,8 @@ const PFAD_ZYK = (() => {
 			const zl = (G.schmal ? [["Energie:", "#555", false], [wert, "#222", true], [n + (n === 1 ? " Durchlauf" : " Durchläufe"), "#555", false]] : [["Energie: " + wert, "#222", true], [n + (n === 1 ? " Spaltdurchlauf" : " Spaltdurchläufe"), "#555", false]]);
 			if (o.hinweis) zl.push([o.hinweis, o.hinweisFarbe || "#B0483A", true]);
 			c.textAlign = "left"; c.textBaseline = "middle";
-			if (G.schmal) c.textAlign = "right";
-			zl.forEach(([t2, fa, fett], i) => { c.font = (fett ? "bold " : "") + (fett ? G.g : G.g - 1) + "px " + SCHRIFT; c.fillStyle = fa; if (G.schmal) c.fillText(t2, B - 6, 14 + i * 18); else c.fillText(t2, 8, H - 12 - (zl.length - 1 - i) * 18); });
+			c.textAlign = "right";   /* oben rechts: unten links lag sie auf der Leitung (Kast 2026-11-12) */
+			zl.forEach(([t2, fa, fett], i) => { c.font = (fett ? "bold " : "") + (fett ? G.g : G.g - 1) + "px " + SCHRIFT; c.fillStyle = fa; c.fillText(t2, B - 6, 14 + i * 18); });
 		}
 		PLATZ.ende(c);
 		return { fertig, n: L.length };
@@ -4913,7 +5003,7 @@ const PFAD_ZYK = (() => {
 				nochmal(api) { if (api.antwort("wachsen")) setze(api, 0, 18); else KI.meldung("Erst die Frage beantworten"); },
 				zeichne(c, B, H, api, dt) { const t = zeit(api, dt); szeneZ(c, B, H, api.V, { t, feld: true, energie: true }); } },
 			teile: [
-				{ art: "text", html: "<p>Für den Radius der Kreisbahn im Duanten gilt wie im Massenspektrometer " + r + " = " + m + " · " + Z.v + " / (" + q + " · " + Z.B + ") (Lorentzkraft gleich Zentripetalkraft).</p>" },
+				{ art: "text", html: "<p>Für den Radius der Kreisbahn im Duanten gilt wie im Massenspektrometer " + r + " = " + bruch(m + " · " + Z.v, q + " · " + Z.B) + " (Lorentzkraft gleich Zentripetalkraft).</p>" },
 				{ art: "wahl", id: "wachsen", frage: "Warum ist jeder Halbkreis größer als der vorherige? Danach läuft das Proton bis zum Rand.",
 					optionen: [
 						{ t: "Im Spalt nimmt die Geschwindigkeit zu, und der Radius ist proportional zur Geschwindigkeit.", ok: true },
@@ -4929,13 +5019,13 @@ const PFAD_ZYK = (() => {
 			start(api) { setze(api, 99); },
 			bild: { hoehe, zeichne(c, B, H, api) { szeneZ(c, B, H, api.V, { t: 99, feld: false }); } },
 			teile: [
-				{ art: "text", html: "<p>Die Spannung muss immer genau dann umgepolt sein, wenn das Proton am Spalt ankommt. Dazu muss man wissen, wie lange ein Umlauf dauert. Für die Umlaufdauer gilt " + T + " = 2π · " + r + " / " + Z.v + ".</p>" },
-				{ art: "wahl", id: "zT", karten: true, frage: "Setzen Sie " + r + " = " + m + " · " + Z.v + " / (" + q + " · " + Z.B + ") ein: " + T + " = …",
+				{ art: "text", html: "<p>Die Spannung muss immer genau dann umgepolt sein, wenn das Proton am Spalt ankommt. Dazu muss man wissen, wie lange ein Umlauf dauert. Für die Umlaufdauer gilt " + T + " = " + bruch("2π · " + r, Z.v) + ".</p>" },
+				{ art: "wahl", id: "zT", karten: true, frage: "Setzen Sie " + r + " = " + bruch(m + " · " + Z.v, q + " · " + Z.B) + " ein: " + T + " = …",
 					optionen: [{ t: bruch("2π · " + m, q + " · " + Z.B), ok: true }, { t: bruch("2π · " + m + " · " + Z.v, q + " · " + Z.B) }, { t: bruch("2π · " + q + " · " + Z.B, m) }, { t: bruch("2π · " + m + " · " + Z.v + "<sup>2</sup>", q + " · " + Z.B) }],
 					erkl: formel(T + " =", bruch("2π · " + r, Z.v), "=", bruch("2π", Z.v), "·", bruch(m + " · " + Z.v, q + " · " + Z.B), "=", bruch("2π · " + m, q + " · " + Z.B)) + "Die Geschwindigkeit kürzt sich." },
 				{ art: "wahl", id: "zunabh", karten: true, fest: true, frage: "Das Proton wird immer schneller, seine Bahn immer größer. Die Dauer eines Umlaufs …",
 					optionen: [{ t: "bleibt gleich", ok: true }, { t: "wird kürzer" }, { t: "wird länger" }],
-					erkl: "In " + T + " = 2π · " + m + " / (" + q + " · " + Z.B + ") kommen weder " + Z.v + " noch " + r + " vor. Das schnellere Proton hat einen entsprechend längeren Weg. Genau deshalb funktioniert das Zyklotron mit einer festen Frequenz." },
+					erkl: "In " + T + " = " + bruch("2π · " + m, q + " · " + Z.B) + " kommen weder " + Z.v + " noch " + r + " vor. Das schnellere Proton hat einen entsprechend längeren Weg. Genau deshalb funktioniert das Zyklotron mit einer festen Frequenz." },
 				{ art: "merke", html: "Im Zyklotron ist die Umlaufdauer unabhängig von Geschwindigkeit und Bahnradius. Die <b>Zyklotronfrequenz</b> ist" + formel(f + " =", bruch("1", T), "=", bruch(q + " · " + Z.B, "2π · " + m)) + "Die Wechselspannung an den Duanten muss genau diese Frequenz haben." },
 				{ art: "wahl", id: "zwechsel", karten: true, fest: true, frage: "Wie oft wird die Spannung während eines vollen Umlaufs umgepolt?",
 					optionen: [{ t: "einmal" }, { t: "zweimal", ok: true }, { t: "viermal" }, { t: "gar nicht" }],
@@ -4992,7 +5082,7 @@ const PFAD_ZYK = (() => {
 						{ t: "Die Frequenz der Wechselspannung muss verdoppelt werden." },
 						{ t: "Der Radius der letzten Bahn wird doppelt so groß." }
 					],
-					erkl: "Am Rand ist der Radius fest. Wegen " + r + " = " + m + " · " + Z.v + " / (" + q + " · " + Z.B + ") liegt damit auch die Endgeschwindigkeit fest, also die Endenergie. Sie hängt nur von Flussdichte und Größe des Zyklotrons ab. Eine größere Spannung verkürzt nur den Weg dorthin." }
+					erkl: "Am Rand ist der Radius fest. Wegen " + r + " = " + bruch(m + " · " + Z.v, q + " · " + Z.B) + " liegt damit auch die Endgeschwindigkeit fest, also die Endenergie. Sie hängt nur von Flussdichte und Größe des Zyklotrons ab. Eine größere Spannung verkürzt nur den Weg dorthin." }
 			] },
 		/* ---------- 7 ---------- */
 		{ name: "Grenzen", titel: "Die Grenze des Zyklotrons",
@@ -5006,7 +5096,7 @@ const PFAD_ZYK = (() => {
 				{ art: "text", html: "<p>Nähert sich die Geschwindigkeit eines Teilchens der Lichtgeschwindigkeit, gilt für seinen Impuls nach der Relativitätstheorie " + '<i class="gr">p</i>' + " = γ · " + m + " · " + Z.v + ". Der Lorentzfaktor γ ist größer als 1 und wächst mit der Geschwindigkeit: Das Teilchen lässt sich immer schwerer ablenken. Im Kraftansatz steht dann γ · " + m + " an der Stelle von " + m + ":</p>" + formel(q + " · " + Z.v + " · " + Z.B + " =", bruch("γ · " + m + " · " + Z.v + "<sup>2</sup>", r)) },
 				{ art: "wahl", id: "zgamma", karten: true, frage: "Wie lautet damit die Umlauffrequenz? " + f + " = …",
 					optionen: [{ t: bruch(q + " · " + Z.B, "2π · γ · " + m), ok: true }, { t: bruch("γ · " + q + " · " + Z.B, "2π · " + m) }, { t: bruch(q + " · " + Z.B, "2π · " + m) }, { t: bruch(q + " · " + Z.B, "2π · γ<sup>2</sup> · " + m) }],
-					erkl: "Die Herleitung läuft wie in Station 5, nur mit γ · " + m + " statt " + m + ": " + r + " = γ · " + m + " · " + Z.v + " / (" + q + " · " + Z.B + "), also " + T + " = 2π · γ · " + m + " / (" + q + " · " + Z.B + ")." },
+					erkl: "Die Herleitung läuft wie in Station 5, nur mit γ · " + m + " statt " + m + ": " + r + " = " + bruch("γ · " + m + " · " + Z.v, q + " · " + Z.B) + ", also " + T + " = " + bruch("2π · γ · " + m, q + " · " + Z.B) + "." },
 				{ art: "wahl", id: "relativ", frage: "Was bedeutet das für das Zyklotron, wenn die Teilchen sehr schnell werden?",
 					optionen: [
 						{ t: "Die Umlauffrequenz sinkt. Das Teilchen kommt zu spät zum Spalt und gerät außer Takt.", ok: true },
@@ -5015,29 +5105,29 @@ const PFAD_ZYK = (() => {
 						{ t: "Der Bahnradius schrumpft, das Teilchen fällt zur Mitte zurück." }
 					],
 					nach(api) { api.lokal.rho = 0.93; setze(api, 0, 30); },
-					erkl: "Wegen " + f + " = " + q + " · " + Z.B + " / (2π · γ · " + m + ") sinkt die Umlauffrequenz, wenn γ mit der Geschwindigkeit wächst. Die Wechselspannung mit ihrer festen Frequenz polt dann zu früh um. Das Bild zeigt den Effekt vergröbert: Das Teilchen wird nicht mehr bei jedem Durchlauf beschleunigt." },
+					erkl: "Wegen " + f + " = " + bruch(q + " · " + Z.B, "2π · γ · " + m) + " sinkt die Umlauffrequenz, wenn γ mit der Geschwindigkeit wächst. Die Wechselspannung mit ihrer festen Frequenz polt dann zu früh um. Das Bild zeigt den Effekt vergröbert: Das Teilchen wird nicht mehr bei jedem Durchlauf beschleunigt." },
 				{ art: "text", html: "<p>Deshalb beschleunigt man im klassischen Zyklotron vor allem schwere Teilchen wie Protonen und Deuteronen, und nur bis zu mäßigen Energien. Wie die Technik diese Grenze überwindet, untersuchen Sie auf dem Arbeitsblatt.</p>" }
 			] }
 	];
 
 	function uebersicht(api) {
 		const V = api.V, w = WZ(V), fe = api.fertig, bl = [];
-		const sb = 700, sh = geoZ(sb).H, k = api.antwort("zkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
+		const sb = 540, sh = geoZ(sb).H, k = api.antwort("zkette"), g = STATIONEN[4].teile.find(t => t.art === "kette").glieder;
 		const o = { t: fe(3) ? 99 : fe(2) ? 3.999 : fe(1) ? 1 : 0, feld: fe(2), fokus: !fe(1), zeig: { v: !fe(3) }, energie: fe(3) };
 		bl.push(UE.kopf("1", "Aufbau und Erklärung", fe(4) ? "Kette: " + UE.kette(k) : ""));
-		bl.push({ art: "bild", quelle: UE.bildUndSchritte(api, (c, B, H) => szeneZ(c, B, H, V, o), sb, sh, fe(4) ? g : null, "So arbeitet das Zyklotron") });
+		bl.push(...UE.bildUndSchritte(api, (c, B, H) => szeneZ(c, B, H, V, o), sb, sh, fe(4) ? g : null, "So arbeitet das Zyklotron"));
 		if (fe(1)) bl.push(UE.zeile([{ t: "In meinem Bild: Protonen, Lorentzkraft beim Eintritt in den rechten Duanten " + w.nFL + ".", farbe: "#444" }], 21));
 		if (!fe(4)) bl.push(UE.offen("", "Erklärung als Kette (Station 5)"));
-		if (fe(4)) bl.push(UE.merke([{ t: "T = 2π · r / v  mit  r = m · v / (q · B)   ⇒   T = 2π · m / (q · B)   ⇒   " }, { t: "f = q · B / (2π · m)", fett: true }, { t: "   Die Umlaufdauer hängt nicht von v und r ab. Die Wechselspannung hat die Zyklotronfrequenz." }]));
+		if (fe(4)) bl.push(UE.merke([{ t: "T = " + bruch("2π · r", "v") }, { t: "  mit  ", text: true }, { t: "r = " + bruch("m · v", "q · B") }, { t: "   ⇒   " }, { t: "T = " + bruch("2π · m", "q · B") }, { t: "   ⇒   " }, { t: "f = " + bruch("q · B", "2π · m"), fett: true }, { t: "\nDie Umlaufdauer hängt nicht von v und r ab. Die Wechselspannung hat die Zyklotronfrequenz.", text: true }]));
 		else bl.push(UE.offen("2", "Merke"));
 		if (fe(5)) {
 			const a = api.antwort("zf");
 			bl.push(UE.kopf("3", "Mein Zyklotron"));
-			bl.push(UE.zeile([{ t: "Protonen, B = " + de(V.Bz, 1) + " T:   f = q · B / (2π · m) = " + de(fMHz(V), 1) + " MHz" }, UE.wert(a, "MHz")]));
+			bl.push(UE.zeile([{ t: "Protonen, B = " + de(V.Bz, 1) + " T:   " }, { t: "f = " + bruch("q · B", "2π · m") + " = " + de(fMHz(V), 1) + " MHz" }, UE.wert(a, "MHz")]));
 			bl.push(UE.zeile([{ t: "Je Spaltdurchlauf wächst die Energie um q · U, nach N Durchläufen sind es N · q · U. Falsche Frequenz: Das Proton gerät außer Takt und wird wieder abgebremst. Doppelte Spannung: halb so viele Umläufe, gleiche Endenergie." }]));
 		} else bl.push(UE.offen("3", "Mein Zyklotron"));
 		if (fe(6)) { bl.push(UE.kopf("4", "Die Grenze des Zyklotrons"));
-			bl.push(UE.zeile([{ t: "Bei sehr hohen Geschwindigkeiten gilt p = γ · m · v (Relativitätstheorie). Die Umlauffrequenz f = q · B / (2π · γ · m) sinkt mit wachsendem γ, das Teilchen gerät außer Takt. Klassische Zyklotrone beschleunigen deshalb vor allem Protonen und Deuteronen bis zu mäßigen Energien." }]));
+			bl.push(UE.zeile([{ t: "Bei sehr hohen Geschwindigkeiten gilt p = γ · m · v (Relativitätstheorie). Die Umlauffrequenz " }, { t: "f = " + bruch("q · B", "2π · γ · m") }, { t: " sinkt mit wachsendem γ, das Teilchen gerät außer Takt. Klassische Zyklotrone beschleunigen deshalb vor allem Protonen und Deuteronen bis zu mäßigen Energien." }]));
 		} else bl.push(UE.offen("4", "Die Grenze des Zyklotrons"));
 		return bl.concat(UE.ideen(api, [["zykidee", "Meine Vermutung am Anfang"]]));
 	}
