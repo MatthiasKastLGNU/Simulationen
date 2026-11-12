@@ -1873,6 +1873,46 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 .legende-punkt { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.3em; vertical-align: -0.05em; }
 .formel { font-size: 1.15rem; white-space: nowrap; }
 @media (max-width: 560px) { .formel { font-size: 1rem; white-space: normal; } .schloss { margin-left: 0; } }
+
+/* Übersicht 2026-11-12: Auftrag prominent, Ergebniskarte am Diagramm, Messreihen kompakt, Aufbau eingeklappt */
+.tcb.auftrag-kasten { border-width: 2.5px; box-shadow: 0 2px 8px rgba(41,92,6,0.13); }
+.tcb.auftrag-kasten > .tcb-title { font-size: 1.12rem; padding: 0.35rem 0.9rem; display: flex; align-items: center; gap: 0.45rem; }
+.tcb.auftrag-kasten > .tcb-title svg { flex: none; }
+.tcb.auftrag-kasten .auftrag-text { font-size: 1.1rem; line-height: 1.5; margin: 0; }
+.auftrag-text .einleitung { margin: 0 0 0.35rem; }
+.auftrag-text ol { margin: 0; padding-left: 1.6rem; }
+.auftrag-text ol li { margin: 0.12rem 0; padding-left: 0.15rem; }
+.auftrag-text ol li::marker { color: #295C06; font-weight: bold; }
+.ergebnis-karte { border: 2px solid var(--blue-frame, #0000BF); border-radius: 2mm; background: #F7F7FF; padding: 0.55rem 0.8rem 0.65rem; margin: 0 0 0.8rem; box-shadow: 0 2px 6px rgba(0,0,80,0.12); }
+.ergebnis-karte .eigen-zeile { margin: 0; padding: 0; background: none; }
+.ergebnis-karte .ek-titel { flex: 1 1 100%; font-weight: bold; color: var(--blue-frame, #0000BF); font-size: 1.08rem; }
+.ergebnis-karte .feld { font-size: 1.08rem; }
+.ergebnis-karte .eigen-zeile input { width: 5.5em; font-size: 1.05rem; }
+.ergebnis-karte .gegeben { flex: 1 1 100%; color: #333; }
+.ergebnis-karte #urteil:empty { display: none; }
+.ergebnis-karte #urteil .urteil { margin: 0.55rem 0 0; }
+.sym { white-space: nowrap; }
+.sym sub { font-size: 0.72em; vertical-align: sub; line-height: 0; }
+.tcb-title.klapp { cursor: pointer; display: flex; align-items: center; gap: 0.5rem; user-select: none; }
+.tcb-title.klapp .zahl { font-weight: normal; color: #555; font-size: 0.9rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tcb-title.klapp .pfeil, details.klapp-kasten > summary .pfeil { flex: none; transition: transform 0.15s; font-size: 0.9rem; }
+.tcb-title.klapp[aria-expanded="false"] .pfeil { transform: rotate(-90deg); }
+details.klapp-kasten > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+details.klapp-kasten > summary::-webkit-details-marker { display: none; }
+details.klapp-kasten > summary .titel { flex: 1; }
+details.klapp-kasten:not([open]) > summary { border-bottom: none; }
+details.klapp-kasten:not([open]) > summary .pfeil { transform: rotate(-90deg); }
+.reihe { padding: 0.3rem 0.6rem; }
+.reihen { gap: 0.35rem; margin-top: 0.6rem; }
+.reihe .kurzname { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 0.5rem; overflow: hidden; }
+.reihe .kurzname b { font-weight: normal; white-space: nowrap; }
+.reihe .kurzname .name { flex: 0 1 auto; }
+.reihe .status { flex: none; width: 0.7rem; height: 0.7rem; border-radius: 50%; }
+.reihe .status.gruen { background: #2E7D32; } .reihe .status.gelb { background: #E0A000; } .reihe .status.rot { background: #C62828; }
+.reihe .bauteile { margin-top: 0.3rem; }
+.reihe .ampel { margin-top: 0.3rem; }
+.reihe button.neben.an { color: var(--blue-frame, #0000BF); background: #E8E8FA; }
+.laden-feld .hinweis.kurz { flex-basis: auto; }
 </style>
 <body>
 <div class="blatt">
@@ -1888,17 +1928,18 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		<button data-modus="linear">Linearisierung</button>
 	</div>
 
-	<div class="tcb gruen">
-		<div class="tcb-title" id="auftrag-titel">Was ist zu tun?</div>
+	<div class="tcb gruen auftrag-kasten">
+		<div class="tcb-title"><svg width='20' height='20' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/></svg><span id="auftrag-titel">Ihr Auftrag</span></div>
 		<div class="tcb-body auftrag-text" id="auftrag-text"></div>
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Meine Messreihen</div>
-		<div class="tcb-body">
+		<div class="tcb-title klapp" id="reihen-titel" role="button" tabindex="0" aria-expanded="true" title="ein- und ausklappen"><span>Meine Messreihen</span><span class="zahl" id="reihen-zahl"></span><span class="pfeil">▾</span></div>
+		<div class="tcb-body" id="reihen-koerper">
 			<div class="laden-feld">
 				<span class="knopfleiste"><button class="haupt gross-haupt" id="btn-oeffnen" data-icon="ordner" data-text="SparkVue-Datei öffnen" title="SparkVue-Datei öffnen"></button></span>
-				<p class="hinweis">Speichern Sie jede Messung unter einem Namen wie <span class="dateiname-muster">96uF_2kOhm</span>, dann erkennt das Messlabor <i class="gr">C</i> und <i class="gr">R</i>. Die Ampel prüft, ob die Messung brauchbar ist. Die Dateien bleiben auf Ihrem Gerät.</p>
+				<p class="hinweis kurz" id="laden-kurz" hidden>Dateiname wie <span class="dateiname-muster">96uF_2kOhm</span>: dann erkennt das Messlabor <i class="gr">C</i> und <i class="gr">R</i>.</p>
+				<p class="hinweis" id="laden-hinweis">Speichern Sie jede Messung unter einem Namen wie <span class="dateiname-muster">96uF_2kOhm</span>, dann erkennt das Messlabor <i class="gr">C</i> und <i class="gr">R</i>. Die Ampel prüft, ob die Messung brauchbar ist. Die Dateien bleiben auf Ihrem Gerät.</p>
 			</div>
 			<input type="file" id="datei" accept=".spklab,.csv,.txt,.xlsx" multiple hidden>
 			<div class="reihen" id="reihen"></div>
@@ -1911,13 +1952,23 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Versuchsaufbau: Entladen über <i class="gr">R</i><sub>2</sub>, Spannungssensor am Widerstand</div>
-		<div class="tcb-body"><canvas id="schaltung" class="sim"></canvas></div>
-	</div>
-
-	<div class="tcb blau">
 		<div class="tcb-title" id="diagramm-titel">Entladekurven</div>
 		<div class="tcb-body">
+			<div class="ergebnis-karte" id="ergebnis-karte" hidden>
+				<div class="eigen-zeile" id="eigen-hwz" hidden>
+					<span class="ek-titel">Ihre Halbwertszeit</span>
+					<span class="feld"><span class="nw"><span class="sym"><i class="gr">T</i><sub>1/2</sub></span> = <input class="eingabe" id="eingabe-hwz" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
+					<button class="haupt" id="btn-hwz">Prüfen</button>
+					<span class="schloss" id="schloss-hwz"></span>
+				</div>
+				<div class="eigen-zeile" id="eigen-tau" hidden>
+					<span class="ek-titel">Ihr Ergebnis</span>
+					<span class="feld"><span class="nw"><i class="gr">τ</i> = <input class="eingabe" id="eingabe-tau" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
+					<button class="haupt" id="btn-tau">Prüfen</button>
+					<span class="schloss" id="schloss-tau"></span>
+				</div>
+				<div id="urteil"></div>
+			</div>
 			<div class="diagramm-leiste">
 				<div class="bgruppe" id="gruppe-zoom"><span class="btitel">Zeitachse</span>
 					<span class="knopfleiste" id="zoom-knoepfe"><button data-wert="1" class="aktiv">ganz</button><button data-wert="0.5"></button><button data-wert="0.25"></button><button data-wert="0.1"></button></span></div>
@@ -1934,20 +1985,14 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			<div class="bildleiste knopfleiste"><button class="neben" id="btn-zurueck" title="Linien und Zeitachse zurücksetzen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button><button class="neben" id="btn-png" data-icon="download" title="Diagramm speichern"></button></div>
 			<div class="wertkarten" id="karten"></div>
 			<div class="regler-zeile" id="regler-tau" hidden><span class="rtitel">Zeit im Nenner</span><input type="range" id="tau" min="0" max="1000" step="1" value="200" data-groesse="-"><span class="wert" id="tau-wert"></span></div>
-			<div class="eigen-zeile" id="eigen-hwz" hidden>
-				<span class="feld">Meine Halbwertszeit <span class="nw"><i class="gr">T</i><sub>1/2</sub> = <input class="eingabe" id="eingabe-hwz" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
-				<button class="haupt" id="btn-hwz">Prüfen</button>
-				<span class="schloss" id="schloss-hwz"></span>
-			</div>
-			<div class="eigen-zeile" id="eigen-tau" hidden>
-				<span class="feld">Mein Ergebnis <span class="nw"><i class="gr">τ</i> = <input class="eingabe" id="eingabe-tau" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
-				<button class="haupt" id="btn-tau">Prüfen</button>
-				<span class="schloss" id="schloss-tau"></span>
-			</div>
-			<div id="urteil"></div>
 			<p class="fussnote" id="fussnote"></p>
 		</div>
 	</div>
+
+	<details class="tcb blau klapp-kasten" id="aufbau-kasten">
+		<summary class="tcb-title"><span class="titel">Versuchsaufbau: Entladen über <i class="gr">R</i><sub>2</sub>, Spannungssensor am Widerstand</span><span class="pfeil">▾</span></summary>
+		<div class="tcb-body"><canvas id="schaltung" class="sim"></canvas></div>
+	</details>
 
 	<div class="tcb blau">
 		<div class="tcb-title" id="tabelle-titel">Alle Messreihen</div>
@@ -1974,11 +2019,16 @@ const SPEICHER = "KI_A.2.3_RC_Messlabor_reihen";
 const FREI_SPEICHER = "KI_A.2.3_RC_Messlabor_frei";
 const R_MAX = 50e3;   /* Spannungssensor hat etwa 1 MΩ Innenwiderstand: darüber entlädt er merklich mit */
 const gr = s => "<i class='gr'>" + s + "</i>";
+const sym = (s, i) => "<span class='sym'>" + gr(s) + "<sub>" + i + "</sub></span>";
+const STIFT = "<svg width='17' height='17' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/></svg>";
 const MODI = {
-	tangente: { titel: "Zeitkonstante mit der Tangente bei t = 0",
-		auftrag: "Wählen Sie eine eigene Messreihe. Ziehen Sie den Punkt auf der Zeitachse so, dass die Gerade die Messkurve bei " + gr("t") + " = 0 berührt. Die Tangente schneidet die Zeitachse bei " + gr("t") + " = " + gr("τ") + ". Tipp: Zeitachse auf den Anfang stellen." },
-	linear: { titel: "Linearisierung: ln(U / U₀) über t",
-		auftrag: "Die Punkte zeigen ln(" + gr("U") + "&thinsp;/&thinsp;" + gr("U") + "<sub>0</sub>) Ihrer Messreihe. Ziehen Sie den Punkt G so, dass die Ursprungsgerade möglichst gut durch die Punkte geht. Berechnen Sie aus der Steigung " + gr("m") + " die Zeitkonstante " + gr("τ") + " und tragen Sie sie ein." }
+	tangente: { titel: "Zeitkonstante mit der Tangente bei t = 0", schritte: [
+		"Wählen Sie eine eigene Messreihe und stellen Sie die Zeitachse auf den Anfang.",
+		"Ziehen Sie den Punkt auf der Zeitachse so, dass die Gerade die Messkurve bei " + gr("t") + " = 0 berührt.",
+		"Lesen Sie " + gr("τ") + " ab: Dort schneidet die Tangente die Zeitachse."] },
+	linear: { titel: "Linearisierung: ln(U / U₀) über t", einleitung: "Die Punkte zeigen ln(" + gr("U") + "&thinsp;/&thinsp;" + sym("U", "0") + ") Ihrer Messreihe.", schritte: [
+		"Ziehen Sie den Punkt G so, dass die Ursprungsgerade möglichst gut durch die Punkte geht.",
+		"Berechnen Sie aus der Steigung " + gr("m") + " die Zeitkonstante " + gr("τ") + " und tragen Sie sie ein."] }
 };
 
 let reihen = [], gewaehltId = null, modus = "vergleich", zoom = 1, cursor = null, naechsteNr = 1;
@@ -2450,6 +2500,7 @@ function karten() {
 	}
 	k.innerHTML = h;
 	$("fussnote").innerHTML = fuss;
+	$("ergebnis-karte").hidden = ![...document.querySelectorAll("#ergebnis-karte .eigen-zeile")].some(e => !e.hidden);
 	const u = $("urteil");
 	u.innerHTML = urteilText && (modus === "halbwertszeit" || modus === "anpassung" || modus === "linear") ? "<p class='urteil " + urteilText[0] + "'>" + urteilText[1] + "</p>" : "";
 }
@@ -2526,27 +2577,37 @@ function tabelle() {
 function zeichneListe() {
 	const L = $("reihen");
 	L.innerHTML = reihen.map(r => {
-		const amp = pruefung(r).map(([s, t]) => "<p class='" + s + "'>" + t + "</p>").join("");
+		const pr = pruefung(r), stufe = pr.some(x => x[0] === "rot") ? "rot" : pr.some(x => x[0] === "gelb") ? "gelb" : "gruen";
+		const fehlt = !(r.C > 0) || !(r.R > 0), offen = r.offen || fehlt;
+		/* kompakt: eine Zeile je Messreihe; Warnungen bleiben sichtbar, Eingaben nur aufgeklappt */
+		const amp = pr.filter(x => x[0] !== "gruen").map(([s, t]) => "<p class='" + s + "'>" + t + "</p>").join("");
 		const feldC = "<label class='bauteil'>" + gr("C") + " =<input class='eingabe' data-art='C' inputmode='decimal' autocomplete='off' value='" + (r.C > 0 ? kurz(r.C * 1e6) : "") + "'><span class='einheit'>µF</span></label>";
 		const feldR = "<label class='bauteil'>" + gr("R") + " =<input class='eingabe' data-art='R' inputmode='decimal' autocomplete='off' value='" + (r.R > 0 ? kurz(r.R / 1000) : "") + "'><span class='einheit'>kΩ</span></label>";
+		const lauf = LAEUFE.has(r.id) ? "<span class='bauteil'><b>Lauf</b><span class='knopfleiste'>" + LAEUFE.get(r.id).map((l, i) => "<button data-lauf='" + i + "' title='Die Datei enthält mehrere Läufe. Wählen Sie die richtige Messung.'" + (l.name === r.laufName ? " class='aktiv'" : "") + ">" + esc(l.name.replace(/^Lauf\s*/, "")) + "</button>").join("") + "</span></span>" : "";
 		return "<div class='reihe" + (modus !== "vergleich" && r.id === (gewaehlt() || {}).id ? " gewaehlt" : "") + "' data-id='" + r.id + "'>"
-			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span><span class='name'>" + (r.beispiel ? "Beispielmessung" : esc(r.name)) + "</span>"
+			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span>"
+			+ "<span class='kurzname'><b>" + (fehlt ? "Bauteile eintragen" : bauteile(r)) + "</b>" + (r.beispiel ? "<span class='name'>Beispiel</span>" : "<span class='name'>" + esc(r.name) + "</span>") + "</span>"
+			+ "<span class='status " + stufe + "' title='" + (stufe === "gruen" ? "Messung brauchbar" : "Messung prüfen") + "'></span>"
 			+ (modus === "vergleich" ? "<span class='knopfleiste'><label class='chip' title='im Diagramm zeigen'><input type='checkbox' data-zeigen" + (r.zeigen !== false ? " checked" : "") + "><span data-chipicon='auge'></span>zeigen</label></span>" : "")
-			+ "<span class='knopfleiste'><button class='neben' data-weg title='Messreihe entfernen'>" + SimUI.svg("muell") + "</button></span></div>"
-			+ "<div class='bauteile'>" + (LAEUFE.has(r.id) ? "<span class='bauteil'><b>Lauf</b><span class='knopfleiste'>" + LAEUFE.get(r.id).map((l, i) => "<button data-lauf='" + i + "' title='Die Datei enthält mehrere Läufe. Wählen Sie die richtige Messung.'" + (l.name === r.laufName ? " class='aktiv'" : "") + ">" + esc(l.name.replace(/^Lauf\s*/, "")) + "</button>").join("") + "</span></span>" : "") + feldC + feldR + "</div>"
-			+ "<div class='ampel'>" + amp + "</div></div>";
+			+ "<span class='knopfleiste'><button class='neben" + (offen ? " an" : "") + "' data-offen title='Bauteile ändern'>" + STIFT + "</button><button class='neben' data-weg title='Messreihe entfernen'>" + SimUI.svg("muell") + "</button></span></div>"
+			+ (offen ? "<div class='bauteile'>" + lauf + feldC + feldR + "</div>" : "")
+			+ (amp ? "<div class='ampel'>" + amp + "</div>" : "") + "</div>";
 	}).join("");
 	SimUI.fuelleIcons(L);
 	L.querySelectorAll("button.neben").forEach(b => b.classList.add("ik"));
 	$("leer-hinweis").hidden = reihen.length > 0;
+	$("laden-hinweis").hidden = reihen.length > 0; $("laden-kurz").hidden = !reihen.length;
 	const bsp = reihen.some(r => r.beispiel);
 	$("btn-beispiele").hidden = bsp; $("btn-beispiele-weg").hidden = !bsp; $("btn-alle-weg").hidden = !reihen.length;
 	$("beispiel-text").textContent = bsp ? "Beispielmessungen sind geladen. Besser sind Ihre eigenen Messreihen!" : "Keine eigene Messung zur Hand?";
+	const g = modus !== "vergleich" ? gewaehlt() : null;
+	$("reihen-zahl").innerHTML = reihen.length ? reihen.length + (reihen.length === 1 ? " Messreihe" : " Messreihen") + (g && g.R > 0 && g.C > 0 ? " · gewählt: " + bauteile(g) : "") : "";
 }
 function waehle(r) { gewaehltId = r.id; standardLinien(r); tauAnteil = 0.2; urteilText = null; tauT = null; linG = null; $("eingabe-tau").value = ""; $("eingabe-tau").classList.remove("richtig", "falsch"); $("eingabe-hwz").value = ""; $("eingabe-hwz").classList.remove("richtig", "falsch"); $("tau").value = 200; }
 $("reihen").addEventListener("click", ev => {
 	const kasten = ev.target.closest(".reihe"); if (!kasten) return;
 	const r = reihen.find(x => x.id === +kasten.dataset.id); if (!r) return;
+	if (ev.target.closest("[data-offen]")) { r.offen = !r.offen; sichern(); zeichneListe(); return; }
 	if (ev.target.closest("[data-weg]")) { reihen = reihen.filter(x => x !== r); sichern(); if (gewaehltId === r.id) { gewaehltId = null; const g = gewaehlt(); if (g) waehle(g); } alles(); return; }
 	const bl = ev.target.closest("button[data-lauf]");
 	if (bl && LAEUFE.has(r.id)) { const l = LAEUFE.get(r.id)[+bl.dataset.lauf]; r.punkte = aufbereiten(l.punkte); r.dt = abtastzeit(l.punkte); r.laufName = l.name; waehle(r); sichern(); alles(); return; }
@@ -2761,13 +2822,15 @@ SimUI.tabelleKnopf("btn-tab", "ergebnis-tab", () => "RC_Tabelle_" + modus, () =>
 
 function alles() {
 	zeichneListe();
-	if (SW > 200 && DW > 200) { zeichneSchaltung(); zeichneDiagramm(); }
+	if (SW > 200 && $("aufbau-kasten").open) zeichneSchaltung();
+	if (DW > 200) zeichneDiagramm();
 	karten(); tabelle();
 }
 function setzeModus(m) {
 	modus = m;
 	document.querySelectorAll("#modus-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
-	$("auftrag-text").innerHTML = "<p>" + MODI[m].auftrag + "</p>";
+	$("auftrag-titel").textContent = "Ihr Auftrag: " + MODI[m].titel;
+	$("auftrag-text").innerHTML = (MODI[m].einleitung ? "<p class='einleitung'>" + MODI[m].einleitung + "</p>" : "") + "<ol>" + MODI[m].schritte.map(x => "<li>" + x + "</li>").join("") + "</ol>";
 	$("diagramm-titel").textContent = MODI[m].titel;
 	$("gruppe-streifen").hidden = m !== "flaeche";
 	$("gruppe-halb").hidden = !(m === "halbwertszeit" && frei.hwz);
@@ -2788,6 +2851,18 @@ function layout() {
 	alles();
 }
 window.addEventListener("resize", layout);
+
+/* Kasten „Meine Messreihen“ ein- und ausklappen, Versuchsaufbau beim Aufklappen zeichnen */
+const KLAPP_SPEICHER = "KI_A.2.3_RC_Messlabor_klapp";
+function reihenKlappen(auf) {
+	$("reihen-titel").setAttribute("aria-expanded", auf ? "true" : "false");
+	$("reihen-koerper").hidden = !auf;
+	try { sessionStorage.setItem(KLAPP_SPEICHER, auf ? "1" : "0"); } catch (e) { }
+}
+$("reihen-titel").addEventListener("click", () => reihenKlappen($("reihen-koerper").hidden));
+$("reihen-titel").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reihenKlappen($("reihen-koerper").hidden); } });
+try { if (sessionStorage.getItem(KLAPP_SPEICHER) === "0") reihenKlappen(false); } catch (e) { }
+$("aufbau-kasten").addEventListener("toggle", () => { if ($("aufbau-kasten").open) layout(); });
 ladeGespeichert();
 if (gewaehlt()) standardLinien(gewaehlt());
 const ausHash = location.hash.replace("#", "");
