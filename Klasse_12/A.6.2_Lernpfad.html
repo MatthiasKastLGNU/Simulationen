@@ -3442,7 +3442,7 @@ function szene(c, B, H, V, o) {
 		if (!o.mikro) for (const u of [0.417, 0.583]) for (const ww of [0.24, 0.76]) symbolFeld(c, X(u), Y(ww), r, V.sB > 0, F.B, 0.35 + 0.6 * o.feld);
 		symbolFeld(c, px + 8, 20, 7.5, V.sB > 0, F.B, 1, 1.7);
 		const bb = zeichen(c, px + 21, 20, "B", "", F.B, g.g + 2);
-		c.font = (g.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.fillText(o.feldText || "(" + w.feldKurz + ")", px + 27 + bb, 20.5);
+		c.font = (g.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; if (o.feldText) c.fillText(o.feldText, px + 27 + bb, 20.5);   /* Kreuz/Punkt nie in Worten verraten (Kast 2026-11-12) */
 	}
 	const q = o.q || 0, yK = w.K === "o" ? Y(0.075) : Y(0.925), yP = w.K === "o" ? Y(0.925) : Y(0.075), dirK = w.K === "o" ? -1 : 1;
 	/* elektrisches Feld zwischen den Kanten */
@@ -3653,7 +3653,7 @@ const STATIONEN = [
 			zeichne(c, B, H, api) { const a = api.antwort("kraft"); szene(c, B, H, api.V, { mikro: true, strom: true, feld: 1, fokus: { u: 0.5, w: 0.5 }, zeig: { v: !!a, FL: !!a }, vorschau: api.lokal.vorschau }); }
 		},
 		teile: [
-			{ art: "text", html: api => "<p>Im Kupfer bewegen sich Elektronen. Eingezeichnet sind die technische Stromrichtung (" + Z.I + ") und das Magnetfeld (" + Z.B + ", " + W(api.V).feld + "). Betrachten Sie das hervorgehobene Elektron.</p>" },
+			{ art: "text", html: api => "<p>Im Kupfer bewegen sich Elektronen. Eingezeichnet sind die technische Stromrichtung (" + Z.I + ") und das Magnetfeld (" + Z.B + "). Betrachten Sie das hervorgehobene Elektron.</p>" },
 			{ art: "richtung", id: "kraft", frage: "Tragen Sie ein, wohin sich das Elektron bewegt und wohin die Lorentzkraft auf das Elektron zeigt.",
 				felder: [
 					{ id: "v", name: "Bewegung des Elektrons", farbe: F.v, loesung: api => W(api.V).vR },
@@ -4083,7 +4083,7 @@ const PFAD_WIEN = (() => {
 		let lx = px; const ly = py + ph + 38; c.textBaseline = "middle";
 		const wort = t => { c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = "#444"; c.textAlign = "left"; c.fillText(t, lx, ly + 0.5); lx += c.measureText(t).width; };
 		if (o.E) { pfeilForm(c, lx, ly, lx + 18, ly, F.E, F.Ek, 2.2); lx += 23; lx += zeichen(c, lx, ly, "E", "", F.E, G.g + 1); wort(o.werte ? " = " + o.werte.E : (G.schmal ? "" : " elektrisches Feld")); lx += 16; }
-		if (o.B) { symbolFeld(c, lx + 7, ly, 6.5, w.B === "rein", F.B, 1, 1.6); lx += 18; lx += zeichen(c, lx, ly, "B", "", F.B, G.g + 1); wort(o.werte ? " = " + o.werte.B : (G.schmal ? "" : " (" + (w.B === "rein" ? "in die Ebene hinein" : "aus der Ebene heraus") + ")")); }
+		if (o.B) { symbolFeld(c, lx + 7, ly, 6.5, w.B === "rein", F.B, 1, 1.6); lx += 18; lx += zeichen(c, lx, ly, "B", "", F.B, G.g + 1); wort(o.werte ? " = " + o.werte.B : (G.schmal ? "" : " Magnetfeld"));   /* Kreuz/Punkt nie in Worten verraten (Kast 2026-11-12) */ }
 		if (!o.E && !o.B) { c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.fillText("Felder ausgeschaltet", lx, ly); }
 	}
 	const tick = (L, dt) => { for (const s of (L.schuesse || [])) if (!s.fertig) s.t += (dt || 0) * TEMPO; };
@@ -4317,7 +4317,7 @@ const PFAD_MS = (() => {
 		const dx = G.schmal ? 46 : 56;
 		for (let x = xw + dx * 0.62; x < xr - 16; x += dx) for (let y = py + 26; y < py + hR - 8; y += dx) symbolFeld(c, x, y, 5.5, V.sB > 0, F.B, 0.42);
 		symbolFeld(c, xw + 12, 15, 7, V.sB > 0, F.B, 1, 1.7); const bb = zeichen(c, xw + 24, 15, "B", "", F.B, G.g + 2);
-		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText("(" + w.kB + ")", xw + 30 + bb, 15.5);
+		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; /* keine Worte zur Feldrichtung (Kast 2026-11-12) */
 		/* Quelle, Filter, Strahl */
 		const bl = xw - xl, xq2 = xl + Math.round(bl * 0.36), xf1 = xl + Math.round(bl * 0.46), xf2 = xl + Math.round(bl * 0.86);
 		c.strokeStyle = ROT; c.lineWidth = 2; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(xq2, ys); c.lineTo(xw + 4, ys); c.stroke(); c.globalAlpha = 1;
@@ -4407,7 +4407,7 @@ const PFAD_MS = (() => {
 				zeichne(c, B, H, api, dt) { const a = api.antwort("msFL"), t = zeit(api, dt), f = !!api.antwort("bahnform");
 					szeneM(c, B, H, api.V, { fokus: !a || t < 0.05, zeig: { v: true, FL: !!a }, vorschau: api.lokal.vorschau, ionen: a ? [{ d: 14, t }] : [], kraefte: f }); } },
 			teile: [
-				{ art: "text", html: api => "<p>Ein positives Ion tritt mit der Geschwindigkeit " + Z.v + " nach rechts in das Magnetfeld ein. Die Feldlinien zeigen " + WM(api.V).nB + ".</p>" },
+				{ art: "text", html: api => "<p>Ein positives Ion tritt mit der Geschwindigkeit " + Z.v + " nach rechts in das Magnetfeld ein.</p>" },
 				{ art: "richtung", id: "msFL", frage: "Tragen Sie ein, wohin die Lorentzkraft auf das Ion am Spalt zeigt. Danach fliegt das Ion los.",
 					felder: [{ id: "FL", name: "Lorentzkraft auf das Ion", farbe: F.F, loesung: api => WM(api.V).FL }],
 					nach(api) { api.lokal.t = 0; },
@@ -4587,7 +4587,7 @@ const PFAD_ZYK = (() => {
 		for (let i = -4; i <= 3; i++) for (let j = -3; j <= 3; j++) { const px = cx + (i + 0.5) * dx, py = cy + j * dx;
 			if (Math.abs(px - cx) < gw + 9 || Math.hypot(px - cx - Math.sign(px - cx) * gw, py - cy) > R - 10) continue; symbolFeld(c, px, py, 5, V.sB > 0, F.B, 0.36); }
 		symbolFeld(c, 14, 15, 7, V.sB > 0, F.B, 1, 1.7); const bb = zeichen(c, 26, 15, "B", "", F.B, G.g + 2);
-		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; c.fillText("(" + w.kB + ")", 32 + bb, 15.5);
+		c.font = (G.g - 1) + "px " + SCHRIFT; c.fillStyle = F.grau; c.textAlign = "left"; c.textBaseline = "middle"; /* keine Worte zur Feldrichtung (Kast 2026-11-12) */
 		c.font = (G.g - 2) + "px " + SCHRIFT; c.fillStyle = "#555"; c.textAlign = "center";
 		if ((o.t || 0) < 1) { c.fillText("Duant", cx - gw - R * 0.55, cy - R * 0.5); c.fillText("Duant", cx + gw + R * 0.55, cy - R * 0.5); }
 		else if (!G.schmal) { const ra = (R + gw + 15) * 0.72; c.textAlign = "right"; c.fillText("Duant", cx - ra, cy - ra - 4); c.textAlign = "left"; c.fillText("Duant", cx + ra, cy - ra - 4); }
@@ -4663,7 +4663,7 @@ const PFAD_ZYK = (() => {
 				nochmal(api) { if (api.antwort("duant")) setze(api, 0, 0.999); else KI.meldung("Erst die Fragen beantworten"); },
 				zeichne(c, B, H, api, dt) { const t = zeit(api, dt); szeneZ(c, B, H, api.V, { t, fokus: true, zeig: { v: true, FL: !!api.antwort("zFL") }, vorschau: api.lokal.vorschau }); } },
 			teile: [
-				{ art: "text", html: api => "<p>Das Proton hat den Spalt zum ersten Mal durchlaufen und tritt mit der Geschwindigkeit " + Z.v + " nach rechts in den Duanten ein. Das Magnetfeld zeigt " + WZ(api.V).nB + ".</p>" },
+				{ art: "text", html: api => "<p>Das Proton hat den Spalt zum ersten Mal durchlaufen und tritt mit der Geschwindigkeit " + Z.v + " nach rechts in den Duanten ein.</p>" },
 				{ art: "richtung", id: "zFL", frage: "Tragen Sie ein, wohin die Lorentzkraft auf das Proton zeigt.",
 					felder: [{ id: "FL", name: "Lorentzkraft auf das Proton", farbe: F.F, loesung: api => WZ(api.V).FL }],
 					erkl: api => "Positive Ladung: rechte Hand. Daumen nach rechts, Zeigefinger in Feldrichtung (" + WZ(api.V).nB + "). Der Mittelfinger zeigt <b>" + WZ(api.V).nFL + "</b>." },
