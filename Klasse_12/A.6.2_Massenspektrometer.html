@@ -1233,6 +1233,10 @@ button.feinknopf:hover { background: var(--blue-title); }
 .sp-bestaetigt { flex: 1 1 100%; padding: 0.25rem 0.6rem; border-left: 3px solid #2E7D32; background: #F3FAF2; font-variant-numeric: tabular-nums; }
 .sp-bestaetigt .sp-haken { color: #2E7D32; font-weight: 700; }
 .sp-hilfezeile { margin-top: 0.4rem; }
+.sp-schloss { display: flex; gap: 0.4rem; align-items: flex-start; margin: 0.1rem 0 0.4rem; padding: 0.3rem 0.55rem; border-radius: 1mm; background: #FFF3E0; color: #8A4B00; font-size: 0.9rem; line-height: 1.3; }
+.sp-schloss[hidden] { display: none; }
+.sp-schloss svg { flex: 0 0 auto; margin-top: 0.1rem; }
+#spiel .sp-wien.sp-zu .sp-zeile[data-groesse] { opacity: 0.55; }
 .sp-karte .rueckmeldung .sp-tipp { display: block; margin-top: 0.45rem; padding: 0.35rem 0.6rem; font-weight: 400; color: #333; background: #FFF8E1; border-left: 3px solid #E0A800; }
 .sp-karte .rueckmeldung .sp-tipp b { color: #8A6100; }
 .sp-fund { display: flex; flex-wrap: wrap; gap: 0.15rem 1rem; align-items: baseline; padding: 0.25rem 0.6rem; border-left: 3px solid #2E7D32; background: #F3FAF2; margin-top: 0.3rem; font-variant-numeric: tabular-nums; }
@@ -2033,6 +2037,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			<div class="sp-aufbau">
 				<div class="sp-gruppe sp-wien">
 					<div class="sp-gtitel">Wienfilter <span>(Plattenabstand <i class="gr">d</i> = 2,0&nbsp;cm)</span></div>
+					<div class="sp-schloss" id="sp-schloss" hidden><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.3" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg> Fest eingestellt, bis die Masse geprüft ist. So fliegt die Sorte mit der geprüften Geschwindigkeit weiter durch.</div>
 					<div class="sp-zeile" data-groesse="U">
 						<span class="btitel">Spannung <i class="gr">U</i></span>
 						<div class="zeile"><button type="button" class="feinknopf" data-d="-10">−10</button><button type="button" class="feinknopf" data-d="-1">−1</button><input type="range" min="0" max="4000" step="1" aria-label="Spannung U"><button type="button" class="feinknopf" data-d="1">+1</button><button type="button" class="feinknopf" data-d="10">+10</button><span class="wert"></span></div>
@@ -2240,7 +2245,7 @@ K.nachFontLaden(aktualisiere);
 (() => {
 	"use strict";
 	const K = window.SimKit, P = window.SimPlus;
-	const QE = 1.602e-19, UKG = 1.6605e-27, D = 0.020, DURCHLASS = 0.01, TOL_V = 0.03, TOL_M = 0.025, DET = 30, N_B = 3;
+	const QE = 1.602e-19, UKG = 1.6605e-27, D = 0.020, DURCHLASS = 0.005, TOL_V = 0.03, TOL_M = 0.025, DET = 30, N_B = 3;
 	const ELEMENTE = {
 		Li: [["⁶Li⁺", 6.015], ["⁷Li⁺", 7.016]], B: [["¹⁰B⁺", 10.013], ["¹¹B⁺", 11.009]], Ne: [["²⁰Ne⁺", 19.992], ["²²Ne⁺", 21.991]],
 		Mg: [["²⁴Mg⁺", 23.985], ["²⁵Mg⁺", 24.986], ["²⁶Mg⁺", 25.983]], Cl: [["³⁵Cl⁺", 34.969], ["³⁷Cl⁺", 36.966]], K: [["³⁹K⁺", 38.964], ["⁴¹K⁺", 40.962]],
@@ -2280,15 +2285,30 @@ K.nachFontLaden(aktualisiere);
 	function sichern() { try { localStorage.setItem(SPEICHER, JSON.stringify(sp)); } catch (e) { /* ohne Speicher */ } }
 	function neuesSpiel(durchgang) {
 		sp = { durchgang, nr: 0, proben: [probeA(), probeB()], fehler: [0, 0], geloest: [false, false], protokoll: [[], []],
-			schritt: ["v", "v"], aktuell: [-1, -1], gefunden: [[], []], ein: [{ v: ["", ""], m: [["", ""], ["", ""]] }, { v: ["", ""], m: [["", ""]] }], weg: ["", ""], rueck: ["", ""], versuch: [0, 0] };
+			schritt: ["v", "v"], aktuell: [-1, -1], gefunden: [[], []], ein: [{ v: ["", ""], m: [["", ""], ["", ""]] }, { v: ["", ""], m: [["", ""]] }], weg: ["", ""], rueck: ["", ""], versuch: [0, 0], fest: [null, null] };
 		sichern();
 	}
 	sp = laden(); if (!sp) neuesSpiel(1);
-	if (!sp.versuch) sp.versuch = [0, 0];   /* Fehlversuche im aktuellen Schritt: steuert die Tipps (Kast 2026-11-12) */
+	if (!sp.versuch) sp.versuch = [0, 0];
+	if (!sp.fest) sp.fest = [null, null];   /* Wienfilter-Einstellung, bei der v geprüft wurde (Kast 2026-11-12: "Da muss dann B und E fix sein, bis man die Masse hat") */   /* Fehlversuche im aktuellen Schritt: steuert die Tipps (Kast 2026-11-12) */
 	const PR = () => sp.proben[sp.nr];
 
 	/* ---------- Laborzustand ---------- */
 	const lauf = { U: 400, B1: 0.20, B2: 0.30, strahl: false, ionen: [], treffer: [], marke: 10, takt: 0, leitTakt: 0, kraefte: true };
+	if (sp.lab) for (const k of ["U", "B1", "B2", "marke"]) if (isFinite(sp.lab[k])) lauf[k] = sp.lab[k];   /* Einstellung übersteht Neuladen */
+	const vSollJetzt = () => lauf.U / (lauf.B1 * D);
+	const kommtDurch = o => Math.abs(o.v - vSollJetzt()) / o.v <= DURCHLASS;
+	/* gesperrt: Massenschritt läuft, U und B1 bleiben, wo v geprüft wurde */
+	const gesperrt = () => sp.nr < 2 && !sp.geloest[sp.nr] && sp.schritt[sp.nr] === "m";
+	function festeEinstellung() {
+		if (!gesperrt()) return null;
+		const i = sp.nr;
+		if (!sp.fest[i]) {   /* alter Spielstand ohne gemerkte Einstellung: so einstellen, dass die Sorte durchkommt */
+			const o = PR().ionen[sp.aktuell[i]];
+			sp.fest[i] = { U: Math.round(o.v * lauf.B1 * D), B1: lauf.B1 };
+		}
+		return sp.fest[i];
+	}
 
 	/* ---------- Zeichnen ---------- */
 	const FB = "#00838F", FE = "#D46A00", FF = "#BF0000";
@@ -2409,9 +2429,9 @@ K.nachFontLaden(aktualisiere);
 		}
 		text(G.eng ? "Detektor (cm)" : "Detektor: Abstand vom Spalt in cm", G.xs - 8, Math.max(12, yv(DET) - 8), 12, "#295C06", "right");
 		for (const t of lauf.treffer) {
-			const y = yv(t.d2) + t.j;
-			g.fillStyle = "rgba(220,30,30,0.13)"; g.beginPath(); g.arc(G.xs - 3, y, 6, 0, 2 * Math.PI); g.fill();
-			g.fillStyle = "#C00000"; g.beginPath(); g.arc(G.xs - 3, y, 1.8, 0, 2 * Math.PI); g.fill();
+			const y = yv(t.d2), xt = G.xs - 3 + t.j;   /* Streuung nur quer zur Skala: der Abstand bleibt exakt */
+			g.fillStyle = "rgba(220,30,30,0.13)"; g.beginPath(); g.arc(xt, y, 6, 0, 2 * Math.PI); g.fill();
+			g.fillStyle = "#C00000"; g.beginPath(); g.arc(xt, y, 1.8, 0, 2 * Math.PI); g.fill();
 		}
 		/* Ionen mit zarter Spur */
 		for (const o of lauf.ionen) {
@@ -2539,7 +2559,7 @@ K.nachFontLaden(aktualisiere);
 			$("sp-stand").innerHTML = "<b>Auftrag erledigt!</b>";
 			$("sp-schritt").innerHTML = "Ergebnis";
 			$("sp-auftrag").innerHTML = "Probe A: " + "★".repeat(sterneVon(0)) + "☆".repeat(3 - sterneVon(0)) + ", Probe B: " + "★".repeat(sterneVon(1)) + "☆".repeat(3 - sterneVon(1)) + ". Neue Proben bringen neue Ionen und neue Geschwindigkeiten.";
-			hilfeKnopf(); $("sp-rueck").innerHTML = ""; $("sp-rueck").className = "rueckmeldung"; $("sp-rechenweg").innerHTML = ""; $("sp-gefunden").innerHTML = ""; $("sp-weiter").hidden = true; $("sp-protokoll-wrap").hidden = true;
+			hilfeKnopf(); if (typeof SETZE !== "undefined") sperre(); $("sp-rueck").innerHTML = ""; $("sp-rueck").className = "rueckmeldung"; $("sp-rechenweg").innerHTML = ""; $("sp-gefunden").innerHTML = ""; $("sp-weiter").hidden = true; $("sp-protokoll-wrap").hidden = true;
 			lauf.strahl = false; strahlKnopf(); zeichne(); return;
 		}
 		const pr = PR(), geloest = sp.geloest[sp.nr];
@@ -2551,7 +2571,7 @@ K.nachFontLaden(aktualisiere);
 		else { const [t, f] = schrittText(); $("sp-schritt").innerHTML = t; $("sp-frage").innerHTML = f; }
 		$("sp-frage").hidden = geloest;
 		document.querySelector("#spiel .sp-aktion").hidden = geloest;
-		eingaben(); gefundenListe(); protokoll(); hilfeKnopf();
+		eingaben(); gefundenListe(); protokoll(); hilfeKnopf(); if (typeof SETZE !== "undefined") sperre();
 		$("sp-weiter").hidden = !geloest;
 		$("sp-weiter").parentNode.hidden = !geloest;
 		$("sp-weiter").textContent = sp.nr === 0 ? "Zur Probe B" : "Zum Ergebnis";
@@ -2602,7 +2622,7 @@ K.nachFontLaden(aktualisiere);
 	function loesungZeigen() {
 		const i = sp.nr, pr = PR(), e = sp.ein[i];
 		if (i > 1 || sp.geloest[i]) return;
-		if (sp.schritt[i] === "v") e.v = zahlPaar(durchSorte().v);
+		if (sp.schritt[i] === "v") { const o = durchSorte(); SETZE.U(o.v * lauf.B1 * D, true); e.v = zahlPaar(lauf.U / (lauf.B1 * D)); }
 		else e.m = (i === 0 ? pr.ionen : [pr.ionen[sp.aktuell[1]]]).map(o => zahlPaar(mkg(o)));
 		sp.fehler[i] = Math.max(sp.fehler[i], 3);   /* mit Lösung keine Sterne */
 		sichern(); eingaben(); pruefen();
@@ -2627,16 +2647,18 @@ K.nachFontLaden(aktualisiere);
 			const v = liesZahl(e.v);
 			if (!isFinite(v) || v <= 0) { melde("falsch", "Bitte tragen Sie eine Geschwindigkeit ein, z.&nbsp;B. 2,5 · 10 hoch 5."); return; }
 			const frei = pr.ionen.map((o, k) => k).filter(k => !sp.gefunden[i].includes(k));
-			const k = frei.find(k => Math.abs(v - pr.ionen[k].v) / pr.ionen[k].v <= TOL_V);
+			const passt = frei.filter(k => Math.abs(v - pr.ionen[k].v) / pr.ionen[k].v <= TOL_V);
+			const k = passt.find(k => kommtDurch(pr.ionen[k]));
+			if (k === undefined && passt.length) { melde("falsch", "Bei Ihrer jetzigen Einstellung fliegt keine Sorte mit dieser Geschwindigkeit geradeaus durch die Blende. Stellen Sie den Wienfilter so ein, dass Ionen durchkommen, und berechnen Sie <i class='gr gv'>v</i> aus genau diesen Werten."); return; }
 			if (k === undefined) {
 				if (i === 1 && sp.gefunden[i].some(k => Math.abs(v - pr.ionen[k].v) / pr.ionen[k].v <= TOL_V)) { melde("falsch", "Diese Sorte haben Sie schon. Suchen Sie mit <i>U</i> die nächste."); return; }
 				fehler("Diese Geschwindigkeit passt zu keiner Ionensorte der Probe. Fliegen bei Ihrer Einstellung wirklich Ionen geradeaus durch die Blende?");
 				return;
 			}
-			sp.aktuell[i] = k; sp.schritt[i] = "m"; sp.versuch[i] = 0;
+			sp.aktuell[i] = k; sp.schritt[i] = "m"; sp.versuch[i] = 0; sp.fest[i] = { U: lauf.U, B1: lauf.B1 };
 			if (i === 1) e.m = [["", ""]];
 			sichern();
-			melde("gut", "Richtig: <i>v</i> = " + hz(pr.ionen[k].v) + "&nbsp;m/s. Weiter mit der Masse.");
+			melde("gut", "Richtig: <i>v</i> = " + hz(pr.ionen[k].v) + "&nbsp;m/s. Der Wienfilter bleibt jetzt so eingestellt. Weiter mit der Masse.");
 			zeige();
 			return;
 		}
@@ -2658,7 +2680,7 @@ K.nachFontLaden(aktualisiere);
 			if (werte.length !== 1 || Math.abs(werte[0] - mkg(o)) / mkg(o) > TOL_M) { fehler("Die Masse passt nicht zu dieser Sorte. Denken Sie daran: <i>r</i> ist der halbe Abstand des Auftreffpunkts vom Spalt."); return; }
 			sp.gefunden[1].push(sp.aktuell[1]); sp.aktuell[1] = -1;
 			if (sp.gefunden[1].length < N_B) {
-				sp.schritt[1] = "v"; sp.versuch[1] = 0; e.v = ["", ""]; sichern();
+				sp.schritt[1] = "v"; sp.versuch[1] = 0; sp.fest[1] = null; e.v = ["", ""]; sichern();
 				melde("gut", "Richtig: Das ist " + o.name + " mit " + de(o.m, 2) + "&nbsp;u. Suchen Sie die nächste Sorte.");
 				zeige(); return;
 			}
@@ -2713,16 +2735,31 @@ K.nachFontLaden(aktualisiere);
 	}
 
 	/* ---------- Bedienung ---------- */
+	const SETZE = {};
+	function merkeLabor() { sp.lab = { U: lauf.U, B1: lauf.B1, B2: lauf.B2, marke: lauf.marke }; sichern(); }
+	/* Wienfilter sperren oder freigeben, gesperrte Werte erzwingen */
+	function sperre() {
+		const zu = gesperrt(), f = festeEinstellung();
+		document.querySelectorAll('#spiel .sp-wien .sp-zeile[data-groesse] input, #spiel .sp-wien .sp-zeile[data-groesse] button').forEach(x => x.disabled = zu);
+		$("sp-schloss").hidden = !zu;
+		document.querySelector("#spiel .sp-wien").classList.toggle("sp-zu", zu);
+		if (f && SETZE.U) { if (lauf.U !== f.U) SETZE.U(f.U, true); if (lauf.B1 !== f.B1) SETZE.B1(f.B1, true); }
+	}
 	const FORMAT = { U: v => Math.round(v) + " V", B1: v => de(v, 2) + " T", B2: v => de(v, 2) + " T" };
 	const GRENZE = { U: [0, 4000], B1: [0.05, 0.5], B2: [0.05, 0.6] };
 	document.querySelectorAll("#spiel .sp-zeile[data-groesse]").forEach(z => {
 		const gr = z.dataset.groesse, r = z.querySelector("input"), w = z.querySelector(".wert");
-		const setze = v => { v = Math.max(GRENZE[gr][0], Math.min(GRENZE[gr][1], v)); v = gr === "U" ? Math.round(v) : Math.round(v * 100) / 100; lauf[gr] = v; r.value = v; w.textContent = FORMAT[gr](v); lauf.ionen = []; zeichne(); };
+		const setze = (v, erzwungen) => {
+			if (!erzwungen && (gr === "U" || gr === "B1") && gesperrt()) v = festeEinstellung()[gr];   /* gesperrt: nichts verstellen */
+			v = Math.max(GRENZE[gr][0], Math.min(GRENZE[gr][1], v)); v = gr === "U" ? Math.round(v) : Math.round(v * 100) / 100;
+			lauf[gr] = v; r.value = v; w.textContent = FORMAT[gr](v); lauf.ionen = []; merkeLabor(); zeichne();
+		};
+		SETZE[gr] = setze;
 		r.addEventListener("input", () => setze(+r.value));
 		z.querySelectorAll(".feinknopf").forEach(b => b.addEventListener("click", () => setze(lauf[gr] + +b.dataset.d)));
-		setze(lauf[gr]);
+		setze(lauf[gr], true);
 	});
-	const marke = d => { lauf.marke = Math.max(2, Math.min(DET, Math.round((lauf.marke + d) * 10) / 10)); $("sp-marke").textContent = de(lauf.marke, 1) + " cm"; zeichne(); };
+	const marke = d => { lauf.marke = Math.max(2, Math.min(DET, Math.round((lauf.marke + d) * 10) / 10)); $("sp-marke").textContent = de(lauf.marke, 1) + " cm"; merkeLabor(); zeichne(); };
 	$("sp-m-runter").addEventListener("click", () => marke(-0.1));
 	$("sp-m-hoch").addEventListener("click", () => marke(0.1));
 	$("sp-notieren").addEventListener("click", () => { if (sp.nr > 1) return; sp.protokoll[sp.nr].push([Math.round(lauf.U), lauf.B1, lauf.B2, lauf.marke]); sichern(); protokoll(); });
@@ -2752,7 +2789,8 @@ K.nachFontLaden(aktualisiere);
 	window.addEventListener("resize", () => { if (!$("spiel").classList.contains("verborgen")) layout(); });
 	window.spielLayout = layout;
 	strahlKnopf();
-	zeige();
+	zeige(); sperre();
+	marke(0);
 	K.starteSchleife(schritt);
 })();
 </script>
