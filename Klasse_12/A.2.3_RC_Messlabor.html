@@ -1127,6 +1127,7 @@ window.SimUI = (function () {
 			if (n.nodeType === 3) { if (n.textContent) teile.push({ t: n.textContent, art, kursiv }); return; }
 			if (n.nodeType !== 1 || /^(BUTTON|INPUT|SELECT)$/.test(n.tagName)) return;
 			if (n.classList.contains("legende-punkt")) { teile.push({ punkt: n.style.background || getComputedStyle(n).backgroundColor }); return; }
+			if (n.classList.contains("luecke")) { teile.push({ luecke: true }); return; }   /* Eintragfeld zum Selbstausfüllen (wie \eintrag auf dem Blatt) */
 			const a = n.tagName === "SUB" ? "sub" : n.tagName === "SUP" ? "sup" : art;
 			const k = kursiv || n.tagName === "I" || n.tagName === "EM";
 			n.childNodes.forEach(c => lauf(c, a, k));
@@ -1148,11 +1149,12 @@ window.SimUI = (function () {
 		const f = 2, schrift = "'Libertinus Sans', 'Segoe UI', sans-serif";
 		const font = (kopf, x) => (x.kursiv ? "italic " : "") + (kopf ? "bold " : "") + (x.art ? 11 : 15) + "px " + schrift;
 		const m = document.createElement("canvas").getContext("2d");
-		const breite = (kopf, teile) => teile.reduce((w, x) => { if (x.punkt) return w + 15; m.font = font(kopf, x); return w + m.measureText(x.t).width; }, 0);
+		const breite = (kopf, teile) => teile.reduce((w, x) => { if (x.punkt) return w + 15; if (x.luecke) return w + 96; m.font = font(kopf, x); return w + m.measureText(x.t).width; }, 0);
 		const spalten = Math.max(...reihen.map(r => r.zellen.length));
 		const breiten = new Array(spalten).fill(20);
 		reihen.forEach(r => r.zellen.forEach((z, i) => { breiten[i] = Math.max(breiten[i], breite(r.kopf, z) + 24); }));
-		const rand = 16, zh = 26, kopfH = titel ? 30 : 0;
+		const mitLuecken = reihen.some(r => r.zellen.some(z => z.some(x => x.luecke)));
+		const rand = 16, zh = mitLuecken ? 40 : 26, kopfH = titel ? 30 : 0;
 		/* Titel breiter als die Tabelle: Spalten gleichmäßig verbreitern, damit nichts abgeschnitten wird */
 		if (titel) { m.font = "bold 16px " + schrift; const mehr = m.measureText(titel).width + 8 - breiten.reduce((a, b) => a + b, 0); if (mehr > 0) breiten.forEach((_, i) => breiten[i] += mehr / spalten); }
 		const W = breiten.reduce((a, b) => a + b, 0) + 2 * rand;
@@ -1175,6 +1177,7 @@ window.SimUI = (function () {
 				const ym = y + zh / 2;
 				z.forEach(t => {
 					if (t.punkt) { g.fillStyle = t.punkt; g.beginPath(); g.arc(x + 6, ym, 5.5, 0, 2 * Math.PI); g.fill(); x += 15; return; }
+					if (t.luecke) { const lb = breiten[i] - 12, lx = x0 + 6; g.fillStyle = "#E6ECFA"; g.beginPath(); g.roundRect ? g.roundRect(lx, y + 5, lb, zh - 10, 3) : g.rect(lx, y + 5, lb, zh - 10); g.fill(); x += 96; return; }
 					g.font = font(r.kopf, t); g.fillStyle = "#111";
 					g.fillText(t.t, x, ym + (t.art === "sub" ? 5 : t.art === "sup" ? -6 : 0));
 					x += g.measureText(t.t).width;
@@ -1238,10 +1241,50 @@ html.kd i.gB, html.kd .gB { color: var(--f-B); } html.kd i.gv, html.kd .gv { col
 html.kd i.gp, html.kd .gp { color: var(--f-p); } html.kd i.ga, html.kd .ga { color: var(--f-a); }
 html.kd i.gI, html.kd .gI { color: var(--f-I); } html.kd .gplus { color: var(--f-plus); } html.kd .gminus { color: var(--f-minus); }
 html.kd .gphi { color: var(--f-phi-m); }
+/* Index in der Farbe des Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie vorkommen!“).
+   Andere Färbungen (style, eigene Klassen, nachgeladene Texte) gleicht kast_design.js an. */
+html.kd .gF + sub { color: var(--f-F); } html.kd .gE + sub { color: var(--f-E); } html.kd .gB + sub { color: var(--f-B); }
+html.kd .gv + sub { color: var(--f-v); } html.kd .gp + sub { color: var(--f-p); } html.kd .ga + sub { color: var(--f-a); }
+html.kd .gI + sub { color: var(--f-I); } html.kd .gplus + sub { color: var(--f-plus); } html.kd .gminus + sub { color: var(--f-minus); }
+html.kd .gphi + sub { color: var(--f-phi-m); }
+/* Bruchstrich immer über die ganze Breite des längeren Teils (Kast 2026-11-12: „Bruchstrich bei 1/4pi*epsilon_0 lang genug machen!“).
+   Vorher hing der Strich am Zähler und war bei „1“ nur so breit wie die 1. */
+html.kd .bruch { align-items: stretch; }
+html.kd .bruch > .z, html.kd .bruch > .n { text-align: center; }
 
-/* ---------- Auftrag: was ist zu tun? (oben im Kasten, normale Schrift) ---------- */
-html.kd p.auftrag, html.kd .auftrag-text, html.kd p.hinweis#auftrag {
-	font-size: 1rem; color: #111; margin: 0 0 0.6rem; line-height: 1.45;
+/* ---------- Auftrag: was ist zu tun? Großer grüner Kasten (Kast 2026-11-12: „Aufgabenstellung muss auch
+   immer viel prominenter sein. Allgemeine Regel!“). Erkennt alle bisherigen Formen: p.auftrag (auch kast_interaktiv),
+   div.auftrag, p.hinweis#auftrag, .sp-auftrag, p.aufgabe-text, .aufgabentext; in grünen Kästen nur große Schrift. ---------- */
+html.kd p.auftrag, html.kd div.auftrag, html.kd p.hinweis#auftrag, html.kd .sp-auftrag, html.kd p.aufgabe-text, html.kd .aufgabentext {
+	position: relative; font-size: 1.1rem; color: #111; line-height: 1.5; margin: 0 0 0.75rem;
+	padding: 0.55rem 0.8rem 0.55rem 2.55rem; background: #F3F8EF;
+	border: 2px solid #295C06; border-left-width: 6px; border-radius: 2mm; box-shadow: 0 2px 6px rgba(41,92,6,0.12);
+}
+html.kd p.auftrag::before, html.kd div.auftrag::before, html.kd p.hinweis#auftrag::before, html.kd .sp-auftrag::before, html.kd p.aufgabe-text::before, html.kd .aufgabentext::before {
+	content: ""; position: absolute; left: 0.62rem; top: 0.68rem; width: 1.3rem; height: 1.3rem; background: #295C06;
+	-webkit-mask: var(--kd-auftrag-symbol) center / contain no-repeat; mask: var(--kd-auftrag-symbol) center / contain no-repeat;
+}
+html.kd { --kd-auftrag-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E"); }
+html.kd p.auftrag:empty, html.kd div.auftrag:empty, html.kd .sp-auftrag:empty, html.kd p.aufgabe-text:empty, html.kd .aufgabentext:empty { display: none; }
+/* schon in einem grünen Aufgabenkasten: kein Kasten im Kasten, nur große Schrift */
+html.kd .tcb.gruen p.aufgabe-text, html.kd .tcb.gruen p.auftrag, html.kd .tcb.gruen .aufgabentext {
+	padding: 0; background: none; border: none; box-shadow: none; border-radius: 0;
+}
+html.kd .tcb.gruen p.aufgabe-text::before, html.kd .tcb.gruen p.auftrag::before, html.kd .tcb.gruen .aufgabentext::before { content: none; }
+/* eigener Auftragskasten (tcb mit .auftrag-text oder Körper #auftrag): kräftiger Rahmen, große Schrift, Symbol im Titel */
+html.kd .auftrag-text, html.kd .tcb-body#auftrag, html.kd .tcb.auftrag-kasten > .tcb-body { font-size: 1.1rem; color: #111; line-height: 1.5; }
+html.kd .auftrag-text p { margin: 0; }
+html.kd .auftrag-text .einleitung { margin: 0 0 0.35rem; }
+html.kd .auftrag-text ol { margin: 0; padding-left: 1.6rem; }
+html.kd .auftrag-text ol li { margin: 0.12rem 0; padding-left: 0.15rem; }
+html.kd .auftrag-text ol li::marker { color: #295C06; font-weight: bold; }
+html.kd .tcb.auftrag-kasten, html.kd .tcb:has(> .tcb-body#auftrag), html.kd .tcb:has(> .tcb-body.auftrag-text) { border-width: 2.5px; box-shadow: 0 2px 8px rgba(41,92,6,0.13); }
+html.kd .tcb.auftrag-kasten > .tcb-title, html.kd .tcb:has(> .tcb-body#auftrag) > .tcb-title, html.kd .tcb:has(> .tcb-body.auftrag-text) > .tcb-title {
+	font-size: 1.12rem; padding: 0.35rem 0.9rem; display: flex; align-items: center; gap: 0.45rem;
+}
+html.kd .tcb.auftrag-kasten > .tcb-title:not(:has(svg))::before, html.kd .tcb:has(> .tcb-body#auftrag) > .tcb-title:not(:has(svg))::before, html.kd .tcb:has(> .tcb-body.auftrag-text) > .tcb-title:not(:has(svg))::before {
+	content: ""; flex: none; width: 1.25rem; height: 1.25rem; background: currentColor;
+	-webkit-mask: var(--kd-auftrag-symbol) center / contain no-repeat; mask: var(--kd-auftrag-symbol) center / contain no-repeat;
 }
 
 /* ---------- 1 Modus: Leiste über dem Kasten (Segmentleiste) ---------- */
@@ -1464,6 +1507,17 @@ html.kd details.mehr > summary:hover { background: var(--flaeche); color: #333; 
 html.kd details.mehr[open] > summary { color: #333; }
 html.kd details.mehr > .mehr-inhalt { padding: 0.35rem 0 0 0.3rem; line-height: 1.45; }
 html.kd details.mehr > .mehr-inhalt > p { margin: 0 0 0.35rem; }
+/* ---------- Kasten einklappen (Kast 2026-11-12: „dass man viel wegklappen kann, was nicht so wichtig ist. Das ist super!!“)
+   Markup: <div class="tcb blau" data-klapp="zu"> (startet zu) oder data-klapp="auf". Titel antippen klappt; kast_design.js. ---------- */
+html.kd .tcb[data-klapp] > .tcb-title { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-klapp-text { flex: 1; min-width: 0; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil { flex: none; font-size: 0.85rem; transition: transform 0.15s; }
+html.kd .tcb[data-klapp] > .tcb-title > .kd-zu-hinweis { flex: none; font-weight: normal; font-size: 0.8rem; opacity: 0.75; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title { border-bottom-color: transparent; }
+html.kd .tcb[data-klapp].kd-zu > .tcb-title > .kd-pfeil { transform: rotate(-90deg); }
+html.kd .tcb[data-klapp]:not(.kd-zu) > .tcb-title > .kd-zu-hinweis { display: none; }
+html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: none !important; }
+@media print { html.kd .tcb[data-klapp].kd-zu > :not(.tcb-title) { display: block !important; } html.kd .tcb[data-klapp] > .tcb-title > .kd-pfeil, html.kd .kd-zu-hinweis { display: none; } }
 
 /* ---------- Eingabelücken (Spiele, Aufträge): deutlich, Einheit dahinter ---------- */
 html.kd input[type="number"], html.kd input[type="text"].eingabe, html.kd input.eingabe, html.kd .eingabe input {
@@ -1800,7 +1854,64 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 		const s = p.toFixed(2) + "%"; if (r.style.getPropertyValue("--anteil") !== s) r.style.setProperty("--anteil", s);
 	}
 	const alleSchienen = () => document.querySelectorAll('input[type="range"]').forEach(r => { reglerFarbe(r); schiene(r); });
+	/* Auftrag prominent und oben (Kast 2026-11-12: „Man übersieht den Auftrag“, „Aufgabenstellung muss auch immer viel
+	   prominenter sein. Allgemeine Regel!“): Ein Kasten „Auftrag“, „Beobachtungsauftrag“ oder „Ausprobieren“ (bzw. mit
+	   Körper #auftrag) wird als Auftragskasten gezeichnet; steht er direkt hinter einem Simulationskasten, kommt er
+	   darüber. Steht etwas anderes dazwischen (z. B. eine Vorhersage), bleibt die Reihenfolge des Autors. */
+	function auftragOben() {
+		const titel = t => { const e = t.querySelector(":scope > .tcb-title"); return e ? e.textContent.trim() : ""; };
+		document.querySelectorAll(".tcb").forEach(t => {
+			/* auch der grüne Modus-Hinweiskasten oben (#hinweis-text, v. a. Kl. 12/13): das ist der Auftrag des Modus */
+			if (!(t.querySelector(":scope > .tcb-body#auftrag, :scope > .tcb-body#hinweis-text") || /^(Beobachtungsauftrag|Auftrag|Ausprobieren)$/.test(titel(t)))) return;
+			t.classList.add("auftrag-kasten");
+			let v = t.previousElementSibling;
+			/* verborgene Kästen (anderer Modus) und Unsichtbares dazwischen überspringen */
+			while (v && (!v.classList.contains("tcb") || v.offsetHeight === 0)) { if (!v.classList.contains("tcb") && v.offsetHeight > 0 && !v.matches("script, style")) return; v = v.previousElementSibling; }
+			if (v && /^Simulation\b/.test(titel(v)) && !t.dataset.bleibt) v.before(t);
+		});
+	}
+	/* Index in der Farbe seines Formelzeichens (Kast 2026-11-12: „F rot, aber der Index L nicht. Das sollte bitte nie
+	   vorkommen!“): Folgt ein <sub> direkt (nur Leerraum dazwischen) auf ein Element, dessen Farbe von der Umgebung
+	   abweicht, bekommt der Index dieselbe Farbe. Gilt auch für Texte, die später per Skript entstehen. */
+	function indexFarben(wurzel) {
+		(wurzel || document).querySelectorAll("sub").forEach(s => {
+			let v = s.previousSibling;
+			while (v && v.nodeType === 3 && !v.textContent.trim()) v = v.previousSibling;
+			if (!v || v.nodeType !== 1 || !s.parentElement) return;
+			const fz = getComputedStyle(v).color, fu = getComputedStyle(s.parentElement).color;
+			if (fz !== fu) { if (!s.style.color || s.dataset.kdFarbe) { s.style.color = fz; s.dataset.kdFarbe = "1"; } }
+			else if (s.dataset.kdFarbe) { s.style.color = ""; delete s.dataset.kdFarbe; }
+		});
+	}
+	/* Kästen einklappen (Kast 2026-11-12: „viel wegklappen, was nicht so wichtig ist“): .tcb[data-klapp="zu"|"auf"].
+	   Zustand je Seite im Sitzungsspeicher (übersteht das Neuladen nach OneNote); nach dem Aufklappen ein resize-Ereignis,
+	   damit Zeichnungen im Kasten ihre Breite neu messen. */
+	function klappen() {
+		document.querySelectorAll(".tcb[data-klapp]").forEach((t, i) => {
+			const ti = t.querySelector(":scope > .tcb-title"); if (!ti || ti.dataset.kdKlapp) return;
+			ti.dataset.kdKlapp = "1";
+			const sp = document.createElement("span"); sp.className = "kd-klapp-text";
+			while (ti.firstChild) sp.appendChild(ti.firstChild);
+			ti.append(sp);
+			ti.insertAdjacentHTML("beforeend", "<span class='kd-zu-hinweis'>antippen zum Öffnen</span><span class='kd-pfeil' aria-hidden='true'>▾</span>");
+			ti.setAttribute("role", "button"); ti.tabIndex = 0;
+			const schluessel = "kd-klapp:" + location.pathname + ":" + (t.id || i);
+			let zu = t.dataset.klapp === "zu";
+			try { const m = sessionStorage.getItem(schluessel); if (m !== null) zu = m === "1"; } catch (e) { }
+			const setze = (z, merken) => {
+				t.classList.toggle("kd-zu", z); ti.setAttribute("aria-expanded", z ? "false" : "true");
+				if (merken) { try { sessionStorage.setItem(schluessel, z ? "1" : "0"); } catch (e) { } }
+				if (!z) requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+			};
+			setze(zu, false);
+			ti.addEventListener("click", e => { if (e.target.closest("button, a, input, select, label")) return; setze(!t.classList.contains("kd-zu"), true); });
+			ti.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setze(!t.classList.contains("kd-zu"), true); } });
+		});
+	}
 	function los() {
+		klappen();
+		auftragOben();
+		indexFarben(document);
 		rollen(document);
 		alleSchienen();
 		document.addEventListener("input", e => { if (e.target.type === "range") schiene(e.target); }, true);
@@ -1810,6 +1921,9 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 			if (ms.every(m => m.target.closest && m.target.closest("table"))) return;
 			clearTimeout(warte); warte = setTimeout(() => { rollen(document); alleSchienen(); }, 30);
 		}).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "aria-pressed"] });
+		let warteIndex = null;   /* auch in Tabellen und nachgeladenen Texten (eigener Beobachter, ohne Tabellenfilter) */
+		new MutationObserver(() => { clearTimeout(warteIndex); warteIndex = setTimeout(() => indexFarben(document), 40); })
+			.observe(document.body, { childList: true, subtree: true });
 		const start = Date.now();
 		new MutationObserver(ms => {
 			if (Date.now() - start < 2000) return;
@@ -1823,42 +1937,90 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 </script>
 </head>
 <style>
-/* RC-Messlabor, Neukonzept 2026-10-15: eigene SparkVue-Messreihen auswerten */
+/* RC-Messlabor, Neubau 2026-11-10: SparkVue nur zum Messen, Auswertung hier; erst von Hand, dann Automatik */
+[hidden] { display: none !important; }
 .knopfleiste button.gross-haupt { font-size: 1.05rem; padding: 0.5rem 1.1rem; min-height: 2.6rem; }
 .laden-feld { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; }
 .laden-feld .hinweis { margin: 0; flex: 1 1 15rem; }
-.reihen { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.75rem; }
-.reihe { border: 1.5px solid #D0D0D0; border-radius: 1mm; padding: 0.4rem 0.6rem 0.5rem; background: #fff; cursor: pointer; }
+.dateiname-muster { font-family: Consolas, "Courier New", monospace; background: #F1F1FB; color: #0000BF; padding: 0.05rem 0.35rem; border-radius: 4px; white-space: nowrap; }
+.reihen { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+.reihe { border: 1.5px solid #D0D0D0; border-radius: 1.5mm; padding: 0.45rem 0.65rem 0.5rem; background: #fff; cursor: pointer; }
 .reihe.gewaehlt { border-color: var(--blue-frame); box-shadow: 0 0 0 1px var(--blue-frame) inset; background: #F7F7FF; }
 .reihe .kopfzeile { display: flex; align-items: center; gap: 0.5rem; }
 .reihe .farbe { flex: none; width: 0.95rem; height: 0.95rem; border-radius: 50%; }
-.reihe .name { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.reihe .name.datei { font-weight: normal; font-size: 0.85rem; color: #777; }
-.reihe .bauteile { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; align-items: center; margin-top: 0.35rem; }
-.reihe .bauteil { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
-.reihe .bauteil > b { font-weight: normal; min-width: 1.2em; }
+.reihe .name { flex: 1; min-width: 0; font-size: 0.85rem; color: #777; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reihe .bauteile { display: flex; flex-wrap: wrap; gap: 0.35rem 1.2rem; align-items: center; margin-top: 0.35rem; }
+.reihe .bauteil { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+.reihe .bauteil input { width: 4.6em; }
 .reihe .knopfleiste button { min-height: 1.85rem; padding: 0.12rem 0.5rem; font-size: 0.88rem; }
-.reihe input.anders { width: 5.6em; font: inherit; font-size: 0.88rem; padding: 0.15rem 0.3rem; border: 1px solid #BBB; border-radius: 4px; }
-.reihe input.anders.aktiv { border-color: var(--blue-frame); box-shadow: 0 0 0 1px var(--blue-frame) inset; }
-.reihe .anders-feld { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
-.reihe .fehlt { color: var(--red-frame); font-size: 0.85rem; }
+.ampel { margin: 0.4rem 0 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.ampel p { margin: 0; padding: 0.22rem 0.55rem 0.22rem 1.55rem; border-radius: 0 6px 6px 0; font-size: 0.86rem; line-height: 1.35; position: relative; }
+.ampel p::before { content: ""; position: absolute; left: 0.5rem; top: 0.5rem; width: 0.62rem; height: 0.62rem; border-radius: 50%; }
+.ampel p.rot { background: #FDECEC; color: #8E1B1B; border-left: 4px solid #C62828; }
+.ampel p.rot::before { background: #C62828; }
+.ampel p.gelb { background: #FFF6E0; color: #6B4A00; border-left: 4px solid #E0A000; }
+.ampel p.gelb::before { background: #E0A000; }
+.ampel p.gruen { background: #EAF5EA; color: #1B5E20; border-left: 4px solid #2E7D32; }
+.ampel p.gruen::before { background: #2E7D32; }
 .leer-hinweis { color: #555; font-size: 0.92rem; margin: 0.7rem 0 0; }
 .beispiel-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; margin-top: 0.7rem; font-size: 0.85rem; color: #666; }
 .beispiel-zeile .knopfleiste button { font-size: 0.82rem; min-height: 1.8rem; }
 .auftrag-text p { margin: 0; }
 .diagramm-leiste { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: flex-end; margin-bottom: 0.3rem; }
-.ergebnis-karten { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.6rem 0 0.2rem; }
-.karte { flex: 1 1 14rem; border: 2px solid #C86400; background: #FFF6EC; border-radius: 1.5mm; padding: 0.4rem 0.8rem 0.5rem; }
-.karte.blau { border-color: var(--blue-frame); background: #F4F4FF; }
-.karte .was { font-size: 0.85rem; color: #7A3E00; }
-.karte.blau .was { color: var(--blue-frame); }
-.karte .zahl { font-size: 1.75rem; font-weight: bold; color: #7A3E00; font-variant-numeric: tabular-nums; line-height: 1.25; }
-.karte.blau .zahl { color: var(--blue-frame); font-size: 1.15rem; }
-.karte .klein { font-size: 0.85rem; color: #444; }
-.cursor-zeile { font-size: 0.9rem; color: #333; margin-top: 0.35rem; }
-#ergebnis-tab td, #ergebnis-tab th { padding-left: 0.3rem; padding-right: 0.3rem; }
+.eigen-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.7rem; margin: 0.7rem 0 0; padding: 0.55rem 0.7rem; background: #F4F5FA; border-radius: 6px; }
+.eigen-zeile .feld { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+.eigen-zeile .nw { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+.eigen-zeile input { width: 5em; }
+.eigen-zeile sub { vertical-align: sub; font-size: 0.72em; line-height: 0; }
+.schloss { display: inline-flex; align-items: center; gap: 0.3rem; margin-left: auto; font-size: 0.86rem; color: #777; }
+.schloss.offen { color: #1B5E20; }
+.regler-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.8rem; margin: 0.7rem 0 0; }
+.regler-zeile .rtitel { white-space: nowrap; }
+.regler-zeile input[type="range"] { flex: 1 1 10rem; }
+#ergebnis-tab td, #ergebnis-tab th { padding-left: 0.35rem; padding-right: 0.35rem; text-align: center; }
+#ergebnis-tab .selbst { color: #999; font-style: italic; font-size: 0.85rem; }
+#ergebnis-tab .luecke { display: block; min-width: 5.5em; height: 2.1rem; margin: 0.15rem 0; background: #E6ECFA; border-radius: 3px; }
+#ergebnis-tab td:has(.luecke) { padding-top: 0.2rem; padding-bottom: 0.2rem; }
+#ergebnis-tab .zu { color: #999; }
 .legende-punkt { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 50%; margin-right: 0.3em; vertical-align: -0.05em; }
-@media (max-width: 560px) { .karte .zahl { font-size: 1.45rem; } }
+.formel { font-size: 1.15rem; white-space: nowrap; }
+@media (max-width: 560px) { .formel { font-size: 1rem; white-space: normal; } .schloss { margin-left: 0; } }
+
+/* Übersicht 2026-11-12: Auftrag prominent, Ergebniskarte am Diagramm, Messreihen kompakt, Aufbau eingeklappt */
+.auftrag-text .einleitung { margin: 0 0 0.35rem; }
+.auftrag-text ol { margin: 0; padding-left: 1.6rem; }
+.auftrag-text ol li { margin: 0.12rem 0; padding-left: 0.15rem; }
+.auftrag-text ol li::marker { color: #295C06; font-weight: bold; }
+.ergebnis-karte { border: 2px solid var(--blue-frame, #0000BF); border-radius: 2mm; background: #F7F7FF; padding: 0.55rem 0.8rem 0.65rem; margin: 0 0 0.8rem; box-shadow: 0 2px 6px rgba(0,0,80,0.12); }
+.ergebnis-karte .eigen-zeile { margin: 0; padding: 0; background: none; }
+.ergebnis-karte .ek-titel { flex: 1 1 100%; font-weight: bold; color: var(--blue-frame, #0000BF); font-size: 1.08rem; }
+.ergebnis-karte .feld { font-size: 1.08rem; }
+.ergebnis-karte .eigen-zeile input { width: 5.5em; font-size: 1.05rem; }
+.ergebnis-karte .gegeben { flex: 1 1 100%; color: #333; }
+.ergebnis-karte #urteil:empty { display: none; }
+.ergebnis-karte #urteil .urteil { margin: 0.55rem 0 0; }
+.sym { white-space: nowrap; }
+.sym sub { font-size: 0.72em; vertical-align: sub; line-height: 0; }
+.tcb-title.klapp { cursor: pointer; display: flex; align-items: center; gap: 0.5rem; user-select: none; }
+.tcb-title.klapp .zahl { font-weight: normal; color: #555; font-size: 0.9rem; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tcb-title.klapp .pfeil, details.klapp-kasten > summary .pfeil { flex: none; transition: transform 0.15s; font-size: 0.9rem; }
+.tcb-title.klapp[aria-expanded="false"] .pfeil { transform: rotate(-90deg); }
+details.klapp-kasten > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+details.klapp-kasten > summary::-webkit-details-marker { display: none; }
+details.klapp-kasten > summary .titel { flex: 1; }
+details.klapp-kasten:not([open]) > summary { border-bottom: none; }
+details.klapp-kasten:not([open]) > summary .pfeil { transform: rotate(-90deg); }
+.reihe { padding: 0.3rem 0.6rem; }
+.reihen { gap: 0.35rem; margin-top: 0.6rem; }
+.reihe .kurzname { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 0.5rem; overflow: hidden; }
+.reihe .kurzname b { font-weight: normal; white-space: nowrap; }
+.reihe .kurzname .name { flex: 0 1 auto; }
+.reihe .status { flex: none; width: 0.7rem; height: 0.7rem; border-radius: 50%; }
+.reihe .status.gruen { background: #2E7D32; } .reihe .status.gelb { background: #E0A000; } .reihe .status.rot { background: #C62828; }
+.reihe .bauteile { margin-top: 0.3rem; }
+.reihe .ampel { margin-top: 0.3rem; }
+.reihe button.neben.an { color: var(--blue-frame, #0000BF); background: #E8E8FA; }
+.laden-feld .hinweis.kurz { flex-basis: auto; }
 </style>
 <body>
 <div class="blatt">
@@ -1872,21 +2034,22 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	<div class="modusleiste" id="modus-knoepfe">
 		<button data-modus="vergleich" class="aktiv">Vergleich</button>
 		<button data-modus="halbwertszeit">Halbwertszeit</button>
-		<button data-modus="anpassung">Anpassung</button>
-		<button data-modus="flaeche">Fläche</button>
+		<button data-modus="anpassung">Formel</button>
+		<button data-modus="flaeche">Ladung</button>
 	</div>
 
-	<div class="tcb gruen">
-		<div class="tcb-title" id="auftrag-titel">Was ist zu tun?</div>
+	<div class="tcb gruen auftrag-kasten">
+		<div class="tcb-title"><svg width='20' height='20' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2m-2 14-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/></svg><span id="auftrag-titel">Ihr Auftrag</span></div>
 		<div class="tcb-body auftrag-text" id="auftrag-text"></div>
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Meine Messreihen</div>
-		<div class="tcb-body">
+		<div class="tcb-title klapp" id="reihen-titel" role="button" tabindex="0" aria-expanded="true" title="ein- und ausklappen"><span>Meine Messreihen</span><span class="zahl" id="reihen-zahl"></span><span class="pfeil">▾</span></div>
+		<div class="tcb-body" id="reihen-koerper">
 			<div class="laden-feld">
 				<span class="knopfleiste"><button class="haupt gross-haupt" id="btn-oeffnen" data-icon="ordner" data-text="SparkVue-Datei öffnen" title="SparkVue-Datei öffnen"></button></span>
-				<p class="hinweis">Gespeicherte Messung (.spklab) oder aus SparkVue exportierte Tabelle (.csv, .xlsx), auch mehrere Dateien. Die Dateien bleiben auf Ihrem Gerät.</p>
+				<p class="hinweis kurz" id="laden-kurz" hidden>Dateiname wie <span class="dateiname-muster">96uF_2kOhm</span>: dann erkennt das Messlabor <i class="gr">C</i> und <i class="gr">R</i>.</p>
+				<p class="hinweis" id="laden-hinweis">Speichern Sie jede Messung unter einem Namen wie <span class="dateiname-muster">96uF_2kOhm</span>, dann erkennt das Messlabor <i class="gr">C</i> und <i class="gr">R</i>. Die Ampel prüft, ob die Messung brauchbar ist. Die Dateien bleiben auf Ihrem Gerät.</p>
 			</div>
 			<input type="file" id="datei" accept=".spklab,.csv,.txt,.xlsx" multiple hidden>
 			<div class="reihen" id="reihen"></div>
@@ -1899,30 +2062,51 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	</div>
 
 	<div class="tcb blau">
-		<div class="tcb-title">Versuchsaufbau: Entladen über <i class="gr">R</i><sub>2</sub>, Spannungssensor am Widerstand</div>
-		<div class="tcb-body"><canvas id="schaltung" class="sim"></canvas></div>
-	</div>
-
-	<div class="tcb blau">
 		<div class="tcb-title" id="diagramm-titel">Entladekurven</div>
 		<div class="tcb-body">
+			<div class="ergebnis-karte" id="ergebnis-karte" hidden>
+				<div class="eigen-zeile" id="eigen-formel" hidden>
+					<span class="ek-titel">Ihre Vorhersage</span>
+					<span class="gegeben" id="formel-u0"></span>
+					<span class="feld"><span class="nw"><span class="sym"><i class="gr">I</i><sub>0</sub></span> = <input class="eingabe" id="eingabe-i0" inputmode="decimal" autocomplete="off"><span class="einheit">mA</span></span></span>
+					<span class="feld"><span class="nw"><i class="gr">R</i>&thinsp;·&thinsp;<i class="gr">C</i> = <input class="eingabe" id="eingabe-rc" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
+					<button class="haupt" id="btn-formel">Prüfen</button>
+					<span class="schloss" id="schloss-formel"></span>
+				</div>
+				<div class="eigen-zeile" id="eigen-hwz" hidden>
+					<span class="ek-titel">Ihre Halbwertszeit</span>
+					<span class="feld"><span class="nw"><span class="sym"><i class="gr">T</i><sub>1/2</sub></span> = <input class="eingabe" id="eingabe-hwz" inputmode="decimal" autocomplete="off"><span class="einheit">s</span></span></span>
+					<button class="haupt" id="btn-hwz">Prüfen</button>
+					<span class="schloss" id="schloss-hwz"></span>
+				</div>
+				<div id="urteil"></div>
+			</div>
 			<div class="diagramm-leiste">
-				<div class="bgruppe"><span class="btitel">Darstellung</span>
-					<span class="knopfleiste" id="groesse-knoepfe"><button data-wert="U"><i class="gr">U</i><sub>R</sub> in V</button><button data-wert="I"><i class="gr">I</i> in mA</button></span></div>
-				<div class="bgruppe"><span class="btitel">Zeitachse</span>
+				<div class="bgruppe" id="gruppe-zoom"><span class="btitel">Zeitachse</span>
 					<span class="knopfleiste" id="zoom-knoepfe"><button data-wert="1" class="aktiv">ganz</button><button data-wert="0.5"></button><button data-wert="0.25"></button><button data-wert="0.1"></button></span></div>
+				<div class="bgruppe" id="gruppe-streifen" hidden><span class="btitel">Streifen</span>
+					<span class="knopfleiste" id="streifen-knoepfe"><button data-wert="2">2</button><button data-wert="4" class="aktiv">4</button><button data-wert="8">8</button><button data-wert="16">16</button><button data-wert="32">32</button><button data-wert="0">alle Messwerte</button></span></div>
+				<div class="bgruppe" id="gruppe-halb" hidden><span class="btitel">Anzeige</span>
+					<span class="knopfleiste"><button id="btn-halb" aria-pressed="false" title="Halbierungen ab Linie A zeigen">Halbierungen</button></span></div>
+
 			</div>
 			<canvas id="diagramm" class="sim"></canvas>
-			<div class="bildleiste knopfleiste"><button class="neben" id="btn-zurueck" title="Cursor und Zeitachse zurücksetzen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button><button class="neben" id="btn-png" data-icon="download" title="Diagramm speichern"></button></div>
-			<div class="ergebnis-karten" id="karten"></div>
-			<p class="cursor-zeile" id="cursor-zeile"></p>
+			<div class="bildleiste knopfleiste"><button class="neben" id="btn-zurueck" title="Linien und Zeitachse zurücksetzen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button><button class="neben" id="btn-png" data-icon="download" title="Diagramm speichern"></button></div>
+			<div class="wertkarten" id="karten"></div>
+			<p class="fussnote" id="fussnote"></p>
 		</div>
 	</div>
+
+	<details class="tcb blau klapp-kasten" id="aufbau-kasten">
+		<summary class="tcb-title"><span class="titel">Versuchsaufbau: Entladen über <i class="gr">R</i><sub>2</sub>, Spannungssensor am Widerstand</span><span class="pfeil">▾</span></summary>
+		<div class="tcb-body"><canvas id="schaltung" class="sim"></canvas></div>
+	</details>
 
 	<div class="tcb blau">
 		<div class="tcb-title" id="tabelle-titel">Alle Messreihen</div>
 		<div class="tcb-body">
 			<div class="tabelle-wrap"><table class="messtabelle" id="ergebnis-tab"><thead id="tab-kopf"></thead><tbody id="tab-koerper"></tbody></table></div>
+			<p class="fussnote" id="tab-hinweis"></p>
 			<div class="bildleiste knopfleiste"><button class="neben" id="btn-tab" data-icon="download" title="Tabelle speichern"></button></div>
 		</div>
 	</div>
@@ -1934,38 +2118,54 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 "use strict";
 const K = window.SimKit, P = window.SimPlus;
 const $ = id => document.getElementById(id);
-
-/* Beispielmessungen (Kast, Schülerexperiment vom 18.11.2024, aus den SparkVue-Dateien), Spannung am Widerstand in V */
 const ECHT = {"r680":[[0.0,0.011],[0.0005,0.012],[0.001,0.012],[0.0015,0.01],[0.002,0.012],[0.0025,0.01],[0.003,0.006],[0.0035,0.009],[0.004,0.01],[0.0045,0.008],[0.005,0.009],[0.0055,0.009],[0.006,0.013],[0.0065,0.01],[0.007,0.01],[0.0075,0.009],[0.008,0.01],[0.0085,0.01],[0.009,0.011],[0.0095,0.007],[0.01,0.012],[0.0105,0.012],[0.011,0.011],[0.0115,0.009],[0.012,0.013],[0.0125,0.008],[0.013,0.014],[0.0135,0.005],[0.014,0.009],[0.0145,0.007],[0.015,0.013],[0.0155,0.008],[0.016,0.009],[0.0165,0.012],[0.017,0.007],[0.0175,0.013],[0.018,0.01],[0.0185,0.008],[0.019,0.01],[0.0195,0.01],[0.02,0.008],[0.0205,0.009],[0.021,0.011],[0.0215,0.006],[0.022,0.012],[0.0225,0.015],[0.023,0.009],[0.0235,0.007],[0.024,0.01],[0.0245,0.009],[0.025,0.008],[0.0255,0.009],[0.026,0.007],[0.0265,0.009],[0.027,0.008],[0.0275,0.01],[0.028,0.009],[0.0285,0.006],[0.029,0.008],[0.0295,0.008],[0.03,0.008],[0.0305,0.005],[0.031,0.008],[0.0315,0.007],[0.032,0.012],[0.0325,0.009],[0.033,0.008],[0.0335,0.01],[0.034,0.009],[0.0345,0.013],[0.035,0.015],[0.0355,0.011],[0.036,0.01],[0.0365,0.008],[0.037,0.011],[0.0375,7.647],[0.038,7.613],[0.0385,7.537],[0.039,7.503],[0.0395,7.428],[0.04,7.355],[0.0405,7.329],[0.041,7.253],[0.0415,7.221],[0.042,7.151],[0.0425,7.12],[0.043,7.052],[0.0435,6.982],[0.044,6.949],[0.0445,6.878],[0.045,6.853],[0.0455,6.779],[0.046,6.75],[0.0465,6.684],[0.047,6.654],[0.0475,6.588],[0.048,6.526],[0.0485,6.495],[0.049,6.433],[0.0495,6.404],[0.05,6.344],[0.0505,6.31],[0.051,6.252],[0.0515,6.192],[0.052,6.16],[0.0525,6.102],[0.053,6.077],[0.0535,6.013],[0.054,5.989],[0.0545,5.932],[0.055,5.901],[0.0555,5.844],[0.056,5.794],[0.0565,5.763],[0.057,5.708],[0.0575,5.68],[0.058,5.631],[0.0585,5.603],[0.059,5.548],[0.0595,5.498],[0.06,5.47],[0.0605,5.415],[0.061,5.394],[0.0615,5.338],[0.062,5.315],[0.0625,5.265],[0.063,5.22],[0.0635,5.188],[0.064,5.17],[0.0645,5.12],[0.065,5.067],[0.0655,5.044],[0.066,5.0],[0.0665,4.974],[0.067,4.927],[0.0675,4.903],[0.068,4.857],[0.0685,4.81],[0.069,4.791],[0.0695,4.739],[0.07,4.723],[0.0705,4.677],[0.071,4.633],[0.0715,4.607],[0.072,4.564],[0.0725,4.544],[0.073,4.501],[0.0735,4.479],[0.074,4.433],[0.0745,4.416],[0.075,4.371],[0.0755,4.355],[0.076,4.31],[0.0765,4.27],[0.077,4.248],[0.0775,4.211],[0.078,4.194],[0.0785,4.15],[0.079,4.112],[0.0795,4.093],[0.08,4.053],[0.0805,4.033],[0.081,3.997],[0.0815,3.978],[0.082,3.941],[0.0825,3.904],[0.083,3.882],[0.0835,3.863],[0.084,3.826],[0.0845,3.793],[0.085,3.773],[0.0855,3.738],[0.086,3.722],[0.0865,3.688],[0.087,3.668],[0.0875,3.634],[0.088,3.603],[0.0885,3.584],[0.089,3.55],[0.0895,3.535],[0.09,3.497],[0.0905,3.466],[0.091,3.447],[0.0915,3.431],[0.092,3.4],[0.0925,3.367],[0.093,3.352],[0.0935,3.322],[0.094,3.307],[0.0945,3.274],[0.095,3.259],[0.0955,3.226],[0.096,3.213],[0.0965,3.182],[0.097,3.15],[0.0975,3.141],[0.098,3.108],[0.0985,3.096],[0.099,3.063],[0.0995,3.034],[0.1,3.019],[0.1005,2.988],[0.101,2.976],[0.1015,2.943],[0.102,2.937],[0.1025,2.91],[0.103,2.893],[0.1035,2.866],[0.104,2.836],[0.1045,2.823],[0.105,2.796],[0.1055,2.785],[0.106,2.759],[0.1065,2.75],[0.107,2.724],[0.1075,2.697],[0.108,2.682],[0.1085,2.656],[0.109,2.647],[0.1095,2.619],[0.11,2.61],[0.1105,2.581],[0.111,2.572],[0.1115,2.551],[0.112,2.524],[0.1125,2.51],[0.113,2.484],[0.1135,2.474],[0.114,2.448],[0.1145,2.44],[0.115,2.417],[0.1155,2.395],[0.116,2.379],[0.1165,2.359],[0.117,2.35],[0.1175,2.325],[0.118,2.316],[0.1185,2.293],[0.119,2.286],[0.1195,2.26],[0.12,2.245],[0.1205,2.232],[0.121,2.214],[0.1215,2.2],[0.122,2.182],[0.1225,2.173],[0.123,2.152],[0.1235,2.128],[0.124,2.119],[0.1245,2.097],[0.125,2.09],[0.1255,2.069],[0.126,2.065],[0.1265,2.042],[0.127,2.031],[0.1275,2.015],[0.128,1.995],[0.1285,1.985],[0.129,1.964],[0.1295,1.957],[0.13,1.939],[0.1305,1.93],[0.131,1.912],[0.1315,1.903],[0.132,1.883],[0.1325,1.866],[0.133,1.86],[0.1335,1.841],[0.134,1.833],[0.1345,1.813],[0.135,1.802],[0.1355,1.79],[0.136,1.775],[0.1365,1.765],[0.137,1.75],[0.1375,1.739],[0.138,1.724],[0.1385,1.717],[0.139,1.701],[0.1395,1.694],[0.14,1.675],[0.1405,1.66],[0.141,1.655],[0.1415,1.639],[0.142,1.631],[0.1425,1.614],[0.143,1.607],[0.1435,1.592],[0.144,1.578],[0.1445,1.569],[0.145,1.553],[0.1455,1.543],[0.146,1.531],[0.1465,1.52],[0.147,1.511],[0.1475,1.503],[0.148,1.488],[0.1485,1.476],[0.149,1.467],[0.1495,1.455],[0.15,1.448],[0.1505,1.433],[0.151,1.431],[0.1515,1.415],[0.152,1.408],[0.1525,1.397],[0.153,1.383],[0.1535,1.376],[0.154,1.366],[0.1545,1.358],[0.155,1.345],[0.1555,1.34],[0.156,1.328],[0.1565,1.314],[0.157,1.31],[0.1575,1.297],[0.158,1.291],[0.1585,1.279],[0.159,1.273],[0.1595,1.258],[0.16,1.255],[0.1605,1.244],[0.161,1.23],[0.1615,1.224],[0.162,1.214],[0.1625,1.211],[0.163,1.194],[0.1635,1.188],[0.164,1.183],[0.1645,1.169],[0.165,1.165],[0.1655,1.154],[0.166,1.149],[0.1665,1.135],[0.167,1.134],[0.1675,1.118],[0.168,1.112],[0.1685,1.108],[0.169,1.094],[0.1695,1.094],[0.17,1.079],[0.1705,1.074],[0.171,1.062],[0.1715,1.053],[0.172,1.048],[0.1725,1.036],[0.173,1.035],[0.1735,1.024],[0.174,1.021],[0.1745,1.008],[0.175,1.005],[0.1755,0.995],[0.176,0.989],[0.1765,0.98],[0.177,0.972],[0.1775,0.971],[0.178,0.96],[0.1785,0.957],[0.179,0.945],[0.1795,0.939],[0.18,0.933],[0.1805,0.922],[0.181,0.922],[0.1815,0.912],[0.182,0.908],[0.1825,0.9],[0.183,0.899],[0.1835,0.889],[0.184,0.884],[0.1845,0.877],[0.185,0.869],[0.1855,0.866],[0.186,0.855],[0.1865,0.855],[0.187,0.843],[0.1875,0.844],[0.188,0.831],[0.1885,0.82],[0.189,0.821],[0.1895,0.811],[0.19,0.81],[0.1905,0.8],[0.191,0.802],[0.1915,0.79],[0.192,0.785],[0.1925,0.782],[0.193,0.772],[0.1935,0.771],[0.194,0.762],[0.1945,0.761],[0.195,0.752],[0.1955,0.749],[0.196,0.74],[0.1965,0.735],[0.197,0.738],[0.1975,0.725],[0.198,0.722],[0.1985,0.715],[0.199,0.714],[0.1995,0.702],[0.2,0.697],[0.2005,0.696],[0.201,0.688],[0.2015,0.69],[0.202,0.681],[0.2025,0.677],[0.203,0.67],[0.2035,0.667],[0.204,0.66],[0.2045,0.659],[0.205,0.652],[0.2055,0.647],[0.206,0.644],[0.2065,0.638],[0.207,0.635],[0.2075,0.631],[0.208,0.622],[0.2085,0.62],[0.209,0.614],[0.2095,0.616],[0.21,0.606],[0.2105,0.604],[0.211,0.596],[0.2115,0.595],[0.212,0.591],[0.2125,0.589],[0.213,0.582],[0.2135,0.575],[0.214,0.571],[0.2145,0.572],[0.215,0.565],[0.2155,0.558],[0.216,0.552],[0.2165,0.553],[0.217,0.549],[0.2175,0.546],[0.218,0.542],[0.2185,0.535],[0.219,0.531],[0.2195,0.527],[0.22,0.522],[0.2205,0.521],[0.221,0.521],[0.2215,0.51],[0.222,0.515],[0.2225,0.506],[0.223,0.507],[0.2235,0.498],[0.224,0.496],[0.2245,0.493],[0.225,0.487],[0.2255,0.489],[0.226,0.48],[0.2265,0.482],[0.227,0.473],[0.2275,0.469],[0.228,0.466],[0.2285,0.463],[0.229,0.463],[0.2295,0.456],[0.23,0.455],[0.2305,0.454],[0.231,0.45],[0.2315,0.448],[0.232,0.443],[0.2325,0.437],[0.233,0.433],[0.2335,0.436],[0.234,0.429],[0.2345,0.429],[0.235,0.426],[0.2355,0.419],[0.236,0.417],[0.2365,0.412],[0.237,0.414],[0.2375,0.407],[0.238,0.41],[0.2385,0.4],[0.239,0.403],[0.2395,0.398],[0.24,0.4],[0.2405,0.391],[0.241,0.388],[0.2415,0.388],[0.242,0.384],[0.2425,0.387],[0.243,0.377],[0.2435,0.376],[0.244,0.375],[0.2445,0.37],[0.245,0.369],[0.2455,0.366],[0.246,0.363],[0.2465,0.361],[0.247,0.358],[0.2475,0.357],[0.248,0.356],[0.2485,0.352],[0.249,0.348],[0.2495,0.35],[0.25,0.342],[0.2505,0.345],[0.251,0.34],[0.2515,0.338],[0.252,0.335],[0.2525,0.332],[0.253,0.331],[0.2535,0.325],[0.254,0.329],[0.2545,0.321],[0.255,0.326],[0.2555,0.318],[0.256,0.315],[0.2565,0.315],[0.257,0.31],[0.2575,0.312],[0.258,0.305],[0.2585,0.308],[0.259,0.304],[0.2595,0.3],[0.26,0.298],[0.2605,0.298],[0.261,0.296],[0.2615,0.293],[0.262,0.293],[0.2625,0.287],[0.263,0.29],[0.2635,0.286],[0.264,0.283],[0.2645,0.28],[0.265,0.278],[0.2655,0.28],[0.266,0.275],[0.2665,0.276],[0.267,0.269],[0.2675,0.273],[0.268,0.269],[0.2685,0.271],[0.269,0.267],[0.2695,0.263],[0.27,0.262],[0.2705,0.258],[0.271,0.257],[0.2715,0.252],[0.272,0.258],[0.2725,0.252],[0.273,0.254],[0.2735,0.252],[0.274,0.251],[0.2745,0.247],[0.275,0.245],[0.2755,0.244],[0.276,0.243],[0.2765,0.239],[0.277,0.244],[0.2775,0.236],[0.278,0.238],[0.2785,0.234],[0.279,0.234],[0.2795,0.229],[0.28,0.228],[0.2805,0.226],[0.281,0.223],[0.2815,0.224],[0.282,0.221],[0.2825,0.224],[0.283,0.217],[0.2835,0.217],[0.284,0.215],[0.2845,0.217],[0.285,0.217],[0.2855,0.209],[0.286,0.213],[0.2865,0.208],[0.287,0.213],[0.2875,0.211],[0.288,0.203],[0.2885,0.205],[0.289,0.199],[0.2895,0.203],[0.29,0.198],[0.2905,0.201],[0.291,0.196],[0.2915,0.199],[0.292,0.194],[0.2925,0.192],[0.293,0.193],[0.2935,0.191],[0.294,0.193],[0.2945,0.188],[0.295,0.192],[0.2955,0.185],[0.296,0.186],[0.2965,0.182],[0.297,0.181],[0.2975,0.183],[0.298,0.182],[0.2985,0.182],[0.299,0.179],[0.2995,0.18],[0.3,0.177],[0.3005,0.174],[0.301,0.175],[0.3015,0.172],[0.302,0.174],[0.3025,0.171],[0.303,0.168],[0.3035,0.167],[0.304,0.169],[0.3045,0.167],[0.305,0.164],[0.3055,0.165],[0.306,0.162],[0.3065,0.161],[0.307,0.162],[0.3075,0.16],[0.308,0.155],[0.3085,0.156],[0.309,0.157],[0.3095,0.159],[0.31,0.157],[0.3105,0.152],[0.311,0.154],[0.3115,0.15],[0.312,0.149],[0.3125,0.148],[0.313,0.149],[0.3135,0.149],[0.314,0.147],[0.3145,0.146],[0.315,0.147],[0.3155,0.149],[0.316,0.149],[0.3165,0.142],[0.317,0.141],[0.3175,0.14],[0.318,0.142],[0.3185,0.138],[0.319,0.138],[0.3195,0.137],[0.32,0.138],[0.3205,0.135],[0.321,0.134],[0.3215,0.135],[0.322,0.133],[0.3225,0.132],[0.323,0.128],[0.3235,0.131],[0.324,0.128],[0.3245,0.127],[0.325,0.126],[0.3255,0.128],[0.326,0.125],[0.3265,0.121],[0.327,0.123],[0.3275,0.123],[0.328,0.122],[0.3285,0.119],[0.329,0.118],[0.3295,0.121],[0.33,0.122],[0.3305,0.123],[0.331,0.113],[0.3315,0.11],[0.332,0.115],[0.3325,0.115],[0.333,0.112],[0.3335,0.11],[0.334,0.112],[0.3345,0.104],[0.335,0.11],[0.3355,0.104],[0.336,0.111],[0.3365,0.105],[0.337,0.102],[0.3375,0.11],[0.338,0.101],[0.3385,0.103],[0.339,0.099],[0.3395,0.101],[0.34,0.097],[0.3405,0.097],[0.341,0.097],[0.3415,0.094],[0.342,0.097],[0.3425,0.094],[0.343,0.098],[0.3435,0.094],[0.344,0.092],[0.3445,0.096],[0.345,0.089],[0.3455,0.095],[0.346,0.088],[0.3465,0.091],[0.347,0.086],[0.3475,0.091],[0.348,0.088],[0.3485,0.085],[0.349,0.091],[0.3495,0.086],[0.35,0.088],[0.3505,0.086],[0.351,0.087],[0.3515,0.083],[0.352,0.085],[0.3525,0.084],[0.353,0.083],[0.3535,0.087],[0.354,0.083],[0.3545,0.081],[0.355,0.081],[0.3555,0.082],[0.356,0.079],[0.3565,0.079],[0.357,0.077],[0.3575,0.078],[0.358,0.077],[0.3585,0.079],[0.359,0.078],[0.3595,0.076],[0.36,0.073],[0.3605,0.075],[0.361,0.074],[0.3615,0.074],[0.362,0.078],[0.3625,0.072],[0.363,0.073],[0.3635,0.075],[0.364,0.069],[0.3645,0.073],[0.365,0.073],[0.3655,0.069],[0.366,0.071],[0.3665,0.069],[0.367,0.071],[0.3675,0.072],[0.368,0.071],[0.3685,0.07],[0.369,0.067],[0.3695,0.068],[0.37,0.068],[0.3705,0.067],[0.371,0.064],[0.3715,0.067],[0.372,0.067],[0.3725,0.063],[0.373,0.068],[0.3735,0.063],[0.374,0.067],[0.3745,0.064],[0.375,0.066],[0.3755,0.061],[0.376,0.064],[0.3765,0.062],[0.377,0.061],[0.3775,0.065],[0.378,0.059],[0.3785,0.061],[0.379,0.06],[0.3795,0.06],[0.38,0.059],[0.3805,0.058],[0.381,0.06],[0.3815,0.058],[0.382,0.058],[0.3825,0.06],[0.383,0.059],[0.3835,0.056],[0.384,0.06],[0.3845,0.058],[0.385,0.055],[0.3855,0.059],[0.386,0.053],[0.3865,0.053],[0.387,0.056],[0.3875,0.055],[0.388,0.055],[0.3885,0.053],[0.389,0.052],[0.3895,0.053],[0.39,0.055],[0.3905,0.053],[0.391,0.055],[0.3915,0.052],[0.392,0.056],[0.3925,0.054],[0.393,0.054],[0.3935,0.053],[0.394,0.055],[0.3945,0.053],[0.395,0.052],[0.3955,0.052],[0.396,0.048],[0.3965,0.052],[0.397,0.052],[0.3975,0.052],[0.398,0.051],[0.3985,0.048],[0.399,0.049],[0.3995,0.047],[0.4,0.047],[0.4005,0.048],[0.401,0.043],[0.4015,0.05],[0.402,0.044],[0.4025,0.046],[0.403,0.046],[0.4035,0.047],[0.404,0.044],[0.4045,0.043],[0.405,0.045],[0.4055,0.044],[0.406,0.045],[0.4065,0.043],[0.407,0.046],[0.4075,0.044],[0.408,0.045],[0.4085,0.042],[0.409,0.04],[0.4095,0.043],[0.41,0.042],[0.4105,0.045],[0.411,0.046],[0.4115,0.044],[0.412,0.042],[0.4125,0.043],[0.413,0.04],[0.4135,0.042],[0.414,0.044],[0.4145,0.041],[0.415,0.04],[0.4155,0.041],[0.416,0.042],[0.4165,0.04],[0.417,0.037],[0.4175,0.039],[0.418,0.039],[0.4185,0.043],[0.419,0.035],[0.4195,0.04],[0.42,0.036],[0.4205,0.04],[0.421,0.037],[0.4215,0.037],[0.422,0.04],[0.4225,0.037],[0.423,0.038],[0.4235,0.036],[0.424,0.037],[0.4245,0.035],[0.425,0.037],[0.4255,0.037],[0.426,0.036],[0.4265,0.04],[0.427,0.037],[0.4275,0.036],[0.428,0.036],[0.4285,0.038],[0.429,0.037],[0.4295,0.035],[0.43,0.033],[0.4305,0.035],[0.431,0.036],[0.4315,0.035],[0.432,0.035],[0.4325,0.036],[0.433,0.036],[0.4335,0.035],[0.434,0.033],[0.4345,0.033],[0.435,0.035],[0.4355,0.033],[0.436,0.031],[0.4365,0.036],[0.437,0.032],[0.4375,0.033],[0.438,0.036],[0.4385,0.032],[0.439,0.033],[0.4395,0.031],[0.44,0.032],[0.4405,0.03],[0.441,0.03],[0.4415,0.03],[0.442,0.03],[0.4425,0.03],[0.443,0.031],[0.4435,0.035],[0.444,0.032],[0.4445,0.03],[0.445,0.032],[0.4455,0.031],[0.446,0.032],[0.4465,0.03],[0.447,0.031],[0.4475,0.028],[0.448,0.03],[0.4485,0.031],[0.449,0.031],[0.4495,0.031],[0.45,0.031],[0.4505,0.031],[0.451,0.029],[0.4515,0.03],[0.452,0.03],[0.4525,0.029],[0.453,0.03],[0.4535,0.028],[0.454,0.028],[0.4545,0.028],[0.455,0.026],[0.4555,0.029],[0.456,0.027],[0.4565,0.029],[0.457,0.029],[0.4575,0.026],[0.458,0.027],[0.4585,0.029],[0.459,0.03],[0.4595,0.026],[0.46,0.03],[0.4605,0.028],[0.461,0.027],[0.4615,0.025],[0.462,0.026],[0.4625,0.028],[0.463,0.03],[0.4635,0.025],[0.464,0.027],[0.4645,0.024],[0.465,0.023],[0.4655,0.024],[0.466,0.024],[0.4665,0.028],[0.467,0.025],[0.4675,0.026],[0.468,0.026],[0.4685,0.025],[0.469,0.023],[0.4695,0.023],[0.47,0.025],[0.4705,0.023],[0.471,0.026],[0.4715,0.022],[0.472,0.025],[0.4725,0.024],[0.473,0.02],[0.4735,0.024],[0.474,0.024],[0.4745,0.024],[0.475,0.021],[0.4755,0.024],[0.476,0.022],[0.4765,0.022],[0.477,0.023],[0.4775,0.024],[0.478,0.022],[0.4785,0.022],[0.479,0.025],[0.4795,0.023],[0.48,0.023],[0.4805,0.021],[0.481,0.022],[0.4815,0.024],[0.482,0.022],[0.4825,0.021],[0.483,0.019],[0.4835,0.021],[0.484,0.022],[0.4845,0.023],[0.485,0.023],[0.4855,0.022],[0.486,0.019],[0.4865,0.018],[0.487,0.023],[0.4875,0.022],[0.488,0.022],[0.4885,0.021],[0.489,0.02],[0.4895,0.023],[0.49,0.019],[0.4905,0.021],[0.491,0.017],[0.4915,0.021],[0.492,0.02],[0.4925,0.019],[0.493,0.02],[0.4935,0.02],[0.494,0.02],[0.4945,0.018],[0.495,0.023],[0.4955,0.017],[0.496,0.022],[0.4965,0.021],[0.497,0.022],[0.4975,0.025],[0.498,0.021],[0.4985,0.019],[0.499,0.02],[0.4995,0.02],[0.5,0.021],[0.5005,0.023],[0.501,0.02],[0.5015,0.02],[0.502,0.021],[0.5025,0.019],[0.503,0.016],[0.5035,0.021],[0.504,0.018],[0.5045,0.017],[0.505,0.019],[0.5055,0.018],[0.506,0.019],[0.5065,0.022],[0.507,0.019]],"r2k":[[0.0,0.01],[0.002,0.007],[0.004,0.011],[0.006,0.008],[0.008,0.009],[0.01,0.008],[0.012,0.007],[0.014,0.008],[0.016,0.007],[0.018,0.008],[0.02,0.007],[0.022,0.008],[0.024,0.007],[0.026,0.008],[0.028,0.007],[0.03,0.008],[0.032,0.007],[0.034,0.009],[0.036,0.007],[0.038,0.007],[0.04,0.009],[0.042,0.007],[0.044,0.008],[0.046,0.009],[0.048,0.01],[0.05,0.008],[0.052,0.009],[0.054,0.007],[0.056,0.009],[0.058,0.009],[0.06,0.008],[0.062,0.007],[0.064,0.011],[0.066,0.01],[0.068,0.01],[0.07,0.009],[0.072,0.008],[0.074,0.01],[0.076,0.008],[0.078,0.009],[0.08,0.008],[0.082,0.008],[0.084,0.009],[0.086,0.009],[0.088,0.008],[0.09,0.009],[0.092,0.009],[0.094,0.012],[0.096,0.009],[0.098,0.008],[0.1,0.009],[0.102,0.01],[0.104,5.64],[0.106,7.582],[0.108,7.509],[0.11,7.429],[0.112,7.356],[0.114,7.268],[0.116,7.196],[0.118,7.122],[0.12,7.053],[0.122,6.981],[0.124,6.902],[0.126,6.829],[0.128,6.76],[0.13,6.682],[0.132,6.614],[0.134,6.55],[0.136,6.483],[0.138,6.407],[0.14,6.342],[0.142,6.281],[0.144,6.215],[0.146,6.145],[0.148,6.08],[0.15,6.023],[0.152,5.96],[0.154,5.893],[0.156,5.833],[0.158,5.776],[0.16,5.718],[0.162,5.649],[0.164,5.595],[0.166,5.537],[0.168,5.485],[0.17,5.417],[0.172,5.364],[0.174,5.309],[0.176,5.257],[0.178,5.196],[0.18,5.144],[0.182,5.092],[0.184,5.045],[0.186,4.995],[0.188,4.932],[0.19,4.885],[0.192,4.833],[0.194,4.778],[0.196,4.731],[0.198,4.684],[0.2,4.636],[0.202,4.585],[0.204,4.538],[0.206,4.493],[0.208,4.444],[0.21,4.402],[0.212,4.349],[0.214,4.309],[0.216,4.268],[0.218,4.216],[0.22,4.175],[0.222,4.13],[0.224,4.093],[0.226,4.043],[0.228,4.004],[0.23,3.96],[0.232,3.923],[0.234,3.875],[0.236,3.837],[0.238,3.799],[0.24,3.763],[0.242,3.717],[0.244,3.685],[0.246,3.648],[0.248,3.608],[0.25,3.569],[0.252,3.531],[0.254,3.493],[0.256,3.458],[0.258,3.426],[0.26,3.385],[0.262,3.353],[0.264,3.317],[0.266,3.287],[0.268,3.247],[0.27,3.217],[0.272,3.185],[0.274,3.154],[0.276,3.115],[0.278,3.084],[0.28,3.056],[0.282,3.015],[0.284,2.987],[0.286,2.955],[0.288,2.928],[0.29,2.891],[0.292,2.866],[0.294,2.836],[0.296,2.809],[0.298,2.776],[0.3,2.751],[0.302,2.723],[0.304,2.698],[0.306,2.666],[0.308,2.638],[0.31,2.612],[0.312,2.586],[0.314,2.562],[0.316,2.527],[0.318,2.504],[0.32,2.478],[0.322,2.456],[0.324,2.425],[0.326,2.403],[0.328,2.378],[0.33,2.352],[0.332,2.327],[0.334,2.305],[0.336,2.285],[0.338,2.26],[0.34,2.235],[0.342,2.211],[0.344,2.19],[0.346,2.164],[0.348,2.144],[0.35,2.123],[0.352,2.104],[0.354,2.08],[0.356,2.056],[0.358,2.034],[0.36,2.016],[0.362,1.991],[0.364,1.974],[0.366,1.953],[0.368,1.933],[0.37,1.915],[0.372,1.891],[0.374,1.875],[0.376,1.855],[0.378,1.839],[0.38,1.815],[0.382,1.8],[0.384,1.78],[0.386,1.765],[0.388,1.742],[0.39,1.727],[0.392,1.709],[0.394,1.692],[0.396,1.673],[0.398,1.656],[0.4,1.642],[0.402,1.621],[0.404,1.606],[0.406,1.591],[0.408,1.576],[0.41,1.553],[0.412,1.538],[0.414,1.522],[0.416,1.51],[0.418,1.49],[0.42,1.477],[0.422,1.46],[0.424,1.449],[0.426,1.432],[0.428,1.418],[0.43,1.403],[0.432,1.388],[0.434,1.379],[0.436,1.36],[0.438,1.349],[0.44,1.333],[0.442,1.322],[0.444,1.306],[0.446,1.294],[0.448,1.279],[0.45,1.267],[0.452,1.253],[0.454,1.243],[0.456,1.229],[0.458,1.215],[0.46,1.202],[0.462,1.191],[0.464,1.18],[0.466,1.164],[0.468,1.155],[0.47,1.142],[0.472,1.133],[0.474,1.119],[0.476,1.108],[0.478,1.097],[0.48,1.086],[0.482,1.074],[0.484,1.064],[0.486,1.05],[0.488,1.04],[0.49,1.032],[0.492,1.017],[0.494,1.009],[0.496,0.999],[0.498,0.991],[0.5,0.978],[0.502,0.97],[0.504,0.959],[0.506,0.952],[0.508,0.939],[0.51,0.93],[0.512,0.922],[0.514,0.915],[0.516,0.902],[0.518,0.893],[0.52,0.884],[0.522,0.875],[0.524,0.866],[0.526,0.858],[0.528,0.851],[0.53,0.84],[0.532,0.833],[0.534,0.823],[0.536,0.817],[0.538,0.809],[0.54,0.799],[0.542,0.79],[0.544,0.785],[0.546,0.776],[0.548,0.767],[0.55,0.761],[0.552,0.751],[0.554,0.746],[0.556,0.737],[0.558,0.729],[0.56,0.721],[0.562,0.717],[0.564,0.707],[0.566,0.701],[0.568,0.693],[0.57,0.688],[0.572,0.679],[0.574,0.676],[0.576,0.669],[0.578,0.66],[0.58,0.653],[0.582,0.646],[0.584,0.642],[0.586,0.634],[0.588,0.628],[0.59,0.619],[0.592,0.616],[0.594,0.606],[0.596,0.6],[0.598,0.593],[0.6,0.586],[0.602,0.582],[0.604,0.576],[0.606,0.57],[0.608,0.563],[0.61,0.56],[0.612,0.551],[0.614,0.546],[0.616,0.541],[0.618,0.537],[0.62,0.53],[0.622,0.527],[0.624,0.52],[0.626,0.515],[0.628,0.51],[0.63,0.506],[0.632,0.5],[0.634,0.497],[0.636,0.49],[0.638,0.484],[0.64,0.482],[0.642,0.475],[0.644,0.471],[0.646,0.466],[0.648,0.463],[0.65,0.456],[0.652,0.451],[0.654,0.447],[0.656,0.443],[0.658,0.439],[0.66,0.435],[0.662,0.431],[0.664,0.429],[0.666,0.423],[0.668,0.418],[0.67,0.415],[0.672,0.41],[0.674,0.407],[0.676,0.401],[0.678,0.4],[0.68,0.394],[0.682,0.39],[0.684,0.386],[0.686,0.383],[0.688,0.378],[0.69,0.373],[0.692,0.371],[0.694,0.37],[0.696,0.365],[0.698,0.36],[0.7,0.357],[0.702,0.353],[0.704,0.351],[0.706,0.345],[0.708,0.343],[0.71,0.34],[0.712,0.336],[0.714,0.332],[0.716,0.329],[0.718,0.326],[0.72,0.324],[0.722,0.319],[0.724,0.317],[0.726,0.314],[0.728,0.31],[0.73,0.309],[0.732,0.303],[0.734,0.303],[0.736,0.299],[0.738,0.297],[0.74,0.292],[0.742,0.291],[0.744,0.287],[0.746,0.285],[0.748,0.284],[0.75,0.281],[0.752,0.276],[0.754,0.276],[0.756,0.271],[0.758,0.269],[0.76,0.268],[0.762,0.263],[0.764,0.262],[0.766,0.259],[0.768,0.258],[0.77,0.253],[0.772,0.253],[0.774,0.248],[0.776,0.247],[0.778,0.245],[0.78,0.243],[0.782,0.239],[0.784,0.239],[0.786,0.236],[0.788,0.233],[0.79,0.231],[0.792,0.228],[0.794,0.228],[0.796,0.224],[0.798,0.222],[0.8,0.22],[0.802,0.218],[0.804,0.216],[0.806,0.215],[0.808,0.211],[0.81,0.209],[0.812,0.208],[0.814,0.208],[0.816,0.206],[0.818,0.201],[0.82,0.201],[0.822,0.197],[0.824,0.196],[0.826,0.194],[0.828,0.192],[0.83,0.19],[0.832,0.19],[0.834,0.187],[0.836,0.187],[0.838,0.184],[0.84,0.185],[0.842,0.183],[0.844,0.182],[0.846,0.178],[0.848,0.175],[0.85,0.175],[0.852,0.172],[0.854,0.171],[0.856,0.169],[0.858,0.168],[0.86,0.166],[0.862,0.165],[0.864,0.162],[0.866,0.163],[0.868,0.16],[0.87,0.158],[0.872,0.157],[0.874,0.158],[0.876,0.156],[0.878,0.153],[0.88,0.154],[0.882,0.15],[0.884,0.149],[0.886,0.147],[0.888,0.147],[0.89,0.144],[0.892,0.143],[0.894,0.142],[0.896,0.142],[0.898,0.141],[0.9,0.14],[0.902,0.136],[0.904,0.138],[0.906,0.136],[0.908,0.134],[0.91,0.133],[0.912,0.131],[0.914,0.131],[0.916,0.129],[0.918,0.128],[0.92,0.126],[0.922,0.125],[0.924,0.125],[0.926,0.124],[0.928,0.122],[0.93,0.121],[0.932,0.117],[0.934,0.118],[0.936,0.114],[0.938,0.113],[0.94,0.111],[0.942,0.108],[0.944,0.109],[0.946,0.106],[0.948,0.105],[0.95,0.104],[0.952,0.104],[0.954,0.101],[0.956,0.101],[0.958,0.099],[0.96,0.098],[0.962,0.098],[0.964,0.101],[0.966,0.097],[0.968,0.095],[0.97,0.096],[0.972,0.092],[0.974,0.093],[0.976,0.091],[0.978,0.092],[0.98,0.09],[0.982,0.09],[0.984,0.088],[0.986,0.089],[0.988,0.087],[0.99,0.088],[0.992,0.084],[0.994,0.086],[0.996,0.083],[0.998,0.083],[1.0,0.084],[1.002,0.081],[1.004,0.081],[1.006,0.08],[1.008,0.081],[1.01,0.077],[1.012,0.079],[1.014,0.078],[1.016,0.077],[1.018,0.075],[1.02,0.076],[1.022,0.073],[1.024,0.075],[1.026,0.073],[1.028,0.072],[1.03,0.072],[1.032,0.07],[1.034,0.071],[1.036,0.07],[1.038,0.071],[1.04,0.067],[1.042,0.068],[1.044,0.067],[1.046,0.067],[1.048,0.067],[1.05,0.067],[1.052,0.066],[1.054,0.067],[1.056,0.064],[1.058,0.063],[1.06,0.062],[1.062,0.061],[1.064,0.062],[1.066,0.06],[1.068,0.06],[1.07,0.061],[1.072,0.061],[1.074,0.059],[1.076,0.06],[1.078,0.059],[1.08,0.058],[1.082,0.058],[1.084,0.059],[1.086,0.057],[1.088,0.056],[1.09,0.055],[1.092,0.055],[1.094,0.054],[1.096,0.053],[1.098,0.054],[1.1,0.052],[1.102,0.053],[1.104,0.051],[1.106,0.054],[1.108,0.051],[1.11,0.052],[1.112,0.051],[1.114,0.052],[1.116,0.049],[1.118,0.048],[1.12,0.05],[1.122,0.047],[1.124,0.049],[1.126,0.047],[1.128,0.047],[1.13,0.045],[1.132,0.045],[1.134,0.045],[1.136,0.046],[1.138,0.045],[1.14,0.044],[1.142,0.043],[1.144,0.046],[1.146,0.044],[1.148,0.043],[1.15,0.043],[1.152,0.042],[1.154,0.043],[1.156,0.042],[1.158,0.041],[1.16,0.041],[1.162,0.041],[1.164,0.04],[1.166,0.041],[1.168,0.04],[1.17,0.04],[1.172,0.039],[1.174,0.041],[1.176,0.039],[1.178,0.038],[1.18,0.039],[1.182,0.037],[1.184,0.038],[1.186,0.036],[1.188,0.037],[1.19,0.037],[1.192,0.037],[1.194,0.036],[1.196,0.037],[1.198,0.035],[1.2,0.036],[1.202,0.034],[1.204,0.037],[1.206,0.035],[1.208,0.034],[1.21,0.036],[1.212,0.034],[1.214,0.035],[1.216,0.034],[1.218,0.035],[1.22,0.033],[1.222,0.034],[1.224,0.031],[1.226,0.033],[1.228,0.03],[1.23,0.032],[1.232,0.032],[1.234,0.032],[1.236,0.03],[1.238,0.03],[1.24,0.031],[1.242,0.03],[1.244,0.03],[1.246,0.03],[1.248,0.031],[1.25,0.029],[1.252,0.03],[1.254,0.029],[1.256,0.03],[1.258,0.03],[1.26,0.029],[1.262,0.028],[1.264,0.03],[1.266,0.027],[1.268,0.027],[1.27,0.028],[1.272,0.026],[1.274,0.03],[1.276,0.027],[1.278,0.027],[1.28,0.027],[1.282,0.028],[1.284,0.024],[1.286,0.027],[1.288,0.027],[1.29,0.028],[1.292,0.026],[1.294,0.027],[1.296,0.026],[1.298,0.025],[1.3,0.025],[1.302,0.025],[1.304,0.026],[1.306,0.024],[1.308,0.025],[1.31,0.024],[1.312,0.025],[1.314,0.024],[1.316,0.024],[1.318,0.023],[1.32,0.026],[1.322,0.023],[1.324,0.025],[1.326,0.023],[1.328,0.022],[1.33,0.025],[1.332,0.024],[1.334,0.022],[1.336,0.023],[1.338,0.023],[1.34,0.022],[1.342,0.022],[1.344,0.022],[1.346,0.023],[1.348,0.021],[1.35,0.023],[1.352,0.022],[1.354,0.023],[1.356,0.02],[1.358,0.022],[1.36,0.023],[1.362,0.019],[1.364,0.021],[1.366,0.021],[1.368,0.02],[1.37,0.02],[1.372,0.02],[1.374,0.019],[1.376,0.022],[1.378,0.019],[1.38,0.019],[1.382,0.019],[1.384,0.022],[1.386,0.02],[1.388,0.019],[1.39,0.019],[1.392,0.018],[1.394,0.021],[1.396,0.018],[1.398,0.021],[1.4,0.019],[1.402,0.021],[1.404,0.019],[1.406,0.019],[1.408,0.018],[1.41,0.019],[1.412,0.017],[1.414,0.02],[1.416,0.017],[1.418,0.018],[1.42,0.018],[1.422,0.018],[1.424,0.019],[1.426,0.018],[1.428,0.019],[1.43,0.018],[1.432,0.019],[1.434,0.016],[1.436,0.018],[1.438,0.016],[1.44,0.018],[1.442,0.016],[1.444,0.019],[1.446,0.018]],"r10k":[[0.0,0.008],[0.008,0.007],[0.016,0.01],[0.024,0.008],[0.032,0.011],[0.04,0.011],[0.048,0.009],[0.056,0.009],[0.064,0.006],[0.072,0.007],[0.08,0.008],[0.088,0.007],[0.096,0.011],[0.104,0.007],[0.112,0.009],[0.12,0.009],[0.128,0.007],[0.136,0.01],[0.144,0.008],[0.152,0.01],[0.16,0.01],[0.168,0.008],[0.176,0.01],[0.184,0.007],[0.192,0.007],[0.2,0.008],[0.208,0.005],[0.216,0.01],[0.224,0.006],[0.232,0.01],[0.24,0.008],[0.248,0.007],[0.256,0.01],[0.264,0.008],[0.272,0.01],[0.28,0.009],[0.288,0.009],[0.296,0.01],[0.304,0.005],[0.312,0.008],[0.32,0.009],[0.328,0.007],[0.336,0.011],[0.344,0.007],[0.352,0.009],[0.36,0.008],[0.368,0.006],[0.376,0.009],[0.384,0.007],[0.392,0.01],[0.4,0.01],[0.408,0.009],[0.416,0.009],[0.424,0.007],[0.432,0.007],[0.44,0.008],[0.448,0.007],[0.456,0.01],[0.464,0.007],[0.472,0.009],[0.48,0.008],[0.488,0.007],[0.496,0.011],[0.504,7.667],[0.512,7.605],[0.52,7.54],[0.528,7.479],[0.536,7.413],[0.544,7.348],[0.552,7.285],[0.56,7.225],[0.568,7.165],[0.576,7.106],[0.584,7.047],[0.592,6.99],[0.6,6.929],[0.608,6.868],[0.616,6.81],[0.624,6.753],[0.632,6.695],[0.64,6.641],[0.648,6.587],[0.656,6.525],[0.664,6.471],[0.672,6.418],[0.68,6.364],[0.688,6.312],[0.696,6.256],[0.704,6.207],[0.712,6.153],[0.72,6.099],[0.728,6.049],[0.736,5.998],[0.744,5.949],[0.752,5.898],[0.76,5.848],[0.768,5.8],[0.776,5.75],[0.784,5.702],[0.792,5.655],[0.8,5.611],[0.808,5.564],[0.816,5.517],[0.824,5.47],[0.832,5.421],[0.84,5.377],[0.848,5.33],[0.856,5.286],[0.864,5.242],[0.872,5.201],[0.88,5.157],[0.888,5.116],[0.896,5.069],[0.904,5.027],[0.912,4.986],[0.92,4.942],[0.928,4.902],[0.936,4.862],[0.944,4.821],[0.952,4.778],[0.96,4.739],[0.968,4.699],[0.976,4.659],[0.984,4.624],[0.992,4.584],[1.0,4.546],[1.008,4.509],[1.016,4.465],[1.024,4.427],[1.032,4.391],[1.04,4.355],[1.048,4.319],[1.056,4.284],[1.064,4.25],[1.072,4.211],[1.08,4.177],[1.088,4.142],[1.096,4.106],[1.104,4.074],[1.112,4.038],[1.12,4.003],[1.128,3.97],[1.136,3.936],[1.144,3.904],[1.152,3.87],[1.16,3.839],[1.168,3.808],[1.176,3.776],[1.184,3.745],[1.192,3.713],[1.2,3.682],[1.208,3.651],[1.216,3.62],[1.224,3.591],[1.232,3.561],[1.24,3.532],[1.248,3.502],[1.256,3.47],[1.264,3.441],[1.272,3.412],[1.28,3.384],[1.288,3.358],[1.296,3.329],[1.304,3.301],[1.312,3.273],[1.32,3.245],[1.328,3.217],[1.336,3.193],[1.344,3.168],[1.352,3.142],[1.36,3.113],[1.368,3.087],[1.376,3.062],[1.384,3.035],[1.392,3.009],[1.4,2.985],[1.408,2.959],[1.416,2.934],[1.424,2.911],[1.432,2.886],[1.44,2.86],[1.448,2.838],[1.456,2.813],[1.464,2.791],[1.472,2.767],[1.48,2.746],[1.488,2.724],[1.496,2.7],[1.504,2.677],[1.512,2.654],[1.52,2.634],[1.528,2.612],[1.536,2.59],[1.544,2.569],[1.552,2.545],[1.56,2.521],[1.568,2.502],[1.576,2.482],[1.584,2.46],[1.592,2.44],[1.6,2.419],[1.608,2.398],[1.616,2.38],[1.624,2.359],[1.632,2.339],[1.64,2.321],[1.648,2.303],[1.656,2.284],[1.664,2.265],[1.672,2.247],[1.68,2.226],[1.688,2.207],[1.696,2.188],[1.704,2.172],[1.712,2.155],[1.72,2.135],[1.728,2.119],[1.736,2.1],[1.744,2.082],[1.752,2.067],[1.76,2.049],[1.768,2.032],[1.776,2.015],[1.784,1.998],[1.792,1.982],[1.8,1.964],[1.808,1.948],[1.816,1.931],[1.824,1.917],[1.832,1.9],[1.84,1.885],[1.848,1.87],[1.856,1.854],[1.864,1.84],[1.872,1.824],[1.88,1.81],[1.888,1.792],[1.896,1.777],[1.904,1.763],[1.912,1.749],[1.92,1.733],[1.928,1.72],[1.936,1.706],[1.944,1.693],[1.952,1.678],[1.96,1.666],[1.968,1.652],[1.976,1.637],[1.984,1.624],[1.992,1.609],[2.0,1.598],[2.008,1.583],[2.016,1.569],[2.024,1.557],[2.032,1.543],[2.04,1.53],[2.048,1.515],[2.056,1.503],[2.064,1.492],[2.072,1.479],[2.08,1.468],[2.088,1.456],[2.096,1.442],[2.104,1.431],[2.112,1.418],[2.12,1.409],[2.128,1.397],[2.136,1.387],[2.144,1.373],[2.152,1.363],[2.16,1.35],[2.168,1.341],[2.176,1.329],[2.184,1.317],[2.192,1.307],[2.2,1.298],[2.208,1.289],[2.216,1.275],[2.224,1.265],[2.232,1.257],[2.24,1.246],[2.248,1.234],[2.256,1.224],[2.264,1.214],[2.272,1.205],[2.28,1.193],[2.288,1.183],[2.296,1.174],[2.304,1.166],[2.312,1.156],[2.32,1.147],[2.328,1.138],[2.336,1.127],[2.344,1.118],[2.352,1.109],[2.36,1.099],[2.368,1.089],[2.376,1.08],[2.384,1.071],[2.392,1.06],[2.4,1.052],[2.408,1.043],[2.416,1.034],[2.424,1.027],[2.432,1.017],[2.44,1.011],[2.448,1.003],[2.456,0.993],[2.464,0.985],[2.472,0.977],[2.48,0.97],[2.488,0.963],[2.496,0.955],[2.504,0.947],[2.512,0.938],[2.52,0.93],[2.528,0.922],[2.536,0.915],[2.544,0.908],[2.552,0.9],[2.56,0.893],[2.568,0.886],[2.576,0.878],[2.584,0.871],[2.592,0.863],[2.6,0.858],[2.608,0.851],[2.616,0.845],[2.624,0.838],[2.632,0.831],[2.64,0.823],[2.648,0.816],[2.656,0.809],[2.664,0.803],[2.672,0.798],[2.68,0.791],[2.688,0.785],[2.696,0.778],[2.704,0.771],[2.712,0.765],[2.72,0.758],[2.728,0.751],[2.736,0.746],[2.744,0.74],[2.752,0.734],[2.76,0.728],[2.768,0.723],[2.776,0.716],[2.784,0.711],[2.792,0.704],[2.8,0.7],[2.808,0.694],[2.816,0.687],[2.824,0.684],[2.832,0.677],[2.84,0.672],[2.848,0.667],[2.856,0.661],[2.864,0.655],[2.872,0.649],[2.88,0.644],[2.888,0.639],[2.896,0.634],[2.904,0.632],[2.912,0.625],[2.92,0.62],[2.928,0.616],[2.936,0.609],[2.944,0.604],[2.952,0.597],[2.96,0.594],[2.968,0.587],[2.976,0.582],[2.984,0.577],[2.992,0.573],[3.0,0.567],[3.008,0.563],[3.016,0.559],[3.024,0.555],[3.032,0.55],[3.04,0.545],[3.048,0.542],[3.056,0.536],[3.064,0.532],[3.072,0.527],[3.08,0.524],[3.088,0.521],[3.096,0.515],[3.104,0.513],[3.112,0.507],[3.12,0.503],[3.128,0.499],[3.136,0.495],[3.144,0.491],[3.152,0.487],[3.16,0.482],[3.168,0.481],[3.176,0.474],[3.184,0.471],[3.192,0.469],[3.2,0.465],[3.208,0.461],[3.216,0.457],[3.224,0.454],[3.232,0.449],[3.24,0.446],[3.248,0.442],[3.256,0.44],[3.264,0.435],[3.272,0.433],[3.28,0.43],[3.288,0.427],[3.296,0.422],[3.304,0.418],[3.312,0.413],[3.32,0.411],[3.328,0.409],[3.336,0.405],[3.344,0.402],[3.352,0.399],[3.36,0.394],[3.368,0.39],[3.376,0.388],[3.384,0.386],[3.392,0.385],[3.4,0.38],[3.408,0.378],[3.416,0.373],[3.424,0.371],[3.432,0.367],[3.44,0.365],[3.448,0.362],[3.456,0.359],[3.464,0.357],[3.472,0.353],[3.48,0.35],[3.488,0.348],[3.496,0.347],[3.504,0.343],[3.512,0.341],[3.52,0.338],[3.528,0.333],[3.536,0.331],[3.544,0.329],[3.552,0.327],[3.56,0.324],[3.568,0.321],[3.576,0.319],[3.584,0.317],[3.592,0.314],[3.6,0.312],[3.608,0.308],[3.616,0.307],[3.624,0.305],[3.632,0.303],[3.64,0.3],[3.648,0.299],[3.656,0.295],[3.664,0.292],[3.672,0.29],[3.68,0.289],[3.688,0.287],[3.696,0.285],[3.704,0.281],[3.712,0.282],[3.72,0.278],[3.728,0.274],[3.736,0.273],[3.744,0.273],[3.752,0.271],[3.76,0.267],[3.768,0.267],[3.776,0.263],[3.784,0.261],[3.792,0.257],[3.8,0.257],[3.808,0.253],[3.816,0.251],[3.824,0.249],[3.832,0.247],[3.84,0.246],[3.848,0.245],[3.856,0.242],[3.864,0.242],[3.872,0.239],[3.88,0.239],[3.888,0.236],[3.896,0.233],[3.904,0.232],[3.912,0.229],[3.92,0.228],[3.928,0.225],[3.936,0.226],[3.944,0.224],[3.952,0.222],[3.96,0.219],[3.968,0.217],[3.976,0.216],[3.984,0.215],[3.992,0.213],[4.0,0.213],[4.008,0.211],[4.016,0.207],[4.024,0.208],[4.032,0.204],[4.04,0.204],[4.048,0.202],[4.056,0.201],[4.064,0.199],[4.072,0.199],[4.08,0.197],[4.088,0.194],[4.096,0.192],[4.104,0.194],[4.112,0.19],[4.12,0.189],[4.128,0.191],[4.136,0.186],[4.144,0.184],[4.152,0.183],[4.16,0.18],[4.168,0.181],[4.176,0.179],[4.184,0.179],[4.192,0.177],[4.2,0.175],[4.208,0.174],[4.216,0.173],[4.224,0.172],[4.232,0.171],[4.24,0.168],[4.248,0.169],[4.256,0.165],[4.264,0.165],[4.272,0.163],[4.28,0.162],[4.288,0.162],[4.296,0.161],[4.304,0.159],[4.312,0.158],[4.32,0.156],[4.328,0.156],[4.336,0.154],[4.344,0.152],[4.352,0.152],[4.36,0.152],[4.368,0.151],[4.376,0.149],[4.384,0.149],[4.392,0.147],[4.4,0.147],[4.408,0.144],[4.416,0.143],[4.424,0.142],[4.432,0.142],[4.44,0.139],[4.448,0.139],[4.456,0.137],[4.464,0.138],[4.472,0.137],[4.48,0.135],[4.488,0.135],[4.496,0.134],[4.504,0.132],[4.512,0.13],[4.52,0.129],[4.528,0.129],[4.536,0.127],[4.544,0.127],[4.552,0.126],[4.56,0.124],[4.568,0.124],[4.576,0.122],[4.584,0.122],[4.592,0.122],[4.6,0.119],[4.608,0.118],[4.616,0.116],[4.624,0.114],[4.632,0.114],[4.64,0.111],[4.648,0.112],[4.656,0.113],[4.664,0.107],[4.672,0.107],[4.68,0.104],[4.688,0.105],[4.696,0.103],[4.704,0.102],[4.712,0.104],[4.72,0.102],[4.728,0.103],[4.736,0.098],[4.744,0.099],[4.752,0.097],[4.76,0.099],[4.768,0.098],[4.776,0.098],[4.784,0.096],[4.792,0.095],[4.8,0.093],[4.808,0.092],[4.816,0.092],[4.824,0.093],[4.832,0.091],[4.84,0.09],[4.848,0.09],[4.856,0.087],[4.864,0.087],[4.872,0.086],[4.88,0.086],[4.888,0.086],[4.896,0.086],[4.904,0.085],[4.912,0.083],[4.92,0.082],[4.928,0.082],[4.936,0.082],[4.944,0.082],[4.952,0.082],[4.96,0.082],[4.968,0.08],[4.976,0.08],[4.984,0.079],[4.992,0.079],[5.0,0.077],[5.008,0.076],[5.016,0.076],[5.024,0.076],[5.032,0.076],[5.04,0.074],[5.048,0.073],[5.056,0.074],[5.064,0.073],[5.072,0.072],[5.08,0.072],[5.088,0.072],[5.096,0.071],[5.104,0.07],[5.112,0.069],[5.12,0.07],[5.128,0.069],[5.136,0.069],[5.144,0.068],[5.152,0.068],[5.16,0.067],[5.168,0.066],[5.176,0.065],[5.184,0.067],[5.192,0.066],[5.2,0.066],[5.208,0.066],[5.216,0.064],[5.224,0.063],[5.232,0.065],[5.24,0.063],[5.248,0.063],[5.256,0.064],[5.264,0.064],[5.272,0.061],[5.28,0.06],[5.288,0.06],[5.296,0.06],[5.304,0.06],[5.312,0.06],[5.32,0.058],[5.328,0.06],[5.336,0.057],[5.344,0.056],[5.352,0.056],[5.36,0.058],[5.368,0.057],[5.376,0.057],[5.384,0.059],[5.392,0.055],[5.4,0.053],[5.408,0.053],[5.416,0.053],[5.424,0.054],[5.432,0.053],[5.44,0.053],[5.448,0.053],[5.456,0.051],[5.464,0.051],[5.472,0.05],[5.48,0.05],[5.488,0.05],[5.496,0.051],[5.504,0.051],[5.512,0.05],[5.52,0.048],[5.528,0.048],[5.536,0.047],[5.544,0.048],[5.552,0.046],[5.56,0.045],[5.568,0.047],[5.576,0.045],[5.584,0.045],[5.592,0.045],[5.6,0.045],[5.608,0.044],[5.616,0.045],[5.624,0.045],[5.632,0.043],[5.64,0.042],[5.648,0.043],[5.656,0.042],[5.664,0.045],[5.672,0.045],[5.68,0.045],[5.688,0.044],[5.696,0.042],[5.704,0.041],[5.712,0.041],[5.72,0.041],[5.728,0.043],[5.736,0.042],[5.744,0.041],[5.752,0.04],[5.76,0.04],[5.768,0.041],[5.776,0.038],[5.784,0.04],[5.792,0.041],[5.8,0.04],[5.808,0.04],[5.816,0.038],[5.824,0.038],[5.832,0.037],[5.84,0.038],[5.848,0.038],[5.856,0.037],[5.864,0.037],[5.872,0.037],[5.88,0.035],[5.888,0.036],[5.896,0.036],[5.904,0.037],[5.912,0.037],[5.92,0.037],[5.928,0.037],[5.936,0.035],[5.944,0.034],[5.952,0.033],[5.96,0.035],[5.968,0.036],[5.976,0.035],[5.984,0.036],[5.992,0.033],[6.0,0.033],[6.008,0.032],[6.016,0.032],[6.024,0.032],[6.032,0.033],[6.04,0.032],[6.048,0.033],[6.056,0.032],[6.064,0.031],[6.072,0.033],[6.08,0.033],[6.088,0.032],[6.096,0.032],[6.104,0.032],[6.112,0.031],[6.12,0.031],[6.128,0.03],[6.136,0.03],[6.144,0.031],[6.152,0.033],[6.16,0.031],[6.168,0.03],[6.176,0.028],[6.184,0.029],[6.192,0.028],[6.2,0.029],[6.208,0.03],[6.216,0.028],[6.224,0.03],[6.232,0.03],[6.24,0.028],[6.248,0.027],[6.256,0.027],[6.264,0.03],[6.272,0.028],[6.28,0.028],[6.288,0.028],[6.296,0.027],[6.304,0.028],[6.312,0.029],[6.32,0.028],[6.328,0.028],[6.336,0.029],[6.344,0.027],[6.352,0.026],[6.36,0.028],[6.368,0.026],[6.376,0.027],[6.384,0.027],[6.392,0.025],[6.4,0.026],[6.408,0.027],[6.416,0.025],[6.424,0.025],[6.432,0.026],[6.44,0.025],[6.448,0.025],[6.456,0.024],[6.464,0.025],[6.472,0.023],[6.48,0.024],[6.488,0.026],[6.496,0.025],[6.504,0.024],[6.512,0.024],[6.52,0.023],[6.528,0.024],[6.536,0.025],[6.544,0.024],[6.552,0.025],[6.56,0.023],[6.568,0.023],[6.576,0.024],[6.584,0.024],[6.592,0.022],[6.6,0.022],[6.608,0.022],[6.616,0.021],[6.624,0.023],[6.632,0.023],[6.64,0.022],[6.648,0.022],[6.656,0.02],[6.664,0.02],[6.672,0.021],[6.68,0.022],[6.688,0.022],[6.696,0.022],[6.704,0.024],[6.712,0.02],[6.72,0.02],[6.728,0.02],[6.736,0.021],[6.744,0.022],[6.752,0.022],[6.76,0.022],[6.768,0.023],[6.776,0.02],[6.784,0.019],[6.792,0.019],[6.8,0.02],[6.808,0.021]],"r10k2u":[[0.0,0.006],[0.0005,0.008],[0.001,0.003],[0.0015,0.009],[0.002,0.005],[0.0025,0.01],[0.003,0.011],[0.0035,0.01],[0.004,0.011],[0.0045,0.008],[0.005,0.011],[0.0055,0.01],[0.006,0.011],[0.0065,0.01],[0.007,0.01],[0.0075,0.013],[0.008,0.009],[0.0085,0.01],[0.009,0.008],[0.0095,0.011],[0.01,0.009],[0.0105,0.009],[0.011,0.187],[0.0115,7.294],[0.012,7.403],[0.0125,7.191],[0.013,7.083],[0.0135,6.87],[0.014,6.771],[0.0145,6.572],[0.015,6.477],[0.0155,6.283],[0.016,6.1],[0.0165,6.009],[0.017,5.838],[0.0175,5.747],[0.018,5.576],[0.0185,5.499],[0.019,5.332],[0.0195,5.179],[0.02,5.099],[0.0205,4.949],[0.021,4.874],[0.0215,4.733],[0.022,4.667],[0.0225,4.527],[0.023,4.463],[0.0235,4.328],[0.024,4.2],[0.0245,4.143],[0.025,4.018],[0.0255,3.961],[0.026,3.84],[0.0265,3.788],[0.027,3.673],[0.0275,3.568],[0.028,3.515],[0.0285,3.41],[0.029,3.362],[0.0295,3.259],[0.03,3.217],[0.0305,3.119],[0.031,3.076],[0.0315,2.982],[0.032,2.894],[0.0325,2.851],[0.033,2.766],[0.0335,2.735],[0.034,2.651],[0.0345,2.613],[0.035,2.539],[0.0355,2.497],[0.036,2.425],[0.0365,2.352],[0.037,2.321],[0.0375,2.251],[0.038,2.22],[0.0385,2.151],[0.039,2.09],[0.0395,2.058],[0.04,1.998],[0.0405,1.967],[0.041,1.911],[0.0415,1.884],[0.042,1.828],[0.0425,1.803],[0.043,1.748],[0.0435,1.699],[0.044,1.674],[0.0445,1.627],[0.045,1.604],[0.0455,1.554],[0.046,1.531],[0.0465,1.483],[0.047,1.465],[0.0475,1.419],[0.048,1.38],[0.0485,1.358],[0.049,1.32],[0.0495,1.3],[0.05,1.262],[0.0505,1.248],[0.051,1.21],[0.0515,1.174],[0.052,1.156],[0.0525,1.119],[0.053,1.108],[0.0535,1.07],[0.054,1.058],[0.0545,1.022],[0.055,1.0],[0.0555,0.98],[0.056,0.953],[0.0565,0.939],[0.057,0.91],[0.0575,0.9],[0.058,0.873],[0.0585,0.862],[0.059,0.836],[0.0595,0.824],[0.06,0.801],[0.0605,0.778],[0.061,0.769],[0.0615,0.748],[0.062,0.736],[0.0625,0.714],[0.063,0.694],[0.0635,0.687],[0.064,0.666],[0.0645,0.654],[0.065,0.636],[0.0655,0.627],[0.066,0.607],[0.0665,0.596],[0.067,0.58],[0.0675,0.573],[0.068,0.553],[0.0685,0.541],[0.069,0.532],[0.0695,0.52],[0.07,0.511],[0.0705,0.494],[0.071,0.481],[0.0715,0.474],[0.072,0.459],[0.0725,0.453],[0.073,0.44],[0.0735,0.433],[0.074,0.423],[0.0745,0.413],[0.075,0.402],[0.0755,0.394],[0.076,0.389],[0.0765,0.377],[0.077,0.37],[0.0775,0.361],[0.078,0.355],[0.0785,0.346],[0.079,0.343],[0.0795,0.331],[0.08,0.321],[0.0805,0.319],[0.081,0.307],[0.0815,0.305],[0.082,0.295],[0.0825,0.295],[0.083,0.284],[0.0835,0.278],[0.084,0.274],[0.0845,0.265],[0.085,0.262],[0.0855,0.252],[0.086,0.253],[0.0865,0.244],[0.087,0.239],[0.0875,0.234],[0.088,0.231],[0.0885,0.225],[0.089,0.218],[0.0895,0.217],[0.09,0.209],[0.0905,0.208],[0.091,0.201],[0.0915,0.198],[0.092,0.191],[0.0925,0.188],[0.093,0.19],[0.0935,0.182],[0.094,0.179],[0.0945,0.173],[0.095,0.172],[0.0955,0.169],[0.096,0.163],[0.0965,0.163],[0.097,0.153],[0.0975,0.154],[0.098,0.149],[0.0985,0.147],[0.099,0.142],[0.0995,0.14],[0.1,0.138],[0.1005,0.133],[0.101,0.135],[0.1015,0.128],[0.102,0.128],[0.1025,0.128],[0.103,0.122],[0.1035,0.121],[0.104,0.114],[0.1045,0.112],[0.105,0.101],[0.1055,0.103],[0.106,0.101],[0.1065,0.1],[0.107,0.095],[0.1075,0.099],[0.108,0.09],[0.1085,0.088],[0.109,0.091],[0.1095,0.084],[0.11,0.088],[0.1105,0.08],[0.111,0.081],[0.1115,0.077],[0.112,0.08],[0.1125,0.076],[0.113,0.071],[0.1135,0.075],[0.114,0.071],[0.1145,0.071],[0.115,0.068],[0.1155,0.065],[0.116,0.066],[0.1165,0.062],[0.117,0.066],[0.1175,0.061],[0.118,0.064],[0.1185,0.058],[0.119,0.06],[0.1195,0.057],[0.12,0.055],[0.1205,0.054],[0.121,0.052],[0.1215,0.058],[0.122,0.051],[0.1225,0.052],[0.123,0.051],[0.1235,0.052],[0.124,0.05],[0.1245,0.046],[0.125,0.052],[0.1255,0.045],[0.126,0.044],[0.1265,0.046],[0.127,0.044],[0.1275,0.042],[0.128,0.041],[0.1285,0.042],[0.129,0.038],[0.1295,0.041],[0.13,0.039],[0.1305,0.038],[0.131,0.04],[0.1315,0.037],[0.132,0.034],[0.1325,0.037],[0.133,0.033],[0.1335,0.034],[0.134,0.037],[0.1345,0.032],[0.135,0.036],[0.1355,0.034],[0.136,0.034],[0.1365,0.032],[0.137,0.029],[0.1375,0.033],[0.138,0.027],[0.1385,0.033],[0.139,0.028],[0.1395,0.028],[0.14,0.027],[0.1405,0.029],[0.141,0.026],[0.1415,0.024],[0.142,0.026],[0.1425,0.024],[0.143,0.025],[0.1435,0.022],[0.144,0.024],[0.1445,0.022],[0.145,0.021],[0.1455,0.026],[0.146,0.022],[0.1465,0.025],[0.147,0.02],[0.1475,0.021],[0.148,0.022],[0.1485,0.021],[0.149,0.026],[0.1495,0.018],[0.15,0.023],[0.1505,0.019],[0.151,0.022],[0.1515,0.02],[0.152,0.021],[0.1525,0.019],[0.153,0.019],[0.1535,0.024],[0.154,0.016],[0.1545,0.019],[0.155,0.019],[0.1555,0.019],[0.156,0.02],[0.1565,0.021],[0.157,0.022],[0.1575,0.016],[0.158,0.019],[0.1585,0.017],[0.159,0.017],[0.1595,0.019],[0.16,0.017],[0.1605,0.018],[0.161,0.015],[0.1615,0.017],[0.162,0.013]],"r10k2200u":[[0.0,0.18],[0.0865,0.009],[0.173,0.008],[0.2595,0.011],[0.346,0.011],[0.4325,0.009],[0.519,0.008],[0.6055,0.008],[0.692,0.009],[0.7785,0.01],[0.865,0.009],[0.9515,0.01],[1.038,7.687],[1.1245,7.642],[1.211,7.609],[1.2975,7.565],[1.384,7.527],[1.4705,7.493],[1.557,7.461],[1.6435,7.424],[1.73,7.388],[1.8165,7.362],[1.903,7.329],[1.9895,7.294],[2.076,7.261],[2.1625,7.235],[2.249,7.201],[2.3355,7.171],[2.422,7.143],[2.5085,7.113],[2.595,7.089],[2.6815,7.053],[2.768,7.025],[2.8545,6.994],[2.941,6.966],[3.0275,6.943],[3.114,6.907],[3.2005,6.884],[3.287,6.856],[3.3735,6.831],[3.46,6.798],[3.5465,6.77],[3.633,6.746],[3.7195,6.719],[3.806,6.694],[3.8925,6.668],[3.979,6.64],[4.0655,6.619],[4.152,6.593],[4.2385,6.564],[4.325,6.539],[4.4115,6.516],[4.498,6.493],[4.5845,6.462],[4.671,6.438],[4.7575,6.411],[4.844,6.39],[4.9305,6.362],[5.017,6.339],[5.1035,6.315],[5.19,6.288],[5.2765,6.266],[5.363,6.24],[5.4495,6.219],[5.536,6.197],[5.6225,6.178],[5.709,6.148],[5.7955,6.126],[5.882,6.104],[5.9685,6.082],[6.055,6.064],[6.1415,6.037],[6.228,6.012],[6.3145,5.998],[6.401,5.969],[6.4875,5.947],[6.574,5.923],[6.6605,5.896],[6.747,5.876],[6.8335,5.858],[6.92,5.833],[7.0065,5.815],[7.093,5.801],[7.1795,5.767],[7.266,5.744],[7.3525,5.729],[7.439,5.707],[7.5255,5.681],[7.612,5.66],[7.6985,5.649],[7.785,5.624],[7.8715,5.599],[7.958,5.581],[8.0445,5.562],[8.131,5.536],[8.2175,5.52],[8.304,5.5],[8.3905,5.479],[8.477,5.461],[8.5635,5.443],[8.65,5.418],[8.7365,5.396],[8.823,5.382],[8.9095,5.358],[8.996,5.336],[9.0825,5.321],[9.169,5.299],[9.2555,5.281],[9.342,5.261],[9.4285,5.245],[9.515,5.224],[9.6015,5.201],[9.688,5.187],[9.7745,5.169],[9.861,5.146],[9.9475,5.133],[10.034,5.112],[10.1205,5.09],[10.207,5.074],[10.2935,5.055],[10.38,5.036],[10.4665,5.017],[10.553,5.001],[10.6395,4.981],[10.726,4.962],[10.8125,4.944],[10.899,4.927],[10.9855,4.905],[11.072,4.889],[11.1585,4.876],[11.245,4.852],[11.3315,4.836],[11.418,4.823],[11.5045,4.804],[11.591,4.784],[11.6775,4.77],[11.764,4.755],[11.8505,4.732],[11.937,4.72],[12.0235,4.704],[12.11,4.681],[12.1965,4.669],[12.283,4.654],[12.3695,4.635],[12.456,4.616],[12.5425,4.598],[12.629,4.585],[12.7155,4.567],[12.802,4.554],[12.8885,4.536],[12.975,4.521],[13.0615,4.507],[13.148,4.49],[13.2345,4.466],[13.321,4.448],[13.4075,4.44],[13.494,4.418],[13.5805,4.403],[13.667,4.389],[13.7535,4.377],[13.84,4.36],[13.9265,4.342],[14.013,4.327],[14.0995,4.313],[14.186,4.297],[14.2725,4.278],[14.359,4.268],[14.4455,4.254],[14.532,4.236],[14.6185,4.22],[14.705,4.204],[14.7915,4.188],[14.878,4.177],[14.9645,4.16],[15.051,4.143],[15.1375,4.132],[15.224,4.12],[15.3105,4.1],[15.397,4.086],[15.4835,4.075],[15.57,4.059],[15.6565,4.043],[15.743,4.033],[15.8295,4.016],[15.916,4.0],[16.0025,3.985],[16.089,3.97],[16.1755,3.954],[16.262,3.946],[16.3485,3.932],[16.435,3.915],[16.5215,3.899],[16.608,3.887],[16.6945,3.876],[16.781,3.861],[16.8675,3.846],[16.954,3.832],[17.0405,3.817],[17.127,3.806],[17.2135,3.794],[17.3,3.779],[17.3865,3.768],[17.473,3.752],[17.5595,3.739],[17.646,3.727],[17.7325,3.711],[17.819,3.701],[17.9055,3.687],[17.992,3.673],[18.0785,3.663],[18.165,3.649],[18.2515,3.636],[18.338,3.62],[18.4245,3.61],[18.511,3.596],[18.5975,3.583],[18.684,3.576],[18.7705,3.558],[18.857,3.551],[18.9435,3.539],[19.03,3.525],[19.1165,3.506],[19.203,3.497],[19.2895,3.483],[19.376,3.472],[19.4625,3.461],[19.549,3.448],[19.6355,3.437],[19.722,3.423],[19.8085,3.414],[19.895,3.405],[19.9815,3.385],[20.068,3.38],[20.1545,3.364],[20.241,3.349],[20.3275,3.341],[20.414,3.33],[20.5005,3.321],[20.587,3.307],[20.6735,3.298],[20.76,3.285],[20.8465,3.273],[20.933,3.258],[21.0195,3.25],[21.106,3.239],[21.1925,3.226],[21.279,3.214],[21.3655,3.208],[21.452,3.19],[21.5385,3.182],[21.625,3.172],[21.7115,3.158],[21.798,3.152],[21.8845,3.143],[21.971,3.129],[22.0575,3.116],[22.144,3.108],[22.2305,3.094],[22.317,3.083],[22.4035,3.074],[22.49,3.065],[22.5765,3.051],[22.663,3.041],[22.7495,3.029],[22.836,3.016],[22.9225,3.011],[23.009,2.999],[23.0955,2.988],[23.182,2.973],[23.2685,2.968],[23.355,2.957],[23.4415,2.943],[23.528,2.933],[23.6145,2.928],[23.701,2.915],[23.7875,2.903],[23.874,2.893],[23.9605,2.884],[24.047,2.876],[24.1335,2.866],[24.22,2.856],[24.3065,2.848],[24.393,2.833],[24.4795,2.828],[24.566,2.813],[24.6525,2.808],[24.739,2.797],[24.8255,2.791],[24.912,2.774],[24.9985,2.768],[25.085,2.76],[25.1715,2.747],[25.258,2.741],[25.3445,2.73],[25.431,2.72],[25.5175,2.71],[25.604,2.704],[25.6905,2.693],[25.777,2.682],[25.8635,2.675],[25.95,2.667],[26.0365,2.657],[26.123,2.646],[26.2095,2.641],[26.296,2.631],[26.3825,2.618],[26.469,2.609],[26.5555,2.603],[26.642,2.59],[26.7285,2.585],[26.815,2.575],[26.9015,2.57],[26.988,2.559],[27.0745,2.554],[27.161,2.537],[27.2475,2.528],[27.334,2.52],[27.4205,2.513],[27.507,2.505],[27.5935,2.493],[27.68,2.488],[27.7665,2.479],[27.853,2.468],[27.9395,2.46],[28.026,2.451],[28.1125,2.44],[28.199,2.432],[28.2855,2.431],[28.372,2.416],[28.4585,2.411],[28.545,2.408],[28.6315,2.395],[28.718,2.384],[28.8045,2.378],[28.891,2.371],[28.9775,2.357],[29.064,2.35],[29.1505,2.347],[29.237,2.338],[29.3235,2.327],[29.41,2.322],[29.4965,2.313],[29.583,2.303],[29.6695,2.296],[29.756,2.292],[29.8425,2.283],[29.929,2.274],[30.0155,2.27],[30.102,2.258],[30.1885,2.247],[30.275,2.246],[30.3615,2.235],[30.448,2.227],[30.5345,2.221],[30.621,2.214],[30.7075,2.209],[30.794,2.202],[30.8805,2.193],[30.967,2.183],[31.0535,2.176],[31.14,2.169],[31.2265,2.161],[31.313,2.157],[31.3995,2.149],[31.486,2.143],[31.5725,2.13],[31.659,2.125],[31.7455,2.122],[31.832,2.11],[31.9185,2.101],[32.005,2.096],[32.0915,2.089],[32.178,2.084],[32.2645,2.079],[32.351,2.069],[32.4375,2.058],[32.524,2.052],[32.6105,2.046],[32.697,2.04],[32.7835,2.031],[32.87,2.023],[32.9565,2.02],[33.043,2.01],[33.1295,2.007],[33.216,2.0],[33.3025,1.994],[33.389,1.982],[33.4755,1.979],[33.562,1.971],[33.6485,1.962],[33.735,1.959],[33.8215,1.952],[33.908,1.943],[33.9945,1.941],[34.081,1.933],[34.1675,1.927],[34.254,1.918],[34.3405,1.911],[34.427,1.91],[34.5135,1.9],[34.6,1.892],[34.6865,1.891],[34.773,1.879],[34.8595,1.873],[34.946,1.871],[35.0325,1.862],[35.119,1.857],[35.2055,1.851],[35.292,1.843],[35.3785,1.836],[35.465,1.832],[35.5515,1.828],[35.638,1.816],[35.7245,1.809],[35.811,1.809],[35.8975,1.803],[35.984,1.797],[36.0705,1.789],[36.157,1.783],[36.2435,1.775],[36.33,1.771],[36.4165,1.766],[36.503,1.758],[36.5895,1.757],[36.676,1.749],[36.7625,1.741],[36.849,1.732],[36.9355,1.731],[37.022,1.727],[37.1085,1.716],[37.195,1.71],[37.2815,1.71],[37.368,1.695],[37.4545,1.701],[37.541,1.691],[37.6275,1.681],[37.714,1.676],[37.8005,1.672],[37.887,1.666],[37.9735,1.658],[38.06,1.659],[38.1465,1.65],[38.233,1.644],[38.3195,1.638],[38.406,1.633],[38.4925,1.631],[38.579,1.622],[38.6655,1.616],[38.752,1.616],[38.8385,1.611],[38.925,1.603],[39.0115,1.599],[39.098,1.592],[39.1845,1.587],[39.271,1.583],[39.3575,1.577],[39.444,1.566],[39.5305,1.565],[39.617,1.56],[39.7035,1.548],[39.79,1.549],[39.8765,1.544],[39.963,1.537],[40.0495,1.534],[40.136,1.527],[40.2225,1.524],[40.309,1.515],[40.3955,1.511],[40.482,1.509],[40.5685,1.5],[40.655,1.494],[40.7415,1.49],[40.828,1.486],[40.9145,1.48],[41.001,1.476],[41.0875,1.472],[41.174,1.466],[41.2605,1.464],[41.347,1.459],[41.4335,1.451],[41.52,1.45],[41.6065,1.444],[41.693,1.435],[41.7795,1.433],[41.866,1.43],[41.9525,1.426],[42.039,1.418],[42.1255,1.417],[42.212,1.413],[42.2985,1.401],[42.385,1.4],[42.4715,1.396],[42.558,1.39],[42.6445,1.389],[42.731,1.382],[42.8175,1.381],[42.904,1.372],[42.9905,1.371],[43.077,1.365],[43.1635,1.361],[43.25,1.354],[43.3365,1.352],[43.423,1.35],[43.5095,1.34],[43.596,1.338],[43.6825,1.334],[43.769,1.328],[43.8555,1.324],[43.942,1.326],[44.0285,1.317],[44.115,1.315],[44.2015,1.308],[44.288,1.302],[44.3745,1.302],[44.461,1.295],[44.5475,1.292],[44.634,1.287],[44.7205,1.284],[44.807,1.279],[44.8935,1.274],[44.98,1.273],[45.0665,1.27],[45.153,1.261],[45.2395,1.256],[45.326,1.254],[45.4125,1.254],[45.499,1.242],[45.5855,1.24],[45.672,1.237],[45.7585,1.231],[45.845,1.23],[45.9315,1.224],[46.018,1.222],[46.1045,1.218],[46.191,1.211],[46.2775,1.212],[46.364,1.203],[46.4505,1.201],[46.537,1.198],[46.6235,1.196],[46.71,1.19],[46.7965,1.191],[46.883,1.183],[46.9695,1.18],[47.056,1.172],[47.1425,1.172],[47.229,1.164],[47.3155,1.16],[47.402,1.163],[47.4885,1.157],[47.575,1.149],[47.6615,1.147],[47.748,1.147],[47.8345,1.145],[47.921,1.137],[48.0075,1.134],[48.094,1.126],[48.1805,1.128],[48.267,1.125],[48.3535,1.117],[48.44,1.116],[48.5265,1.116],[48.613,1.108],[48.6995,1.102],[48.786,1.099],[48.8725,1.097],[48.959,1.094],[49.0455,1.089],[49.132,1.087],[49.2185,1.082],[49.305,1.08],[49.3915,1.07],[49.478,1.071],[49.5645,1.062],[49.651,1.063],[49.7375,1.063],[49.824,1.058],[49.9105,1.051],[49.997,1.052],[50.0835,1.047],[50.17,1.042],[50.2565,1.037],[50.343,1.034],[50.4295,1.03],[50.516,1.028],[50.6025,1.026],[50.689,1.022],[50.7755,1.021],[50.862,1.017],[50.9485,1.015],[51.035,1.01],[51.1215,1.007],[51.208,1.007],[51.2945,1.0],[51.381,0.997],[51.4675,0.994],[51.554,0.991],[51.6405,0.987],[51.727,0.984],[51.8135,0.984],[51.9,0.976],[51.9865,0.975],[52.073,0.972],[52.1595,0.97],[52.246,0.967],[52.3325,0.961],[52.419,0.961],[52.5055,0.955],[52.592,0.951],[52.6785,0.949],[52.765,0.948],[52.8515,0.944],[52.938,0.943],[53.0245,0.937],[53.111,0.934],[53.1975,0.933],[53.284,0.93],[53.3705,0.925],[53.457,0.924],[53.5435,0.92],[53.63,0.917],[53.7165,0.916],[53.803,0.913],[53.8895,0.906],[53.976,0.903],[54.0625,0.904],[54.149,0.896],[54.2355,0.899],[54.322,0.889],[54.4085,0.89],[54.495,0.892],[54.5815,0.883],[54.668,0.888],[54.7545,0.879],[54.841,0.877],[54.9275,0.873],[55.014,0.873],[55.1005,0.87],[55.187,0.865],[55.2735,0.866],[55.36,0.861],[55.4465,0.858],[55.533,0.855],[55.6195,0.855],[55.706,0.851],[55.7925,0.846],[55.879,0.848],[55.9655,0.845],[56.052,0.84],[56.1385,0.837],[56.225,0.838],[56.3115,0.832],[56.398,0.829],[56.4845,0.825],[56.571,0.824],[56.6575,0.821],[56.744,0.821],[56.8305,0.813],[56.917,0.813],[57.0035,0.816],[57.09,0.81],[57.1765,0.806],[57.263,0.801],[57.3495,0.799],[57.436,0.799],[57.5225,0.795],[57.609,0.793],[57.6955,0.788],[57.782,0.786],[57.8685,0.787],[57.955,0.782],[58.0415,0.782],[58.128,0.781],[58.2145,0.776],[58.301,0.774],[58.3875,0.775],[58.474,0.769],[58.5605,0.763],[58.647,0.762],[58.7335,0.762],[58.82,0.76],[58.9065,0.755],[58.993,0.754],[59.0795,0.754],[59.166,0.749],[59.2525,0.748],[59.339,0.747],[59.4255,0.744],[59.512,0.738],[59.5985,0.74],[59.685,0.738],[59.7715,0.733],[59.858,0.733],[59.9445,0.729],[60.031,0.724],[60.1175,0.72],[60.204,0.723],[60.2905,0.718],[60.377,0.716],[60.4635,0.716],[60.55,0.714],[60.6365,0.709],[60.723,0.707]]};
 const ECHT_ROH = {"r680":{"R":680,"C":9.6e-05,"U0":7.65,"f":2000,"jeder":1},"r2k":{"R":2000,"C":9.6e-05,"U0":7.58,"f":500,"jeder":1},"r10k":{"R":10000,"C":9.6e-05,"U0":7.67,"f":500,"jeder":4},"r10k2u":{"R":10000,"C":2e-06,"U0":7.4,"f":2000,"jeder":1},"r10k2200u":{"R":10000,"C":0.0022,"U0":7.69,"f":2000,"jeder":173}};
 
-const FARBEN = ["#0000BF", "#BF0000", "#295C06", "#C86400", "#7A1FA2", "#555555"];
-const R_WAHL = [680, 2000, 10000], C_WAHL = [2e-6, 96e-6, 2200e-6];
+const FARBEN = ["#6A3D9A", "#D46A00", "#2E8B3A", "#BF0000", "#00838F", "#555555"];
+const UI = "#0000BF";
 const SPEICHER = "KI_A.2.3_RC_Messlabor_reihen";
+const FREI_SPEICHER = "KI_A.2.3_RC_Messlabor_frei";
+const R_MAX = 50e3;   /* Spannungssensor hat etwa 1 MΩ Innenwiderstand: darüber entlädt er merklich mit */
+const gr = s => "<i class='gr'>" + s + "</i>";
+const sym = (s, i) => "<span class='sym'>" + gr(s) + "<sub>" + i + "</sub></span>";
+const STIFT = "<svg width='17' height='17' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/></svg>";
 const MODI = {
-	vergleich: { titel: "Entladekurven vergleichen",
-		auftrag: "Öffnen Sie Ihre gespeicherten SparkVue-Messungen, gern auch die der anderen Gruppen, und geben Sie bei jeder Messreihe <i class='gr'>R</i> und <i class='gr'>C</i> an. Blenden Sie die Messreihen ein, die Sie vergleichen wollen: jeweils nur <i class='gr'>R</i> oder nur <i class='gr'>C</i> verschieden. Vergleichen Sie in der Darstellung <i class='gr'>I</i> in mA Anfangsstromstärke und Abfall. Ziehen Sie im Diagramm, um mit dem Cursor die Stromstärken zu einem Zeitpunkt abzulesen." },
-	halbwertszeit: { titel: "Halbwertszeit bestimmen",
-		auftrag: "Öffnen Sie Ihre gespeicherten SparkVue-Messungen und die der anderen Gruppen und geben Sie bei jeder Messreihe <i class='gr'>R</i> und <i class='gr'>C</i> an. Die Tabelle unten zeigt die Halbwertszeit jeder Messreihe. Tippen Sie eine Messreihe an: Im Diagramm sehen Sie, wie die Halbierungen abgelesen wurden. Ziehen Sie im Diagramm, um einen anderen Startpunkt zu wählen." },
-	anpassung: { titel: "Kurve anpassen",
-		auftrag: "Öffnen Sie Ihre gespeicherten SparkVue-Messungen und geben Sie bei jeder Messreihe <i class='gr'>R</i> und <i class='gr'>C</i> an. An jede Messreihe wird eine Funktion <i class='gr'>U</i><sub>R</sub>(<i class='gr'>t</i>) = <i class='gr'>A</i>&thinsp;·&thinsp;e<sup>−<i class='gr'>B</i>&thinsp;·&thinsp;<i class='gr'>t</i></sup> angepasst (orange gestrichelt). Die Tabelle zeigt den Faktor <i class='gr'>B</i> vor <i class='gr'>t</i> im Exponenten für alle Messreihen." },
-	flaeche: { titel: "Fläche unter der Kurve",
-		auftrag: "Öffnen Sie Ihre gespeicherten SparkVue-Messungen und geben Sie bei jeder Messreihe <i class='gr'>R</i> und <i class='gr'>C</i> an. Die Tabelle zeigt für alle Messreihen die Ladespannung <i class='gr'>U</i><sub>0</sub> (Anfangswert von <i class='gr'>U</i><sub>R</sub>) und die Fläche unter dem <i class='gr'>t</i>-<i class='gr'>U</i><sub>R</sub>-Graphen über die ganze Messung. Tippen Sie eine Messreihe an, um die Fläche im Diagramm zu sehen; mit dem Cursor wählen Sie ein anderes Ende." }
+	vergleich: { titel: "Entladekurven vergleichen", schritte: [
+		"Öffnen Sie Ihre SparkVue-Dateien und die der anderen Gruppen.",
+		"Blenden Sie Messreihen ein, bei denen nur " + gr("R") + " oder nur " + gr("C") + " verschieden ist.",
+		"Vergleichen Sie Anfangsstromstärke und Abfall. Ziehen Sie im Diagramm, um Stromstärken abzulesen."] },
+	halbwertszeit: { titel: "Halbwertszeit bestimmen", schritte: [
+		"Wählen Sie eine eigene Messreihe.",
+		"Ziehen Sie die Linien A und B so, dass sich die Stromstärke halbiert (Verhältnis 0,50). Wiederholen Sie das an einer anderen Stelle.",
+		"Tragen Sie Ihre Halbwertszeit ein. Stimmt sie, bestimmt das Messlabor die Halbwertszeit aller Messreihen."] },
+	anpassung: { titel: "Formel prüfen", einleitung: "Sagen Sie die Entladekurve voraus.", schritte: [
+		"Berechnen Sie aus der Ladespannung " + sym("U", "0") + " und Ihren Bauteilen " + sym("I", "0") + " und " + gr("R") + "&thinsp;·&thinsp;" + gr("C") + ".",
+		"Tragen Sie beide ein. Das Messlabor zeichnet dann " + gr("I") + "(" + gr("t") + ") = " + sym("I", "0") + "&thinsp;·&thinsp;e<sup>−" + gr("t") + "&thinsp;/&thinsp;(" + gr("R") + "&thinsp;·&thinsp;" + gr("C") + ")</sup> über Ihre Messwerte."] },
+	flaeche: { titel: "Ladung als Fläche unter dem Graphen", einleitung: "Die Fläche unter dem " + gr("t") + "-" + gr("I") + "-Graphen ist die Ladung, die beim Entladen fließt.", schritte: [
+		"Nähern Sie die Fläche mit immer mehr Streifen an. Höhe eines Streifens: Stromstärke in seiner Mitte."] }
 };
 
-let reihen = [], gewaehltId = null, modus = "vergleich", groesse = "I", zoom = 1, cursor = null, naechsteNr = 1;
+let reihen = [], gewaehltId = null, modus = "vergleich", zoom = 1, cursor = null, naechsteNr = 1;
+let linA = null, linB = null, streifen = 4, zeigeHalb = false, urteilText = null;
+let frei = { hwz: false, formel: false };
 let SW, SH, DW, DH, ach = null;
 const LAEUFE = new Map();   /* id -> alle Läufe der geöffneten Datei (nur im Speicher) */
 const sb = $("schaltung"), sctx = sb.getContext("2d"), db = $("diagramm"), dctx = db.getContext("2d");
+try { frei = Object.assign(frei, JSON.parse(localStorage.getItem(FREI_SPEICHER) || "{}")); } catch (e) { }
+function freiSichern() { try { localStorage.setItem(FREI_SPEICHER, JSON.stringify(frei)); } catch (e) { } }
 
 /* ---------- Formate ---------- */
-function formatR(R) { if (!(R > 0)) return "?"; return R >= 1000 ? P.de(R / 1000, R % 1000 ? 1 : 0) + " kΩ" : P.de(R, 0) + " Ω"; }
-function formatC(C) { if (!(C > 0)) return "?"; const u = C * 1e6; return (u >= 10 ? P.de(u, 0) : P.de(u, 1).replace(",0", "")) + " µF"; }
+function kurz(x) { return String(+(+x).toPrecision(3)).replace(".", ","); }
+function formatR(R) { if (!(R > 0)) return "?"; return R >= 1e6 ? kurz(R / 1e6) + " MΩ" : R >= 1000 ? kurz(R / 1000) + " kΩ" : kurz(R) + " Ω"; }
+function formatC(C) { if (!(C > 0)) return "?"; return kurz(C * 1e6) + " µF"; }
 function formatZeit(t) { return P.sig(t, 3) + " s"; }
-function formatQ(Q) { return Q >= 1e-3 ? P.sig(Q * 1e3, 3) + " mC" : P.sig(Q * 1e6, 3) + " µC"; }
+function formatQ(Q) { return Q >= 1e-4 ? P.sig(Q * 1e3, 3) + " mC" : P.sig(Q * 1e6, 3) + " µC"; }   /* wie auf dem Blatt: 0,756 mC */
+function formatI(I) { return P.sig(I, 3) + " mA"; }
 function schoeneGrenze(y) { if (!(y > 0)) return 1; const st = Math.pow(10, Math.floor(Math.log10(y))); for (const f of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (f * st >= y - 1e-12) return f * st; return 10 * st; }
-function bauteile(r) { return formatR(r.R) + ", " + formatC(r.C); }
+function bauteile(r) { return formatC(r.C) + ", " + formatR(r.R); }
 function esc(s) { return String(s).replace(/[<>&"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]); }
+const SCHLOSS_ZU = "<svg width='15' height='15' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4m6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1m-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z'/></svg>";
+const SCHLOSS_AUF = "<svg width='15' height='15' viewBox='0 0 24 24' aria-hidden='true'><path fill='currentColor' d='M18 8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h9V6a3 3 0 0 0-6 0H7a5 5 0 0 1 10 0v2h1m-6 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z'/></svg>";
 
 /* ---------- Messreihen aufbereiten: t = 0 beim Umschalten (größter Messwert), Vorlauf weg, Entladung positiv ---------- */
 function aufbereiten(pk) {
@@ -1981,8 +2181,12 @@ function aufbereiten(pk) {
 	for (let i = i0; i < ende; i += schritt) d.push([+(pk[i][0] - t0).toPrecision(7), +(vz * pk[i][1]).toFixed(4)]);
 	return d;
 }
+function abtastzeit(pk) {   /* Abstand zweier Messwerte in der Originaldatei (Median) */
+	const d = []; for (let i = 1; i < Math.min(pk.length, 400); i++) d.push(pk[i][0] - pk[i - 1][0]);
+	d.sort((a, b) => a - b); return d.length ? d[Math.floor(d.length / 2)] : NaN;
+}
 function neueReihe(name, pk, R, C, beispiel) {
-	const r = { id: naechsteNr++, name, beispiel: !!beispiel, R: R > 0 ? R : null, C: C > 0 ? C : null, punkte: aufbereiten(pk), zeigen: true };
+	const r = { id: naechsteNr++, name, beispiel: !!beispiel, R: R > 0 ? R : null, C: C > 0 ? C : null, dt: abtastzeit(pk), punkte: aufbereiten(pk), zeigen: true };
 	r.farbe = FARBEN[(reihen.length) % FARBEN.length];
 	reihen.push(r);
 	return r;
@@ -1996,11 +2200,12 @@ function ladeGespeichert() {
 		const s = JSON.parse(localStorage.getItem(SPEICHER) || "[]");
 		if (Array.isArray(s)) reihen = s.filter(r => r && Array.isArray(r.punkte) && r.punkte.length > 5);
 	} catch (e) { reihen = []; }
+	reihen.forEach(r => { if (!(r.dt > 0)) r.dt = abtastzeit(r.punkte); });
 	naechsteNr = reihen.reduce((m, r) => Math.max(m, r.id + 1), 1);
 	if (reihen.length) gewaehltId = reihen[reihen.length - 1].id;
 }
 function gewaehlt() { return reihen.find(r => r.id === gewaehltId) || reihen[0] || null; }
-function sichtbare() { return modus === "vergleich" ? reihen.filter(r => r.zeigen !== false) : (gewaehlt() ? [gewaehlt()] : []); }
+function sichtbare() { return modus === "vergleich" ? reihen.filter(r => r.zeigen !== false && r.R > 0) : (gewaehlt() && gewaehlt().R > 0 ? [gewaehlt()] : []); }
 
 /* ---------- Auswertung ---------- */
 function wertAn(d, t) {
@@ -2009,7 +2214,14 @@ function wertAn(d, t) {
 	return d[d.length - 1][1];
 }
 function tEnde(r) { return r.punkte[r.punkte.length - 1][0]; }
-/* Halbwertszeit: ab dem Startpunkt die Zeitpunkte, an denen die Spannung auf 1/2, 1/4, 1/8 gesunken ist (linear zwischen Messwerten) */
+function tProzent(r, anteil) {   /* erster Zeitpunkt, an dem U_R unter anteil · U0 fällt */
+	const d = r.punkte, u0 = d[0][1];
+	for (const p of d) if (p[1] < anteil * u0) return p[0];
+	return tEnde(r);
+}
+function tAnzeige(r) { return Math.min(tEnde(r), 1.15 * tProzent(r, 0.01)); }
+function iVon(r, t) { return wertAn(r.punkte, t) / r.R * 1000; }   /* mA */
+/* Halbwertszeit: ab tStart die Zeitpunkte, an denen die Spannung auf 1/2, 1/4, 1/8 gesunken ist */
 function halbwert(r, tStart) {
 	const d = r.punkte, umax = d[0][1], u0 = wertAn(d, tStart);
 	if (!(u0 > 0.08 * umax)) return null;
@@ -2026,14 +2238,15 @@ function halbwert(r, tStart) {
 	const abst = []; for (let i = 1; i < zeiten.length; i++) abst.push(zeiten[i] - zeiten[i - 1]);
 	return { zeiten, werte, abst, mittel: (zeiten[zeiten.length - 1] - zeiten[0]) / abst.length };
 }
-/* Anpassung U_R(t) = A·e^(−B·t) über ln(U_R) (nur Messwerte über 5 % des Anfangswerts) */
+/* Anpassung U_R(t) = A·e^(−t/τ) über ln(U_R) (nur Messwerte über 5 % des Anfangswerts) */
 function anpassung(r) {
 	const d = r.punkte, umax = d[0][1], xs = [], ls = [];
 	for (const p of d) if (p[1] > 0.05 * umax) { xs.push(p[0]); ls.push(Math.log(p[1])); }
 	const g = P.linReg(xs, ls);
-	return g ? { A: Math.exp(g.b), B: -g.m } : null;
+	return g && g.m < 0 ? { A: Math.exp(g.b), tau: -1 / g.m } : null;
 }
-/* Fläche unter dem t-U_R-Graphen von 0 bis bis (Trapeze) */
+function hwzAuto(r) { const h = halbwert(r, 0); if (h) return h.mittel; const f = anpassung(r); return f ? Math.LN2 * f.tau : NaN; }
+/* Fläche unter dem t-U_R-Graphen von 0 bis bis (Trapeze), in V·s */
 function flaeche(r, bis) {
 	const d = r.punkte; let A = 0;
 	for (let i = 1; i < d.length && d[i - 1][0] < bis; i++) {
@@ -2042,7 +2255,34 @@ function flaeche(r, bis) {
 	}
 	return A;
 }
-function cursorStandard() { const r = gewaehlt(); return modus === "halbwertszeit" ? 0 : modus === "flaeche" && r ? tEnde(r) : null; }
+function tLadung(r) { return tProzent(r, 0.01); }   /* bis 1 % von U0: Rauschen danach zählt nicht mit */
+function ladung(r, n) {   /* n Streifen (Mittelpunkt) oder n = 0: alle Messwerte; Ergebnis in C */
+	const T = tLadung(r);
+	if (!n) return flaeche(r, T) / r.R;
+	const w = T / n; let s = 0;
+	for (let k = 0; k < n; k++) s += wertAn(r.punkte, (k + 0.5) * w);
+	return s * w / r.R;
+}
+
+/* ---------- Ampel: Ist die Messung brauchbar? (bewertet nur die Messung, nie das Ergebnis) ---------- */
+function pruefung(r) {
+	const m = [];
+	if (!(r.C > 0) || !(r.R > 0)) m.push(["rot", "Dateiname nicht erkannt: Tragen Sie " + (!(r.C > 0) ? gr("C") : "") + (!(r.C > 0) && !(r.R > 0) ? " und " : "") + (!(r.R > 0) ? gr("R") : "") + " ein."]);
+	if (r.R > R_MAX) m.push(["rot", gr("R") + " = " + formatR(r.R) + " ist zu groß. Der Spannungssensor hat selbst etwa 1&nbsp;MΩ und entlädt den Kondensator mit. Nehmen Sie höchstens 50&nbsp;kΩ."]);
+	const h = halbwert(r, 0), n = h && r.dt > 0 ? h.mittel / r.dt : NaN;
+	if (isFinite(n) && n < 20) {
+		const f = Math.ceil(20 / h.mittel), kurzHwz = h.mittel < 0.01;
+		m.push([n < 10 ? "rot" : "gelb", "Nur " + Math.max(1, Math.round(n)) + " Messwerte in der ersten Halbwertszeit. " + (kurzHwz
+			? "Die Entladung ist zu schnell: Wählen Sie einen größeren Widerstand oder Kondensator (" + gr("R") + "&thinsp;·&thinsp;" + gr("C") + " mindestens 20&nbsp;ms) und messen Sie mit 2000&nbsp;Hz."
+			: "Stellen Sie in SparkVue mindestens " + (f <= 20 ? 20 : f <= 50 ? 50 : f <= 100 ? 100 : f <= 200 ? 200 : f <= 500 ? 500 : f <= 1000 ? 1000 : 2000) + "&nbsp;Hz ein, am einfachsten immer 2000&nbsp;Hz.")]);
+	}
+	const d = r.punkte;
+	if (d[d.length - 1][1] > 0.05 * d[0][1]) m.push(["gelb", "Messung zu früh beendet: Warten Sie, bis die Spannung fast null ist."]);
+	if (d[0][1] < 1) m.push(["gelb", "Der Kondensator war kaum geladen (" + gr("U") + "<sub>0</sub> = " + P.sig(d[0][1], 2) + "&nbsp;V)."]);
+	if (!m.length) m.push(["gruen", "Messung brauchbar."]);
+	return m;
+}
+function brauchbar(r) { return !pruefung(r).some(x => x[0] === "rot"); }
 
 /* ---------- Schaltung wie auf dem Arbeitsblatt (Buchsen, R1, Umschalter 1/2, C, R2), Spannungssensor am R2, Schalter auf 2 ---------- */
 function zeichneSchaltung() {
@@ -2094,170 +2334,290 @@ function zeichneSchaltung() {
 	c.restore();
 }
 
-/* ---------- Diagramm ---------- */
-function yWert(r, u) { return groesse === "I" ? u / r.R * 1000 : u; }
+
+/* ---------- Diagramm (immer t-I in mA) ---------- */
+
+function standardLinien(r) { linA = r ? 0.1 * tAnzeige(r) : null; linB = r ? 0.6 * tAnzeige(r) : null; }
 function zeichneDiagramm() {
 	const c = dctx; c.clearRect(0, 0, DW, DH); c.fillStyle = "#fff"; c.fillRect(0, 0, DW, DH);
-	let rs = sichtbare();
-	const ohneR = groesse === "I" ? rs.filter(r => !(r.R > 0)) : [];
-	rs = rs.filter(r => !ohneR.includes(r));
+	const rs = sichtbare();
 	const eng = DW < 560;
-	const rand = { dx: eng ? 44 : 56, dy: 26, dw: DW - (eng ? 58 : 86), dh: DH - 66 };
+	const oben = modus === "halbwertszeit" ? 46 : 26, rand = { dx: eng ? 44 : 56, dy: oben, dw: DW - (eng ? 58 : 86), dh: DH - 40 - oben };
 	if (!rs.length) {
-		ach = P.achsen(c, Object.assign({}, rand, { xMin: 0, xMax: 1, yMin: 0, yMax: 8, xLabel: "t", xEinheit: "s", yLabel: groesse === "I" ? "I" : "U_R", yEinheit: groesse === "I" ? "mA" : "V" }));
-		P.text(c, reihen.length ? (ohneR.length ? "Geben Sie bei der Messreihe den Widerstand R an." : "Keine Messreihe eingeblendet.") : "Öffnen Sie oben Ihre SparkVue-Datei.", rand.dx + rand.dw / 2, rand.dy + rand.dh / 2, { groesse: eng ? 13 : 15, ausrichtung: "center", farbe: "#555" });
+		P.achsen(c, Object.assign({}, rand, { xMin: 0, xMax: 1, yMin: 0, yMax: 10, xLabel: "t", xEinheit: "s", yLabel: "I", yEinheit: "mA" }));
+		const r = gewaehlt();
+		P.text(c, !reihen.length ? "Öffnen Sie oben Ihre SparkVue-Datei." : r && !(r.R > 0) ? "Tragen Sie bei der Messreihe den Widerstand R ein." : "Keine Messreihe eingeblendet.", rand.dx + rand.dw / 2, rand.dy + rand.dh / 2, { groesse: eng ? 13 : 15, ausrichtung: "center", farbe: "#555" });
 		ach = null; zeigeZoom(1); return;
 	}
-	const tGanz = Math.max(...rs.map(tEnde));
+	const tGanz = Math.max(...rs.map(tAnzeige));
 	zeigeZoom(tGanz);
 	const tMax = tGanz * zoom;
-	let ymax = 0; rs.forEach(r => { for (const p of r.punkte) if (p[0] <= tMax) ymax = Math.max(ymax, yWert(r, p[1])); });
-	ach = P.achsen(c, Object.assign({}, rand, { xMin: 0, xMax: tMax, yMin: 0, yMax: schoeneGrenze(1.05 * ymax), xLabel: "t", xEinheit: "s", yLabel: groesse === "I" ? "I" : "U_R", yEinheit: groesse === "I" ? "mA" : "V" }));
+	let ymax = 0; rs.forEach(r => { for (const p of r.punkte) if (p[0] <= tMax) ymax = Math.max(ymax, p[1] / r.R * 1000); });
+	ach = P.achsen(c, Object.assign({}, rand, { xMin: 0, xMax: tMax, yMin: 0, yMax: schoeneGrenze(1.05 * ymax), xLabel: "t", xEinheit: "s", yLabel: "I", yEinheit: "mA" }));
+	const X = ach.xPix, Y = ach.yPix, unten = Y(0);
 	c.save(); c.beginPath(); c.rect(ach.o.dx, ach.o.dy - 2, ach.o.dw + 2, ach.o.dh + 2); c.clip();
 	const haupt = rs[0];
-	/* Fläche */
-	if (modus === "flaeche" && cursor !== null) {
-		c.fillStyle = haupt.farbe; c.globalAlpha = 0.2; c.beginPath(); c.moveTo(ach.xPix(0), ach.yPix(0));
-		for (const p of haupt.punkte) { if (p[0] > cursor) break; c.lineTo(ach.xPix(p[0]), ach.yPix(yWert(haupt, p[1]))); }
-		c.lineTo(ach.xPix(cursor), ach.yPix(yWert(haupt, wertAn(haupt.punkte, cursor)))); c.lineTo(ach.xPix(cursor), ach.yPix(0)); c.closePath(); c.fill(); c.globalAlpha = 1;
+	/* Ladung: Streifen bzw. ganze Fläche */
+	if (modus === "flaeche") {
+		const T = tLadung(haupt);
+		c.fillStyle = haupt.farbe; c.strokeStyle = haupt.farbe;
+		if (!streifen) {
+			c.globalAlpha = 0.2; c.beginPath(); c.moveTo(X(0), unten);
+			for (const p of haupt.punkte) { if (p[0] > T) break; c.lineTo(X(p[0]), Y(p[1] / haupt.R * 1000)); }
+			c.lineTo(X(T), Y(iVon(haupt, T))); c.lineTo(X(T), unten); c.closePath(); c.fill(); c.globalAlpha = 1;
+		} else {
+			const w = T / streifen;
+			for (let k = 0; k < streifen; k++) {
+				const h = iVon(haupt, (k + 0.5) * w), x0 = X(k * w), x1 = X((k + 1) * w);
+				c.globalAlpha = 0.18; c.fillRect(x0, Y(h), x1 - x0, unten - Y(h)); c.globalAlpha = 0.85; c.lineWidth = 1.2; c.strokeRect(x0, Y(h), x1 - x0, unten - Y(h));
+				if (streifen <= 8) { c.globalAlpha = 1; c.beginPath(); c.arc(X((k + 0.5) * w), Y(h), 3.2, 0, 2 * Math.PI); c.fill(); }
+			}
+			c.globalAlpha = 1;
+		}
+		c.save(); c.strokeStyle = "#999"; c.setLineDash([3, 3]); c.beginPath(); c.moveTo(X(T), ach.o.dy); c.lineTo(X(T), unten); c.stroke(); c.restore();
 	}
-	/* Messkurven */
+	/* Messkurven: Linie, bei wenigen Messwerten auch die Punkte */
 	rs.forEach(r => {
-		c.strokeStyle = r.farbe; c.lineWidth = 1.8; c.beginPath();
-		let erst = true;
-		for (const p of r.punkte) { if (p[0] > tMax * 1.02) break; const x = ach.xPix(p[0]), y = ach.yPix(yWert(r, p[1])); if (erst) { c.moveTo(x, y); erst = false; } else c.lineTo(x, y); }
+		c.strokeStyle = r.farbe; c.fillStyle = r.farbe; c.lineWidth = 1.8;
+		if (modus === "anpassung") {   /* Formel: Messwerte als Punkte (etwa 70), die Vorhersage als Linie darüber */
+			let tz = -1; const schritt = tMax / (eng ? 28 : 50);
+			for (const p of r.punkte) { if (p[0] > tMax * 1.02) break; if (p[0] - tz < schritt) continue; tz = p[0]; c.beginPath(); c.arc(X(p[0]), Y(p[1] / r.R * 1000), 3, 0, 2 * Math.PI); c.fill(); }
+			return;
+		}
+		c.beginPath();
+		let erst = true, n = 0;
+		for (const p of r.punkte) { if (p[0] > tMax * 1.02) break; n++; const x = X(p[0]), y = Y(p[1] / r.R * 1000); if (erst) { c.moveTo(x, y); erst = false; } else c.lineTo(x, y); }
 		c.stroke();
+		if (n <= 160) for (const p of r.punkte) { if (p[0] > tMax * 1.02) break; c.beginPath(); c.arc(X(p[0]), Y(p[1] / r.R * 1000), 2.6, 0, 2 * Math.PI); c.fill(); }
 	});
-	/* Anpassung */
-	if (modus === "anpassung") {
-		const f = anpassung(haupt);
-		if (f) P.kurve(c, ach, t => yWert(haupt, f.A * Math.exp(-f.B * t)), 0, tMax, "#E07000", { breite: 2.4, gestrichelt: true });
+	/* Formel: eigene Kurve und auf Wunsch die mit R·C */
+	/* Formel: die eingetippte Vorhersage erst nach dem Prüfen (vorher keine Kurve, kein Probieren am Bild) */
+	if (modus === "anpassung" && haupt.vorhersage && haupt.vorhersage.tau > 0 && haupt.vorhersage.i0 > 0) {
+		const v = haupt.vorhersage;
+		P.kurve(c, ach, t => v.i0 * Math.exp(-t / v.tau), 0, tMax, "#D46A00", { breite: 2.4 });
 	}
-	/* Halbwertszeit */
-	if (modus === "halbwertszeit" && cursor !== null) {
-		const h = halbwert(haupt, cursor);
+	/* Halbwertszeit: Treppe der automatischen Halbierungen ab A (erst nach Freischaltung) */
+	if (modus === "halbwertszeit" && zeigeHalb && frei.hwz) {
+		const h = halbwert(haupt, linA);
 		if (h) {
-			c.strokeStyle = "#E07000"; c.fillStyle = "#E07000"; c.lineWidth = 1.3;
+			c.strokeStyle = "#999"; c.fillStyle = "#999"; c.lineWidth = 1.2;
 			h.zeiten.forEach((t, i) => {
-				const px = ach.xPix(t), py = ach.yPix(yWert(haupt, h.werte[i]));
-				c.setLineDash([4, 3]); c.beginPath(); c.moveTo(ach.o.dx, py); c.lineTo(px, py); c.lineTo(px, ach.yPix(0)); c.stroke(); c.setLineDash([]);
-				c.beginPath(); c.arc(px, py, 4.5, 0, 2 * Math.PI); c.fill();
-				if (i > 0) {
-					const pa = ach.xPix(h.zeiten[i - 1]), yy = ach.yPix(0) - 12 - 14 * (i % 2);
-					P.pfeil(c, pa + 2, yy, px - 2, yy, "#E07000", 1.4, 7);
-					P.pfeil(c, px - 2, yy, pa + 2, yy, "#E07000", 1.4, 7);
-				}
+				const px = X(t), py = Y(h.werte[i] / haupt.R * 1000);
+				c.setLineDash([4, 3]); c.beginPath(); c.moveTo(ach.o.dx, py); c.lineTo(px, py); c.lineTo(px, unten); c.stroke(); c.setLineDash([]);
+				c.beginPath(); c.arc(px, py, 3.5, 0, 2 * Math.PI); c.fill();
 			});
 		}
 	}
 	c.restore();
-	/* Cursor */
-	if (cursor !== null && cursor <= tMax) {
-		const px = ach.xPix(cursor);
-		c.save(); c.strokeStyle = "#333"; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(px, ach.o.dy); c.lineTo(px, ach.o.dy + ach.o.dh); c.stroke(); c.restore();
-		rs.forEach(r => P.punkte(c, ach, [{ x: cursor, y: yWert(r, wertAn(r.punkte, cursor)) }], r.farbe, { r: 4.5 }));
+	/* Lineal A und B */
+	if (modus === "halbwertszeit") {
+		const pa = X(linA), pb = X(linB), ia = iVon(haupt, linA), ib = iVon(haupt, linB);
+		c.save();
+		c.globalAlpha = 0.045; c.fillStyle = "#6A3D9A"; c.fillRect(Math.min(pa, pb), Y(Math.max(ia, ib)), Math.abs(pb - pa), unten - Y(Math.max(ia, ib))); c.globalAlpha = 1;
+		c.strokeStyle = "#6A3D9A"; c.lineWidth = 1.2; c.setLineDash([4, 3]);
+		[[pa, ia], [pb, ib]].forEach(([px, i]) => { c.beginPath(); c.moveTo(ach.o.dx, Y(i)); c.lineTo(px, Y(i)); c.stroke(); });
+		c.setLineDash([]);
+		[[pa, "A", ia], [pb, "B", ib]].forEach(([px, name, i]) => {
+			c.strokeStyle = UI; c.lineWidth = 2.2; c.beginPath(); c.moveTo(px, ach.o.dy - 14); c.lineTo(px, unten); c.stroke();
+			c.fillStyle = UI; const bw = 22, bh = 19;
+			c.beginPath(); c.roundRect ? c.roundRect(px - bw / 2, ach.o.dy - 33, bw, bh, 4) : c.rect(px - bw / 2, ach.o.dy - 33, bw, bh); c.fill();
+			P.text(c, name, px, ach.o.dy - 19, { groesse: 13, fett: true, farbe: "#fff", ausrichtung: "center" });
+			c.beginPath(); c.arc(px, Y(i), 6, 0, 2 * Math.PI); c.fillStyle = "#fff"; c.fill(); c.lineWidth = 2.5; c.strokeStyle = UI; c.stroke();
+		});
+		if (Math.abs(pb - pa) > 26) {
+			const yy = unten - 16, l = Math.min(pa, pb), rr = Math.max(pa, pb);
+			P.pfeil(c, l + 3, yy, rr - 3, yy, UI, 1.4, 7); P.pfeil(c, rr - 3, yy, l + 3, yy, UI, 1.4, 7);
+			const mx = (l + rr) / 2; c.fillStyle = "#fff"; c.strokeStyle = UI; c.lineWidth = 1;
+			c.beginPath(); c.roundRect ? c.roundRect(mx - 15, yy - 19, 30, 17, 8) : c.rect(mx - 15, yy - 19, 30, 17); c.fill(); c.stroke();
+			P.text(c, "Δt", mx, yy - 6, { groesse: 13, farbe: UI, ausrichtung: "center", kursiv: true });
+		}
+		/* Achsenbeschriftung bleibt lesbar, auch wenn eine Linie darüber läuft */
+		c.font = "italic 13px " + getComputedStyle(document.body).fontFamily; const wl = c.measureText("I in mA").width + 8;
+		c.fillStyle = "#fff"; c.fillRect(ach.o.dx + 3, ach.o.dy - 11, wl, 15);
+		P.text(c, "I", ach.o.dx + 6, ach.o.dy + 2, { groesse: 13, kursiv: true }); P.text(c, " in mA", ach.o.dx + 6 + c.measureText("I").width, ach.o.dy + 2, { groesse: 12 });
+		c.restore();
+	}
+	/* Cursor im Vergleich */
+	if (modus === "vergleich" && cursor !== null && cursor <= tMax) {
+		const px = X(cursor);
+		c.save(); c.strokeStyle = "#333"; c.setLineDash([4, 3]); c.beginPath(); c.moveTo(px, ach.o.dy); c.lineTo(px, unten); c.stroke(); c.restore();
+		rs.forEach(r => P.punkte(c, ach, [{ x: cursor, y: iVon(r, cursor) }], r.farbe, { r: 4.5 }));
 	}
 	/* Legende */
 	const lg = eng ? 11 : 13;
-	rs.forEach((r, k) => P.text(c, (r.beispiel ? "Beispiel: " : "") + bauteile(r), ach.o.dx + ach.o.dw - 6, ach.o.dy + 14 + (lg + 4) * k, { groesse: lg, farbe: r.farbe, ausrichtung: "right", fett: true }));
+	if (modus !== "halbwertszeit") rs.forEach((r, k) => P.text(c, (r.beispiel ? "Beispiel: " : "") + bauteile(r), ach.o.dx + ach.o.dw - 6, ach.o.dy + 14 + (lg + 4) * k, { groesse: lg, farbe: r.farbe, ausrichtung: "right", fett: true }));
+	else P.text(c, (haupt.beispiel ? "Beispiel: " : "") + bauteile(haupt), ach.o.dx + ach.o.dw - 6, ach.o.dy + 30, { groesse: lg, farbe: haupt.farbe, ausrichtung: "right", fett: true });
+	if (modus === "anpassung" && haupt.vorhersage) P.text(c, "Linie: Ihre Vorhersage", ach.o.dx + ach.o.dw - 6, ach.o.dy + 14 + (lg + 4), { groesse: lg, farbe: "#D46A00", ausrichtung: "right" });
 }
 function zeigeZoom(tGanz) {
 	document.querySelectorAll("#zoom-knoepfe button").forEach(b => { const z = +b.dataset.wert; if (z < 1) b.textContent = "bis " + formatZeit(tGanz * z); });
 }
 
-/* ---------- Ergebnisse: Karten und Tabelle ---------- */
+/* ---------- Wertkarten, Eingabe, Urteil ---------- */
+function karte(titel, wert, art) { return "<div class='wertkarte" + (art ? " " + art : "") + "'><div class='wk-titel'>" + titel + "</div><div class='wk-wert'>" + wert + "</div></div>"; }
 function karten() {
-	const k = $("karten"), z = $("cursor-zeile"), r = gewaehlt();
-	k.innerHTML = ""; z.innerHTML = "";
-	const rs = sichtbare().filter(x => groesse === "U" || x.R > 0);
-	if (cursor !== null && rs.length) {
-		z.innerHTML = "Cursor bei <i class='gr'>t</i> = " + formatZeit(cursor) + ": " + rs.map(x => {
-			const u = wertAn(x.punkte, cursor);
-			return "<span style='color:" + x.farbe + "'>" + (rs.length > 1 ? bauteile(x) + ": " : "") + "<i class='gr'>U</i><sub>R</sub> = " + P.sig(u, 3) + "&nbsp;V" + (x.R > 0 ? ", <i class='gr'>I</i> = " + P.sig(u / x.R * 1000, 3) + "&nbsp;mA" : "") + "</span>";
-		}).join("<span style='color:#BBB'> | </span>");
-	} else if (modus === "vergleich" && rs.length) z.innerHTML = "Ziehen Sie im Diagramm, um den Cursor zu setzen.";
-	if (!r || modus === "vergleich") return;
-	const karte = (was, zahl, klein, blau) => k.insertAdjacentHTML("beforeend", "<div class='karte" + (blau ? " blau" : "") + "'><div class='was'>" + was + "</div><div class='zahl'>" + zahl + "</div>" + (klein ? "<div class='klein'>" + klein + "</div>" : "") + "</div>");
-	const name = "<span class='legende-punkt' style='background:" + r.farbe + "'></span>" + bauteile(r);
-	if (modus === "halbwertszeit") {
-		const h = cursor !== null ? halbwert(r, cursor) : null;
-		if (!h) karte("Halbwertszeit", "?", "Setzen Sie den Cursor an eine Stelle, an der die Spannung noch deutlich von null verschieden ist.");
-		else karte("Halbwertszeit <i class='gr'>T</i><sub>1/2</sub>", formatZeit(h.mittel), "Mittelwert aus " + h.abst.length + " Halbierungen: " + h.abst.map(formatZeit).join("; ") + ", ab <i class='gr'>t</i> = " + formatZeit(h.zeiten[0]));
+	const k = $("karten"), r = sichtbare()[0];
+	let h = "", fuss = "";
+	$("eigen-hwz").hidden = !(modus === "halbwertszeit" && r);
+	$("eigen-formel").hidden = !(modus === "anpassung" && r);
+	if (modus === "vergleich") {
+		const rs = sichtbare();
+		if (cursor !== null && rs.length) h = rs.map(x => karte("<span class='legende-punkt' style='background:" + x.farbe + "'></span>" + bauteile(x), gr("I") + " = " + formatI(iVon(x, cursor)))).join("");
+		fuss = rs.length ? (cursor !== null ? "Cursor bei " + gr("t") + " = " + formatZeit(cursor) + ". " : "") + "Ziehen Sie im Diagramm, um Stromstärken abzulesen." : "";
 	}
-	if (modus === "anpassung") {
-		const f = anpassung(r);
-		if (f) karte("Faktor vor <i class='gr'>t</i> im Exponenten", "<i class='gr'>B</i> = " + P.sig(f.B, 3) + "&nbsp;1/s", "Anpassung: <i class='gr'>U</i><sub>R</sub>(<i class='gr'>t</i>) = " + P.sig(f.A, 3) + "&nbsp;V&thinsp;·&thinsp;e<sup>−" + P.sig(f.B, 3) + "&thinsp;·&thinsp;<i class='gr'>t</i></sup> (<i class='gr'>t</i> in s)");
+	if (modus === "halbwertszeit" && r) {
+		const ia = iVon(r, linA), ib = iVon(r, linB);
+		h = karte("bei A", gr("I") + " = " + formatI(ia)) + karte("bei B", gr("I") + " = " + formatI(ib))
+			+ karte("Verhältnis B&thinsp;:&thinsp;A", P.de(ib / ia, 2), "betont") + karte("Abstand", "Δ" + gr("t") + " = " + formatZeit(Math.abs(linB - linA)));
+		const s = $("schloss-hwz");
+		s.className = "schloss" + (frei.hwz ? " offen" : "");
+		s.innerHTML = (frei.hwz ? SCHLOSS_AUF + "Automatik freigeschaltet" : SCHLOSS_ZU + "Automatik für alle Messreihen");
+		fuss = "Halbwertszeit in Sekunden eintragen (z.&thinsp;B. 0,046).";
 	}
-	if (modus === "flaeche" && cursor !== null) {
-		const A = flaeche(r, cursor), bisEnde = Math.abs(cursor - tEnde(r)) < 1e-9;
-		const bereich = "von <i class='gr'>t</i> = 0 bis " + (bisEnde ? "zum Ende der Messung (" + formatZeit(cursor) + ")" : formatZeit(cursor));
-		if (groesse === "I" && r.R > 0) karte("Fläche unter dem <i class='gr'>t</i>-<i class='gr'>I</i>-Graphen", P.sig(A / r.R * 1000, 4) + "&nbsp;mA&thinsp;s", bereich);
-		else karte("Fläche unter dem <i class='gr'>t</i>-<i class='gr'>U</i><sub>R</sub>-Graphen", P.sig(A, 4) + "&nbsp;V&thinsp;s", bereich);
+	if (modus === "anpassung" && r) {
+		const v = r.vorhersage;
+		$("formel-u0").innerHTML = "Ladespannung (erster Messwert nach dem Umschalten): " + sym("U", "0") + " = " + P.sig(r.punkte[0][1], 3) + "&nbsp;V";
+		if (v && v.i0 > 0 && v.tau > 0) h += karte("Ihre Vorhersage", "<span class='formel'>" + gr("I") + "(" + gr("t") + ") = " + P.sig(v.i0, 3) + "&nbsp;mA&thinsp;·&thinsp;e<sup>−" + gr("t") + "&thinsp;/&thinsp;" + P.sig(v.tau, 3) + "&nbsp;s</sup></span>", "betont") + karte("Versuch", v.versuch + ".", "klein");
+		const s = $("schloss-formel");
+		s.className = "schloss" + (frei.formel ? " offen" : "");
+		s.innerHTML = (frei.formel ? SCHLOSS_AUF + "Tabelle freigeschaltet" : SCHLOSS_ZU + "Tabelle für alle Messreihen");
+		urteilText = v && v.urteil ? v.urteil : null;
+		fuss = "Ihre Kurve erscheint erst nach dem Prüfen.";
 	}
-	k.insertAdjacentHTML("beforeend", "<div class='karte blau'><div class='was'>Messreihe</div><div class='zahl'>" + name + "</div></div>");
+	if (modus === "flaeche" && r) {
+		const Q = ladung(r, streifen), T = tLadung(r);
+		h = karte(streifen ? "Ladung mit " + streifen + " Streifen" : "Ladung aus allen Messwerten", gr("Q") + " = " + formatQ(Q), "betont")
+			+ (streifen ? karte("Breite eines Streifens", "Δ" + gr("t") + " = " + formatZeit(T / streifen)) : "")
+			+ karte("Ladespannung", gr("U") + "<sub>0</sub> = " + P.sig(r.punkte[0][1], 3) + "&nbsp;V", "klein");
+		fuss = "Ausgewertet bis " + gr("t") + " = " + formatZeit(T) + " (Stromstärke unter 1&nbsp;% des Anfangswerts); danach misst der Sensor nur noch Rauschen.";
+	}
+	k.innerHTML = h;
+	$("fussnote").innerHTML = fuss;
+	$("ergebnis-karte").hidden = ![...document.querySelectorAll("#ergebnis-karte .eigen-zeile")].some(e => !e.hidden);
+	const u = $("urteil");
+	u.innerHTML = urteilText && (modus === "halbwertszeit" || modus === "anpassung") ? "<p class='urteil " + urteilText[0] + "'>" + urteilText[1] + "</p>" : "";
 }
+function pruefeHwz() {
+	const r = sichtbare()[0], feld = $("eingabe-hwz"); if (!r) return;
+	const w = parseFloat(String(feld.value).replace(",", "."));
+	feld.classList.remove("richtig", "falsch");
+	if (!(w > 0)) { urteilText = ["neutral", "Tragen Sie zuerst Ihre Halbwertszeit in Sekunden ein."]; karten(); return; }
+	const soll = hwzAuto(r);
+	if (Math.abs(w / soll - 1) <= 0.1) {
+		feld.classList.add("richtig");
+		const neu = !frei.hwz; frei.hwz = true; freiSichern();
+		urteilText = ["gut", (neu ? "Richtig! Die Automatik ist freigeschaltet: " : "Richtig. ") + "Die Tabelle zeigt die Halbwertszeit aller Messreihen."];
+		$("gruppe-halb").hidden = false;
+		tabelle(); zeichneDiagramm();
+	} else {
+		feld.classList.add("falsch");
+		urteilText = ["schlecht", Math.abs(w / soll - 1000) < 300 || w > 20 * soll ? "Das passt nicht. Achten Sie auf die Einheit: Sekunden, nicht Millisekunden." : "Das passt noch nicht. Stellen Sie A und B so ein, dass das Verhältnis 0,50 ist, und lesen Sie Δt ab."];
+	}
+	karten();
+}
+
+/* ---------- Tabelle: Spalten wie auf dem Arbeitsblatt ---------- */
+const SELBST = "<span class='luecke' title='selbst ausfüllen'></span>";
 function tabelle() {
-	const kopf = { vergleich: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "<i class='gr'>I</i><sub>0</sub>"],
-		halbwertszeit: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>T</i><sub>1/2</sub>"],
-		anpassung: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "Faktor <i class='gr'>B</i>"],
-		flaeche: ["", "<i class='gr'>R</i>", "<i class='gr'>C</i>", "<i class='gr'>U</i><sub>0</sub>", "Fläche (<i class='gr'>t</i>-<i class='gr'>U</i><sub>R</sub>)"] }[modus];
-	$("tab-kopf").innerHTML = "<tr>" + kopf.map(h => "<th>" + h + "</th>").join("") + "</tr>";
-	$("tabelle-titel").textContent = { vergleich: "Alle Messreihen: Anfangswerte", halbwertszeit: "Alle Messreihen: Halbwertszeit", anpassung: "Alle Messreihen: Faktor im Exponenten", flaeche: "Alle Messreihen: Fläche unter dem Graphen" }[modus];
-	$("tab-koerper").innerHTML = reihen.map(r => {
-		const z = ["<span class='legende-punkt' style='background:" + r.farbe + "'></span>", formatR(r.R), formatC(r.C)];
-		if (modus === "vergleich") { const u0 = r.punkte[0][1]; z.push(P.sig(u0, 3) + "&nbsp;V", r.R > 0 ? P.sig(u0 / r.R * 1000, 3) + "&nbsp;mA" : "?"); }
-		if (modus === "halbwertszeit") { const h = halbwert(r, 0); z.push(h ? formatZeit(h.mittel) : "?"); }
-		if (modus === "anpassung") { const f = anpassung(r); z.push(f ? P.sig(f.B, 3) + "&nbsp;1/s" : "?"); }
-		if (modus === "flaeche") z.push(P.sig(r.punkte[0][1], 3) + "&nbsp;V", P.sig(flaeche(r, tEnde(r)), 4) + "&nbsp;V&thinsp;s");
+	const kopf = { vergleich: [gr("C"), gr("R"), gr("U") + "<sub>0</sub>", gr("I") + "<sub>0</sub>"],
+		halbwertszeit: [gr("C"), gr("R"), gr("T") + "<sub>1/2</sub>", gr("R") + "&thinsp;·&thinsp;" + gr("C"), "ln(2)&thinsp;·&thinsp;" + gr("R") + "&thinsp;·&thinsp;" + gr("C")],
+		anpassung: [gr("C"), gr("R"), gr("R") + "&thinsp;·&thinsp;" + gr("C"), "Nenner (Anpassung)"],
+		flaeche: [gr("C"), gr("R"), gr("U") + "<sub>0</sub>", gr("Q") + " (Fläche)", gr("C") + "&thinsp;·&thinsp;" + gr("U") + "<sub>0</sub>"] }[modus];
+	$("tab-kopf").innerHTML = "<tr><th></th>" + kopf.map(x => "<th>" + x + "</th>").join("") + "</tr>";
+	$("tabelle-titel").textContent = { vergleich: "Alle Messreihen: Anfangswerte", halbwertszeit: "Alle Messreihen: Halbwertszeit", anpassung: "Alle Messreihen: Nenner im Exponenten", flaeche: "Alle Messreihen: Ladung" }[modus];
+	const zu = "<span class='zu' title='erst von Hand bestimmen'>" + SCHLOSS_ZU + "</span>";
+	const liste = reihen.filter(r => r.R > 0 && r.C > 0).sort((a, b) => a.C - b.C || a.R - b.R);
+	$("tab-koerper").innerHTML = liste.map(r => {
+		const z = ["<span class='legende-punkt' style='background:" + r.farbe + "'></span>", formatC(r.C), formatR(r.R)];
+		const ok = brauchbar(r), ungueltig = "<span class='selbst'>nicht brauchbar</span>";
+		if (modus === "vergleich") z.push(P.sig(r.punkte[0][1], 3) + "&nbsp;V", formatI(r.punkte[0][1] / r.R * 1000));
+		if (modus === "halbwertszeit") z.push(!frei.hwz ? zu : ok ? formatZeit(hwzAuto(r)) : ungueltig, SELBST, SELBST);
+		if (modus === "anpassung") { const f = anpassung(r); z.push(SELBST, !frei.formel ? zu : ok && f ? formatZeit(f.tau) : ungueltig); }
+		if (modus === "flaeche") z.push(P.sig(r.punkte[0][1], 3) + "&nbsp;V", ok ? formatQ(ladung(r, 0)) : ungueltig, SELBST);
 		return "<tr>" + z.map(x => "<td>" + x + "</td>").join("") + "</tr>";
-	}).join("") || "<tr><td></td><td colspan='" + (kopf.length - 1) + "' style='text-align:left;color:#666'>Noch keine Messreihe.</td></tr>";
+	}).join("") || "<tr><td></td><td colspan='" + kopf.length + "' style='text-align:left;color:#666'>Noch keine Messreihe mit " + gr("C") + " und " + gr("R") + ".</td></tr>";
+	const blau = "Blaue Felder füllen Sie selbst aus: Tabelle kopieren, ins Heft einfügen und dort ausfüllen.";
+	$("tab-hinweis").innerHTML = { vergleich: "", halbwertszeit: frei.hwz ? blau : "Bestimmen Sie zuerst oben eine Halbwertszeit von Hand.", anpassung: frei.formel ? blau : "Passen Sie zuerst oben die Kurve von Hand an.", flaeche: "Ladung aus allen Messwerten. " + blau }[modus];
 }
 
 /* ---------- Liste der Messreihen ---------- */
-function chipsHtml(art, wert) {
-	const wahl = art === "R" ? R_WAHL : C_WAHL, fmt = art === "R" ? formatR : formatC;
-	const anders = wert > 0 && !wahl.some(w => Math.abs(w - wert) < 1e-12);
-	return "<span class='bauteil'><b><i class='gr'>" + art + "</i> =</b><span class='knopfleiste'>" + wahl.map(w => "<button data-art='" + art + "' data-wert='" + w + "'" + (wert > 0 && Math.abs(w - wert) < 1e-12 ? " class='aktiv'" : "") + ">" + fmt(w).replace(" ", "&nbsp;") + "</button>").join("") + "</span>"
-		+ "<span class='anders-feld'><input type='number' class='anders" + (anders ? " aktiv" : "") + "' data-art='" + art + "' min='0' step='any' inputmode='decimal' placeholder='anderer' title='anderer Wert in " + (art === "R" ? "Ω" : "µF") + "' value='" + (anders ? (art === "R" ? wert : +(wert * 1e6).toPrecision(4)) : "") + "'><span>" + (art === "R" ? "Ω" : "µF") + "</span></span></span>";
-}
 function zeichneListe() {
 	const L = $("reihen");
 	L.innerHTML = reihen.map(r => {
-		const fehlt = [!(r.R > 0) ? "<i class='gr'>R</i>" : "", !(r.C > 0) ? "<i class='gr'>C</i>" : ""].filter(Boolean);
+		const pr = pruefung(r), stufe = pr.some(x => x[0] === "rot") ? "rot" : pr.some(x => x[0] === "gelb") ? "gelb" : "gruen";
+		const fehlt = !(r.C > 0) || !(r.R > 0), offen = r.offen || fehlt;
+		/* kompakt: eine Zeile je Messreihe; Warnungen bleiben sichtbar, Eingaben nur aufgeklappt */
+		const amp = pr.filter(x => x[0] !== "gruen").map(([s, t]) => "<p class='" + s + "'>" + t + "</p>").join("");
+		const feldC = "<label class='bauteil'>" + gr("C") + " =<input class='eingabe' data-art='C' inputmode='decimal' autocomplete='off' value='" + (r.C > 0 ? kurz(r.C * 1e6) : "") + "'><span class='einheit'>µF</span></label>";
+		const feldR = "<label class='bauteil'>" + gr("R") + " =<input class='eingabe' data-art='R' inputmode='decimal' autocomplete='off' value='" + (r.R > 0 ? kurz(r.R / 1000) : "") + "'><span class='einheit'>kΩ</span></label>";
+		const lauf = LAEUFE.has(r.id) ? "<span class='bauteil'><b>Lauf</b><span class='knopfleiste'>" + LAEUFE.get(r.id).map((l, i) => "<button data-lauf='" + i + "' title='Die Datei enthält mehrere Läufe. Wählen Sie die richtige Messung.'" + (l.name === r.laufName ? " class='aktiv'" : "") + ">" + esc(l.name.replace(/^Lauf\s*/, "")) + "</button>").join("") + "</span></span>" : "";
 		return "<div class='reihe" + (modus !== "vergleich" && r.id === (gewaehlt() || {}).id ? " gewaehlt" : "") + "' data-id='" + r.id + "'>"
-			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span><span class='name datei'>" + (r.beispiel ? "" : esc(r.name)) + "</span>"
+			+ "<div class='kopfzeile'><span class='farbe' style='background:" + r.farbe + "'></span>"
+			+ "<span class='kurzname'><b>" + (fehlt ? "Bauteile eintragen" : bauteile(r)) + "</b>" + (r.beispiel ? "<span class='name'>Beispiel</span>" : "<span class='name'>" + esc(r.name) + "</span>") + "</span>"
+			+ "<span class='status " + stufe + "' title='" + (stufe === "gruen" ? "Messung brauchbar" : "Messung prüfen") + "'></span>"
 			+ (modus === "vergleich" ? "<span class='knopfleiste'><label class='chip' title='im Diagramm zeigen'><input type='checkbox' data-zeigen" + (r.zeigen !== false ? " checked" : "") + "><span data-chipicon='auge'></span>zeigen</label></span>" : "")
-			+ "<span class='knopfleiste'><button class='neben' data-weg title='Messreihe entfernen'>" + SimUI.svg("muell") + "</button></span></div>"
-			+ "<div class='bauteile'>" + (LAEUFE.has(r.id) ? "<span class='bauteil'><b>Lauf</b><span class='knopfleiste'>" + LAEUFE.get(r.id).map((l, i) => "<button data-lauf='" + i + "' title='Die Datei enthält mehrere Läufe. Wählen Sie die richtige Messung.'" + (l.name === r.laufName ? " class='aktiv'" : "") + ">" + esc(l.name.replace(/^Lauf\s*/, "")) + "</button>").join("") + "</span></span>" : "") + chipsHtml("R", r.R) + chipsHtml("C", r.C) + (fehlt.length ? "<span class='fehlt'>Bitte " + fehlt.join(" und ") + " angeben.</span>" : "") + "</div></div>";
+			+ "<span class='knopfleiste'><button class='neben" + (offen ? " an" : "") + "' data-offen title='Bauteile ändern'>" + STIFT + "</button><button class='neben' data-weg title='Messreihe entfernen'>" + SimUI.svg("muell") + "</button></span></div>"
+			+ (offen ? "<div class='bauteile'>" + lauf + feldC + feldR + "</div>" : "")
+			+ (amp ? "<div class='ampel'>" + amp + "</div>" : "") + "</div>";
 	}).join("");
 	SimUI.fuelleIcons(L);
 	L.querySelectorAll("button.neben").forEach(b => b.classList.add("ik"));
 	$("leer-hinweis").hidden = reihen.length > 0;
+	$("laden-hinweis").hidden = reihen.length > 0; $("laden-kurz").hidden = !reihen.length;
 	const bsp = reihen.some(r => r.beispiel);
 	$("btn-beispiele").hidden = bsp; $("btn-beispiele-weg").hidden = !bsp; $("btn-alle-weg").hidden = !reihen.length;
 	$("beispiel-text").textContent = bsp ? "Beispielmessungen sind geladen. Besser sind Ihre eigenen Messreihen!" : "Keine eigene Messung zur Hand?";
+	const g = modus !== "vergleich" ? gewaehlt() : null;
+	$("reihen-zahl").innerHTML = reihen.length ? reihen.length + (reihen.length === 1 ? " Messreihe" : " Messreihen") + (g && g.R > 0 && g.C > 0 ? " · gewählt: " + bauteile(g) : "") : "";
+}
+function waehle(r) {
+	gewaehltId = r.id; standardLinien(r); urteilText = null;
+	$("eingabe-hwz").value = ""; $("eingabe-hwz").classList.remove("richtig", "falsch");
+	const v = r.vorhersage || {};
+	$("eingabe-i0").value = v.i0 > 0 ? P.sig(v.i0, 3) : ""; $("eingabe-rc").value = v.tau > 0 ? P.sig(v.tau, 3) : "";
+	["eingabe-i0", "eingabe-rc"].forEach(id => $(id).classList.remove("richtig", "falsch"));
+}
+/* Formel prüfen: Vorhersage aus den Bauteilen (I0 = U0/R, R·C) gegen die Messung; jeder Versuch zählt und steht im Heftbild */
+function pruefeFormel() {
+	const r = sichtbare()[0]; if (!r) return;
+	const zahl = id => parseFloat(String($(id).value).replace(",", "."));
+	const i0 = zahl("eingabe-i0"), tau = zahl("eingabe-rc");
+	["eingabe-i0", "eingabe-rc"].forEach(id => $(id).classList.remove("richtig", "falsch"));
+	if (!(i0 > 0) || !(tau > 0)) { r.vorhersage = Object.assign({}, r.vorhersage, { urteil: ["neutral", "Tragen Sie beide Werte ein: " + gr("I") + "<sub>0</sub> in mA und " + gr("R") + "&thinsp;·&thinsp;" + gr("C") + " in Sekunden."] }); karten(); return; }
+	const v = { i0, tau, versuch: ((r.vorhersage && r.vorhersage.versuch) || 0) + 1 };
+	const i0Soll = r.punkte[0][1] / r.R * 1000, rcSoll = r.R * r.C;
+	const okI = Math.abs(i0 / i0Soll - 1) <= 0.04, okT = Math.abs(tau / rcSoll - 1) <= 0.03;
+	const einheit = x => Math.abs(Math.log10(x)) > 2.5;
+	$("eingabe-i0").classList.add(okI ? "richtig" : "falsch"); $("eingabe-rc").classList.add(okT ? "richtig" : "falsch");
+	if (einheit(i0 / i0Soll) || einheit(tau / rcSoll)) v.urteil = ["schlecht", "Prüfen Sie die Einheiten: " + gr("I") + "<sub>0</sub> in mA, " + gr("R") + "&thinsp;·&thinsp;" + gr("C") + " in Sekunden."];
+	else if (!okI || !okT) v.urteil = ["schlecht", "Das passt noch nicht. " + (!okI ? "Rechnen Sie " + gr("I") + "<sub>0</sub> = " + gr("U") + "<sub>0</sub>&thinsp;/&thinsp;" + gr("R") + " mit der abgelesenen Ladespannung nach. " : "") + (!okT ? "Rechnen Sie " + gr("R") + "&thinsp;·&thinsp;" + gr("C") + " mit Ihren Bauteilen nach." : "")];
+	else {
+		const f = anpassung(r), a = f ? f.tau / rcSoll - 1 : 0;
+		v.urteil = ["gut", "Richtig vorhergesagt. " + (Math.abs(a) < 0.03 ? "Die Messung folgt der Vorhersage sehr genau." : "Die Messung fällt um etwa " + Math.round(Math.abs(a) * 100) + "&nbsp;% " + (a > 0 ? "langsamer" : "schneller") + " ab als vorhergesagt.") + " Die Tabelle zeigt jetzt den besten Nenner aller Messreihen."];
+		if (!frei.formel) { frei.formel = true; freiSichern(); }
+	}
+	r.vorhersage = v; sichern(); alles();
 }
 $("reihen").addEventListener("click", ev => {
 	const kasten = ev.target.closest(".reihe"); if (!kasten) return;
 	const r = reihen.find(x => x.id === +kasten.dataset.id); if (!r) return;
-	if (ev.target.closest("[data-weg]")) { reihen = reihen.filter(x => x !== r); sichern(); if (gewaehltId === r.id) { gewaehltId = null; cursor = cursorStandard(); } alles(); return; }
+	if (ev.target.closest("[data-offen]")) { r.offen = !r.offen; sichern(); zeichneListe(); return; }
+	if (ev.target.closest("[data-weg]")) { reihen = reihen.filter(x => x !== r); sichern(); if (gewaehltId === r.id) { gewaehltId = null; const g = gewaehlt(); if (g) waehle(g); } alles(); return; }
 	const bl = ev.target.closest("button[data-lauf]");
-	if (bl && LAEUFE.has(r.id)) { const l = LAEUFE.get(r.id)[+bl.dataset.lauf]; r.punkte = aufbereiten(l.punkte); r.laufName = l.name; gewaehltId = r.id; sichern(); cursor = cursorStandard(); alles(); return; }
-	const b = ev.target.closest("button[data-art]");
-	if (b) { r[b.dataset.art] = +b.dataset.wert; sichern(); alles(); return; }
+	if (bl && LAEUFE.has(r.id)) { const l = LAEUFE.get(r.id)[+bl.dataset.lauf]; r.punkte = aufbereiten(l.punkte); r.dt = abtastzeit(l.punkte); r.laufName = l.name; waehle(r); sichern(); alles(); return; }
 	if (ev.target.closest("input, label")) return;
-	if (modus !== "vergleich" && r.id !== gewaehltId) { gewaehltId = r.id; cursor = cursorStandard(); alles(); }
+	if (modus !== "vergleich" && r.id !== gewaehltId) { waehle(r); alles(); }
 });
 $("reihen").addEventListener("change", ev => {
 	const kasten = ev.target.closest(".reihe"); if (!kasten) return;
 	const r = reihen.find(x => x.id === +kasten.dataset.id); if (!r) return;
 	if (ev.target.matches("[data-zeigen]")) { r.zeigen = ev.target.checked; sichern(); alles(); return; }
-	if (ev.target.matches("input.anders")) {
+	if (ev.target.matches("input[data-art]")) {
 		const w = parseFloat(String(ev.target.value).replace(",", "."));
-		if (w > 0) { r[ev.target.dataset.art] = ev.target.dataset.art === "R" ? w : w * 1e-6; sichern(); alles(); }
+		r[ev.target.dataset.art] = w > 0 ? (ev.target.dataset.art === "R" ? w * 1000 : w * 1e-6) : null;
+		sichern(); if (r.id === gewaehltId) standardLinien(r); alles();
 	}
 });
-
 /* ---------- Dateien lesen: SparkVue (.spklab) oder Export (.csv, .xlsx) ---------- */
 async function zipLesen(buf) {
 	const b = new Uint8Array(buf), dv = new DataView(buf);
@@ -2358,12 +2718,17 @@ async function liesXlsx(zip) {
 	return liesTabelle(zeilen);
 }
 
+
+/* Bauteile aus dem Dateinamen: 96uF_2kOhm, 0,5 uF 10MO, 2.2KOhm, 680 Ω, 10k … */
 function wertAusName(name, muster, faktoren) {
-	const m = name.replace(/_/g, " ").match(muster); if (!m) return NaN;
-	return parseFloat(m[1].replace(",", ".")) * (faktoren[(m[2] || "").toLowerCase()] || 1);
+	const n = name.replace(/\.[^.]+$/, "").replace(/_/g, " ");
+	for (const m of muster) { const t = n.match(m); if (t) return parseFloat(t[1].replace(",", ".")) * (faktoren[(t[2] || "").toLowerCase()] || 1); }
+	return NaN;
 }
+const R_MUSTER = [/(\d+(?:[.,]\d+)?)\s*(k|M)?\s*(?:Ohm|Ω|O(?![a-z]))/i, /(\d+(?:[.,]\d+)?)\s*(k|M)(?![a-z])/i];
+const C_MUSTER = [/(\d+(?:[.,]\d+)?)\s*(?:mu|µ|μ|u)\s*F/i];
 async function oeffneDateien(dateien) {
-	let neu = 0, fehler = 0;
+	let neu = 0; const kaputt = [];
 	for (const datei of dateien) {
 		try {
 			const buf = await datei.arrayBuffer(), kopf = new Uint8Array(buf.slice(0, 4));
@@ -2374,16 +2739,16 @@ async function oeffneDateien(dateien) {
 			laeufe = laeufe.filter(l => l.punkte.length > 5 && l.punkte.some(p => Math.abs(p[1]) > 0.2));
 			if (!laeufe.length) throw new Error("leer");
 			const basis = datei.name.replace(/\.[^.]+$/, "");
-			const R = wertAusName(datei.name, /(\d+(?:[.,]\d+)?)\s*(k|M)?\s*(?:Ohm|Ω)/i, { k: 1e3, m: 1e6 });
-			const C = wertAusName(datei.name, /(\d+(?:[.,]\d+)?)\s*(?:mu|µ|u)F/i, {}) * 1e-6;
+			const R = wertAusName(datei.name, R_MUSTER, { k: 1e3, m: 1e6 });
+			const C = wertAusName(datei.name, C_MUSTER, {}) * 1e-6;
 			/* SparkVue sammelt alle Läufe einer Sitzung (auch Fehlversuche): Standard ist der letzte Lauf, die anderen sind wählbar */
 			const wahl = laeufe.length - 1, r = neueReihe(basis, laeufe[wahl].punkte, R, C, false);
 			if (laeufe.length > 1) { r.laufName = laeufe[wahl].name; LAEUFE.set(r.id, laeufe); }
-			gewaehltId = r.id; neu++;
-		} catch (e) { fehler++; }
+			waehle(r); neu++;
+		} catch (e) { kaputt.push(datei.name); }
 	}
-	sichern(); cursor = cursorStandard(); alles();
-	if (fehler) SimUI.meldung((neu ? neu + " Messreihen geöffnet, " : "") + fehler + " Datei(en) nicht lesbar. Möglich sind .spklab, .csv und .xlsx mit Zeit und Spannung.");
+	sichern(); cursor = null; alles();
+	if (kaputt.length) SimUI.meldung((neu ? neu + " Messreihe(n) geöffnet. " : "") + "Nicht lesbar: " + kaputt.join(", ") + ". Die Datei ist beschädigt (oft beim Kopieren oder Hochladen) oder keine SparkVue-Messung. Bitte in SparkVue neu speichern.");
 	else if (neu) SimUI.meldung(neu === 1 ? "Messreihe geöffnet" : neu + " Messreihen geöffnet");
 }
 /* Apple (iPhone, iPad, Mac) kennt die Endung .spklab nicht und graut solche Dateien im Auswahlfenster aus: dort ohne Filter öffnen, geprüft wird ohnehin beim Lesen */
@@ -2391,10 +2756,12 @@ if (/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)) $("datei").removeAtt
 $("btn-oeffnen").addEventListener("click", () => $("datei").click());
 $("datei").addEventListener("change", () => { const f = [...$("datei").files]; $("datei").value = ""; if (f.length) oeffneDateien(f); });
 $("btn-beispiele").addEventListener("click", () => {
-	for (const [k, info] of Object.entries(ECHT_ROH)) gewaehltId = neueReihe("", ECHT[k], info.R, info.C, true).id;
-	sichern(); cursor = cursorStandard(); alles();
+	let r = null;
+	for (const [k, info] of Object.entries(ECHT_ROH)) r = neueReihe("", ECHT[k], info.R, info.C, true);
+	if (r) waehle(reihen.find(x => x.beispiel) || r);
+	sichern(); alles();
 });
-$("btn-beispiele-weg").addEventListener("click", () => { reihen = reihen.filter(r => !r.beispiel); sichern(); gewaehltId = null; cursor = cursorStandard(); alles(); });
+$("btn-beispiele-weg").addEventListener("click", () => { reihen = reihen.filter(r => !r.beispiel); sichern(); gewaehltId = null; const g = gewaehlt(); if (g) waehle(g); alles(); });
 $("btn-alle-weg").addEventListener("click", () => {
 	if (!confirm("Alle Messreihen aus dem Messlabor entfernen? Ihre SparkVue-Dateien bleiben erhalten.")) return;
 	reihen = []; sichern(); gewaehltId = null; cursor = null; alles();
@@ -2402,23 +2769,66 @@ $("btn-alle-weg").addEventListener("click", () => {
 
 /* ---------- Bedienung ---------- */
 function setzeKnopf(id, wert) { document.querySelectorAll("#" + id + " button").forEach(b => b.classList.toggle("aktiv", b.dataset.wert === String(wert))); }
-K.bindeKnopfgruppe("groesse-knoepfe", w => groesse = w, alles);
 K.bindeKnopfgruppe("zoom-knoepfe", w => zoom = +w, alles);
-$("btn-zurueck").addEventListener("click", () => { zoom = 1; setzeKnopf("zoom-knoepfe", 1); cursor = cursorStandard(); alles(); });
-P.ziehbar(db, (x, y) => (ach && x >= ach.o.dx - 6 && x <= ach.o.dx + ach.o.dw + 6 && y >= ach.o.dy - 6 && y <= ach.o.dy + ach.o.dh + 6) ? "cursor" : null,
-	(k, x) => { cursor = Math.max(0, Math.min(ach.o.xMax, ach.xWert(x))); zeichneDiagramm(); karten(); });
-SimUI.bildKnopf("btn-png", db, () => { const r = gewaehlt(); return "RC_" + modus + (modus !== "vergleich" && r ? "_" + bauteile(r).replace(/\s/g, "").replace("Ω", "Ohm") : ""); });
-SimUI.tabelleKnopf("btn-tab", "ergebnis-tab", () => "RC_Tabelle_" + modus, () => $("tabelle-titel").textContent);
+K.bindeKnopfgruppe("streifen-knoepfe", w => streifen = +w, alles);
+$("btn-zurueck").addEventListener("click", () => { zoom = 1; setzeKnopf("zoom-knoepfe", 1); cursor = null; standardLinien(gewaehlt()); alles(); });
+function schalter(id, an) { const b = $(id); b.setAttribute("aria-pressed", an ? "true" : "false"); b.classList.toggle("aktiv", an); }
+$("btn-halb").addEventListener("click", () => { zeigeHalb = !zeigeHalb; schalter("btn-halb", zeigeHalb); zeichneDiagramm(); });
+$("btn-formel").addEventListener("click", pruefeFormel);
+["eingabe-i0", "eingabe-rc"].forEach(id => {
+	$(id).addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); pruefeFormel(); } });
+	$(id).addEventListener("input", () => $(id).classList.remove("richtig", "falsch"));
+});
+$("btn-hwz").addEventListener("click", pruefeHwz);
+$("eingabe-hwz").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); pruefeHwz(); } });
+$("eingabe-hwz").addEventListener("input", () => $("eingabe-hwz").classList.remove("richtig", "falsch"));
+P.ziehbar(db, (x, y) => {
+	if (!ach || x < ach.o.dx - 14 || x > ach.o.dx + ach.o.dw + 14 || y < ach.o.dy - 14 || y > ach.o.dy + ach.o.dh + 6) return null;
+	if (modus === "vergleich") return "cursor";
+	if (modus === "halbwertszeit") return Math.abs(x - ach.xPix(linA)) <= Math.abs(x - ach.xPix(linB)) ? "A" : "B";
+	return null;
+}, (k, x) => {
+	const t = Math.max(0, Math.min(ach.o.xMax, ach.xWert(x)));
+	if (k === "cursor") cursor = t; else if (k === "A") linA = t; else linB = t;
+	zeichneDiagramm(); karten();
+});
+/* Heftbild: Diagramm mit den Wertkarten darunter (Kast 2026-10-22: Bild immer mit Auswertung) */
+function heftBild() {
+	const kartenListe = [...document.querySelectorAll("#karten .wertkarte")].map(k => k.querySelector(".wk-titel").textContent.trim() + ": " + k.querySelector(".wk-wert").textContent.trim());
+	const g0 = gewaehlt(); if (modus === "anpassung" && g0 && g0.R > 0) kartenListe.unshift("Ladespannung: U₀ = " + P.sig(g0.punkte[0][1], 3) + " V");
+	const u = $("urteil").textContent.trim(); if (u) kartenListe.push(u);
+	if (!kartenListe.length) return db;
+	const s = db.width / db.clientWidth, zeile = 22 * s, c = document.createElement("canvas");
+	c.width = db.width; c.height = db.height + Math.round((kartenListe.length * 22 + 14) * s);
+	c.style.width = db.clientWidth + "px";
+	Object.defineProperty(c, "clientWidth", { value: db.clientWidth });
+	const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(db, 0, 0);
+	g.font = Math.round(15 * s) + "px 'Libertinus Sans', 'Segoe UI', sans-serif"; g.fillStyle = "#111";
+	kartenListe.forEach((t, i) => g.fillText(t, 16 * s, db.height + (i + 1) * zeile));
+	return c;
+}
+SimUI.bildKnopf("btn-png", heftBild, () => { const r = gewaehlt(); return "RC_" + modus + (modus !== "vergleich" && r ? "_" + bauteile(r).replace(/\s/g, "").replace("Ω", "Ohm").replace("µ", "u") : ""); });
+SimUI.tabelleKnopf("btn-tab", "ergebnis-tab", () => "RC_Tabelle_" + modus, () => "");   /* ohne Überschrift: lässt sich direkt ins Heft einfügen */
 
-function alles() { zeichneListe(); if (SW > 200 && DW > 200) { zeichneSchaltung(); zeichneDiagramm(); } karten(); tabelle(); }
+function alles() {
+	zeichneListe();
+	if (SW > 200 && $("aufbau-kasten").open) zeichneSchaltung();
+	if (DW > 200) zeichneDiagramm();
+	karten(); tabelle();
+}
 function setzeModus(m) {
 	modus = m;
 	document.querySelectorAll("#modus-knoepfe button").forEach(b => b.classList.toggle("aktiv", b.dataset.modus === m));
-	$("auftrag-text").innerHTML = "<p>" + MODI[m].auftrag + "</p>";
+	$("auftrag-titel").textContent = "Ihr Auftrag: " + MODI[m].titel;
+	$("auftrag-text").innerHTML = (MODI[m].einleitung ? "<p class='einleitung'>" + MODI[m].einleitung + "</p>" : "") + "<ol>" + MODI[m].schritte.map(x => "<li>" + x + "</li>").join("") + "</ol>";
 	$("diagramm-titel").textContent = MODI[m].titel;
-	groesse = m === "vergleich" ? "I" : "U"; setzeKnopf("groesse-knoepfe", groesse);
+	$("gruppe-streifen").hidden = m !== "flaeche";
+	$("gruppe-halb").hidden = !(m === "halbwertszeit" && frei.hwz);
+
+	$("gruppe-zoom").hidden = m === "flaeche";
 	zoom = 1; setzeKnopf("zoom-knoepfe", 1);
-	cursor = cursorStandard();
+	cursor = null; urteilText = null;
+	const r = gewaehlt(); if (r && (linA === null || linB === null)) standardLinien(r);
 	alles();
 }
 P.bindeModus("modus-knoepfe", m => { history.replaceState(null, "", location.search + "#" + m); setzeModus(m); });
@@ -2429,7 +2839,20 @@ function layout() {
 	alles();
 }
 window.addEventListener("resize", layout);
+
+/* Kasten „Meine Messreihen“ ein- und ausklappen, Versuchsaufbau beim Aufklappen zeichnen */
+const KLAPP_SPEICHER = "KI_A.2.3_RC_Messlabor_klapp";
+function reihenKlappen(auf) {
+	$("reihen-titel").setAttribute("aria-expanded", auf ? "true" : "false");
+	$("reihen-koerper").hidden = !auf;
+	try { sessionStorage.setItem(KLAPP_SPEICHER, auf ? "1" : "0"); } catch (e) { }
+}
+$("reihen-titel").addEventListener("click", () => reihenKlappen($("reihen-koerper").hidden));
+$("reihen-titel").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reihenKlappen($("reihen-koerper").hidden); } });
+try { if (sessionStorage.getItem(KLAPP_SPEICHER) === "0") reihenKlappen(false); } catch (e) { }
+$("aufbau-kasten").addEventListener("toggle", () => { if ($("aufbau-kasten").open) layout(); });
 ladeGespeichert();
+if (gewaehlt()) standardLinien(gewaehlt());
 const ausHash = location.hash.replace("#", "");
 setzeModus(MODI[ausHash] ? ausHash : "vergleich");
 SimUI.modusPerLink("modus-knoepfe");
