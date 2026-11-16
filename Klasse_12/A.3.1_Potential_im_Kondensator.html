@@ -495,6 +495,11 @@ button.film-ab { display: inline-flex; align-items: center; gap: 0.4rem; }
 .wahlkarte:hover { border-color: #7A7AD0; }
 .status span { white-space: nowrap; }
 @media (max-width: 560px) { .wahlreihe { grid-template-columns: 1fr; } .fstext { font-size: 1rem; padding: 0.5rem 0.6rem; } }
+
+/* Brüche in Texten und Rückmeldungen (KI.bruch; Kast 2026-11-12: „Brüche und so weiter statt geteilt“) */
+.bruch { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.2; margin: 0 0.12em; }
+.bruch > span:first-child { border-bottom: 1px solid currentColor; padding: 0 0.3em 0.08em; }
+.bruch > span:last-child { padding: 0.08em 0.3em 0; }
 /* A.3.1 Potential im Plattenkondensator: Nullniveau, Weg, Training */
 .hinweis { font-size: 0.95rem; color: #333; margin: 0 0 0.6rem; }
 .bildrahmen { position: relative; }
@@ -1730,11 +1735,17 @@ window.KI = (function () {
 		const aus = [];
 		(function lauf(knoten, stil) {
 			for (const k of knoten.childNodes) {
-				if (k.nodeType === 3) { if (k.nodeValue) aus.push(Object.assign({}, stil, { t: k.nodeValue.replace(/\s+/g, " ") })); continue; }
+				if (k.nodeType === 3) { if (k.nodeValue) aus.push(Object.assign({}, stil, { t: k.nodeValue.replace(/[ \t\r\n]+/g, " ") })); continue; }
 				if (k.nodeType !== 1) continue;
 				const n = k.nodeName.toLowerCase(), s = Object.assign({}, stil);
 				if (n === "br") { aus.push(Object.assign({}, stil, { t: "\n" })); continue; }
 				if (n === "svg" || n === "script" || n === "style") continue;
+				if (k.classList && k.classList.contains("bruch") && k.children.length === 2) {
+					/* Bruch: <span class="bruch"><span>Zähler</span><span>Nenner</span></span> (Kast 2026-11-12: „Brüche statt geteilt“) */
+					const teilVon = e => { const alt = aus.length; lauf(e, Object.assign({}, stil, { hoch: false, tief: false })); return aus.splice(alt); };
+					aus.push(Object.assign({}, stil, { t: "", bruch: { z: teilVon(k.children[0]), n: teilVon(k.children[1]) } }));
+					continue;
+				}
 				if (n === "i" || n === "em") s.kursiv = true;
 				if (n === "b" || n === "strong") s.fett = true;
 				if (n === "sub") s.tief = true;
@@ -1748,6 +1759,8 @@ window.KI = (function () {
 	};
 	/* reiner Text ohne Tags (für Überschriften, die ohne Formatierung gezeichnet werden) */
 	KI.reinText = function (t) { return KI.htmlTeile({ t: t }).map(x => x.t).join("").replace(/\n/g, " "); };
+	/* HTML-Bruch für Texte und Rückmeldungen (Kast 2026-11-12: „Brüche und so weiter statt geteilt“) */
+	KI.bruch = (z, n) => '<span class="bruch"><span class="z">' + z + '</span><span class="n">' + n + "</span></span>";
 	KI.blattBild = async function (bloecke) {
 		await (document.fonts ? document.fonts.ready : Promise.resolve());
 		const B = 1000, R = 36;
@@ -1767,10 +1780,40 @@ window.KI = (function () {
 		function font(g, fett, kursiv) { return (kursiv ? "italic " : "") + (fett ? "bold " : "") + g + "px " + SCHRIFT; }
 		function teilFont(t, g) { return font(t.tief || t.hoch ? Math.round(g * 0.7) : g, t.fett, t.kursiv); }
 		function teilY(t, g) { return t.tief ? g * 0.22 : t.hoch ? -g * 0.38 : 0; }
+		/* Brüche: Zähler und Nenner in 0,85-facher Größe übereinander, Bruchstrich auf Höhe der Rechenzeichen */
+		const BG = 0.85;
+		function reiheBreite(teile, g) { let b = 0; for (const s of teile) { ctx.font = teilFont(s, g); b += ctx.measureText(String(s.t)).width; } return b; }
+		function bruchBreite(t, g) { const gb = g * BG; return Math.max(reiheBreite(t.bruch.z, gb), reiheBreite(t.bruch.n, gb)) + g * 0.4; }
+		function zeichneReihe(teile, x, yb, g, standardFarbe) { for (const s of teile) { ctx.font = teilFont(s, g); ctx.fillStyle = s.farbe || standardFarbe || "#111"; ctx.fillText(String(s.t), x, yb + teilY(s, g)); x += ctx.measureText(String(s.t)).width; } }
+		function zeichneBruch(t, x, yb, g, wb, standardFarbe) {
+			const gb = g * BG, ya = yb - g * 0.3, bz = reiheBreite(t.bruch.z, gb), bn = reiheBreite(t.bruch.n, gb);
+			zeichneReihe(t.bruch.z, x + (wb - bz) / 2, ya - g * (t.bruch.z.some(s => s.tief) ? 0.36 : 0.2), gb, t.farbe || standardFarbe);
+			zeichneReihe(t.bruch.n, x + (wb - bn) / 2, ya + g * 0.2 + gb * 0.72, gb, t.farbe || standardFarbe);
+			ctx.fillStyle = t.farbe || standardFarbe || "#111"; ctx.fillRect(x + g * 0.12, ya - Math.max(0.8, g * 0.03), wb - g * 0.24, Math.max(1.6, g * 0.06));
+		}
+		/* Zeilenhöhen: Zeilen mit Bruch bekommen oben und unten Luft */
+		const BU = 0.4;
+		function mitBruch(z) { return !!z && z.some(s => s.t.bruch); }
+		function bruchOben(z) { return !mitBruch(z) ? 0 : z.some(s => s.t.bruch && s.t.bruch.z.some(u => u.tief)) ? 0.56 : 0.42; }
+		function zeilenHoehe(zeilen, g, zh) { return zeilen.reduce((a, z) => a + zh + (mitBruch(z) ? (bruchOben(z) + BU) * g : 0), 0); }
 		/* Text mit farbigen Teilen umbrechen: liefert Zeilen aus Wortstücken */
 		function umbrechen(teile, breite, g) {
 			const zeilen = [[]]; let x = 0;
 			for (const t of [].concat(...teile.map(KI.htmlTeile))) {
+				if (t.bruch) {
+					const wb = bruchBreite(t, g), z = zeilen[zeilen.length - 1];
+					if (x + wb > breite && x > 0) {
+						const kurz = s => !s.t.bruch && (s.w.length <= 2 || /^[0-9,.\u00b2\u00b3\u00b9\u2070-\u209f·−-]+$/.test(s.w));
+						let a = z.length, frei = false;
+						while (a > 0) { const s = z[a - 1]; if (s.w === " ") { frei = true; a--; continue; } if (!frei || kurz(s)) { frei = false; a--; continue; } break; }
+						if (a === 0) a = z.length;
+						while (a < z.length && z[a].w === " ") a++;
+						const mit = z.splice(a); while (z.length && z[z.length - 1].w === " ") z.pop();
+						const x0 = mit.length ? mit[0].x : 0; mit.forEach(m => m.x -= x0);
+						zeilen.push(mit); x = mit.length ? mit[mit.length - 1].x + mit[mit.length - 1].wb : 0;
+					}
+					zeilen[zeilen.length - 1].push({ w: "", t, x, wb }); x += wb; continue;
+				}
 				const woerter = String(t.t).split(/( |\n)/);
 				for (const w of woerter) {
 					if (w === "") continue;
@@ -1797,8 +1840,9 @@ window.KI = (function () {
 		function hoehe(b) {
 			const g = b.groesse || 26;
 			if (b.art === "titel") return 58;
-			if (b.art === "text") return umbrechen(b.teile, B - 2 * R, g).length * g * 1.45 + 8;
-			if (b.art === "kasten") return umbrechen(b.teile, B - 2 * R - 36, g).length * g * 1.4 + 26;
+			if (b.art === "text") return zeilenHoehe(umbrechen(b.teile, B - 2 * R, g), g, g * 1.45) + 8;
+			if (b.art === "kasten") return zeilenHoehe(umbrechen(b.teile, B - 2 * R - 36, g), g, g * 1.4) + 26;
+			if (b.art === "liste") return listeMasse(b).h + 14;
 			if (b.art === "pfeil") return 34;
 			if (b.art === "reihe") return 184;
 			if (b.art === "bild") { const q = b.quelle.ohneKast || b.quelle; return q.height * (B - 2 * R) / q.width + 10; }
@@ -1807,21 +1851,35 @@ window.KI = (function () {
 			if (b.art === "film") return filmMasse(b).h + 12;
 			return 0;
 		}
+		/* nummerierte Liste im Kasten (Schritte einer Erklärung), Text mit Brüchen: {art:"liste", titel, punkte:[html], groesse} */
+		function listeMasse(b) {
+			const g = b.groesse || 22, zh = g * 1.36, tb = B - 2 * R - 74;
+			const punkte = b.punkte.map(p => umbrechen([{ t: p }], tb, g));
+			const kopf = b.titel ? g * 1.75 : 0;
+			const h = 16 + kopf + punkte.reduce((a, z) => a + zeilenHoehe(z, g, zh) + g * 0.3, 0) + 8;
+			return { g, zh, punkte, kopf, h };
+		}
 		let H = R;
 		for (const b of bloecke) H += hoehe(b);
 		H += 50;
-		c.width = B; c.height = H;
+		/* hohe Auflösung (Kast 2026-11-12: Bilder „verwaschen“), Fläche unter 15 Mio. Pixel (Grenze von Safari auf dem iPad) */
+		const F = Math.max(1, Math.min(2.5, Math.sqrt(15e6 / (B * H))));
+		c.width = Math.round(B * F); c.height = Math.round(H * F); ctx.setTransform(F, 0, 0, F, 0, 0); c.massstab = F;
 		ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, B, H);
 		ctx.textBaseline = "alphabetic";
 		let y = R;
 		function zeichneZeilen(zeilen, x0, y0, g, zh, standardFarbe) {
-			zeilen.forEach((z, i) => {
+			let yz = y0;
+			zeilen.forEach(z => {
+				const br = mitBruch(z), yb = yz + g + bruchOben(z) * g;
 				for (const s of z) {
+					if (s.t.bruch) { zeichneBruch(s.t, x0 + s.x, yb, g, s.wb, standardFarbe); continue; }
 					ctx.font = teilFont(s.t, g);
 					ctx.fillStyle = s.t.farbe || standardFarbe || "#111";
-					ctx.fillText(s.w, x0 + s.x, y0 + i * zh + g + teilY(s.t, g));
-					if (s.t.unterstrich && s.w !== " ") { ctx.fillRect(x0 + s.x, y0 + i * zh + g + 4, s.wb, 2); }
+					ctx.fillText(s.w, x0 + s.x, yb + teilY(s.t, g));
+					if (s.t.unterstrich && s.w !== " ") { ctx.fillRect(x0 + s.x, yb + 4, s.wb, 2); }
 				}
+				yz += zh + (br ? (bruchOben(z) + BU) * g : 0);
 			});
 		}
 		for (const b of bloecke) {
@@ -1835,6 +1893,19 @@ window.KI = (function () {
 				ctx.fillStyle = b.hg || "#F6F6FB"; ctx.strokeStyle = b.rand || "#0000BF"; ctx.lineWidth = 2.5;
 				ctx.beginPath(); ctx.roundRect(R, y + 2, B - 2 * R, h - 6, 8); ctx.fill(); ctx.stroke();
 				zeichneZeilen(umbrechen(b.teile, B - 2 * R - 36, g), R + 18, y + 10, g, g * 1.4);
+			} else if (b.art === "liste") {
+				const m = listeMasse(b), x0 = R, bb = B - 2 * R;
+				ctx.fillStyle = b.hg || "#F6F6FB"; ctx.strokeStyle = b.rand || "#0000BF"; ctx.lineWidth = 2.5;
+				ctx.beginPath(); ctx.roundRect(x0, y + 2, bb, m.h, 8); ctx.fill(); ctx.stroke();
+				let yy = y + 12;
+				if (b.titel) { ctx.font = font(m.g, true); ctx.fillStyle = b.rand || "#0000BF"; ctx.fillText(KI.reinText(b.titel), x0 + 20, yy + m.g); yy += m.kopf; }
+				m.punkte.forEach((z, i) => {
+					const ym = yy + bruchOben(z[0]) * m.g + m.g * 0.68;
+					ctx.fillStyle = b.rand || "#0000BF"; ctx.beginPath(); ctx.arc(x0 + 32, ym, m.g * 0.52, 0, 7); ctx.fill();
+					ctx.fillStyle = "#fff"; ctx.font = font(Math.round(m.g * 0.7), true); ctx.textAlign = "center"; ctx.fillText(String(i + 1), x0 + 32, ym + m.g * 0.25); ctx.textAlign = "left";
+					zeichneZeilen(z, x0 + 56, yy, m.g, m.zh);
+					yy += zeilenHoehe(z, m.g, m.zh) + m.g * 0.3;
+				});
 			} else if (b.art === "pfeil") {
 				ctx.strokeStyle = "#0000BF"; ctx.fillStyle = "#0000BF"; ctx.lineWidth = 3;
 				ctx.beginPath(); ctx.moveTo(B / 2, y + 2); ctx.lineTo(B / 2, y + 22); ctx.stroke();
@@ -3185,6 +3256,14 @@ function kreuz(c, x, y, name, farbe = "#111", g = 15) {
 	c.moveTo(x - 6, y - 6); c.lineTo(x + 6, y + 6); c.moveTo(x - 6, y + 6); c.lineTo(x + 6, y - 6); c.stroke();
 	if (name) KI.text(c, name, x + 9, y - 11, g, farbe, "left", "bold");
 }
+/* Großer grüner Auftragskasten über dem Simulationskasten (Kast 2026-11-16: „Da wäre die grüne Auftragsbox zu Beginn gut“;
+   Regel 2026-11-12: Aufgabenstellung immer prominent, nummerierte Schritte). Er wird mit seinem Modus ein- und ausgeblendet. */
+function auftragKasten(b, titel, schritte) {
+	const k = KI.el("div", "tcb gruen auftrag-kasten", '<div class="tcb-title">Ihr Auftrag: ' + titel + '</div><div class="tcb-body auftrag-text"><ol>' + schritte.map(s => "<li>" + s + "</li>").join("") + "</ol></div>");
+	const abschnitt = b.closest("section"); abschnitt.before(k);
+	const abgleich = () => { k.hidden = abschnitt.hidden; };
+	new MutationObserver(abgleich).observe(abschnitt, { attributes: true, attributeFilter: ["hidden"] }); abgleich();
+}
 function wertkarte(titel, betont) {
 	const k = KI.el("div", "wertkarte" + (betont ? " betont" : ""));
 	k.appendChild(KI.el("div", "wk-titel", titel)); const w = KI.el("div", "wk-wert", "·"); k.appendChild(w);
@@ -3196,6 +3275,11 @@ function wertkarte(titel, betont) {
    ========================================================================== */
 const U0 = 100, D0 = 10, H0 = 6;   /* 100 V, 10 cm, Feldraum 6 cm hoch: E = 1000 V/m = 10 V/cm */
 function BAU_NULLNIVEAU(b) {
+	auftragKasten(b, "Graphen überprüfen", [
+		"Legen Sie das Nullniveau an die Minusplatte und vergleichen Sie den Graphen " + PHI + "(<i>s</i>) mit Ihrer Zeichnung auf dem Blatt.",
+		"Ziehen Sie das Nullniveau an die beiden anderen Stellen, die Sie gewählt haben, und vergleichen Sie wieder.",
+		"Beschreiben Sie, was sich am Graphen ändert, wenn Sie das Nullniveau verschieben, und was gleich bleibt."
+	]);
 	b.appendChild(KI.el("p", "hinweis", "Spannung " + U0 + "&nbsp;V, Plattenabstand " + D0 + "&nbsp;cm. Ziehen Sie das <b>Nullniveau</b> (Griff mit der 0) und die <b>Probeladung</b>. Unten sehen Sie den Graphen " + PHI + "(<i>s</i>)."));
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const cv = KI.el("canvas", "sim"); rahmen.appendChild(cv);
@@ -3300,6 +3384,11 @@ function BAU_NULLNIVEAU(b) {
    Modus "weg": Arbeit auf verschiedenen Wegen von A nach B
    ========================================================================== */
 function BAU_WEG(b) {
+	auftragKasten(b, "Arbeit auf verschiedenen Wegen", [
+		"Bringen Sie die Ladung auf möglichst geradem Weg von <b>A</b> nach <b>B</b> und notieren Sie die Arbeit.",
+		"Wählen Sie mehrere möglichst verrückte Umwege von <b>A</b> nach <b>B</b> und vergleichen Sie die Arbeit.",
+		"Ziehen Sie die Ladung auf einem geschlossenen Weg von <b>A</b> zurück nach <b>A</b>. Welche Arbeit ergibt sich?"
+	]);
 	b.appendChild(KI.el("p", "hinweis", "Ziehen Sie die Probeladung von <b>A</b> aus auf einem beliebigen Weg. Lassen Sie sie im grünen Kreis um <b>B</b> los (oder wieder bei A: geschlossener Weg). Die Simulation addiert die Arbeit von außen Stück für Stück: <i>W</i> = Σ <i>F</i>·Δ<i>s</i>."));
 	const rahmen = KI.el("div", "bildrahmen"); b.appendChild(rahmen);
 	const cv = KI.el("canvas", "sim"); rahmen.appendChild(cv);
