@@ -3063,65 +3063,296 @@ window.KI = (function () {
 </script>
 <script>
 /* ==========================================================================
-   A.5.1 Magnetische Flussdichte: Wiederholung Magnetfeld (Klasse 10) als Übungen (Kast, 2026-11-23)
-   Ersetzt auf dem Blatt den Lückentext „Magnetisches Feld“ und die Skizzenaufgaben zu Dauermagneten und geradem Leiter.
-   Stimmt's?: Grundwissen aus dem Lückentext. Paare: Umlaufsinn um den Leiter und Pole von Spule und Magnet aus dem Bild erschließen
-   (Kreuz und Punkt nur als Symbol, nie in Worten).
-   Farben wie Farbschema: B petrol #00838F, I violett #6A3D9A, Nordpol rot, Südpol grün.
+   A.5.1 Magnetische Flussdichte: Wiederholung Magnetfeld aus Klasse 10 (Kast, Neubau 2026-11-24)
+   Kast 2026-11-24 zur ersten Fassung: „Das ist ja brutal lieblos!!!! … Darstellungen, knifflige Probleme, kunterbunt, abwechslungsreich!!“
+   Modi:
+     wischen   Stimmt's? Grundwissen (Lückentext des alten Blatts) und typische Fehlvorstellungen
+     paare     Stufe 1 Leiter, Spule, Stabmagnet: Umlaufsinn und Pole; Stufe 2 Trios Feldbild, Anordnung, Merkmal
+     kompass   Kompassnadeln im Feld einstellen (Stabmagnet, Hufeisen, Leiter, Spule, zwei Magnete, Erde), Lösung mit berechneten Feldlinien
+     feldbild  Welches Feldlinienbild stimmt? Fehlerbilder: Pfeile falsch, Linien schneiden sich, enden im Nichts, Abstände, Spule innen
+     knobeln   Knobeleien: zerbrochener Magnet, Nägel, unbekannter Magnet, zwei Spulen, Ørsted-Versuch, Erde
+   Feldmodell: Pole als magnetische Ladungen auf den Polflächen (1/r²), gerader Leiter 1/r, Spule innen homogen.
+   Farben wie Farbschema: B petrol #00838F, I violett #6A3D9A, Nordpol rot, Südpol grün (Sachfarben).
+   Kreuz und Punkt nie in Worten (Kast 2026-11-12).
    ========================================================================== */
 "use strict";
-const PETROL = "#00838F", VIOLETT = "#6A3D9A", NORD = "#D32F2F", SUED = "#2E7D32";
+const S = KI.svg;
+const F = { B: "#00838F", I: "#6A3D9A", N: "#D32F2F", Sd: "#2E7D32", eisen: "#8A9097", kupfer: "#B87333", grau: "#8A9097", gut: "#2E7D32", falsch: "#C62828", text: "#222" };
+const W = 400, H = 280;
+const fx = z => Math.round(z * 10) / 10;
+const GRAD = Math.PI / 180;
 
-/* ---------- Bausteine der Bilder ---------- */
-const huelle = (inhalt, alt) => ({ svg: '<svg viewBox="0 0 160 110" width="160" height="110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + alt + '">' + inhalt + "</svg>", alt });
-const pfeilspitze = (x, y, winkel, farbe) => {
-	const w = winkel * Math.PI / 180, l = 7, b = 3.6;
-	const p = (dx, dy) => (x + dx * Math.cos(w) - dy * Math.sin(w)).toFixed(1) + "," + (y + dx * Math.sin(w) + dy * Math.cos(w)).toFixed(1);
-	return '<polygon points="' + p(l / 2, 0) + " " + p(-l / 2, b) + " " + p(-l / 2, -b) + '" fill="' + farbe + '"/>';
-};
-const punkt = (x, y, r = 7) => '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" stroke="' + VIOLETT + '" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="' + (r * 0.28).toFixed(1) + '" fill="' + VIOLETT + '"/>';
-const kreuz = (x, y, r = 7) => { const d = r * 0.6; return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" stroke="' + VIOLETT + '" stroke-width="1.6"/><path d="M' + (x - d) + " " + (y - d) + "L" + (x + d) + " " + (y + d) + "M" + (x - d) + " " + (y + d) + "L" + (x + d) + " " + (y - d) + '" stroke="' + VIOLETT + '" stroke-width="1.6"/>'; };
-
-/* gerader Leiter von oben: Strom heraus (+1) oder hinein (-1); Feldlinien ohne Richtung, Umlaufsinn soll erschlossen werden */
-function leiter(strom) {
+/* ---------- SVG-Helfer ---------- */
+function huelleSzene(inhalt, breite, hoehe = H) {
+	return '<svg xmlns="http://www.w3.org/2000/svg" width="' + breite + '" height="' + Math.round(breite * hoehe / W) + '" viewBox="0 0 ' + W + " " + hoehe + '" font-family="Libertinus Sans, Segoe UI, sans-serif">' + inhalt + "</svg>";
+}
+const flexibel = svg => svg.replace(/width="\d+" height="\d+"/, 'width="100%" style="display:block;height:auto"');
+async function svgCanvas(svg, breite) {
+	const img = await KI.ladeSvg(svg), c = document.createElement("canvas");
+	c.width = breite; c.height = Math.round(breite * img.height / img.width);
+	const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+	return c;
+}
+/* mehrere Szenen (Inhalt ohne Hülle) in einem Bild, zwei Spalten, jede mit Überschrift */
+function gitter(teile) {
+	const sp = teile.length > 1 ? 2 : 1, zh = H + 40, zeilen = Math.ceil(teile.length / sp), BB = sp * W + (sp - 1) * 20;
 	let s = "";
-	[18, 32, 46].forEach(r => { s += '<circle cx="80" cy="55" r="' + r + '" fill="none" stroke="' + PETROL + '" stroke-width="1.3" stroke-dasharray="' + (r === 18 ? "0" : "0") + '"/>'; });
-	s += strom > 0 ? punkt(80, 55) : kreuz(80, 55);
-	return huelle(s, "gerader Leiter von oben mit Feldlinienkreisen");
+	teile.forEach((t, i) => {
+		const x = (i % sp) * (W + 20), y = Math.floor(i / sp) * zh;
+		s += '<text x="' + (x + 6) + '" y="' + (y + 24) + '" font-size="19" font-weight="bold" fill="' + (t.farbe || "#1F3A93") + '">' + t.titel + "</text>";
+		s += '<svg x="' + x + '" y="' + (y + 34) + '" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">' + '<rect x="0.5" y="0.5" width="' + (W - 1) + '" height="' + (H - 1) + '" fill="#fff" stroke="#C9D6D9"/>' + t.inhalt + "</svg>";
+	});
+	return '<svg xmlns="http://www.w3.org/2000/svg" width="' + BB + '" height="' + (zeilen * zh) + '" viewBox="0 0 ' + BB + " " + (zeilen * zh) + '" font-family="Libertinus Sans, Segoe UI, sans-serif">' + s + "</svg>";
 }
-/* Umlaufsinn als Bild: Kreis mit Pfeilen */
-function umlauf(gegen) {
-	let s = '<circle cx="80" cy="55" r="34" fill="none" stroke="' + PETROL + '" stroke-width="1.6"/>';
-	/* Pfeil oben: gegen den Uhrzeigersinn zeigt oben nach links */
-	s += pfeilspitze(80, 21, gegen ? 180 : 0, PETROL) + pfeilspitze(80, 89, gegen ? 0 : 180, PETROL);
-	s += pfeilspitze(46, 55, gegen ? 90 : -90, PETROL) + pfeilspitze(114, 55, gegen ? -90 : 90, PETROL);
-	s += '<circle cx="80" cy="55" r="3" fill="#777"/>';
-	return huelle(s, gegen ? "Feldlinie mit Umlauf gegen den Uhrzeigersinn" : "Feldlinie mit Umlauf im Uhrzeigersinn");
+function spitze(x, y, w, farbe, l = 11, b = 5) {
+	const c = Math.cos(w), s = Math.sin(w);
+	const p = (dx, dy) => fx(x + dx * c - dy * s) + "," + fx(y + dx * s + dy * c);
+	return '<polygon points="' + p(l / 2, 0) + " " + p(-l / 2, b) + " " + p(-l / 2, -b) + '" fill="' + farbe + '"/>';
 }
-/* Spule im Längsschnitt: obere Reihe Strom heraus (+1) oder hinein (-1) */
-function spule(oben) {
-	let s = '<rect x="28" y="40" width="104" height="30" fill="#F1F6F7" stroke="#C9D6D9" stroke-width="0.8"/>';
-	for (let k = 0; k < 6; k++) {
-		const x = 36 + k * 17.6;
-		s += (oben > 0 ? punkt(x, 33, 6) : kreuz(x, 33, 6)) + (oben > 0 ? kreuz(x, 77, 6) : punkt(x, 77, 6));
+/* Leitersymbol: s = +1 Punkt, s = -1 Kreuz */
+function leiterSymbol(x, y, s, r = 11) {
+	let t = '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff" stroke="' + F.I + '" stroke-width="2"/>';
+	if (s > 0) t += '<circle cx="' + x + '" cy="' + y + '" r="' + fx(r * 0.3) + '" fill="' + F.I + '"/>';
+	else { const d = r * 0.6; t += '<path d="M' + fx(x - d) + " " + fx(y - d) + "L" + fx(x + d) + " " + fx(y + d) + "M" + fx(x - d) + " " + fx(y + d) + "L" + fx(x + d) + " " + fx(y - d) + '" stroke="' + F.I + '" stroke-width="2"/>'; }
+	return t;
+}
+/* Kompassnadel: Nordende rot, Südende grün; w = null: noch nicht eingestellt */
+function nadel(x, y, w, o = {}) {
+	const r = o.r || 17;
+	let t = '<circle cx="' + fx(x) + '" cy="' + fx(y) + '" r="' + r + '" fill="#fff" stroke="' + (o.ring || "#8A9097") + '" stroke-width="' + (o.ring ? 3.2 : 1.4) + '"' + (w === null ? ' stroke-dasharray="4 3"' : "") + "/>";
+	if (w === null) return t + '<text x="' + fx(x) + '" y="' + fx(y + 6) + '" font-size="17" font-weight="bold" text-anchor="middle" fill="#8A9097">?</text>';
+	const c = Math.cos(w), s = Math.sin(w), L = r - 3, B = 4.4;
+	const p = (dx, dy) => fx(x + dx * c - dy * s) + "," + fx(y + dx * s + dy * c);
+	t += '<g' + (o.deckung ? ' opacity="' + o.deckung + '"' : "") + '><polygon points="' + p(L, 0) + " " + p(0, B) + " " + p(0, -B) + '" fill="' + F.N + '"/><polygon points="' + p(-L, 0) + " " + p(0, B) + " " + p(0, -B) + '" fill="' + F.Sd + '"/></g>';
+	return t + '<circle cx="' + fx(x) + '" cy="' + fx(y) + '" r="1.9" fill="#333"/>';
+}
+
+/* ---------- Feldmodell ---------- */
+function neueSzene() { return { ladungen: [], leiter: [], innen: [], koerper: [], saat: [], extra: [], unterlage: [], zeichnung: [], kand: [] }; }
+function feld(sz, x, y) {
+	for (const i of sz.innen) if (x > i.x0 && x < i.x1 && y > i.y0 && y < i.y1) return [i.dx, i.dy];
+	let bx = 0, by = 0;
+	for (const q of sz.ladungen) { const dx = x - q.x, dy = y - q.y, r2 = dx * dx + dy * dy + 0.01, r3 = r2 * Math.sqrt(r2); bx += q.q * dx / r3; by += q.q * dy / r3; }
+	for (const l of sz.leiter) { const dx = x - l.x, dy = y - l.y, r2 = dx * dx + dy * dy + 0.01; bx += l.s * dy / r2; by -= l.s * dx / r2; }
+	return [bx, by];
+}
+const feldWinkel = (sz, x, y) => { const [bx, by] = feld(sz, x, y); return Math.atan2(by, bx); };
+function imKoerper(sz, x, y, rand = 0) {
+	for (const k of sz.koerper) {
+		if (k.r !== undefined) { if (Math.hypot(x - k.x, y - k.y) < k.r + rand) return true; }
+		else if (x > k.x0 - rand && x < k.x1 + rand && y > k.y0 - rand && y < k.y1 + rand) return true;
 	}
-	s += '<line x1="10" y1="55" x2="150" y2="55" stroke="#999" stroke-width="0.8" stroke-dasharray="4 3"/>';
-	return huelle(s, "Spule im Längsschnitt mit Stromrichtungen");
+	return false;
 }
-/* Stabmagnet mit Feldlinien und Richtungspfeilen, Pole unbeschriftet: pfeilNachRechts = außen oben zeigt der Pfeil nach rechts */
+function verfolge(sz, x0, y0, richtung) {
+	const ds = 2.5, pts = [[x0, y0]];
+	let x = x0, y = y0;
+	const r = (px, py) => { const [bx, by] = feld(sz, px, py); const b = Math.hypot(bx, by) || 1e-12; return [richtung * bx / b, richtung * by / b]; };
+	for (let k = 0; k < 1300; k++) {
+		const [ax, ay] = r(x, y), [mx, my] = r(x + ax * ds / 2, y + ay * ds / 2);
+		x += mx * ds; y += my * ds; pts.push([x, y]);
+		if (x < -40 || y < -40 || x > W + 40 || y > H + 40) break;
+		if (imKoerper(sz, x, y)) break;
+	}
+	return pts;
+}
+/* Feldlinie durch einen Saatpunkt: rückwärts bis zum Körper, vorwärts bis zum Körper; Punkte in Feldrichtung */
+function linieDurch(sz, x, y) { const rueck = verfolge(sz, x, y, -1).reverse(); rueck.pop(); return rueck.concat(verfolge(sz, x, y, 1)); }
+function linien(sz) {
+	/* doppelte Linien (gleiche Linie von Nord- und Südpol aus gesät) nur einmal: Vergleich über den Mittelpunkt nach Bogenlänge */
+	const mitte = p => { let g = 0; const l = [0]; for (let i = 1; i < p.length; i++) { g += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); l.push(g); } const i = l.findIndex(z => z >= g / 2); return [p[i][0], p[i][1], g]; };
+	const gesehen = [], ls = [];
+	for (const [x, y] of sz.saat) {
+		const pts = linieDurch(sz, x, y); if (pts.length <= 6) continue;
+		const m = mitte(pts);
+		if (gesehen.some(q => Math.hypot(q[0] - m[0], q[1] - m[1]) < 8 && Math.abs(q[2] - m[2]) < 30)) continue;
+		gesehen.push(m); ls.push({ pts });
+	}
+	return ls.concat(sz.extra.map(L => ({ ...L, pts: L.pts.slice() })));
+}
+function kreisLinie(cx, cy, r, gegen) {
+	const pts = [];
+	for (let k = 0; k <= 96; k++) { const a = (gegen ? -1 : 1) * k / 96 * 2 * Math.PI; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
+	return pts;
+}
+/* Linien zeichnen; Pfeil(e) in der Mitte des sichtbaren Teils */
+function linienSvg(ls, o = {}) {
+	const farbe = o.farbe || F.B, dicke = o.dicke || 1.7;
+	let s = "";
+	for (const L of ls) {
+		const p = L.pts; if (p.length < 2) continue;
+		let d = "M" + fx(p[0][0]) + " " + fx(p[0][1]);
+		for (let i = 2; i < p.length - 1; i += 2) d += "L" + fx(p[i][0]) + " " + fx(p[i][1]);
+		d += "L" + fx(p[p.length - 1][0]) + " " + fx(p[p.length - 1][1]);
+		s += '<path d="' + d + '" fill="none" stroke="' + farbe + '" stroke-width="' + dicke + '" stroke-linejoin="round" stroke-linecap="round"' + (o.deckung ? ' stroke-opacity="' + o.deckung + '"' : "") + "/>";
+		if (o.pfeile === false) continue;
+		/* sichtbare Länge */
+		const sicht = i => p[i][0] > 6 && p[i][0] < W - 6 && p[i][1] > 6 && p[i][1] < H - 6;
+		const lang = [0]; let gesamt = 0;
+		for (let i = 1; i < p.length; i++) { if (sicht(i) && sicht(i - 1)) gesamt += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); lang.push(gesamt); }
+		if (gesamt < 22) continue;
+		const anteile = L.kreis ? [0.25, 0.75] : gesamt > 300 ? [0.3, 0.7] : [0.5];
+		for (const a of anteile) {
+			let i = lang.findIndex(z => z >= a * gesamt); i = Math.max(1, Math.min(p.length - 2, i));
+			const w = Math.atan2(p[i + 1][1] - p[i - 1][1], p[i + 1][0] - p[i - 1][0]);
+			s += spitze(p[i][0], p[i][1], w, farbe, 11, 5);
+		}
+	}
+	return s;
+}
+
+/* ---------- Bauteile der Szenen ---------- */
+function polLadungen(x, y0, y1, n, q) { const a = []; for (let i = 0; i < n; i++) a.push({ x, y: y0 + (y1 - y0) * (n === 1 ? 0.5 : i / (n - 1)), q: q / n }); return a; }
+function polLadungenWaag(y, x0, x1, n, q) { const a = []; for (let i = 0; i < n; i++) a.push({ x: x0 + (x1 - x0) * (n === 1 ? 0.5 : i / (n - 1)), y, q: q / n }); return a; }
+function faecher(sz, x, y, aussen, r, schritt = 25) {
+	for (let a = -150; a <= 150; a += schritt) { const w = aussen + a * GRAD, px = x + r * Math.cos(w), py = y + r * Math.sin(w); if (!imKoerper(sz, px, py, 1)) sz.saat.push([px, py]); }
+}
+/* Stabmagnet waagrecht; farbig: Pole gefärbt und beschriftet, sonst grau ohne Pole */
+function stabTeil(sz, cx, cy, l, h, nordRechts, o = {}) {
+	const xN = nordRechts ? cx + l / 2 : cx - l / 2, xS = nordRechts ? cx - l / 2 : cx + l / 2, ein = nordRechts ? -2 : 2;
+	sz.ladungen.push(...polLadungen(xN + ein, cy - h / 2 + 3, cy + h / 2 - 3, 5, 1), ...polLadungen(xS - ein, cy - h / 2 + 3, cy + h / 2 - 3, 5, -1));
+	sz.koerper.push({ x0: cx - l / 2, y0: cy - h / 2, x1: cx + l / 2, y1: cy + h / 2 });
+	if (o.saat !== false) { faecher(sz, xN, cy, nordRechts ? 0 : Math.PI, h / 2 + 9, o.schritt || 25); faecher(sz, xS, cy, nordRechts ? Math.PI : 0, h / 2 + 9, o.schritt || 25); }
+	sz.zeichnung.push(o.grau ? '<rect x="' + (cx - l / 2) + '" y="' + (cy - h / 2) + '" width="' + l + '" height="' + h + '" fill="#B9C0C6" stroke="#333" stroke-width="1.2"/>' : S.magnet(cx, cy, l, h, !nordRechts));
+}
+function hufeisenTeil(sz, nordOben, o = {}) {
+	const xa = 150, xe = 290, ob = [60, 95], un = [185, 220], xb = 110, qo = nordOben ? 1 : -1;
+	sz.koerper.push({ x0: xa, y0: ob[0], x1: xe, y1: ob[1] }, { x0: xa, y0: un[0], x1: xe, y1: un[1] }, { x0: xb, y0: ob[0], x1: xa + 1, y1: un[1] });
+	sz.ladungen.push(...polLadungenWaag(ob[1] - 2, 238, 286, 4, 0.6 * qo), ...polLadungen(xe - 2, ob[0] + 6, ob[1] - 6, 3, 0.4 * qo));
+	sz.ladungen.push(...polLadungenWaag(un[0] + 2, 238, 286, 4, -0.6 * qo), ...polLadungen(xe - 2, un[0] + 6, un[1] - 6, 3, -0.4 * qo));
+	for (const oben of [true, false]) {   /* Saat an beiden Schenkeln, doppelte Linien entfernt linien() */
+		const yi = oben ? ob[1] + 5 : un[0] - 5, ya = oben ? ob[0] - 5 : un[1] + 5, y0 = oben ? ob[0] : un[0], y1 = oben ? ob[1] : un[1];
+		if (oben === nordOben) for (let x = 232; x <= 286; x += 9) sz.saat.push([x, yi]);
+		for (let k = 0; k < 3; k++) sz.saat.push([xe + 5, y0 + 6 + k * (y1 - y0 - 12) / 2]);
+		for (let x = 244; x <= 286; x += 14) sz.saat.push([x, ya]);
+	}
+	const mitte = (ob[0] + un[1]) / 2;
+	const fo = o.grau ? "#B9C0C6" : nordOben ? F.N : F.Sd, fu = o.grau ? "#B9C0C6" : nordOben ? F.Sd : F.N;
+	let z = '<path d="M' + xe + " " + ob[0] + " H" + (xb + 30) + " A30 30 0 0 0 " + xb + " " + (ob[0] + 30) + " V" + mitte + " H" + xa + " V" + ob[1] + " H" + xe + ' Z" fill="' + fo + '" stroke="#222" stroke-width="1.2"/>';
+	z += '<path d="M' + xe + " " + un[1] + " H" + (xb + 30) + " A30 30 0 0 1 " + xb + " " + (un[1] - 30) + " V" + mitte + " H" + xa + " V" + un[0] + " H" + xe + ' Z" fill="' + fu + '" stroke="#222" stroke-width="1.2"/>';
+	if (!o.grau) z += '<text x="' + (xe - 22) + '" y="' + (ob[0] + 25) + '" font-size="21" font-weight="bold" fill="#fff" text-anchor="middle">' + (nordOben ? "N" : "S") + "</text>" +
+		'<text x="' + (xe - 22) + '" y="' + (un[0] + 25) + '" font-size="21" font-weight="bold" fill="#fff" text-anchor="middle">' + (nordOben ? "S" : "N") + "</text>";
+	sz.zeichnung.push(z);
+}
+function leiterTeil(sz, x, y, s, o = {}) {
+	sz.leiter.push({ x, y, s }); sz.koerper.push({ x, y, r: 12 });
+	const radien = o.radien || [34, 64, 102, 146];
+	radien.forEach(r => sz.extra.push({ pts: kreisLinie(x, y, r, s > 0), kreis: true }));
+	if (o.symbol !== false) sz.zeichnung.push(leiterSymbol(x, y, s, 12));
+}
+/* Spule im Längsschnitt; obenPunkt: obere Drahtreihe mit Punkt, dann liegt der Nordpol rechts */
+function spuleTeil(sz, x0, x1, yo, yu, obenPunkt, o = {}) {
+	const nordRechts = obenPunkt, xN = nordRechts ? x1 : x0, xS = nordRechts ? x0 : x1, ein = nordRechts ? -2 : 2, n = o.n || 7;
+	const yi0 = yo + 10, yi1 = yu - 10, ym = (yo + yu) / 2;
+	sz.ladungen.push(...polLadungen(xN + ein, yi0 + 3, yi1 - 3, 5, 1), ...polLadungen(xS - ein, yi0 + 3, yi1 - 3, 5, -1));
+	sz.innen.push({ x0, y0: yi0, x1, y1: yi1, dx: nordRechts ? 1 : -1, dy: 0 });
+	sz.koerper.push({ x0: x0 - 2, y0: yo - 12, x1: x1 + 2, y1: yu + 12 });
+	faecher(sz, xN, ym, nordRechts ? 0 : Math.PI, (yu - yo) / 2 + 18, o.schritt || 22);
+	faecher(sz, xS, ym, nordRechts ? Math.PI : 0, (yu - yo) / 2 + 18, o.schritt || 22);
+	for (let k = 1; k <= 4; k++) {
+		const y = yi0 + k * (yi1 - yi0) / 5;
+		sz.extra.push({ pts: [[xS, y], [(xS + xN) / 2, y], [xN, y]], innen: true });
+	}
+	sz.unterlage.push('<rect x="' + x0 + '" y="' + (yo - 10) + '" width="' + (x1 - x0) + '" height="' + (yu - yo + 20) + '" fill="#F1F6F7" stroke="#C9D6D9" stroke-width="1"/>');
+	if (o.windungen !== false) {
+		let z = "";
+		for (let k = 0; k < n; k++) { const x = x0 + (k + 0.5) * (x1 - x0) / n; z += leiterSymbol(x, yo, obenPunkt ? 1 : -1, 9) + leiterSymbol(x, yu, obenPunkt ? -1 : 1, 9); }
+		sz.zeichnung.push(z);
+	}
+}
+function erdeTeil(sz, cx, cy, R, o = {}) {
+	sz.ladungen.push({ x: cx, y: cy + R * 0.25, q: 1 }, { x: cx, y: cy - R * 0.25, q: -1 });
+	sz.koerper.push({ x: cx, y: cy, r: R });
+	for (let a = 18; a <= 162; a += 18) sz.saat.push([cx + (R + 3) * Math.cos(a * GRAD), cy + (R + 3) * Math.sin(a * GRAD)], [cx + (R + 3) * Math.cos(a * GRAD), cy - (R + 3) * Math.sin(a * GRAD)]);
+	let z = '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="#DCEBF7" stroke="#3F7CC0" stroke-width="1.6"/>';
+	z += '<path d="M' + (cx - R * 0.62) + " " + (cy - R * 0.35) + " q 18 -22 40 -8 q 14 10 6 26 q -14 14 -34 6 q -16 -8 -12 -24 Z" + '" fill="#B9D7A8"/>';
+	z += '<path d="M' + (cx + R * 0.15) + " " + (cy + R * 0.05) + " q 22 -10 34 8 q 6 22 -12 34 q -18 6 -24 -12 q -4 -16 2 -30 Z" + '" fill="#B9D7A8"/>';
+	z += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + fx(R * 0.22) + '" fill="none" stroke="#3F7CC0" stroke-width="0.8" stroke-dasharray="4 3"/>';
+	z += '<line x1="' + cx + '" y1="' + (cy - R - 8) + '" x2="' + cx + '" y2="' + (cy + R + 8) + '" stroke="#555" stroke-width="1" stroke-dasharray="5 3"/>';
+	z += '<circle cx="' + cx + '" cy="' + (cy - R) + '" r="3" fill="#333"/><circle cx="' + cx + '" cy="' + (cy + R) + '" r="3" fill="#333"/>';
+	if (o.beschriften !== false) z += '<text x="' + (cx - 26) + '" y="' + (cy - R - 4) + '" font-size="13.5" text-anchor="end" fill="#333" stroke="#fff" stroke-width="4" paint-order="stroke">geographischer Nordpol</text>' +
+		'<text x="' + (cx - 26) + '" y="' + (cy + R + 14) + '" font-size="13.5" text-anchor="end" fill="#333" stroke="#fff" stroke-width="4" paint-order="stroke">geographischer Südpol</text>';
+	sz.zeichnung.push(z);
+}
+
+/* ---------- Szenen ---------- */
+const SZ = {
+	stab(o) { const sz = neueSzene(); stabTeil(sz, 200, 140, 160, 36, o.nordRechts, o); sz.kand = [[200, 72], [200, 208], [48, 140], [352, 140], [80, 62], [320, 62], [80, 218], [320, 218], [140, 92], [260, 188]]; return sz; },
+	hufeisen(o) { const sz = neueSzene(); hufeisenTeil(sz, o.nordOben, o); sz.kand = [[228, 140], [178, 140], [338, 140], [336, 44], [336, 236], [56, 140], [205, 30], [205, 250]]; return sz; },
+	leiter(o) {
+		const sz = neueSzene(); leiterTeil(sz, 200, 140, o.s, o);
+		sz.kand = []; for (let a = 0; a < 360; a += 45) { const r = a % 90 ? 108 : 70; sz.kand.push([fx(200 + r * Math.cos(a * GRAD)), fx(140 + r * Math.sin(a * GRAD))]); }
+		return sz;
+	},
+	spule(o) { const sz = neueSzene(); spuleTeil(sz, 110, 290, 105, 175, o.obenPunkt, o); sz.kand = [[160, 140], [240, 140], [200, 40], [200, 240], [48, 140], [352, 140], [345, 58], [55, 222]]; return sz; },
+	zwei(o) {   /* o.art: Pole, die sich gegenüberstehen, z. B. "NS" = rechtes Ende des linken Magneten N, linkes Ende des rechten Magneten S */
+		const sz = neueSzene();
+		stabTeil(sz, 95, 140, 130, 30, o.art[0] === "N", { schritt: 30, grau: o.grau });
+		stabTeil(sz, 305, 140, 130, 30, o.art[1] !== "N", { schritt: 30, grau: o.grau });
+		sz.kand = [[200, 76], [200, 204], [95, 66], [305, 66], [95, 214], [305, 214]];
+		if (o.art[0] !== o.art[1]) sz.kand.push([200, 140]);
+		return sz;
+	},
+	erde(o) { const sz = neueSzene(); erdeTeil(sz, 200, 140, 70, o); sz.kand = [[45, 140], [355, 140], [262, 28], [330, 64], [330, 218], [262, 252]]; return sz; }
+};
+function szeneInhalt(sz, o = {}) {
+	let s = sz.unterlage.join("");
+	if (o.linien) s += linienSvg(o.linien, { deckung: o.deckung });
+	return s + sz.zeichnung.join("");
+}
+/* zufällige Orte mit Mindestabstand (mit Math.random, also unter KI.mitSaat wiederholbar) */
+function waehleOrte(kand, n, abstand = 74) {
+	const gew = [];
+	for (const k of KI.mischen(kand)) if (gew.every(g => Math.hypot(g[0] - k[0], g[1] - k[1]) >= abstand)) { gew.push(k); if (gew.length === n) break; }
+	return gew;
+}
+const winkelDiff = (a, b) => { let d = (a - b) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); };
+
+/* ---------- Bildchen für Paare ---------- */
+const huelleKlein = (inhalt, alt) => ({ svg: '<svg viewBox="0 0 160 110" width="160" height="110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + alt + '">' + inhalt + "</svg>", alt });
+const huelleFeld = (inhalt, alt) => ({ svg: '<svg viewBox="0 0 ' + W + " " + H + '" width="160" height="112" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + alt + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + inhalt + "</svg>", alt });
+const punkt = (x, y, r = 7) => leiterSymbol(x, y, 1, r);
+const kreuz = (x, y, r = 7) => leiterSymbol(x, y, -1, r);
+function pfeilspitzeGrad(x, y, winkel, farbe) { return spitze(x, y, winkel * GRAD, farbe, 7, 3.6); }
+function leiterBild(strom) {
+	let s = "";
+	[18, 32, 46].forEach(r => { s += '<circle cx="80" cy="55" r="' + r + '" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>'; });
+	s += strom > 0 ? punkt(80, 55) : kreuz(80, 55);
+	return huelleKlein(s, "gerader Leiter von oben mit Feldlinienkreisen");
+}
+function umlaufBild(gegen) {
+	let s = '<circle cx="80" cy="55" r="34" fill="none" stroke="' + F.B + '" stroke-width="1.6"/>';
+	s += pfeilspitzeGrad(80, 21, gegen ? 180 : 0, F.B) + pfeilspitzeGrad(80, 89, gegen ? 0 : 180, F.B);
+	s += pfeilspitzeGrad(46, 55, gegen ? 90 : -90, F.B) + pfeilspitzeGrad(114, 55, gegen ? -90 : 90, F.B);
+	s += '<circle cx="80" cy="55" r="3" fill="#777"/>';
+	return huelleKlein(s, gegen ? "Feldlinie mit Umlauf gegen den Uhrzeigersinn" : "Feldlinie mit Umlauf im Uhrzeigersinn");
+}
+function spuleBild(oben) {
+	let s = '<rect x="28" y="40" width="104" height="30" fill="#F1F6F7" stroke="#C9D6D9" stroke-width="0.8"/>';
+	for (let k = 0; k < 6; k++) { const x = 36 + k * 17.6; s += (oben > 0 ? punkt(x, 33, 6) : kreuz(x, 33, 6)) + (oben > 0 ? kreuz(x, 77, 6) : punkt(x, 77, 6)); }
+	s += '<line x1="10" y1="55" x2="150" y2="55" stroke="#999" stroke-width="0.8" stroke-dasharray="4 3"/>';
+	return huelleKlein(s, "Spule im Längsschnitt mit Stromrichtungen");
+}
 function magnetMitPfeilen(nachRechts) {
 	let s = "";
-	[[22, 52], [34, 64]].forEach(([h, w]) => {
-		s += '<path d="M44 55 C44 ' + (55 - h * 1.6) + " 116 " + (55 - h * 1.6) + ' 116 55" fill="none" stroke="' + PETROL + '" stroke-width="1.3"/>';
-		s += '<path d="M44 55 C44 ' + (55 + h * 1.6) + " 116 " + (55 + h * 1.6) + ' 116 55" fill="none" stroke="' + PETROL + '" stroke-width="1.3"/>';
-		s += pfeilspitze(80, 55 - h * 1.2, nachRechts ? 0 : 180, PETROL) + pfeilspitze(80, 55 + h * 1.2, nachRechts ? 0 : 180, PETROL);
+	[[22, 52], [34, 64]].forEach(([h]) => {
+		s += '<path d="M44 55 C44 ' + (55 - h * 1.6) + " 116 " + (55 - h * 1.6) + ' 116 55" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>';
+		s += '<path d="M44 55 C44 ' + (55 + h * 1.6) + " 116 " + (55 + h * 1.6) + ' 116 55" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>';
+		s += pfeilspitzeGrad(80, 55 - h * 1.2, nachRechts ? 0 : 180, F.B) + pfeilspitzeGrad(80, 55 + h * 1.2, nachRechts ? 0 : 180, F.B);
 	});
 	s += '<rect x="44" y="47" width="72" height="16" rx="2" fill="#C7C7C7" stroke="#555" stroke-width="0.9"/>';
-	return huelle(s, "Stabmagnet ohne Polbeschriftung mit Feldlinienrichtung");
+	return huelleKlein(s, "Stabmagnet ohne Polbeschriftung mit Feldlinienrichtung");
+}
+/* Feldbild für die Trios: Körper grau, ohne Polfarben */
+function feldBildKlein(typ, o, alt) {
+	const sz = SZ[typ]({ ...o, grau: true, symbol: false, beschriften: false, windungen: false });
+	return huelleFeld(szeneInhalt(sz, { linien: linien(sz) }), alt);
 }
 const text = t => ({ text: t });
 
-/* ---------- Übungen ---------- */
+/* ==========================================================================
+   Paare
+   ========================================================================== */
 const BAU = {};
 BAU.paare = (b) => KI.paare(b, {
 	id: "paare",
@@ -3130,31 +3361,52 @@ BAU.paare = (b) => KI.paare(b, {
 			name: "Umlaufsinn und Pole", titel: "Leiter, Spule, Stabmagnet: Umlaufsinn und Pole",
 			auftrag: "Tippen Sie zwei Karten an, die zusammengehören. Die Leiter sind von oben gezeichnet, die Spulen im Längsschnitt.",
 			gruppen: [
-				[leiter(1), umlauf(true)],
-				[leiter(-1), umlauf(false)],
-				[spule(1), text("Nordpol rechts")],
-				[spule(-1), text("Nordpol links")],
+				[leiterBild(1), umlaufBild(true)],
+				[leiterBild(-1), umlaufBild(false)],
+				[spuleBild(1), text("Nordpol rechts")],
+				[spuleBild(-1), text("Nordpol links")],
 				[magnetMitPfeilen(true), text("Nordpol links, Südpol rechts")],
 				[magnetMitPfeilen(false), text("Südpol links, Nordpol rechts")]
+			]
+		},
+		{
+			name: "Feldbilder", titel: "Trios: Feldbild, Anordnung und Merkmal", anzahl: 6,
+			auftrag: "Finden Sie jeweils drei Karten, die zusammengehören: ein Feldlinienbild (Körper grau, Pole nicht gefärbt), die Anordnung und ihr Merkmal. Achten Sie auf die Pfeile.",
+			gruppen: [
+				[feldBildKlein("stab", { nordRechts: false }, "Feldbild eines Stabmagneten"), text("Stabmagnet, Nordpol links"), text("außen inhomogen, an den Polen am stärksten")],
+				[feldBildKlein("spule", { obenPunkt: true }, "Feldbild einer Spule"), text("Spule, Nordpol rechts"), text("innen nahezu homogen")],
+				[feldBildKlein("hufeisen", { nordOben: true }, "Feldbild eines Hufeisenmagneten"), text("Hufeisenmagnet, Nordpol oben"), text("zwischen den Schenkeln nahezu homogen")],
+				[feldBildKlein("zwei", { art: "NN" }, "Feldbild zweier Stabmagnete"), text("zwei Nordpole einander gegenüber"), text("in der Mitte ein feldfreier Punkt")],
+				[feldBildKlein("zwei", { art: "NS" }, "Feldbild zweier Stabmagnete"), text("Nordpol gegenüber Südpol"), text("Feldlinien laufen von Magnet zu Magnet: Anziehung")],
+				[feldBildKlein("leiter", { s: 1 }, "Feldbild eines geraden Leiters"), huelleKlein(punkt(80, 55, 14), "Leiter von oben"), text("konzentrische Kreise, nach außen weiter auseinander")],
+				[feldBildKlein("erde", {}, "Feldbild der Erde"), text("Erde, geographischer Nordpol oben"), text("magnetischer Südpol nahe dem geographischen Nordpol")]
 			]
 		}
 	]
 });
 
+/* ==========================================================================
+   Stimmt's?
+   ========================================================================== */
 BAU.wischen = (b) => KI.wischen(b, {
 	id: "wischen", titel: "Stimmt's? Das Magnetfeld",
 	auftrag: "Wischen Sie nach rechts, wenn die Aussage stimmt, nach links, wenn nicht. Oder tippen Sie auf die Knöpfe.",
 	karten: [
 		{ t: "Magnetische Feldlinien sind in sich geschlossen; sie haben weder Anfang noch Ende.", ja: true, erkl: "" },
 		{ t: "Außerhalb eines Magneten verlaufen die Feldlinien vom Südpol zum Nordpol.", ja: false, erkl: "Außerhalb verlaufen sie vom Nordpol zum Südpol, innen vom Südpol zum Nordpol." },
+		{ t: "Im Innern eines Stabmagneten verlaufen die Feldlinien vom Südpol zum Nordpol.", ja: true, erkl: "" },
 		{ t: "Zerbricht man einen Stabmagneten in der Mitte, erhält man einen einzelnen Nordpol und einen einzelnen Südpol.", ja: false, erkl: "Jedes Bruchstück hat wieder einen Nord- und einen Südpol: Magnetische Monopole gibt es nicht." },
 		{ t: "Magnetfelder entstehen durch bewegte elektrische Ladungen.", ja: true, erkl: "" },
+		{ t: "Auch ruhende elektrische Ladungen sind von einem Magnetfeld umgeben.", ja: false, erkl: "Ruhende Ladungen erzeugen nur ein elektrisches Feld. Ein Magnetfeld entsteht erst, wenn sich die Ladungen bewegen." },
 		{ t: "Wo die Feldlinien dicht beieinander liegen, ist das Magnetfeld stark.", ja: true, erkl: "" },
 		{ t: "Zwischen den Schenkeln eines Hufeisenmagneten ist das Feld nahezu homogen.", ja: true, erkl: "" },
 		{ t: "Magnetische Feldlinien können sich schneiden.", ja: false, erkl: "An jedem Ort hat das Feld nur eine Richtung. Feldlinien schneiden sich deshalb nie." },
 		{ t: "Holz, Glas und Kunststoff schirmen ein Magnetfeld ab.", ja: false, erkl: "Nichtmagnetische Stoffe durchdringt das Magnetfeld nahezu ungestört." },
 		{ t: "Ein Magnet zieht Kupfer und Aluminium an.", ja: false, erkl: "Angezogen werden nur ferromagnetische Stoffe wie Eisen, Nickel und Cobalt." },
+		{ t: "Ein Eisennagel, der am Magneten hängt, wird selbst zum Magneten und kann einen zweiten Nagel halten.", ja: true, erkl: "" },
 		{ t: "Eine frei bewegliche Kompassnadel stellt sich parallel zu den Feldlinien; ihr Nordpol zeigt in Feldrichtung.", ja: true, erkl: "" },
+		{ t: "Eisenfeilspäne zeigen den Verlauf der Feldlinien, aber nicht ihre Richtung.", ja: true, erkl: "" },
+		{ t: "Ein Magnetfeld weist man mit einem Elektroskop nach.", ja: false, erkl: "Ein Elektroskop zeigt Ladung an. Magnetfelder weist man mit einer Kompassnadel oder mit Eisenfeilspänen nach." },
 		{ t: "Am geographischen Nordpol der Erde liegt ein magnetischer Nordpol.", ja: false, erkl: "Dort liegt ein magnetischer Südpol: Er zieht den Nordpol der Kompassnadel an." },
 		{ t: "Überlagern sich zwei Magnetfelder, addiert man die beiden Felder wie Pfeile.", ja: true, erkl: "Felder überlagern sich vektoriell: Richtung und Betrag zählen." },
 		{ t: "Gleichnamige Pole ziehen sich an.", ja: false, erkl: "Gleichnamige Pole stoßen sich ab, ungleichnamige ziehen sich an." },
@@ -3162,17 +3414,522 @@ BAU.wischen = (b) => KI.wischen(b, {
 		{ t: "Kehrt man die Stromrichtung in einer Spule um, vertauschen Nord- und Südpol.", ja: true, erkl: "" },
 		{ t: "Die Feldlinien eines geraden stromdurchflossenen Leiters sind Kreise um den Leiter.", ja: true, erkl: "" },
 		{ t: "Je weiter man sich von einem geraden stromdurchflossenen Leiter entfernt, desto stärker wird sein Magnetfeld.", ja: false, erkl: "Mit wachsendem Abstand liegen die Feldlinien weiter auseinander: Das Feld wird schwächer." },
+		{ t: "Fließt in zwei parallelen Leitern Strom in dieselbe Richtung, ist das Feld zwischen den Leitern besonders stark.", ja: false, erkl: "Zwischen den Leitern zeigen die beiden Felder in entgegengesetzte Richtungen und schwächen sich ab. Die Leiter ziehen sich an." },
 		{ t: "Ein Eisenkern verstärkt das Magnetfeld einer Spule.", ja: true, erkl: "" },
 		{ t: "An den Polen eines Stabmagneten ist das Magnetfeld am schwächsten.", ja: false, erkl: "An den Polen liegen die Feldlinien am dichtesten: Dort ist das Feld am stärksten." }
 	]
 });
 
+/* ==========================================================================
+   Gemeinsames Gerüst der eigenen Übungen: Kopf mit Kreisen, Auftrag, Ergebniskarte mit Bild, Prüfen, Rückmeldung
+   ========================================================================== */
+function geruest(b, o) {
+	const kopf = KI.el("div", "leiste"); b.appendChild(kopf);
+	const chips = KI.el("div", "chips"); kopf.appendChild(chips);
+	const status = KI.el("div", "status"); status.style.marginLeft = "auto"; kopf.appendChild(status);
+	const titel = KI.el("p", ""); titel.style.cssText = "margin:0.3rem 0 0;font-weight:bold;color:#1F3A93"; b.appendChild(titel);
+	const auftrag = KI.el("p", "auftrag"); b.appendChild(auftrag);
+	const hinweis = KI.el("div", ""); b.appendChild(hinweis);
+	const karte = KI.el("div", ""); karte.style.cssText = "border:2px solid #C9D6D9;border-radius:3mm;padding:0.5rem;background:#fff;margin:0.4rem 0";
+	b.appendChild(karte);
+	const buehne = KI.el("div", ""); buehne.style.cssText = "position:relative;max-width:560px;margin:0 auto;"; karte.appendChild(buehne);
+	const extra = KI.el("div", ""); karte.appendChild(extra);
+	const steuer = KI.el("div", "leiste"); steuer.style.justifyContent = "center"; karte.appendChild(steuer);
+	const pruef = KI.hauptKnopf("pruefen", "Prüfen"); steuer.appendChild(pruef);
+	const weiterK = KI.hauptKnopf("weiter", "Weiter"); weiterK.hidden = true; steuer.appendChild(weiterK);
+	const rueck = KI.el("div", ""); karte.appendChild(rueck);
+	const ende = KI.el("div", ""); b.appendChild(ende);
+	return { kopf, chips, status, titel, auftrag, hinweis, karte, buehne, extra, steuer, pruef, weiterK, rueck, ende };
+}
+/* Polfeld (N, S, leer) als Knopf auf dem Bild */
+function polKnopf(buehne, x, y, wert, gesperrt, farbeRand, setze) {
+	const f = KI.el("button", "", wert || "?");
+	const farbe = wert === "N" ? F.N : wert === "S" ? F.Sd : "#999";
+	f.style.cssText = "position:absolute;left:" + (x / W * 100) + "%;top:" + (y / H * 100) + "%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:2mm;font:inherit;font-weight:bold;font-size:1.2rem;cursor:pointer;background:#fff;color:" + farbe + ";border:" + (farbeRand ? "3px solid " + farbeRand : "2px " + (wert ? "solid " : "dashed ") + farbe) + ";padding:0";
+	if (gesperrt) f.style.cursor = "default";
+	f.title = "Pol eintragen: antippen";
+	f.addEventListener("click", () => { if (!gesperrt) setze(wert === "" ? "N" : wert === "N" ? "S" : ""); });
+	buehne.appendChild(f);
+	return f;
+}
+
+/* ==========================================================================
+   Kompassnadeln einstellen
+   ========================================================================== */
+const KOMPASS = [
+	{ name: "Stabmagnet", text: "Stabmagnet", erzeuge: () => ({ typ: "stab", o: { nordRechts: Math.random() < 0.5 } }),
+		erkl: () => "Der Nordpol der Nadel zeigt in Feldrichtung, also tangential zur Feldlinie. Außen verlaufen die Feldlinien vom Nord- zum Südpol: Auf der Achse vor dem Südpol zeigt die Nadel deshalb zum Magneten hin, über der Mitte parallel zum Magneten." },
+	{ name: "Hufeisen", text: "Hufeisenmagnet", erzeuge: () => ({ typ: "hufeisen", o: { nordOben: Math.random() < 0.5 } }),
+		erkl: () => "Zwischen den Schenkeln verlaufen die Feldlinien nahezu parallel vom Nord- zum Südpol (homogenes Feld). Außen biegen sie um die Schenkel herum zum Südpol." },
+	{ name: "Leiter", text: "Gerader Leiter, von oben gesehen", erzeuge: () => ({ typ: "leiter", o: { s: Math.random() < 0.5 ? 1 : -1 } }),
+		erkl: () => "Rechte-Faust-Regel: Der Daumen zeigt in die technische Stromrichtung, die gekrümmten Finger zeigen den Umlaufsinn der kreisförmigen Feldlinien. Jede Nadel steht tangential an ihrem Kreis." },
+	{ name: "Spule", text: "Spule im Längsschnitt", erzeuge: () => ({ typ: "spule", o: { obenPunkt: Math.random() < 0.5 } }),
+		erkl: () => "Rechte-Faust-Regel an jedem Draht, dann überlagern: Innen zeigt das Feld vom Süd- zum Nordpol und ist nahezu homogen. Außen läuft es zurück: Über und unter der Spule zeigen die Nadeln entgegengesetzt zur Nadel im Innern." },
+	{ name: "Zwei Magnete", text: "Zwei Stabmagnete", erzeuge: () => ({ typ: "zwei", o: { art: KI.mischen(["NN", "SS", "NS", "SN"])[0] } }),
+		erkl: a => a.o.art[0] === a.o.art[1] ? "Gleichnamige Pole: Die Feldlinien weichen einander aus. In der Mitte zwischen den Magneten heben sich die Felder auf (feldfreier Punkt), darüber und darunter zeigen sie vom Spalt weg bzw. zu ihm hin." : "Ungleichnamige Pole: Die Feldlinien laufen vom Nordpol des einen zum Südpol des anderen Magneten. Im Spalt ist das Feld stark und nahezu homogen." },
+	{ name: "Erde", text: "Die Erde", erzeuge: () => ({ typ: "erde", o: {} }),
+		erkl: () => "Im geographischen Norden liegt ein magnetischer Südpol. Außen verlaufen die Feldlinien deshalb von Süden nach Norden; an den Polen stehen sie steil zur Erdoberfläche. Frei drehbare Nadeln zeigen das (Inklination)." }
+];
+function kompassAufgabe(st) {
+	const a = KOMPASS[st].erzeuge();
+	const sz = SZ[a.typ](a.o);
+	a.orte = waehleOrte(sz.kand.filter(([x, y]) => !imKoerper(sz, x, y, 18)), 5);
+	return a;
+}
+BAU.kompass = function (b) {
+	const g = geruest(b);
+	const SERIE = KI.serie("kompass"), ANZ = 3;
+	let st = 0, runde, stand, aufg, sz, eintrag, geprueft;
+	const knoepfe = KOMPASS.map((k, i) => { const kn = KI.el("button", "", k.name); kn.addEventListener("click", () => starte(i)); g.chips.appendChild(kn); return kn; });
+	KI.chipsBeschraenken(g.chips, knoepfe);
+	const heft = KI.heftleiste(b, async () => stand.verlauf.length ? KI.blattBild([{ art: "titel", t: "Kompassnadeln im Feld: " + KOMPASS[st].text + KI.durchgangTitel(runde) },
+		{ art: "bild", quelle: await svgCanvas(gitter(stand.verlauf.map((v, i) => ({ titel: (i + 1) + ". Situation " + (v.ok ? "✓" : "✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: loesungsInhalt(v.aufg, v.eintrag) }))), 1640) },
+		{ art: "text", teile: [{ t: KOMPASS[st].erkl(stand.verlauf[stand.verlauf.length - 1].aufg) }] }]) : KI.blattBild([{ art: "titel", t: "Kompassnadeln im Feld" }, { art: "text", teile: [{ t: "Noch keine Situation geprüft." }] }]), "Kompassnadeln");
+	heft.hidden = true;
+	function loesungsInhalt(a, ein) {
+		const s = SZ[a.typ](a.o);
+		let t = szeneInhalt(s, { linien: linien(s), deckung: 0.55 });
+		a.orte.forEach(([x, y], i) => {
+			const soll = feldWinkel(s, x, y), ist = ein[i] === null ? null : ein[i] * Math.PI / 4, ok = ist !== null && winkelDiff(ist, soll) <= 30 * GRAD;
+			t += ok ? nadel(x, y, ist, { ring: F.gut }) : nadel(x, y, soll, { ring: F.falsch });
+		});
+		return t;
+	}
+	function starte(i) {
+		st = i; runde = KI.runde("kompass", i);
+		knoepfe.forEach((k, j) => k.classList.toggle("aktiv", i === j));
+		stand = runde.stand || { nr: 0, ergebnisse: [], fehler: 0, verlauf: [], eintrag: null, geprueft: false };
+		g.hinweis.innerHTML = KI.rundenHinweis(runde, "Drei Situationen. Jede Nadel wird nach dem Prüfen bewertet.");
+		g.ende.innerHTML = ""; heft.hidden = true;
+		situation();
+	}
+	function situation() {
+		if (stand.nr >= ANZ) return fertig();
+		aufg = SERIE.aufgabe(st, stand.nr, () => kompassAufgabe(st));
+		sz = SZ[aufg.typ](aufg.o);
+		eintrag = stand.eintrag || aufg.orte.map(() => null); geprueft = stand.geprueft;
+		g.titel.textContent = KOMPASS[st].text + ": Situation " + (stand.nr + 1) + " von " + ANZ;
+		g.auftrag.innerHTML = (aufg.typ === "erde" ? "Die Nadeln sind frei drehbar gelagert, nicht nur waagrecht. " : "") +
+			"Stellen Sie jede Kompassnadel so ein, wie sie sich im Magnetfeld ausrichtet: Ziehen Sie das <b style=\"color:" + F.N + "\">rote Ende</b> (Nordpol der Nadel) in die passende Richtung oder tippen Sie die Nadel an, dann dreht sie sich um 45°. Dann prüfen.";
+		g.pruef.hidden = geprueft; g.pruef.disabled = false; g.weiterK.hidden = !geprueft;
+		g.rueck.innerHTML = geprueft ? auswertungHtml() : "";
+		zeichne(); zeigeStatus();
+	}
+	function zeigeStatus() { g.status.innerHTML = KI.kreise(stand.ergebnisse, ANZ, stand.nr); }
+	function zeichne() {
+		let inhalt;
+		if (geprueft) inhalt = loesungsInhalt(aufg, eintrag);
+		else inhalt = szeneInhalt(sz);
+		g.buehne.innerHTML = flexibel(huelleSzene(inhalt, W));
+		if (geprueft) return;
+		aufg.orte.forEach(([x, y], i) => {
+			const d = KI.el("div", "");
+			d.style.cssText = "position:absolute;left:" + (x / W * 100) + "%;top:" + (y / H * 100) + "%;width:" + (56 / W * 100) + "%;aspect-ratio:1;transform:translate(-50%,-50%);touch-action:none;cursor:grab;";
+			d.title = "Nadel einstellen: ziehen oder antippen";
+			const male = () => { d.innerHTML = '<svg viewBox="-28 -28 56 56" width="100%" height="100%" style="display:block;overflow:visible">' + nadel(0, 0, eintrag[i] === null ? null : eintrag[i] * Math.PI / 4, { r: 19 }) + "</svg>"; };
+			male();
+			let aktiv = false, bewegt = false, sx = 0, sy = 0;
+			const richte = (e) => {
+				const r = d.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+				if (Math.hypot(dx, dy) < r.width * 0.2) return false;
+				eintrag[i] = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8; male(); return true;
+			};
+			d.addEventListener("pointerdown", (e) => { aktiv = true; bewegt = false; sx = e.clientX; sy = e.clientY; d.setPointerCapture(e.pointerId); e.preventDefault(); });
+			d.addEventListener("pointermove", (e) => { if (!aktiv) return; if (Math.hypot(e.clientX - sx, e.clientY - sy) > 6) { bewegt = true; richte(e); } });
+			d.addEventListener("pointerup", (e) => {
+				if (!aktiv) return; aktiv = false;
+				if (!bewegt && !richte(e)) { eintrag[i] = eintrag[i] === null ? 0 : (eintrag[i] + 1) % 8; male(); }
+				stand.eintrag = eintrag; runde.merke(stand); g.rueck.innerHTML = "";
+			});
+			d.addEventListener("pointercancel", () => { aktiv = false; });
+			g.buehne.appendChild(d);
+		});
+	}
+	function bewertung() { return aufg.orte.map(([x, y], i) => eintrag[i] !== null && winkelDiff(eintrag[i] * Math.PI / 4, feldWinkel(sz, x, y)) <= 30 * GRAD); }
+	function auswertungHtml() {
+		const ok = bewertung(), n = ok.filter(Boolean).length;
+		return '<p class="rueck ' + (n === ok.length ? "gut" : "schlecht") + '">' + (n === ok.length ? "Alle Nadeln richtig!" : n + " von " + ok.length + " Nadeln richtig. Rot umrandet: So stellt sich die Nadel wirklich ein.") + '</p><div class="erkl">' + KOMPASS[st].erkl(aufg) + "</div>";
+	}
+	g.pruef.addEventListener("click", () => {
+		if (eintrag.some(e => e === null)) { g.rueck.innerHTML = '<p class="rueck schlecht">Stellen Sie zuerst alle Nadeln ein.</p>'; return; }
+		const ok = bewertung(), alle = ok.every(Boolean);
+		geprueft = true; stand.geprueft = true; stand.eintrag = eintrag;
+		stand.ergebnisse.push(alle); stand.fehler += ok.filter(z => !z).length;
+		stand.verlauf.push({ aufg, eintrag: eintrag.slice(), ok: alle });
+		runde.merke(stand);
+		g.pruef.hidden = true; g.weiterK.hidden = false;
+		g.rueck.innerHTML = auswertungHtml(); if (alle) KI.funken(g.rueck, 10);
+		zeichne(); zeigeStatus();
+	});
+	g.weiterK.addEventListener("click", () => { stand.nr++; stand.eintrag = null; stand.geprueft = false; runde.merke(stand); situation(); });
+	function fertig() {
+		const s = runde.sterne(stand.fehler <= 1 ? 3 : stand.fehler <= 3 ? 2 : stand.fehler <= 6 ? 1 : 0);
+		SERIE.loesche(st);
+		g.titel.textContent = KOMPASS[st].text + ": geschafft"; g.pruef.hidden = true; g.weiterK.hidden = true;
+		const richtig = stand.ergebnisse.filter(Boolean).length;
+		g.rueck.innerHTML = '<p class="rueck ' + (s ? "gut" : "schlecht") + '">' + richtig + " von " + ANZ + " Situationen fehlerfrei, " + (stand.fehler === 0 ? "keine Nadel falsch. " : stand.fehler === 1 ? "eine Nadel falsch. " : stand.fehler + " Nadeln falsch. ") + KI.sterneHtml(s) + KI.durchgangHtml(runde) + "</p>";
+		KI.bestwert("kompass", s); if (s) KI.funken(g.rueck, 18);
+		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
+		const n = KI.naechsteStufe(st, KOMPASS.length);
+		if (n >= 0) { const k = KI.hauptKnopf("weiter", "Nächste Stufe: " + KOMPASS[n].name); k.addEventListener("click", () => starte(n)); l.appendChild(k); }
+		l.appendChild(KI.symbolKnopf("zurueck", "Neuer Durchgang", () => starte(st)));
+		g.rueck.appendChild(l);
+		const letzte = stand.verlauf[stand.verlauf.length - 1];
+		g.buehne.innerHTML = flexibel(huelleSzene(loesungsInhalt(letzte.aufg, letzte.eintrag), W));
+		zeigeStatus(); heft.hidden = false; b.appendChild(heft);
+	}
+	starte(KI.startStufe(KOMPASS.length));
+};
+
+/* ==========================================================================
+   Welches Feldlinienbild stimmt?
+   ========================================================================== */
+const FB_ANORDNUNG = {
+	stab: { name: "Stabmagnet", fehler: ["pfeile", "offen", "schneiden"], o: () => ({ nordRechts: Math.random() < 0.5 }) },
+	hufeisen: { name: "Hufeisenmagnet", fehler: ["pfeile", "offen", "schneiden"], o: () => ({ nordOben: Math.random() < 0.5 }) },
+	zweiGleich: { typ: "zwei", name: "Zwei Stabmagnete, gleichnamige Pole gegenüber", fehler: ["verbinden", "pfeile", "offen"], o: () => ({ art: Math.random() < 0.5 ? "NN" : "SS" }) },
+	zweiUngleich: { typ: "zwei", name: "Zwei Stabmagnete, ungleichnamige Pole gegenüber", fehler: ["abweisen", "pfeile", "offen"], o: () => ({ art: Math.random() < 0.5 ? "NS" : "SN" }) },
+	leiter: { name: "Gerader Leiter, von oben gesehen", fehler: ["pfeile", "dichte", "schneiden"], o: () => ({ s: Math.random() < 0.5 ? 1 : -1 }) },
+	spule: { name: "Spule im Längsschnitt", fehler: ["innen", "pfeile", "offen"], o: () => ({ obenPunkt: Math.random() < 0.5 }) },
+	erde: { name: "Die Erde", fehler: ["pfeile", "offen", "schneiden"], o: () => ({}) }
+};
+const FB_TEXT = {
+	ok: "Richtig.",
+	pfeile: { std: "Pfeile falsch: Außen verlaufen die Feldlinien vom Nord- zum Südpol.", leiter: "Umlaufsinn falsch: Rechte-Faust-Regel.", erde: "Pfeile falsch: Im geographischen Norden liegt ein magnetischer Südpol.", spule: "Pfeile falsch: Rechte-Faust-Regel an den Drähten." },
+	offen: "Feldlinien enden im Nichts: Magnetische Feldlinien sind geschlossen.",
+	schneiden: "Feldlinien schneiden sich: An jedem Ort hat das Feld nur eine Richtung.",
+	dichte: "Abstände falsch: Nach außen wird das Feld schwächer, die Kreise liegen weiter auseinander.",
+	innen: "Innen falsch: In der Spule verlaufen die Feldlinien vom Süd- zum Nordpol.",
+	verbinden: "Falsch: Gleichnamige Pole sind nicht durch Feldlinien verbunden, sie stoßen sich ab.",
+	abweisen: "Falsch: Ungleichnamige Pole sind durch Feldlinien verbunden, sie ziehen sich an."
+};
+function fbText(f, schluessel) { const t = FB_TEXT[f]; return typeof t === "string" ? t : (t[schluessel] || t.std); }
+function fbVariante(a, f) {
+	const def = FB_ANORDNUNG[a.art], typ = def.typ || a.art;
+	let o = a.o;
+	if (f === "verbinden") o = { art: o.art[0] === "N" ? "NS" : "SN" };
+	if (f === "abweisen") o = { art: o.art[0] === "N" ? "NN" : "SS" };
+	const sz = SZ[typ](o), zeig = SZ[typ](a.o);
+	let ls = linien(sz);
+	if (f === "verbinden" || f === "abweisen") { /* Linien der falschen Anordnung, aber die Magnete der gestellten */ }
+	if (f === "pfeile") ls = ls.map(L => ({ ...L, pts: L.pts.slice().reverse() }));
+	if (f === "innen") ls = ls.map(L => L.innen ? { ...L, pts: L.pts.slice().reverse() } : L);
+	if (f === "offen") {   /* aus jeder zweiten Linie, deren Mitte sichtbar ist, ein Mittelstück herausschneiden: Linien enden im Nichts */
+		let n = 0; const neu = [];
+		for (const L of ls) {
+			const p = L.pts, m = p[Math.floor(p.length / 2)];
+			const sichtbar = !L.kreis && !L.innen && p.length > 30 && m[0] > 30 && m[0] < W - 30 && m[1] > 20 && m[1] < H - 20;
+			if (sichtbar && n++ % 2 === 0) neu.push({ ...L, pts: p.slice(0, Math.round(p.length * 0.38)) }, { ...L, pts: p.slice(Math.round(p.length * 0.66)) });
+			else neu.push(L);
+		}
+		ls = neu;
+	}
+	if (f === "dichte") ls = ls.filter(L => !L.kreis).concat([34, 92, 122, 140].map(r => ({ pts: kreisLinie(200, 140, r, a.o.s > 0), kreis: true })));
+	if (f === "schneiden") {
+		if (typ === "leiter") ls = ls.concat([58, 96].map(r => ({ pts: kreisLinie(232, 128, r, a.o.s > 0), kreis: true })));
+		else {
+			const g = SZ[typ](a.o);
+			g.ladungen = g.ladungen.map(q => q.q > 0 ? { ...q, y: q.y + (typ === "erde" ? 0 : 0), x: q.x + (typ === "erde" ? 26 : 0) } : q);
+			if (typ !== "erde") g.ladungen = g.ladungen.map(q => q.q > 0 ? { ...q, y: q.y + 40 } : q);
+			const extra = linien(g).filter((L, i) => i % 3 === 1 && !L.innen).slice(0, 3);
+			ls = ls.concat(extra);
+		}
+	}
+	return szeneInhalt(zeig, { linien: ls });
+}
+function fbAufgabe(art) {
+	const def = FB_ANORDNUNG[art];
+	const a = { art, o: def.o() };
+	const falsch = KI.mischen(def.fehler).slice(0, 2);
+	a.bilder = KI.mischen(["ok"].concat(falsch));
+	return a;
+}
+BAU.feldbild = function (b) {
+	const g = geruest(b); g.chips.hidden = true;
+	const SERIE = KI.serie("feldbild"), ANZ = 6;
+	const runde = KI.runde("feldbild", 0);
+	const stand = runde.stand || { nr: 0, ergebnisse: [], verlauf: [], wahl: null, reihe: KI.mischen(Object.keys(FB_ANORDNUNG)).slice(0, ANZ) };
+	g.pruef.hidden = true;
+	g.hinweis.innerHTML = KI.rundenHinweis(runde, "Sechs Anordnungen, jeweils ein Versuch.");
+	const heft = KI.heftleiste(b, async () => !stand.verlauf.length ? KI.blattBild([{ art: "titel", t: "Richtige Feldlinienbilder" }, { art: "text", teile: [{ t: "Noch kein Bild gewählt." }] }]) : KI.blattBild([{ art: "titel", t: "Richtige Feldlinienbilder" + KI.durchgangTitel(runde) },
+		{ art: "bild", quelle: await svgCanvas(gitter(stand.verlauf.map(v => ({ titel: FB_ANORDNUNG[v.a.art].name.replace(", von oben gesehen", "") + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: fbVariante(v.a, "ok") }))), 1640) },
+		{ art: "kasten", rand: F.B, hg: "#fff", groesse: 22, teile: [{ t: "Feldlinien schneiden sich nie, sie sind geschlossen, außen laufen sie vom Nord- zum Südpol, innen vom Süd- zum Nordpol. Um einen geraden Leiter liegen die Kreise nach außen immer weiter auseinander." }] }]), "Feldlinienbilder");
+	heft.hidden = true;
+	let a;
+	function zeigeStatus() { g.status.innerHTML = KI.kreise(stand.ergebnisse, ANZ, stand.nr); }
+	function situation() {
+		if (stand.nr >= ANZ) return fertig();
+		a = SERIE.aufgabe(0, stand.nr, () => fbAufgabe(stand.reihe[stand.nr]));
+		const def = FB_ANORDNUNG[a.art];
+		g.titel.textContent = (stand.nr + 1) + " von " + ANZ + ": " + def.name;
+		g.auftrag.innerHTML = "Nur eines der drei Feldlinienbilder ist richtig. Tippen Sie es an. Achten Sie auf Pfeile, Verlauf und Abstände der Feldlinien.";
+		g.weiterK.hidden = stand.wahl === null; g.rueck.innerHTML = "";
+		zeichne(); zeigeStatus();
+		if (stand.wahl !== null) g.rueck.innerHTML = rueckHtml();
+	}
+	function rueckHtml() {
+		const ok = a.bilder[stand.wahl] === "ok";
+		return '<p class="rueck ' + (ok ? "gut" : "schlecht") + '">' + (ok ? "Richtig!" : "Leider nicht. Das richtige Bild ist grün umrandet.") + "</p>";
+	}
+	function zeichne() {
+		const raster = KI.el("div", ""); raster.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.6rem";
+		const def = FB_ANORDNUNG[a.art], schluessel = def.typ ? "std" : a.art;
+		a.bilder.forEach((f, i) => {
+			const beantwortet = stand.wahl !== null, ok = f === "ok";
+			const kn = KI.el("button", "", flexibel(huelleSzene('<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + fbVariante(a, f), W)) +
+				(beantwortet ? '<div style="font-size:0.88rem;text-align:left;padding:0.25rem 0.2rem 0;color:' + (ok ? F.gut : "#444") + '">' + (ok ? "<b>Richtig.</b>" : fbText(f, schluessel)) + "</div>" : ""));
+			kn.style.cssText = "padding:4px;background:#fff;border:2px solid #ccc;border-radius:2mm;cursor:pointer;font:inherit";
+			if (beantwortet) {
+				if (ok) { kn.style.borderColor = "var(--gut)"; kn.style.borderWidth = "3px"; }
+				else if (i === stand.wahl) { kn.style.borderColor = "var(--falsch)"; kn.style.background = "var(--falsch-hg)"; }
+				kn.style.cursor = "default";
+			}
+			kn.addEventListener("click", () => {
+				if (stand.wahl !== null) return;
+				stand.wahl = i; stand.ergebnisse.push(ok); stand.verlauf.push({ a, ok });
+				runde.merke(stand);
+				g.rueck.innerHTML = rueckHtml(); if (ok) KI.funken(g.rueck, 8);
+				g.weiterK.hidden = false; zeichne(); zeigeStatus();
+			});
+			raster.appendChild(kn);
+		});
+		g.buehne.style.maxWidth = "820px";
+		g.buehne.innerHTML = ""; g.buehne.appendChild(raster);
+	}
+	g.weiterK.addEventListener("click", () => { stand.nr++; stand.wahl = null; runde.merke(stand); situation(); });
+	function fertig() {
+		const r = stand.ergebnisse.filter(Boolean).length;
+		const s = runde.sterne(r >= 5 ? 3 : r === 4 ? 2 : r === 3 ? 1 : 0);
+		SERIE.loesche(0);
+		g.titel.textContent = "Geschafft"; g.auftrag.innerHTML = "Hier sind die richtigen Feldlinienbilder. Kopieren Sie das Ergebnisbild ins Heft."; g.weiterK.hidden = true; g.hinweis.innerHTML = "";
+		g.buehne.innerHTML = flexibel(gitter(stand.verlauf.map(v => ({ titel: FB_ANORDNUNG[v.a.art].name.replace(", von oben gesehen", "") + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: fbVariante(v.a, "ok") }))));
+		g.rueck.innerHTML = '<p class="rueck ' + (s ? "gut" : "schlecht") + '">' + r + " von " + ANZ + " richtig erkannt. " + KI.sterneHtml(s) + KI.durchgangHtml(runde) + "</p>";
+		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
+		l.appendChild(KI.symbolKnopf("zurueck", "Neuer Durchgang", () => location.reload()));
+		g.rueck.appendChild(l);
+		KI.bestwert("feldbild", s); if (s) KI.funken(g.rueck, 18);
+		zeigeStatus(); heft.hidden = false; b.appendChild(heft);
+	}
+	situation();
+};
+
+/* ==========================================================================
+   Knobeleien
+   ========================================================================== */
+const gegen = p => p === "N" ? "S" : "N";
+function polFarbe(p) { return p === "N" ? F.N : F.Sd; }
+/* Nagel senkrecht: Kopf oben bei y0, Spitze unten bei y1; Pole farbig, wenn gegeben */
+function nagel(x, y0, y1, pole) {
+	const m = (y0 + y1) / 2;
+	let s = "";
+	if (pole) {
+		s += '<rect x="' + (x - 4) + '" y="' + (y0 + 7) + '" width="8" height="' + (m - y0 - 7) + '" fill="' + polFarbe(pole[0]) + '"/>';
+		s += '<polygon points="' + (x - 4) + "," + m + " " + (x + 4) + "," + m + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="' + polFarbe(pole[1]) + '"/>';
+		s += '<rect x="' + (x - 13) + '" y="' + y0 + '" width="26" height="7" rx="1.5" fill="' + polFarbe(pole[0]) + '"/>';
+	} else {
+		s += '<polygon points="' + (x - 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="' + F.eisen + '"/>';
+		s += '<rect x="' + (x - 13) + '" y="' + y0 + '" width="26" height="7" rx="1.5" fill="' + F.eisen + '"/>';
+	}
+	return s + '<polygon points="' + (x - 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="none" stroke="#333" stroke-width="0.9"/>';
+}
+function kompassRose(x, y, r) {
+	return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#FAFAF5" stroke="#666" stroke-width="2"/>' +
+		[["N", 0, -1], ["O", 1, 0], ["S", 0, 1], ["W", -1, 0]].map(([t, dx, dy]) => '<text x="' + fx(x + dx * (r - 12)) + '" y="' + fx(y + dy * (r - 12) + 5) + '" font-size="14" font-weight="bold" text-anchor="middle" fill="#555">' + t + "</text>").join("");
+}
+const KNOBEL = [
+	{
+		name: "Zerbrochen", titel: "Der zerbrochene Magnet",
+		erzeuge: () => ({ nordLinks: Math.random() < 0.5 }),
+		auftrag: () => "Der Stabmagnet zerbricht an den gestrichelten Stellen in drei Stücke. Tragen Sie an jedem Ende der Bruchstücke den Pol ein (Feld antippen: N, S, leer).",
+		felder: v => { const p = v.nordLinks ? ["N", "S"] : ["S", "N"]; return [[57, 200, p[0]], [115, 200, p[1]], [172, 200, p[0]], [230, 200, p[1]], [287, 200, p[0]], [345, 200, p[1]]]; },
+		bild: (v, geloest) => {
+			let s = S.magnet(200, 52, 240, 32, v.nordLinks);
+			s += '<line x1="160" y1="28" x2="160" y2="76" stroke="#111" stroke-width="2" stroke-dasharray="5 3"/><line x1="240" y1="28" x2="240" y2="76" stroke="#111" stroke-width="2" stroke-dasharray="5 3"/>';
+			s += S.pfeil(200, 86, 200, 126, "#555", 2.5);
+			[87.5, 202.5, 317.5].forEach(cx => { s += geloest ? S.magnet(cx, 200, 100, 32, v.nordLinks, false, false) : '<rect x="' + (cx - 50) + '" y="184" width="100" height="32" fill="#B9C0C6" stroke="#222" stroke-width="1.2"/>'; });
+			return s;
+		},
+		erkl: () => "Jedes Bruchstück ist wieder ein vollständiger Magnet mit Nord- und Südpol, in derselben Ausrichtung wie vorher. An jeder Bruchstelle liegen sich deshalb ein Nord- und ein Südpol gegenüber: Die Stücke ziehen sich an. Magnetische Monopole gibt es nicht."
+	},
+	{
+		name: "Nägel", titel: "Zwei Nägel am Magneten",
+		erzeuge: () => ({ unten: Math.random() < 0.5 ? "N" : "S" }),
+		auftrag: () => "Ein Eisennagel hängt am Magneten, ein zweiter Nagel hängt am ersten. Tragen Sie an beiden Enden jedes Nagels den Pol ein.",
+		felder: v => [[250, 132, gegen(v.unten)], [250, 178, v.unten], [150, 207, gegen(v.unten)], [150, 254, v.unten]],
+		bild: (v, geloest) => {
+			let s = S.magnet(200, 64, 98, 46, v.unten === "S", true);
+			s += nagel(200, 114, 188, geloest ? [gegen(v.unten), v.unten] : null) + nagel(200, 191, 266, geloest ? [gegen(v.unten), v.unten] : null);
+			s += '<line x1="231" y1="132" x2="208" y2="122" stroke="#999"/><line x1="231" y1="178" x2="206" y2="180" stroke="#999"/><line x1="169" y1="207" x2="190" y2="198" stroke="#999"/><line x1="169" y1="254" x2="196" y2="258" stroke="#999"/>';
+			return s;
+		},
+		erkl: v => "Im Feld des Magneten wird der Nagel selbst magnetisch. Ungleichnamige Pole ziehen sich an: Das Nagelende am " + (v.unten === "N" ? "Nordpol wird zum Südpol" : "Südpol wird zum Nordpol") + ", die Spitze zum " + (v.unten === "N" ? "Nordpol" : "Südpol") + ". Genauso magnetisiert der erste Nagel den zweiten."
+	},
+	{
+		name: "Unbekannt", titel: "Welcher Pol ist wo?",
+		erzeuge: () => ({ nordRechts: Math.random() < 0.5 }),
+		auftrag: () => "Die Pole des grauen Stabmagneten sind nicht beschriftet. Zwei Kompassnadeln zeigen, wie das Feld verläuft. Tragen Sie die Pole des Magneten ein.",
+		felder: v => [[155, 180, v.nordRechts ? "S" : "N"], [245, 180, v.nordRechts ? "N" : "S"]],
+		bild: (v, geloest) => {
+			const sz = neueSzene(); stabTeil(sz, 200, 180, 180, 36, v.nordRechts, { grau: !geloest, saat: false });
+			let s = szeneInhalt(sz);
+			s += nadel(50, 180, feldWinkel(sz, 50, 180), { r: 22 }) + nadel(200, 92, feldWinkel(sz, 200, 92), { r: 22 });
+			return s;
+		},
+		erkl: v => "Der Nordpol einer Kompassnadel zeigt in Feldrichtung. Außen verlaufen die Feldlinien vom Nord- zum Südpol: Links auf der Achse zeigt die Nadel " + (v.nordRechts ? "zum Magneten hin, dort liegt also der Südpol" : "vom Magneten weg, dort liegt also der Nordpol") + ". Die Nadel über der Mitte zeigt parallel zum Magneten zum Südpol."
+	},
+	{
+		name: "Zwei Spulen", titel: "Zwei Spulen nebeneinander",
+		erzeuge: () => ({ a: Math.random() < 0.5, b: Math.random() < 0.5 }),
+		auftrag: () => "Zwei Spulen im Längsschnitt liegen auf einer gemeinsamen Achse. Tragen Sie an allen vier Enden die Pole ein und entscheiden Sie, ob sich die Spulen anziehen oder abstoßen.",
+		felder: v => { const pa = v.a ? ["S", "N"] : ["N", "S"], pb = v.b ? ["S", "N"] : ["N", "S"]; return [[24, 150, pa[0]], [176, 150, pa[1]], [224, 150, pb[0]], [376, 150, pb[1]]]; },
+		wahl: v => ({ frage: "Die Spulen …", optionen: ["ziehen sich an.", "stoßen sich ab."], soll: (v.a ? "N" : "S") !== (v.b ? "S" : "N") ? 0 : 1 }),
+		bild: (v, geloest) => {
+			const sz = neueSzene(); spuleTeil(sz, 50, 150, 115, 185, v.a, { n: 4 }); spuleTeil(sz, 250, 350, 115, 185, v.b, { n: 4 });
+			let s = szeneInhalt(sz);
+			if (geloest) s += linienSvg(sz.extra.filter(L => L.innen));
+			return s;
+		},
+		erkl: v => "Rechte-Faust-Regel an den Drähten und Überlagerung: Liegt oben die Reihe mit Punkten, zeigt das Feld innen nach rechts, der Nordpol ist rechts. Hier stehen sich " + ((v.a ? "N" : "S") === (v.b ? "S" : "N") ? "gleichnamige Pole gegenüber: Die Spulen stoßen sich ab." : "ungleichnamige Pole gegenüber: Die Spulen ziehen sich an.")
+	},
+	{
+		name: "Ørsted", titel: "Der Ørsted-Versuch",
+		erzeuge: () => ({ nord: Math.random() < 0.5, ueber: Math.random() < 0.5 }),
+		auftrag: v => "Ein Draht verläuft in Nord-Süd-Richtung " + (v.ueber ? "<b>über</b>" : "<b>unter</b>") + " einer Kompassnadel (Blick von oben). Ohne Strom zeigt die Nadel nach Norden. Nun fließt der Strom in Pfeilrichtung. Wohin schlägt der Nordpol der Nadel aus?",
+		felder: () => [],
+		wahl: v => ({ frage: "Der Nordpol der Nadel schlägt aus nach …", optionen: ["Westen.", "Osten.", "gar nicht."], soll: (v.nord ? 1 : -1) * (v.ueber ? 1 : -1) > 0 ? 0 : 1 }),
+		bild: (v, geloest) => {
+			const draht = '<rect x="194" y="14" width="12" height="252" fill="' + F.kupfer + '" stroke="#7A4A1F" stroke-width="1"' + (v.ueber ? ' opacity="0.92"' : "") + "/>";
+			let s = (v.ueber ? "" : draht) + kompassRose(200, 140, 82);
+			const westen = (v.nord ? 1 : -1) * (v.ueber ? 1 : -1) > 0;
+			const w = geloest ? (-90 + (westen ? -55 : 55)) * GRAD : -90 * GRAD;
+			s += nadel(200, 140, w, { r: 58 });
+			if (v.ueber) s += draht;
+			/* Strompfeile auf den sichtbaren Drahtenden über und unter der Kompassrose */
+			for (const [ya, yb] of [[54, 16], [264, 226]]) s += v.nord ? S.pfeil(222, ya, 222, yb, F.I, 3) : S.pfeil(222, yb, 222, ya, F.I, 3);
+			s += '<text x="232" y="44" font-size="20" font-style="italic" font-weight="bold" fill="' + F.I + '">I</text>';
+			s += '<text x="392" y="26" font-size="15" text-anchor="end" fill="#333">Draht ' + (v.ueber ? "über" : "unter") + " der Nadel</text>";
+			return s;
+		},
+		erkl: v => "Rechte-Faust-Regel: Der Daumen zeigt in Stromrichtung, die Finger umlaufen den Draht. Unter dem Draht zeigt das Feld in die eine, über dem Draht in die andere Richtung. Hier zeigt es an der Nadel nach " + ((v.nord ? 1 : -1) * (v.ueber ? 1 : -1) > 0 ? "Westen" : "Osten") + ", der Nordpol der Nadel dreht sich dorthin (Ørsted 1820)."
+	},
+	{
+		name: "Erde", titel: "Die Erde als Magnet",
+		erzeuge: () => ({ ort: Math.random() < 0.5 ? "nord" : "sued" }),
+		auftrag: v => "Tragen Sie ein, welcher magnetische Pol jeweils in der Nähe der geographischen Pole liegt. Eine frei drehbare Magnetnadel befindet sich direkt über dem geographischen " + (v.ort === "nord" ? "Nordpol" : "Südpol") + ". Wohin zeigt ihr Nordpol?",
+		felder: () => [[200, 100, "S"], [200, 180, "N"]],
+		wahl: v => ({ frage: "Der Nordpol der Nadel zeigt …", optionen: ["zur Erde hin.", "von der Erde weg.", "waagrecht."], soll: v.ort === "nord" ? 0 : 1 }),
+		bild: (v, geloest) => {
+			const sz = neueSzene(); erdeTeil(sz, 200, 140, 70);
+			let s = geloest ? szeneInhalt(sz, { linien: linien(sz), deckung: 0.5 }) : szeneInhalt(sz);
+			const y = v.ort === "nord" ? 40 : 240;
+			s += geloest ? nadel(200, y, feldWinkel(sz, 200, y), { r: 19 }) : nadel(200, y, null, { r: 19 });
+			return s;
+		},
+		erkl: v => "Im geographischen Norden liegt ein magnetischer Südpol. Außen laufen die Feldlinien von Süden nach Norden und treten im Norden steil in die Erde ein. Die Nadel zeigt mit ihrem Nordpol in Feldrichtung, " + (v.ort === "nord" ? "über dem Nordpol also zur Erde hin" : "über dem Südpol also von der Erde weg") + " (Inklination)."
+	}
+];
+BAU.knobeln = function (b) {
+	const g = geruest(b); g.chips.hidden = true;
+	const SERIE = KI.serie("knobeln"), ANZ = KNOBEL.length;
+	const runde = KI.runde("knobeln", 0);
+	const stand = runde.stand || { nr: 0, ergebnisse: [], verlauf: [], eintrag: null, wahl: null, geprueft: false };
+	g.hinweis.innerHTML = KI.rundenHinweis(runde, "Sechs Knobeleien, jeweils ein Versuch.");
+	const heft = KI.heftleiste(b, async () => !stand.verlauf.length ? KI.blattBild([{ art: "titel", t: "Knobeleien zum Magnetfeld" }, { art: "text", teile: [{ t: "Noch keine Knobelei geprüft." }] }]) : KI.blattBild([{ art: "titel", t: "Knobeleien zum Magnetfeld" + KI.durchgangTitel(runde) },
+		{ art: "bild", quelle: await svgCanvas(gitter(stand.verlauf.map(v => ({ titel: KNOBEL[v.k].titel + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: loesungsBild(v.k, v.v) }))), 1640) },
+		{ art: "kasten", rand: F.B, hg: "#fff", groesse: 20, teile: [{ t: "Jedes Bruchstück eines Magneten hat wieder zwei Pole. Eisen wird im Magnetfeld selbst magnetisch. Der Nordpol einer Kompassnadel zeigt in Feldrichtung. Pole einer Spule und Feld um einen Draht: Rechte-Faust-Regel. Im geographischen Norden liegt ein magnetischer Südpol." }] }]), "Knobeleien_Magnetfeld");
+	heft.hidden = true;
+	let k, v, felder, wahl, eintrag;
+	function loesungsBild(ki, vv) {
+		const kn = KNOBEL[ki], fe = kn.felder(vv);
+		let s = '<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + kn.bild(vv, true);
+		fe.forEach(([x, y, p]) => { s += '<rect x="' + (x - 17) + '" y="' + (y - 17) + '" width="34" height="34" rx="5" fill="#fff" stroke="' + polFarbe(p) + '" stroke-width="2.4"/><text x="' + x + '" y="' + (y + 7) + '" font-size="20" font-weight="bold" text-anchor="middle" fill="' + polFarbe(p) + '">' + p + "</text>"; });
+		const w = kn.wahl && kn.wahl(vv);
+		if (w) s += '<rect x="6" y="' + (H - 30) + '" width="' + (W - 12) + '" height="24" rx="4" fill="#E8F5E9"/><text x="14" y="' + (H - 13) + '" font-size="15" fill="' + F.gut + '">' + w.frage.replace(" …", "") + " " + w.optionen[w.soll] + "</text>";
+		return s;
+	}
+	function zeigeStatus() { g.status.innerHTML = KI.kreise(stand.ergebnisse, ANZ, stand.nr); }
+	function situation() {
+		if (stand.nr >= ANZ) return fertig();
+		k = stand.nr; const kn = KNOBEL[k];
+		v = SERIE.aufgabe(0, k, kn.erzeuge);
+		felder = kn.felder(v); wahl = kn.wahl ? kn.wahl(v) : null;
+		eintrag = stand.eintrag || { pole: felder.map(() => ""), wahl: null };
+		g.titel.textContent = (k + 1) + " von " + ANZ + ": " + kn.titel;
+		g.auftrag.innerHTML = kn.auftrag(v);
+		g.pruef.hidden = stand.geprueft; g.weiterK.hidden = !stand.geprueft;
+		g.rueck.innerHTML = stand.geprueft ? rueckHtml() : "";
+		zeichne(); zeigeStatus();
+	}
+	function bewertung() {
+		const pole = felder.map(([, , p], i) => eintrag.pole[i] === p);
+		return { pole, wahl: !wahl || eintrag.wahl === wahl.soll, alle: pole.every(Boolean) && (!wahl || eintrag.wahl === wahl.soll) };
+	}
+	function rueckHtml() {
+		const bw = bewertung();
+		return '<p class="rueck ' + (bw.alle ? "gut" : "schlecht") + '">' + (bw.alle ? "Richtig!" : "Nicht ganz. Die Lösung steht jetzt im Bild.") + '</p><div class="erkl">' + KNOBEL[k].erkl(v) + "</div>";
+	}
+	function zeichne() {
+		const kn = KNOBEL[k], gp = stand.geprueft;
+		g.buehne.innerHTML = flexibel(huelleSzene(gp ? loesungsBild(k, v) : '<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + kn.bild(v, false), W));
+		if (gp) {
+			const bw = bewertung();
+			felder.forEach(([x, y], i) => { const m = KI.el("div", "", bw.pole[i] ? "✓" : "✗"); m.style.cssText = "position:absolute;left:" + ((x + 19) / W * 100) + "%;top:" + ((y - 19) / H * 100) + "%;transform:translate(-50%,-50%);font-weight:bold;font-size:1.1rem;color:" + (bw.pole[i] ? F.gut : F.falsch); g.buehne.appendChild(m); });
+		} else felder.forEach(([x, y], i) => polKnopf(g.buehne, x, y, eintrag.pole[i], false, null, (w) => { eintrag.pole[i] = w; stand.eintrag = eintrag; runde.merke(stand); g.rueck.innerHTML = ""; zeichne(); }));
+		g.extra.innerHTML = "";
+		if (wahl) {
+			const box = KI.el("div", ""); box.style.cssText = "margin:0.5rem 0 0;display:flex;flex-wrap:wrap;gap:0.4rem;align-items:center;justify-content:center";
+			box.appendChild(KI.el("span", "", "<b>" + wahl.frage + "</b>"));
+			wahl.optionen.forEach((t, j) => {
+				const kn2 = KI.el("button", "", t);
+				const an = eintrag.wahl === j;
+				let rand = an ? "#1F3A93" : "#bbb", hg = an ? "#E8EDFB" : "#fff";
+				if (gp) { if (j === wahl.soll) { rand = F.gut; hg = "#E8F5E9"; } else if (an) { rand = F.falsch; hg = "#FDECEA"; } }
+				kn2.style.cssText = "font:inherit;padding:0.35rem 0.7rem;border-radius:2mm;cursor:" + (gp ? "default" : "pointer") + ";border:2px solid " + rand + ";background:" + hg;
+				kn2.addEventListener("click", () => { if (gp) return; eintrag.wahl = j; stand.eintrag = eintrag; runde.merke(stand); g.rueck.innerHTML = ""; zeichne(); });
+				box.appendChild(kn2);
+			});
+			g.extra.appendChild(box);
+		}
+	}
+	g.pruef.addEventListener("click", () => {
+		if (eintrag.pole.some(p => !p)) { g.rueck.innerHTML = '<p class="rueck schlecht">Tragen Sie zuerst alle Pole ein.</p>'; return; }
+		if (wahl && eintrag.wahl === null) { g.rueck.innerHTML = '<p class="rueck schlecht">Wählen Sie noch eine Antwort.</p>'; return; }
+		const bw = bewertung();
+		stand.geprueft = true; stand.eintrag = eintrag; stand.ergebnisse.push(bw.alle); stand.verlauf.push({ k, v, ok: bw.alle });
+		runde.merke(stand);
+		g.pruef.hidden = true; g.weiterK.hidden = false; g.rueck.innerHTML = rueckHtml(); if (bw.alle) KI.funken(g.rueck, 10);
+		zeichne(); zeigeStatus();
+	});
+	g.weiterK.addEventListener("click", () => { stand.nr++; stand.eintrag = null; stand.geprueft = false; runde.merke(stand); situation(); });
+	function fertig() {
+		const r = stand.ergebnisse.filter(Boolean).length;
+		const s = runde.sterne(r >= 5 ? 3 : r === 4 ? 2 : r === 3 ? 1 : 0);
+		SERIE.loesche(0);
+		g.titel.textContent = "Geschafft"; g.auftrag.innerHTML = "Hier sind alle Lösungen. Kopieren Sie das Ergebnisbild ins Heft."; g.pruef.hidden = true; g.weiterK.hidden = true; g.hinweis.innerHTML = "";
+		g.buehne.style.maxWidth = "820px"; g.extra.innerHTML = "";
+		g.buehne.innerHTML = flexibel(gitter(stand.verlauf.map(vv => ({ titel: KNOBEL[vv.k].titel + (vv.ok ? " ✓" : " ✗"), farbe: vv.ok ? F.gut : F.falsch, inhalt: loesungsBild(vv.k, vv.v) }))));
+		g.rueck.innerHTML = '<p class="rueck ' + (s ? "gut" : "schlecht") + '">' + r + " von " + ANZ + " Knobeleien gelöst. " + KI.sterneHtml(s) + KI.durchgangHtml(runde) + "</p>";
+		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
+		l.appendChild(KI.symbolKnopf("zurueck", "Neuer Durchgang", () => location.reload()));
+		g.rueck.appendChild(l);
+		KI.bestwert("knobeln", s); if (s) KI.funken(g.rueck, 18);
+		zeigeStatus(); heft.hidden = false; b.appendChild(heft);
+	}
+	situation();
+};
+
 /* ---------- Seite ---------- */
+const ICON_KOMPASS = '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="12,3.5 15,12 9,12" fill="#D32F2F"/><polygon points="12,20.5 15,12 9,12" fill="#2E7D32"/>';
+const ICON_FELDBILD = '<rect x="9" y="9" width="6" height="6" fill="currentColor"/><path d="M15 12 C22 4 2 4 9 12 M15 12 C22 20 2 20 9 12" fill="none" stroke="currentColor" stroke-width="1.8"/>';
+const ICON_KNOBELN = '<path d="M8 8a4 4 0 1 1 6 3.5c-1.4.8-2 1.6-2 3V16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="20" r="1.6" fill="currentColor"/>';
 KI.seite({
 	klasse: 12, kapitel: "A.5.1 Magnetische Flussdichte",
 	modi: [
 		{ id: "wischen", name: "Stimmt's?", titel: "Stimmt's? Das Magnetfeld", bau: BAU.wischen },
-		{ id: "paare", name: "Paare", titel: "Paare: Umlaufsinn und Pole", bau: BAU.paare }
+		{ id: "paare", name: "Paare", titel: "Paare und Trios: Darstellungen des Magnetfelds", bau: BAU.paare },
+		{ id: "kompass", name: "Kompass", titel: "Kompassnadeln einstellen", bau: BAU.kompass, icon: ICON_KOMPASS },
+		{ id: "feldbild", name: "Feldbilder", titel: "Welches Feldlinienbild stimmt?", bau: BAU.feldbild, icon: ICON_FELDBILD },
+		{ id: "knobeln", name: "Knobeleien", titel: "Knobeleien zum Magnetfeld", bau: BAU.knobeln, icon: ICON_KNOBELN }
 	]
 });
 </script>
