@@ -963,13 +963,13 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 
 	<!-- ===================== Modus Versuch ===================== -->
 	<div class="tcb blau" data-modus="versuch">
-		<div class="tcb-title">Feuchtes Papier mit Elektroden (Draufsicht)</div>
+		<div class="tcb-title">Feuchtes Kopierpapier A3 mit Elektroden (Draufsicht)</div>
 		<div class="tcb-body">
 			<div class="leinwand" id="papier-leinwand"><canvas id="papier" class="sim" style="cursor: crosshair"></canvas><div class="rechnet" id="rechnet">rechnet …</div></div>
 			<div class="gruppen">
 				<div class="gr"><div class="gt">Elektroden</div><div class="kn" id="anordnung">
-					<button data-wert="platten" class="aktiv" title="Zwei Platten (Modell des Plattenkondensators)" aria-label="Zwei Platten"><svg width="34" height="22" viewBox="0 0 34 22"><rect x="5" y="2" width="4" height="18" rx="1" fill="#3050E0"/><rect x="25" y="2" width="4" height="18" rx="1" fill="#E03030"/></svg></button>
-					<button data-wert="spitze" title="Platte und Spitze" aria-label="Platte und Spitze"><svg width="34" height="22" viewBox="0 0 34 22"><rect x="5" y="2" width="4" height="18" rx="1" fill="#3050E0"/><path d="M19 11 L25 8.5 L32 8.5 L32 13.5 L25 13.5 Z" fill="#E03030"/></svg></button>
+					<button data-wert="platten" class="aktiv" title="Zwei Metallstangen (Modell des Plattenkondensators)" aria-label="Zwei Stangen"><svg width="34" height="22" viewBox="0 0 34 22"><rect x="5" y="2" width="4" height="18" rx="1" fill="#3050E0"/><rect x="25" y="2" width="4" height="18" rx="1" fill="#E03030"/></svg></button>
+					<button data-wert="spitze" title="Stange und Spitze" aria-label="Stange und Spitze"><svg width="34" height="22" viewBox="0 0 34 22"><rect x="5" y="2" width="4" height="18" rx="1" fill="#3050E0"/><path d="M19 11 L25 8.5 L32 8.5 L32 13.5 L25 13.5 Z" fill="#E03030"/></svg></button>
 				</div></div>
 				<div class="gr"><div class="gt">Spannung <i class="gr">U</i></div><div class="kn">
 					<input type="range" id="regler-u" min="2" max="20" step="0.5" value="10" aria-label="Spannung U"><span class="wertanz" id="wert-u">10,0 V</span>
@@ -988,7 +988,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button data-wert="gross" title="Rechnung mit sehr großem Papier (fast unbegrenzt)" aria-label="ohne Papierrand"><svg width="30" height="22" viewBox="0 0 30 22"><rect x="2" y="2" width="26" height="18" fill="#FBF8EE" stroke="#555" stroke-width="1.2" stroke-dasharray="2 2"/><rect x="8" y="6" width="2.5" height="10" fill="#3050E0"/><rect x="19.5" y="6" width="2.5" height="10" fill="#E03030"/><path d="M1 11 h-1 M29 11 h1" stroke="#555"/></svg></button>
 				</div></div>
 			</div>
-			<p class="legende">Das Messgerät misst die Spannung zwischen Sonde und Minusplatte (Nullniveau). Ziehen Sie die Sonde oder tippen Sie auf das Papier.</p>
+			<p class="legende">Das Voltmeter misst die Spannung zwischen Sonde (rotes Kabel) und Minusstange (schwarzes Kabel, Nullniveau). Ziehen Sie die Sonde oder tippen Sie auf das Papier.</p>
 		</div>
 	</div>
 
@@ -1011,10 +1011,10 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<div class="gruppen" style="margin-top:0">
 						<div class="gr"><div class="gt">Zum Vergleich</div><div class="kn">
 							<span class="eingabe"><i class="gr">U</i> =&nbsp;<input id="ein-u" inputmode="decimal" value="10"> V</span>
-							<span class="eingabe"><i class="gr">d</i> =&nbsp;<input id="ein-d" inputmode="decimal" value="15"> cm</span>
+							<span class="eingabe"><i class="gr">d</i> =&nbsp;<input id="ein-d" inputmode="decimal" value="20"> cm</span>
 						</div></div>
 					</div>
-					<p class="legende">Tragen Sie Ihre eigenen Messwerte ein. <i class="gr">x</i> ist der Abstand vom inneren Rand der Minusplatte.</p>
+					<p class="legende">Tragen Sie Ihre eigenen Messwerte ein. <i class="gr">x</i> ist der Abstand von der Minusstange.</p>
 				</div>
 			</div>
 			<div class="leinwand" id="diagramm-leinwand"><canvas id="diagramm" class="sim"></canvas></div>
@@ -1057,6 +1057,226 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 
 <script>
 "use strict";
+/* ==========================================================================
+   Labortisch von oben (Kast 2026-11-25, A.3.2 und A.3.2*): feuchtes Kopierpapier A3
+   (42 cm x 29,7 cm) auf einer Kunststoffunterlage, Netzgerät hinten (oben im Bild,
+   Minus links, Plus rechts), Multimeter vorne links mit zwei Messkabeln:
+   COM (schwarz) zur Elektrode mit 0 V, V (rot) zur Sonde. Kabel kreuzen sich nicht.
+   Koordinaten in cm, Ursprung links oben am Papier, y nach unten.
+   ========================================================================== */
+const LABOR = (() => {
+	const B = 42, H = 29.7, OBEN = 4.6, UNTEN = 6.0, RAND = 0.7;
+	const MX = 21, MY = 14.85;                         /* Papiermitte */
+	const RING = { R: 12, ri: 2 }, DIPOL = { a: 13, b: 29, r: 2 }, STANGE = { minus: 11, plus: 31 };
+	const FARBE = { plus: "#E03030", minus: "#3050E0", plushell: "#F8D0D0", minushell: "#D0D8F8" };
+	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
+	/* Maßstab aus der Breite; Höhe des Bildes in Pixeln */
+	function layout(W) {
+		const s = W / (B + 2 * RAND), unten = s < 11 ? 7.6 : UNTEN;
+		return { s, W, H: Math.round(s * (OBEN + H + unten)), ox: s * RAND, oy: s * OBEN, schmal: W < 560, unten };
+	}
+	const verhaeltnis = W => { const s = W / (B + 2 * RAND); return (OBEN + H + (s < 11 ? 7.6 : UNTEN)) / (B + 2 * RAND); };
+	function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+	/* Tisch, Unterlage, nasses Papier mit Raster */
+	function papier(g, L, mitRaster) {
+		const { s } = L, px = x => L.ox + x * s, py = y => L.oy + y * s;
+		g.fillStyle = "#F3F1EC"; g.fillRect(0, 0, L.W, L.H);                                   /* Tisch */
+		g.save(); g.shadowColor = "rgba(0,0,0,0.18)"; g.shadowBlur = 6; g.shadowOffsetY = 2;
+		g.fillStyle = "#DDE3EA"; rr(g, px(-0.5), py(-0.5), (B + 1) * s, (H + 1) * s, 0.6 * s); g.fill(); g.restore();   /* Kunststoffunterlage */
+		g.save(); g.shadowColor = "rgba(0,0,0,0.16)"; g.shadowBlur = 4; g.shadowOffsetY = 1;
+		g.fillStyle = "#F7F9FC"; g.fillRect(px(0), py(0), B * s, H * s); g.restore();
+		/* Nässe: leicht dunklere, unregelmäßige Flecken */
+		const fl = [[12, 9, 13], [30, 20, 15], [22, 24, 9], [36, 6, 8]];
+		g.save(); g.beginPath(); g.rect(px(0), py(0), B * s, H * s); g.clip();
+		fl.forEach(([x, y, r]) => { const gr = g.createRadialGradient(px(x), py(y), 0, px(x), py(y), r * s); gr.addColorStop(0, "rgba(120,150,190,0.10)"); gr.addColorStop(1, "rgba(120,150,190,0)"); g.fillStyle = gr; g.fillRect(px(0), py(0), B * s, H * s); });
+		if (mitRaster) {
+			for (let x = 1; x < B; x++) { g.strokeStyle = x % 5 === 0 ? "rgba(110,130,160,0.32)" : "rgba(110,130,160,0.13)"; g.lineWidth = 1; g.beginPath(); g.moveTo(px(x), py(0)); g.lineTo(px(x), py(H)); g.stroke(); }
+			for (let y = 1; y < H; y++) { g.strokeStyle = y % 5 === 0 ? "rgba(110,130,160,0.32)" : "rgba(110,130,160,0.13)"; g.beginPath(); g.moveTo(px(0), py(y)); g.lineTo(px(B), py(y)); g.stroke(); }
+		}
+		g.restore();
+		g.strokeStyle = "#AEB6C0"; g.lineWidth = 1; g.strokeRect(px(0), py(0), B * s, H * s);
+	}
+
+	/* Metallstange von oben (Zylinder mit Glanz), über das ganze Papier, Klemme am oberen Ende */
+	function stange(g, L, x) {
+		const { s } = L, px = v => L.ox + v * s, py = v => L.oy + v * s, b = Math.max(5, 0.9 * s);
+		const gr = g.createLinearGradient(px(x) - b / 2, 0, px(x) + b / 2, 0);
+		gr.addColorStop(0, "#5F6670"); gr.addColorStop(0.35, "#E9EDF1"); gr.addColorStop(0.55, "#B9C0C8"); gr.addColorStop(1, "#59606A");
+		g.save(); g.shadowColor = "rgba(0,0,0,0.25)"; g.shadowBlur = 3; g.shadowOffsetX = 1.5; g.shadowOffsetY = 1;
+		g.fillStyle = gr; rr(g, px(x) - b / 2, py(-1.2), b, (H + 2.4) * s, b / 2); g.fill(); g.restore();
+		g.strokeStyle = "rgba(40,44,50,0.55)"; g.lineWidth = 0.8; rr(g, px(x) - b / 2, py(-1.2), b, (H + 2.4) * s, b / 2); g.stroke();
+	}
+	/* Tortenring von oben: dünnes Edelstahlband mit Glanzlicht */
+	function tortenring(g, L) {
+		const { s } = L, cx = L.ox + MX * s, cy = L.oy + MY * s, r = RING.R * s, b = Math.max(3, 0.35 * s);
+		g.save(); g.shadowColor = "rgba(0,0,0,0.25)"; g.shadowBlur = 3; g.shadowOffsetX = 1.5; g.shadowOffsetY = 1.5;
+		g.strokeStyle = "#7A828C"; g.lineWidth = b; g.beginPath(); g.arc(cx, cy, r, 0, 2 * Math.PI); g.stroke(); g.restore();
+		g.strokeStyle = "rgba(255,255,255,0.75)"; g.lineWidth = Math.max(1, b * 0.35);
+		[[-2.6, -1.9], [0.4, 1.1]].forEach(([a, e]) => { g.beginPath(); g.arc(cx, cy, r - b * 0.12, a, e); g.stroke(); });
+		g.strokeStyle = "#4E555E"; g.lineWidth = 0.8;
+		[r - b / 2, r + b / 2].forEach(q => { g.beginPath(); g.arc(cx, cy, q, 0, 2 * Math.PI); g.stroke(); });
+	}
+	/* Massestück (Schlitzgewicht) von oben: Messing, Bohrung, Schlitz in Richtung winkel */
+	function massestueck(g, L, x, y, r, winkel) {
+		const { s } = L, cx = L.ox + x * s, cy = L.oy + y * s, R = r * s;
+		g.save(); g.shadowColor = "rgba(0,0,0,0.32)"; g.shadowBlur = 5; g.shadowOffsetX = 2; g.shadowOffsetY = 2;
+		const gr = g.createRadialGradient(cx - R * 0.35, cy - R * 0.35, R * 0.1, cx, cy, R);
+		gr.addColorStop(0, "#F3D9A8"); gr.addColorStop(0.55, "#C9A066"); gr.addColorStop(1, "#8E6A3A");
+		g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI); g.fill(); g.restore();
+		g.strokeStyle = "rgba(255,255,255,0.45)"; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, R * 0.78, 0, 2 * Math.PI); g.stroke();
+		/* Schlitz: Papier schaut durch */
+		g.save(); g.translate(cx, cy); g.rotate(winkel);
+		g.fillStyle = "#EEF2F6"; g.fillRect(0, -R * 0.09, R * 1.02, R * 0.18);
+		g.strokeStyle = "#6B4E28"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(R * 0.2, -R * 0.09); g.lineTo(R * 0.995, -R * 0.09); g.moveTo(R * 0.2, R * 0.09); g.lineTo(R * 0.995, R * 0.09); g.stroke();
+		g.restore();
+		g.strokeStyle = "#6B4E28"; g.lineWidth = 1; g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI); g.stroke();
+		g.fillStyle = "#EEF2F6"; g.beginPath(); g.arc(cx, cy, R * 0.2, 0, 2 * Math.PI); g.fill(); g.stroke();
+	}
+	/* Ladungszeichen wie \bkLadung auf dem Blatt (gezeichnete Striche, kein Textzeichen) */
+	function ladung(g, L, x, y, art, r) {
+		const { s } = L, cx = L.ox + x * s, cy = L.oy + y * s, R = Math.max(7, (r || 0.85) * s), f = art === "plus" ? FARBE.plus : FARBE.minus;
+		g.fillStyle = art === "plus" ? FARBE.plushell : FARBE.minushell; g.strokeStyle = f; g.lineWidth = Math.max(1.3, R * 0.14);
+		g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI); g.fill(); g.stroke();
+		g.lineWidth = Math.max(1.6, R * 0.17); g.lineCap = "round"; g.beginPath(); g.moveTo(cx - R * 0.5, cy); g.lineTo(cx + R * 0.5, cy);
+		if (art === "plus") { g.moveTo(cx, cy - R * 0.5); g.lineTo(cx, cy + R * 0.5); }
+		g.stroke(); g.lineCap = "butt";
+	}
+	/* Kabel als glatte Kurve mit Krokodilklemme bzw. Stecker */
+	function kabel(g, L, pts, farbe) {
+		const { s } = L;
+		g.save(); g.lineCap = "round"; g.lineJoin = "round";
+		g.strokeStyle = "rgba(0,0,0,0.18)"; g.lineWidth = Math.max(3, 0.32 * s) + 1.5; zug(1.2);
+		g.strokeStyle = farbe; g.lineWidth = Math.max(2.4, 0.3 * s); zug(0);
+		g.restore();
+		function zug(d) {
+			g.beginPath(); g.moveTo(pts[0][0] + d, pts[0][1] + d);
+			for (let i = 1; i + 2 < pts.length; i += 3) g.bezierCurveTo(pts[i][0] + d, pts[i][1] + d, pts[i + 1][0] + d, pts[i + 1][1] + d, pts[i + 2][0] + d, pts[i + 2][1] + d);
+			g.stroke();
+		}
+	}
+	function klemme(g, L, x, y, winkel, farbe) {
+		const { s } = L, k = Math.max(4, 0.45 * s);
+		g.save(); g.translate(x, y); g.rotate(winkel);
+		g.fillStyle = farbe; rr(g, -k * 0.5, -k * 1.4, k, k * 1.6, k * 0.25); g.fill();
+		g.fillStyle = "#B7BEC6"; g.fillRect(-k * 0.42, k * 0.05, k * 0.84, k * 0.45);
+		g.restore();
+	}
+	/* Netzgerät hinten (oben im Bild); liefert die Buchsen */
+	function netzgeraet(g, L, U) {
+		const { s } = L, w = 9.5 * s, h = 3.1 * s, x = L.ox + MX * s - w / 2, y = L.oy - 4.3 * s;
+		g.save(); g.shadowColor = "rgba(0,0,0,0.25)"; g.shadowBlur = 5; g.shadowOffsetY = 2;
+		const gg = g.createLinearGradient(0, y, 0, y + h); gg.addColorStop(0, "#F1F2F3"); gg.addColorStop(1, "#D8DBDF");
+		g.fillStyle = gg; rr(g, x, y, w, h, 0.35 * s); g.fill(); g.restore();
+		g.strokeStyle = "#7B8088"; g.lineWidth = 1; rr(g, x, y, w, h, 0.35 * s); g.stroke();
+		/* Anzeige */
+		const lx = x + 0.5 * s, ly = y + 0.45 * s, lw = 4.3 * s, lh = 1.3 * s;
+		const lg = g.createLinearGradient(0, ly, 0, ly + lh); lg.addColorStop(0, "#D3DEC3"); lg.addColorStop(1, "#BBC9A6");
+		g.fillStyle = lg; rr(g, lx, ly, lw, lh, 0.15 * s); g.fill(); g.strokeStyle = "rgba(0,0,0,0.35)"; g.stroke();
+		g.fillStyle = "#141C0E"; g.font = "600 " + Math.max(9, Math.round(0.95 * s)) + "px " + SCHRIFT; g.textAlign = "center"; g.textBaseline = "middle";
+		g.fillText(String(U.toFixed(1)).replace(".", ",") + " V", lx + lw / 2, ly + lh / 2 + 1);
+		/* Drehknopf */
+		const kx = x + 6.0 * s, ky = y + 1.1 * s, kr = 0.62 * s;
+		const kg = g.createRadialGradient(kx - kr * 0.3, ky - kr * 0.3, kr * 0.1, kx, ky, kr); kg.addColorStop(0, "#F5F6F7"); kg.addColorStop(1, "#6E747C");
+		g.fillStyle = kg; g.beginPath(); g.arc(kx, ky, kr, 0, 2 * Math.PI); g.fill();
+		g.strokeStyle = "#fff"; g.lineWidth = Math.max(1.2, 0.12 * s); g.beginPath(); g.moveTo(kx, ky); g.lineTo(kx - kr * 0.5, ky - kr * 0.7); g.stroke();
+		/* Buchsen unten: Minus links, Plus rechts */
+		const by = y + 2.35 * s, bm = [L.ox + (MX - 1.6) * s, by], bp = [L.ox + (MX + 1.6) * s, by];
+		[[bm, FARBE.minus, "minus"], [bp, FARBE.plus, "plus"]].forEach(([p, f, art]) => {
+			g.fillStyle = f; g.strokeStyle = "#333"; g.lineWidth = 0.8; g.beginPath(); g.arc(p[0], p[1], Math.max(3.5, 0.38 * s), 0, 2 * Math.PI); g.fill(); g.stroke();
+			g.fillStyle = "#111"; g.beginPath(); g.arc(p[0], p[1], Math.max(1.3, 0.14 * s), 0, 2 * Math.PI); g.fill();
+			const zx = p[0] + 0.95 * s, zy = p[1], z = Math.max(3, 0.28 * s);
+			g.strokeStyle = f; g.lineWidth = Math.max(1.4, 0.13 * s); g.beginPath(); g.moveTo(zx - z, zy); g.lineTo(zx + z, zy); if (art === "plus") { g.moveTo(zx, zy - z); g.lineTo(zx, zy + z); } g.stroke();
+		});
+		return { minus: bm, plus: bp };
+	}
+	/* Sonde: Metallspitze bei (sx, sy) in Pixeln, Griff schräg nach links unten; liefert das Griffende */
+	function sonde(g, L, sx, sy) {
+		const { s } = L, u = [-0.55, 0.835], sp = 0.9 * s, gl = 2.7 * s, b = Math.max(5, 0.55 * s);
+		const a = [sx + u[0] * sp, sy + u[1] * sp], e = [a[0] + u[0] * gl, a[1] + u[1] * gl];
+		g.save(); g.lineCap = "round";
+		g.strokeStyle = "rgba(0,0,0,0.2)"; g.lineWidth = b; g.beginPath(); g.moveTo(a[0] + 3, a[1] + 3); g.lineTo(e[0] + 3, e[1] + 3); g.stroke();
+		g.strokeStyle = "#B5BDC9"; g.lineWidth = Math.max(2, 0.18 * s); g.beginPath(); g.moveTo(sx, sy); g.lineTo(a[0], a[1]); g.stroke();
+		g.strokeStyle = "#2B2F36"; g.lineWidth = b; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(e[0], e[1]); g.stroke();
+		g.strokeStyle = "#C62828"; g.lineWidth = b; g.beginPath(); g.moveTo(e[0] - u[0] * 0.5 * s, e[1] - u[1] * 0.5 * s); g.lineTo(e[0], e[1]); g.stroke();
+		g.restore();
+		g.fillStyle = "rgba(255,255,255,0.75)"; g.beginPath(); g.arc(sx, sy, Math.max(4, 0.32 * s), 0, 2 * Math.PI); g.fill();
+		g.fillStyle = "#111"; g.beginPath(); g.arc(sx, sy, Math.max(2, 0.15 * s), 0, 2 * Math.PI); g.fill();
+		return e;
+	}
+	/* Multimeter vorne links; liefert die Buchsen V (rot) und COM (schwarz) */
+	function multimeter(g, L, text, rechts) {
+		const { s } = L, gr = Math.max(12, Math.min(26, 1.42 * s));
+		const m = KastMessgeraet.digital(g, L.ox + (rechts ? B - 0.3 : 0.3) * s, L.oy + (H + 0.95) * s, { anker: rechts ? "rechts" : "links", oben: true, text, einheit: "V", groesse: gr, stellen: 4, titel: "Voltmeter", farbe: "#8A3FB0", buchsen: true });
+		const by = m.lcd.y + m.lcd.h + gr * 0.48;
+		return { m, V: [m.x + m.b * 0.3, by], COM: [m.x + m.b * 0.7, by] };
+	}
+	/* ganzer Aufbau: art platten | ring | dipol | spitze; o = { U, sonde: {x, y} in cm, anzeige, ohneSonde } */
+	function aufbau(g, L, art, o, mitte) {
+		const { s } = L, px = x => L.ox + x * s, py = y => L.oy + y * s;
+		/* Elektroden */
+		let nullPunkt, plusPunkt, minusPunkt;   /* Anschlussstellen in Pixeln */
+		if (art === "platten" || art === "spitze") {
+			stange(g, L, STANGE.minus);
+			minusPunkt = [px(STANGE.minus), py(-0.9)]; nullPunkt = [px(STANGE.minus), py(H + 0.9)];
+			if (art === "platten") { stange(g, L, STANGE.plus); plusPunkt = [px(STANGE.plus), py(-0.9)]; }
+			else { spitze(g, L); plusPunkt = [px(40.2), py(MY - 0.2)]; }
+			ladung(g, L, STANGE.minus - 2.4, 2.4, "minus"); ladung(g, L, art === "platten" ? STANGE.plus + 2.4 : 38.5, art === "platten" ? 2.4 : MY - 2.6, "plus");
+		} else if (art === "ring") {
+			tortenring(g, L); massestueck(g, L, MX, MY, RING.ri, -Math.PI / 2);
+			const wm = -1.92, wn = 1.92;
+			minusPunkt = [px(MX + RING.R * Math.cos(wm)), py(MY + RING.R * Math.sin(wm))];
+			nullPunkt = [px(MX + RING.R * Math.cos(wn)), py(MY + RING.R * Math.sin(wn))];
+			plusPunkt = [px(MX + RING.ri * 0.75), py(MY - RING.ri * 0.75)];
+			ladung(g, L, MX, MY, "plus", 0.8); ladung(g, L, MX + 9.6, MY - 9.6, "minus");
+		} else {
+			massestueck(g, L, DIPOL.a, MY, DIPOL.r, Math.PI); massestueck(g, L, DIPOL.b, MY, DIPOL.r, 0);
+			minusPunkt = [px(DIPOL.a), py(MY - DIPOL.r * 0.85)]; plusPunkt = [px(DIPOL.b), py(MY - DIPOL.r * 0.85)];
+			nullPunkt = [px(DIPOL.a), py(MY + DIPOL.r * 0.85)];
+			ladung(g, L, DIPOL.a, MY, "minus", 0.8); ladung(g, L, DIPOL.b, MY, "plus", 0.8);
+		}
+		if (mitte) mitte();      /* Äquipotentiallinien, Feldlinien, Marken über den Elektroden, unter Kabeln und Sonde */
+		/* Netzgerät und Zuleitungen (enden mit Klemme an der Elektrode) */
+		const ng = netzgeraet(g, L, o.U);
+		const zu = (von, nach, f) => {
+			const dy = nach[1] - von[1];
+			kabel(g, L, [von, [von[0], von[1] + Math.max(1.2 * s, dy * 0.45)], [nach[0], nach[1] - Math.max(1.4 * s, dy * 0.4)], nach], f);
+			klemme(g, L, nach[0], nach[1], 0, f);
+		};
+		zu(ng.minus, minusPunkt, FARBE.minus);
+		if (art === "spitze") {   /* Pluskabel außen um das Papier herum, nicht quer über das Feld */
+			const yo = (ng.plus[1] + py(0)) / 2, xr = px(B + 0.35);
+			kabel(g, L, [ng.plus, [ng.plus[0] + 0.6 * s, yo], [xr - 2 * s, yo], [xr, yo + 1.2 * s], [xr, plusPunkt[1] - 1.5 * s], [xr - 0.3 * s, plusPunkt[1]], plusPunkt], FARBE.plus);
+			klemme(g, L, plusPunkt[0], plusPunkt[1], 0, FARBE.plus);
+		} else zu(ng.plus, plusPunkt, FARBE.plus);
+		/* Multimeter und Messkabel */
+		const rechts = art === "dipol";   /* Dipol: Voltmeter rechts vorne, sonst kreuzt das schwarze Kabel zum linken Massestück das rote zur Sonde */
+		const mm = multimeter(g, L, o.anzeige, rechts);
+		const c = mm.COM, boden = py(H + L.unten - 0.45);
+		if (rechts) kabel(g, L, [c, [c[0], boden], [c[0] - 2 * s, boden], [c[0] - 4 * s, boden], [nullPunkt[0] + 2 * s, boden], [nullPunkt[0], nullPunkt[1] + 4 * s], nullPunkt], "#1A1A1A");
+		else kabel(g, L, [c, [c[0], Math.min(boden, c[1] + 1.4 * s)], [nullPunkt[0] - 0.3 * s, Math.min(boden, nullPunkt[1] + 2.6 * s)], nullPunkt], "#1A1A1A");
+		klemme(g, L, nullPunkt[0], nullPunkt[1], Math.PI, "#1A1A1A");
+		if (!o.ohneSonde) {
+			const sx = px(o.sonde.x), sy = py(o.sonde.y);
+			const u = [-0.55, 0.835], e = [sx + u[0] * 3.6 * s, sy + u[1] * 3.6 * s];
+			const v = mm.V, links = px(-0.38);   /* rotes Kabel unten um das Messgerät herum, am linken Rand hoch */
+			if (rechts) kabel(g, L, [v, [v[0], v[1] - 3 * s], [e[0] + u[0] * 4 * s, e[1] + u[1] * 4 * s], e], "#C62828");
+			else kabel(g, L, [v, [v[0], boden], [links + 0.8 * s, boden], [links, py(H + 1.6)], [links, Math.min(py(H + 1.0), e[1] + 7 * s)], [e[0] + u[0] * 4 * s, e[1] + u[1] * 4 * s], e], "#C62828");
+			sonde(g, L, sx, sy);
+		}
+		return mm;
+	}
+	/* Spitze: Stab mit angespitztem Ende von rechts (gA, Anordnung Spitze) */
+	function spitze(g, L) {
+		const { s } = L, px = x => L.ox + x * s, py = y => L.oy + y * s, b = 0.3;
+		const gr = g.createLinearGradient(0, py(MY - b), 0, py(MY + b)); gr.addColorStop(0, "#6A717A"); gr.addColorStop(0.45, "#EEF1F4"); gr.addColorStop(1, "#59606A");
+		g.save(); g.shadowColor = "rgba(0,0,0,0.25)"; g.shadowBlur = 3; g.shadowOffsetX = 1.5; g.shadowOffsetY = 1;
+		g.fillStyle = gr; g.beginPath(); g.moveTo(px(24), py(MY)); g.lineTo(px(26.5), py(MY - b)); g.lineTo(px(41), py(MY - b)); g.lineTo(px(41), py(MY + b)); g.lineTo(px(26.5), py(MY + b)); g.closePath(); g.fill(); g.restore();
+		g.strokeStyle = "rgba(40,44,50,0.6)"; g.lineWidth = 0.8; g.stroke();
+	}
+	return { B, H, MX, MY, RING, DIPOL, STANGE, layout, verhaeltnis, papier, aufbau, ladung };
+})();
+
 const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
 const PLUS = "#E03030", MINUS = "#3050E0", VIOLETT = "#8A3FB0", FARBE_E = "#D46A00", GRAU = "#808080";
 const de = (z, s = 1) => z.toFixed(s).replace(".", ",").replace("-", "−");
@@ -1090,13 +1310,14 @@ function pfeilspitze(ctx, x, y, wx, wy, g, farbe) {
    Elektroden fest auf 0 (Minus) bzw. 1 (Plus), am Papierrand fließt kein Strom
    (Ableitung senkrecht zum Rand null). Ergebnis normiert auf U = 1 V.
    ========================================================================== */
-const PAPIER = { b: 24, h: 16 };                       // Papier in cm
+const PAPIER = { b: 42, h: 29.7 };                     // Kopierpapier A3 quer in cm (Stand 2026-11-25)
 const ELEKTRODEN = {
-	platten: (x, y) => (x >= 3.4 && x <= 4.0 && y >= 3 && y <= 13) ? 0 : (x >= 19.0 && x <= 19.6 && y >= 3 && y <= 13) ? 1 : -1,
+	/* Metallstangen quer über das ganze Papier (Auflagelinien bei x = 11 cm und 31 cm, d = 20 cm), links minus */
+	platten: (x, y) => (y < -1.2 || y > 30.9) ? -1 : Math.abs(x - 11) <= 0.13 ? 0 : Math.abs(x - 31) <= 0.13 ? 1 : -1,
 	spitze: (x, y) => {
-		if (x >= 3.4 && x <= 4.0 && y >= 3 && y <= 13) return 0;
-		if (x >= 17.5 && x <= 23.2 && Math.abs(y - 8) <= 0.3) return 1;           // Stab
-		if (x >= 15.0 && x <= 17.5 && Math.abs(y - 8) <= 0.3 * (x - 15.0) / 2.5 + 0.06) return 1; // Spitze
+		if (y >= -1.2 && y <= 30.9 && Math.abs(x - 11) <= 0.13) return 0;
+		if (x >= 26.5 && x <= 41 && Math.abs(y - 14.85) <= 0.3) return 1;                       // Stab
+		if (x >= 24.0 && x <= 26.5 && Math.abs(y - 14.85) <= 0.3 * (x - 24.0) / 2.5 + 0.06) return 1; // Spitze
 		return -1;
 	}
 };
@@ -1105,7 +1326,7 @@ function loese(art, rahmen, h) {
 	const f = new Float64Array(nx * ny), fest = new Int8Array(nx * ny), el = ELEKTRODEN[art];
 	for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
 		const x = x0 + i * h, y = y0 + j * h, k = j * nx + i, e = el(x, y);
-		if (e >= 0) { fest[k] = 1; f[k] = e; } else f[k] = Math.max(0, Math.min(1, (x - 4) / 15));
+		if (e >= 0) { fest[k] = 1; f[k] = e; } else f[k] = Math.max(0, Math.min(1, (x - 11) / 20));
 	}
 	const w = 1.94;
 	for (let it = 0; it < 6000; it++) {
@@ -1183,7 +1404,7 @@ function laenge(pl) { let l = 0; for (let i = 1; i < pl.length; i++) l += Math.h
 /* ==========================================================================
    Modus Versuch
    ========================================================================== */
-const versuch = { art: "platten", modell: "papier", U: 10, sonde: { x: 9, y: 8 }, marken: [], loesungen: {} };
+const versuch = { art: "platten", modell: "papier", U: 10, sonde: { x: 19, y: 12 }, marken: [], loesungen: {} };
 const cP = document.getElementById("papier");
 let PW = 740, PH = 500, PS = 30, POX = 0, POY = 0;    // Pixel je cm, Ursprung des Papiers
 
@@ -1191,7 +1412,7 @@ function gitter() {
 	const k = versuch.art + "|" + versuch.modell;
 	if (!versuch.loesungen[k]) {
 		if (versuch.modell === "papier") versuch.loesungen[k] = loese(versuch.art, [0, 0, PAPIER.b, PAPIER.h], 0.2);
-		else versuch.loesungen[k] = ausschnitt(loese(versuch.art, [-24, -16, 48, 32], 0.25), 0.2);
+		else versuch.loesungen[k] = ausschnitt(loese(versuch.art, [-21, -15, 63, 45], 0.25), 0.2);
 	}
 	return versuch.loesungen[k];
 }
@@ -1209,7 +1430,7 @@ function feldlinienPapier(g) {
 			const m = [(pl[i][0] + pl[i - 1][0]) / 2, (pl[i][1] + pl[i - 1][1]) / 2], gr = grad(m[0], m[1]);
 			fluss.push(fluss[i - 1] + Math.hypot(gr[0], gr[1]) * Math.hypot(pl[i][0] - pl[i - 1][0], pl[i][1] - pl[i - 1][1]));
 		}
-		const ges = fluss[fluss.length - 1], schritt = 0.078;   // gleicher Fluss je Linie (Platten: 14 Linien)
+		const ges = fluss[fluss.length - 1], schritt = 0.1;     // gleicher Fluss je Linie (Stangen: 15 Linien)
 		const n = Math.max(1, Math.round(ges / schritt));
 		for (let q = 0; q < n; q++) {
 			const ziel = (q + 0.5) * ges / n;
@@ -1239,13 +1460,11 @@ function feldlinienPapier(g) {
 	return ergebnis;
 }
 
+let LL = null;   /* Layout des Labortischs */
 function papierLayout() {
-	/* Handy: Papier über die volle Breite, Messgerät darunter (nichts überdeckt das Papier) */
-	const r = leinwand(cP, W => W < 560 ? (36 + (W - 8) / PAPIER.b * PAPIER.h + 84) / W : 0.72);
-	PW = r.W; PH = r.H;
-	const rand = PW < 560 ? 4 : 26;
-	PS = PW < 560 ? (PW - 2 * rand) / PAPIER.b : Math.min((PW - 2 * rand) / PAPIER.b, (PH - 2 * rand - 40) / PAPIER.h);
-	POX = (PW - PS * PAPIER.b) / 2; POY = 36;
+	/* Labortisch: Netzgerät hinten (oben), Papier, Voltmeter vorne (unten); nichts überdeckt das Papier */
+	const r = leinwand(cP, W => LABOR.verhaeltnis(W));
+	LL = LABOR.layout(r.W); PW = r.W; PH = r.H; PS = LL.s; POX = LL.ox; POY = LL.oy;
 	return r.ctx;
 }
 const px = x => POX + x * PS, py = y => POY + y * PS;
@@ -1253,18 +1472,12 @@ const px = x => POX + x * PS, py = y => POY + y * PS;
 function zeichnePapier() {
 	const ctx = papierLayout(), g = gitter(), U = versuch.U, schmal = PW < 560;
 	ctx.clearRect(0, 0, PW, PH);
-	/* Papier */
-	ctx.save(); ctx.shadowColor = "rgba(0,0,0,0.18)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 2;
-	ctx.fillStyle = "#FBF8EE"; ctx.fillRect(px(0), py(0), PS * PAPIER.b, PS * PAPIER.h); ctx.restore();
-	/* Raster 1 cm, alle 5 cm kräftiger */
-	for (let x = 0; x <= PAPIER.b; x++) { ctx.strokeStyle = x % 5 === 0 ? "rgba(120,140,170,0.45)" : "rgba(120,140,170,0.18)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px(x), py(0)); ctx.lineTo(px(x), py(PAPIER.h)); ctx.stroke(); }
-	for (let y = 0; y <= PAPIER.h; y++) { ctx.strokeStyle = y % 5 === 0 ? "rgba(120,140,170,0.45)" : "rgba(120,140,170,0.18)"; ctx.beginPath(); ctx.moveTo(px(0), py(y)); ctx.lineTo(px(PAPIER.b), py(y)); ctx.stroke(); }
-	ctx.strokeStyle = "#9a9a8a"; ctx.lineWidth = 1; ctx.strokeRect(px(0), py(0), PS * PAPIER.b, PS * PAPIER.h);
-	/* Skala x (Abstand von der Minusplatte) */
-	ctx.fillStyle = "#666"; ctx.font = (schmal ? 10 : 11) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top";
-	for (let x = 0; x <= 15; x += schmal ? 5 : 1) ctx.fillText(String(x), px(4 + x), py(PAPIER.h) + 3);
-	ctx.textAlign = "left"; ctx.fillText(schmal ? "x in cm" : "x in cm (ab Minusplatte)", px(19.6) + 4, py(PAPIER.h) + 3);
-
+	LABOR.papier(ctx, LL, true);
+	/* Skala x (Abstand von der Minusstange) oben am Papier */
+	ctx.fillStyle = "#5A6472"; ctx.font = (schmal ? 9 : 11) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "top";
+	for (let x = 0; x <= 20; x += schmal ? 5 : 1) ctx.fillText(String(x), px(11 + x), py(0) + 2);
+	ctx.textAlign = "left"; ctx.fillText(schmal ? "x in cm" : "x in cm (ab Minusstange)", px(31.9), py(0) + 2);
+	const mitte = () => {
 	/* Feldlinien */
 	if (document.getElementById("chk-feld").checked) {
 		const fl = versuch.feld && versuch.feld.k === versuch.art + versuch.modell ? versuch.feld.l : (versuch.feld = { k: versuch.art + versuch.modell, l: feldlinienPapier(g) }).l;
@@ -1287,22 +1500,17 @@ function zeichnePapier() {
 			linien.forEach(pl => { ctx.beginPath(); pl.forEach((p, i) => i ? ctx.lineTo(px(p[0]), py(p[1])) : ctx.moveTo(px(p[0]), py(p[1]))); ctx.stroke(); });
 			/* Beschriftung oben am Papier, nur in freier Lücke */
 			let lab = null;
-			linien.forEach(pl => pl.forEach(p => { if (p[1] < 2.2 && p[1] > 0.6 && (!lab || Math.abs(p[1] - 1.2) < Math.abs(lab[1] - 1.2))) lab = p; }));
+			linien.forEach(pl => pl.forEach(p => { if (p[1] < 5.0 && p[1] > 3.0 && (!lab || Math.abs(p[1] - 4.0) < Math.abs(lab[1] - 4.0))) lab = p; }));
 			if (lab && belegt.every(b => Math.abs(b - lab[0]) * PS > (schmal ? 26 : 30))) {
 				belegt.push(lab[0]);
 				ctx.save(); ctx.setLineDash([]); ctx.font = "bold " + (schmal ? 10 : 12) + "px " + SCHRIFT; ctx.textAlign = "center"; ctx.textBaseline = "middle";
 				const s = de(v, 0) + " V", bw = ctx.measureText(s).width + 6;
-				ctx.fillStyle = "rgba(251,248,238,0.95)"; ctx.fillRect(px(lab[0]) - bw / 2, py(lab[1]) - 8, bw, 16);
+				ctx.fillStyle = "rgba(247,249,252,0.95)"; ctx.fillRect(px(lab[0]) - bw / 2, py(lab[1]) - 8, bw, 16);
 				ctx.fillStyle = potFarbe(t); ctx.fillText(s, px(lab[0]), py(lab[1])); ctx.restore();
 			}
 		}
 		ctx.setLineDash([]);
 	}
-	/* Elektroden */
-	zeichneElektroden(ctx);
-	/* Zuleitungen und Spannungsangabe */
-	ctx.font = "bold " + (schmal ? 12 : 14) + "px " + SCHRIFT; ctx.textBaseline = "middle"; ctx.textAlign = "center";
-	ctx.fillStyle = "#333"; ctx.fillText("U = " + de(U, 1) + " V", px(PAPIER.b / 2), 16);
 	/* Marken */
 	versuch.marken.forEach(m => {
 		const t = m.phi / U, c = potFarbe(t), X = px(m.x), Y = py(m.y);
@@ -1310,14 +1518,10 @@ function zeichnePapier() {
 		ctx.font = (schmal ? 10 : 11) + "px " + SCHRIFT; ctx.fillStyle = c; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
 		ctx.fillText(de(m.phi, 1), X + 5, Y - 3);
 	});
-	/* Sonde mit Kabel zum Messgerät */
-	const sx = px(versuch.sonde.x), sy = py(versuch.sonde.y), phi = phiNorm(versuch.sonde.x, versuch.sonde.y) * U;
-	const mw = schmal ? 116 : 150, mh = schmal ? 46 : 54, mx = PW - mw - 6, my = schmal ? py(PAPIER.h) + 26 : PH - mh - 4;
-	ctx.strokeStyle = "#222"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.bezierCurveTo(sx + 20, sy + 60, mx - 40, my + 10, mx, my + mh / 2); ctx.stroke();
-	ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 2 * Math.PI); ctx.fill();
-	ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(sx, sy, 5, 0, 2 * Math.PI); ctx.stroke();
-	/* Messgerät (gemeinsames Digitalmessgerät) */
-	KastMessgeraet.digital(ctx, mx + mw, my + mh / 2, { anker: "rechts", text: de(phi, 2), einheit: "V", groesse: schmal ? 17 : 21, stellen: 4, titel: "Voltmeter", farbe: "#8A3FB0" });
+	};
+	/* Elektroden, Netzgerät, Voltmeter mit beiden Messkabeln, Sonde */
+	const phi = phiNorm(versuch.sonde.x, versuch.sonde.y) * U;
+	LABOR.aufbau(ctx, LL, versuch.art, { U, sonde: versuch.sonde, anzeige: de(phi, 2) }, mitte);
 }
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function metall(ctx, x, y, w, h) { const gr = ctx.createLinearGradient(x, 0, x + w, 0); gr.addColorStop(0, "#9aa1a8"); gr.addColorStop(0.45, "#eef1f4"); gr.addColorStop(1, "#7d858d"); return gr; }
@@ -1399,9 +1603,9 @@ function neueZeile(x = "", y = "") {
 for (let i = 0; i < 8; i++) neueZeile();
 document.getElementById("btn-zeile").addEventListener("click", () => { neueZeile(); zeichneDiagramm(); });
 document.getElementById("btn-beispiel").addEventListener("click", () => {
-	const bsp = [[1, 0.7], [3, 2.0], [5, 3.4], [7, 4.6], [9, 6.1], [11, 7.2], [13, 8.6], [14, 9.4]];
+	const bsp = [[2, 1.1], [4, 2.1], [6, 2.9], [8, 4.1], [10, 5.0], [12, 5.9], [14, 7.1], [16, 8.0], [18, 8.9]];
 	tbody.innerHTML = ""; bsp.forEach(p => neueZeile(de(p[0], 0), de(p[1], 1)));
-	document.getElementById("ein-u").value = "10"; document.getElementById("ein-d").value = "15";
+	document.getElementById("ein-u").value = "10"; document.getElementById("ein-d").value = "20";
 	meldung("Beispielmessung geladen (nur als Notbehelf)"); zeichneDiagramm();
 });
 ["ein-u", "ein-d"].forEach(id => document.getElementById(id).addEventListener("input", zeichneDiagramm));
@@ -1624,7 +1828,7 @@ function zeichneBerg() {
    Modi, Hinweise, Bildleisten
    ========================================================================== */
 const HINWEISE = {
-	versuch: ["Versuch", "Wählen Sie dieselbe Anordnung und Spannung wie in Ihrem Versuch. Blenden Sie die berechneten Äquipotentiallinien ein und vergleichen Sie mit Ihrem Papier. Achten Sie besonders auf die Ränder und die Umgebung der Spitze."],
+	versuch: ["Versuch", "Wählen Sie dieselbe Anordnung und Spannung wie in Ihrem Versuch (Stangen 20&nbsp;cm auseinander, quer über das ganze Papier). Blenden Sie die berechneten Äquipotentiallinien ein und vergleichen Sie mit Ihrem Papier."],
 	auswertung: ["Auswertung", "Tragen Sie Ihre Messwerte ein. Die Simulation legt die Ausgleichsgerade (lineare Regression) durch die Punkte. Gestrichelt: die Erwartung nach <i class=\"gr\">E</i> = <i class=\"gr\">U</i> : <i class=\"gr\">d</i>."],
 	gebirge: ["Potentialgebirge", "Bauen Sie Ladungsverteilungen nach. Positive Ladungen bilden Berge, negative Ladungen Täler. Äquipotentiallinien sind die Höhenlinien des Gebirges."]
 };
@@ -1649,7 +1853,7 @@ document.querySelectorAll("#modi button").forEach(b => b.addEventListener("click
 	modus = erlaubt[0];
 })();
 
-bildLeiste(document.getElementById("papier-leinwand"), () => mitKast(cP), () => "A.3.2 Aequipotentiallinien, " + (versuch.art === "platten" ? "zwei Platten" : "Platte und Spitze") + ", U = " + de(versuch.U, 1) + " V",
+bildLeiste(document.getElementById("papier-leinwand"), () => mitKast(cP), () => "A.3.2 Aequipotentiallinien, " + (versuch.art === "platten" ? "zwei Stangen" : "Stange und Spitze") + ", U = " + de(versuch.U, 1) + " V",
 	[symbolKnopf("zurueck", "Markierte Punkte löschen", () => { versuch.marken = []; zeichnePapier(); })]).classList.add("unten");
 bildLeiste(document.getElementById("diagramm-leinwand"), () => mitKast(cD, auswertungsKarten()), () => "A.3.2 Regression phi ueber x");
 bildLeiste(document.getElementById("eben-leinwand"), () => mitKast(cE), () => "A.3.2 Ladungen und Aequipotentiallinien");
