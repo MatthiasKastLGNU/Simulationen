@@ -1004,7 +1004,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button type="button" data-wert="links" class="aktiv">links</button><button type="button" data-wert="rechts" id="k-wer-rechts">rechts</button><button type="button" data-wert="beide">beide</button>
 				</span></div>
 				<div class="bgruppe"><span class="btitel">Auf dem rechten Brett</span><span class="knopfleiste" id="k-partner">
-					<button type="button" data-wert="D" class="aktiv">gleiche Masse (60 kg)</button><button type="button" data-wert="M">Mädchen (30 kg)</button>
+					<button type="button" data-wert="D" class="aktiv">gleich groß (60 kg)</button><button type="button" data-wert="M">klein (30 kg)</button>
 				</span></div>
 			</div>
 			<div class="zeile" style="margin-top:0.7rem">
@@ -1241,17 +1241,18 @@ const K = { wer: "links", partner: "D", z: null, halten: false, verlauf: [], pau
 function kNeu() { K.z = neuerZustand(60, K.partner === "M" ? 30 : 60); K.verlauf = []; K.nachlauf = 0; K.voll = false; K.pause = false; kZeichnen(); kWerte(); }
 function rechtsName() { return K.partner === "M" ? "Mädchen" : "Person 2"; }
 function kSzene() {
-	const c = $("k-szene"), { g, W, H } = canvasGroesse(c, w => schmal(w) ? 0.74 : 0.38);
+	const c = $("k-szene"), { g, W, H } = canvasGroesse(c, w => schmal(w) ? 0.9 : 0.46);
 	const z = K.z, eng = schmal(W);
 	g.fillStyle = "#FAFAF7"; g.fillRect(0, 0, W, H);
 	const rand = eng ? 26 : 46, k = (W - 2 * rand) / 11.4, xm = m => rand + (m + 0.7) * k, u = k * (eng ? 0.95 : 0.82);
-	const yB = H * 0.62;
+	const yB = H * 0.66;
 	boden(g, W, yB, xm, true, u);
 	/* Treffpunkt nach dem Treffen */
 	if (z.fertig) { marke(g, xm(z.treff), yB + u * 0.3 + 14, "#2E7D32", "Treffpunkt " + de(z.treff, 1) + " m", Math.max(11, Math.round(u * 0.26)), 0, W); }
 	const ziehtL = K.wer !== "rechts", ziehtR = K.wer !== "links", maedchen = K.partner === "M";
-	const hL = person(g, xm(z.x1), yB, 1, u, HEMD.K, ziehtL, false, z.roll1);
-	const hR = person(g, xm(z.x2), yB, -1, u * (maedchen ? 0.9 : 1), maedchen ? HEMD.M : HEMD.D, ziehtR, maedchen, -z.roll2);
+	const aktivL = ziehtL && K.halten && !z.fertig, aktivR = ziehtR && K.halten && !z.fertig;
+	const hL = person(g, xm(z.x1), yB, 1, u, HEMD.K, aktivL, false, z.roll1);
+	const hR = person(g, xm(z.x2), yB, -1, u * (maedchen ? 0.74 : 1), maedchen ? HEMD.M : HEMD.D, aktivR, maedchen, -z.roll2);
 	const straff = z.T > 0.5 || z.fertig;
 	seil(g, hL, hR, straff ? 0 : Math.min(u * 0.25, 4 + (hR[0] - hL[0]) * 0.012), u);
 	/* Kraftsensoren an beiden Seilenden */
@@ -1260,21 +1261,24 @@ function kSzene() {
 	for (const [sx, dx] of [[sx1, dx1], [sx2, dx2]]) {
 		const ys = hL[1] + (hR[1] - hL[1]) * (sx - hL[0]) / (hR[0] - hL[0]);
 		g.fillStyle = "#4A4F57"; rr(g, sx - 8, ys - 5, 16, 10, 2); g.fill();
-		const r = KastMessgeraet.digital(g, dx, ys - (eng ? 30 : 40), { text: String(Math.round(z.T)), einheit: "N", titel: eng ? "" : "Kraftsensor", groesse: gr, stellen: 3, farbe: FARBE.F });
+		const r = KastMessgeraet.digital(g, dx, yB - u * 2.45 - (eng ? 22 : 26), { text: String(Math.round(z.T)), einheit: "N", titel: eng ? "" : "Kraftsensor", groesse: gr, stellen: 3, farbe: FARBE.F });
 		g.strokeStyle = "#555"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(dx, r.y + r.h); g.lineTo(sx, ys - 5); g.stroke();
 	}
 	/* Kräfte an den Händen (Wechselwirkungspaar) */
 	const fk = (eng ? 1.4 : 1.8) * k / ZUG_KRAFT, yF = hL[1] - (eng ? 62 : 84) * (eng ? 1 : 1.12);
 	if (z.T > 1) {
-		const L = z.T * fk, b = eng ? 5 : 7;
+		const L = Math.min(z.T * fk, (hR[0] - hL[0]) * 0.45), b = eng ? 5 : 7;
 		pfeil(g, hL[0], hL[1] - b - 2, hL[0] + L, hL[1] - b - 2, FARBE.F, b, "#5C0000");
 		pfeil(g, hR[0], hR[1] - b - 2, hR[0] - L, hR[1] - b - 2, FARBE.F, b, "#5C0000");
 	}
 	/* Namen und Massen */
-	const fs = eng ? 12 : 14, yN = yB - u * 2.25 - (eng ? 50 : 40);
-	namenPaar(g, W, xm(z.x1), xm(z.x2), yN, [{ t: "Person 1  60 kg", gr: fs, farbe: "#222", fett: true }], [{ t: rechtsName() + "  " + (maedchen ? 30 : 60) + " kg", gr: fs, farbe: "#222", fett: true }], fs * 1.3);
+	const fs = eng ? 12 : 14, yN = yB - u * 2.45 - (eng ? 68 : 86);
+	const rolle = (zieht, aktiv) => zieht ? { t: aktiv ? "zieht!" : "zieht", gr: fs, farbe: aktiv ? FARBE.F : "#666", fett: aktiv } : { t: "hält nur fest", gr: fs, farbe: "#666" };
+	namenPaar(g, W, xm(z.x1), xm(z.x2), yN,
+		[{ t: "Person 1  60 kg", gr: fs, farbe: "#222", fett: true }, rolle(ziehtL, aktivL)],
+		[{ t: rechtsName() + "  " + (maedchen ? 30 : 60) + " kg", gr: fs, farbe: "#222", fett: true }, rolle(ziehtR, aktivR)], fs * 1.3);
 	/* Geschwindigkeiten */
-	const vk = k * 0.9, yv = yB + u * 0.3 + (eng ? 40 : 46);
+	const vk = Math.min(k * 0.9, 0.42 * (xm(z.x2) - xm(z.x1)) / Math.max(Math.abs(z.v1), Math.abs(z.v2), 1e-6)), yv = yB + u * 0.3 + (eng ? 40 : 46);
 	if (Math.abs(z.v1) > 0.02 && !z.fertig) { pfeil(g, xm(z.x1), yv, xm(z.x1) + z.v1 * vk, yv, FARBE.v, eng ? 4 : 5, "#155020"); symbol(g, xm(z.x1) + z.v1 * vk + 6, yv + 5, "v", "1", FARBE.v, fs, true); }
 	if (Math.abs(z.v2) > 0.02 && !z.fertig) { pfeil(g, xm(z.x2), yv, xm(z.x2) + z.v2 * vk, yv, FARBE.v, eng ? 4 : 5, "#155020"); symbol(g, xm(z.x2) + z.v2 * vk - 6, yv + 5, "v", "2", FARBE.v, fs, true, "rechts"); }
 }
@@ -1352,7 +1356,8 @@ function aufgabe(serie, nr) {
 	let m1, m2; do { m1 = 40 + 5 * Math.floor(r() * 13); m2 = 40 + 5 * Math.floor(r() * 13); } while (Math.abs(m1 - m2) < 10);
 	const i = Math.floor(r() * NAMEN.length); let j = Math.floor(r() * NAMEN.length); if (j === i) j = (j + 3) % NAMEN.length;
 	const wer = ["links", "rechts", "beide"][Math.floor(r() * 3)], hemden = ["A", "B", "C", "E", "K", "D"];
-	return { m1, m2, n1: NAMEN[i], n2: NAMEN[j], wer, h1: HEMD[hemden[Math.floor(r() * 6)]], h2: HEMD[hemden[Math.floor(r() * 6)]] };
+	const f1 = Math.floor(r() * 6);
+	return { m1, m2, n1: NAMEN[i], n2: NAMEN[j], wer, h1: HEMD[hemden[f1]], h2: HEMD[hemden[(f1 + 1 + Math.floor(r() * 5)) % 6]] };
 }
 let T = null;
 function tLaden() { try { T = JSON.parse(localStorage.getItem(SCHLUESSEL)); } catch (e) { T = null; } if (!T || !T.serie) T = { serie: Math.floor(Math.random() * 1e6) + 1, durchgang: 1, nr: 0, erg: [], antwort: null }; }
