@@ -3065,12 +3065,13 @@ window.KI = (function () {
 /* ==========================================================================
    A.5.1 Magnetische Flussdichte: Wiederholung Magnetfeld aus Klasse 10 (Kast, Neubau 2026-11-24)
    Kast 2026-11-24 zur ersten Fassung: „Das ist ja brutal lieblos!!!! … Darstellungen, knifflige Probleme, kunterbunt, abwechslungsreich!!“
+   Kast 2026-11-25 zur zweiten Fassung: „so banal ... 12. Klasse!“ und „nahe an den ursprünglichen Aufgaben bleiben“.
+   Daher: Lückentext des alten Blatts als Kern, dazu nur die anspruchsvollen Übungen der zweiten Fassung
+   (Sicherungen in _alt\A.5.1_inhalt_Sicherung_2026-11-24.js und _2026-11-25.js).
    Modi:
-     wischen   Stimmt's? Grundwissen (Lückentext des alten Blatts) und typische Fehlvorstellungen
-     paare     Stufe 1 Leiter, Spule, Stabmagnet: Umlaufsinn und Pole; Stufe 2 Trios Feldbild, Anordnung, Merkmal
-     kompass   Kompassnadeln im Feld einstellen (Stabmagnet, Hufeisen, Leiter, Spule, zwei Magnete, Erde), Lösung mit berechneten Feldlinien
-     feldbild  Welches Feldlinienbild stimmt? Fehlerbilder: Pfeile falsch, Linien schneiden sich, enden im Nichts, Abstände, Spule innen
-     knobeln   Knobeleien: zerbrochener Magnet, Nägel, unbekannter Magnet, zwei Spulen, Ørsted-Versuch, Erde
+     luecken   Lückentext „Magnetisches Feld“ (Text des alten Blatts, leicht umformuliert)
+     kompass   Kompassnadeln einstellen: Spule (auch außen), zwei Stabmagnete
+     knobeln   Knobeleien: zwei Spulen, Ørsted-Versuch (Draht über oder unter der Nadel), Erde mit Inklination
    Feldmodell: Pole als magnetische Ladungen auf den Polflächen (1/r²), gerader Leiter 1/r, Spule innen homogen.
    Farben wie Farbschema: B petrol #00838F, I violett #6A3D9A, Nordpol rot, Südpol grün (Sachfarben).
    Kreuz und Punkt nie in Worten (Kast 2026-11-12).
@@ -3308,117 +3309,37 @@ function waehleOrte(kand, n, abstand = 74) {
 }
 const winkelDiff = (a, b) => { let d = (a - b) % (2 * Math.PI); if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); };
 
-/* ---------- Bildchen für Paare ---------- */
-const huelleKlein = (inhalt, alt) => ({ svg: '<svg viewBox="0 0 160 110" width="160" height="110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + alt + '">' + inhalt + "</svg>", alt });
-const huelleFeld = (inhalt, alt) => ({ svg: '<svg viewBox="0 0 ' + W + " " + H + '" width="160" height="112" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + alt + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + inhalt + "</svg>", alt });
-const punkt = (x, y, r = 7) => leiterSymbol(x, y, 1, r);
-const kreuz = (x, y, r = 7) => leiterSymbol(x, y, -1, r);
-function pfeilspitzeGrad(x, y, winkel, farbe) { return spitze(x, y, winkel * GRAD, farbe, 7, 3.6); }
-function leiterBild(strom) {
-	let s = "";
-	[18, 32, 46].forEach(r => { s += '<circle cx="80" cy="55" r="' + r + '" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>'; });
-	s += strom > 0 ? punkt(80, 55) : kreuz(80, 55);
-	return huelleKlein(s, "gerader Leiter von oben mit Feldlinienkreisen");
-}
-function umlaufBild(gegen) {
-	let s = '<circle cx="80" cy="55" r="34" fill="none" stroke="' + F.B + '" stroke-width="1.6"/>';
-	s += pfeilspitzeGrad(80, 21, gegen ? 180 : 0, F.B) + pfeilspitzeGrad(80, 89, gegen ? 0 : 180, F.B);
-	s += pfeilspitzeGrad(46, 55, gegen ? 90 : -90, F.B) + pfeilspitzeGrad(114, 55, gegen ? -90 : 90, F.B);
-	s += '<circle cx="80" cy="55" r="3" fill="#777"/>';
-	return huelleKlein(s, gegen ? "Feldlinie mit Umlauf gegen den Uhrzeigersinn" : "Feldlinie mit Umlauf im Uhrzeigersinn");
-}
-function spuleBild(oben) {
-	let s = '<rect x="28" y="40" width="104" height="30" fill="#F1F6F7" stroke="#C9D6D9" stroke-width="0.8"/>';
-	for (let k = 0; k < 6; k++) { const x = 36 + k * 17.6; s += (oben > 0 ? punkt(x, 33, 6) : kreuz(x, 33, 6)) + (oben > 0 ? kreuz(x, 77, 6) : punkt(x, 77, 6)); }
-	s += '<line x1="10" y1="55" x2="150" y2="55" stroke="#999" stroke-width="0.8" stroke-dasharray="4 3"/>';
-	return huelleKlein(s, "Spule im Längsschnitt mit Stromrichtungen");
-}
-function magnetMitPfeilen(nachRechts) {
-	let s = "";
-	[[22, 52], [34, 64]].forEach(([h]) => {
-		s += '<path d="M44 55 C44 ' + (55 - h * 1.6) + " 116 " + (55 - h * 1.6) + ' 116 55" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>';
-		s += '<path d="M44 55 C44 ' + (55 + h * 1.6) + " 116 " + (55 + h * 1.6) + ' 116 55" fill="none" stroke="' + F.B + '" stroke-width="1.3"/>';
-		s += pfeilspitzeGrad(80, 55 - h * 1.2, nachRechts ? 0 : 180, F.B) + pfeilspitzeGrad(80, 55 + h * 1.2, nachRechts ? 0 : 180, F.B);
-	});
-	s += '<rect x="44" y="47" width="72" height="16" rx="2" fill="#C7C7C7" stroke="#555" stroke-width="0.9"/>';
-	return huelleKlein(s, "Stabmagnet ohne Polbeschriftung mit Feldlinienrichtung");
-}
-/* Feldbild für die Trios: Körper grau, ohne Polfarben */
-function feldBildKlein(typ, o, alt) {
-	const sz = SZ[typ]({ ...o, grau: true, symbol: false, beschriften: false, windungen: false });
-	return huelleFeld(szeneInhalt(sz, { linien: linien(sz) }), alt);
-}
-const text = t => ({ text: t });
-
 /* ==========================================================================
-   Paare
+   Lückentext (Text des alten Blatts)
    ========================================================================== */
 const BAU = {};
-BAU.paare = (b) => KI.paare(b, {
-	id: "paare",
-	stufen: [
-		{
-			name: "Umlaufsinn und Pole", titel: "Leiter, Spule, Stabmagnet: Umlaufsinn und Pole",
-			auftrag: "Tippen Sie zwei Karten an, die zusammengehören. Die Leiter sind von oben gezeichnet, die Spulen im Längsschnitt.",
-			gruppen: [
-				[leiterBild(1), umlaufBild(true)],
-				[leiterBild(-1), umlaufBild(false)],
-				[spuleBild(1), text("Nordpol rechts")],
-				[spuleBild(-1), text("Nordpol links")],
-				[magnetMitPfeilen(true), text("Nordpol links, Südpol rechts")],
-				[magnetMitPfeilen(false), text("Südpol links, Nordpol rechts")]
-			]
-		},
-		{
-			name: "Feldbilder", titel: "Trios: Feldbild, Anordnung und Merkmal", anzahl: 6,
-			auftrag: "Finden Sie jeweils drei Karten, die zusammengehören: ein Feldlinienbild (Körper grau, Pole nicht gefärbt), die Anordnung und ihr Merkmal. Achten Sie auf die Pfeile.",
-			gruppen: [
-				[feldBildKlein("stab", { nordRechts: false }, "Feldbild eines Stabmagneten"), text("Stabmagnet, Nordpol links"), text("außen inhomogen, an den Polen am stärksten")],
-				[feldBildKlein("spule", { obenPunkt: true }, "Feldbild einer Spule"), text("Spule, Nordpol rechts"), text("innen nahezu homogen")],
-				[feldBildKlein("hufeisen", { nordOben: true }, "Feldbild eines Hufeisenmagneten"), text("Hufeisenmagnet, Nordpol oben"), text("zwischen den Schenkeln nahezu homogen")],
-				[feldBildKlein("zwei", { art: "NN" }, "Feldbild zweier Stabmagnete"), text("zwei Nordpole einander gegenüber"), text("in der Mitte ein feldfreier Punkt")],
-				[feldBildKlein("zwei", { art: "NS" }, "Feldbild zweier Stabmagnete"), text("Nordpol gegenüber Südpol"), text("Feldlinien laufen von Magnet zu Magnet: Anziehung")],
-				[feldBildKlein("leiter", { s: 1 }, "Feldbild eines geraden Leiters"), huelleKlein(punkt(80, 55, 14), "Leiter von oben"), text("konzentrische Kreise, nach außen weiter auseinander")],
-				[feldBildKlein("erde", {}, "Feldbild der Erde"), text("Erde, geographischer Nordpol oben"), text("magnetischer Südpol nahe dem geographischen Nordpol")]
-			]
+BAU.luecken = (b) => {
+	KI.luecken(b, {
+		id: "luecken", titel: "Das magnetische Feld",
+		auftrag: "Ziehen Sie die passenden Wörter in die Lücken (oder Wort antippen, dann Lücke antippen). Einige Wörter bleiben übrig.",
+		text: "Ein Magnet erzeugt im Raum um sich herum ein [dreidimensionales] Magnetfeld. Magnetische [Monopole] gibt es nicht: Nord- und Südpol treten immer [gemeinsam] auf. Magnetfelder können sich [überlagern]; das resultierende Feld ergibt sich durch [vektorielle] Addition.\n" +
+			"Entstehung: Magnetfelder entstehen durch [bewegte] elektrische [Ladungen].\n" +
+			"Feldlinien: Magnetische Feldlinien sind in sich [geschlossen], sie haben weder Anfang noch Ende. Außerhalb des Magneten verlaufen sie vom [Nordpol] zum [Südpol], im Innern umgekehrt. Feldlinien [schneiden] sich nie, denn an jedem Ort hat das Feld nur eine Richtung.\n" +
+			"Stärke: Je [dichter] die Feldlinien liegen, desto stärker ist das Feld. An den [Polen] ist es am stärksten, mit wachsender [Entfernung] vom Magneten nimmt es ab.\n" +
+			"Wirkungen: Magnetfelder durchdringen [nichtmagnetische] Stoffe wie Holz, Glas oder Kunststoff. Ändert sich das Magnetfeld in einer Leiterschleife [zeitlich], so wird in ihr eine Spannung [induziert]. Eine frei bewegliche Kompassnadel [richtet] sich im Feld aus, ihr Nordpol zeigt in Feldrichtung. [Gleichnamige] Pole stoßen sich ab, [ungleichnamige] ziehen sich an.",
+		extra: ["Dipole", "einzeln", "skalare", "ruhende", "offen", "magnetische", "räumlich"]
+	});
+	/* Absätze und fette Stichwörter am Absatzanfang; bei jedem neuen Durchgang baut KI.luecken den Text neu auf */
+	const t = b.querySelector(".lueckentext");
+	if (!t) return;
+	t.style.whiteSpace = "pre-line";
+	const fett = () => {
+		for (const k of [...t.childNodes]) {
+			if (k.nodeType !== 3) continue;
+			const m = k.textContent.match(/^([\s\S]*\n)?(Entstehung|Feldlinien|Stärke|Wirkungen):([\s\S]*)$/);
+			if (!m) continue;
+			const st = document.createElement("b"); st.textContent = m[2] + ":";
+			k.replaceWith(document.createTextNode(m[1] || ""), st, document.createTextNode(m[3]));
 		}
-	]
-});
-
-/* ==========================================================================
-   Stimmt's?
-   ========================================================================== */
-BAU.wischen = (b) => KI.wischen(b, {
-	id: "wischen", titel: "Stimmt's? Das Magnetfeld",
-	auftrag: "Wischen Sie nach rechts, wenn die Aussage stimmt, nach links, wenn nicht. Oder tippen Sie auf die Knöpfe.",
-	karten: [
-		{ t: "Magnetische Feldlinien sind in sich geschlossen; sie haben weder Anfang noch Ende.", ja: true, erkl: "" },
-		{ t: "Außerhalb eines Magneten verlaufen die Feldlinien vom Südpol zum Nordpol.", ja: false, erkl: "Außerhalb verlaufen sie vom Nordpol zum Südpol, innen vom Südpol zum Nordpol." },
-		{ t: "Im Innern eines Stabmagneten verlaufen die Feldlinien vom Südpol zum Nordpol.", ja: true, erkl: "" },
-		{ t: "Zerbricht man einen Stabmagneten in der Mitte, erhält man einen einzelnen Nordpol und einen einzelnen Südpol.", ja: false, erkl: "Jedes Bruchstück hat wieder einen Nord- und einen Südpol: Magnetische Monopole gibt es nicht." },
-		{ t: "Magnetfelder entstehen durch bewegte elektrische Ladungen.", ja: true, erkl: "" },
-		{ t: "Auch ruhende elektrische Ladungen sind von einem Magnetfeld umgeben.", ja: false, erkl: "Ruhende Ladungen erzeugen nur ein elektrisches Feld. Ein Magnetfeld entsteht erst, wenn sich die Ladungen bewegen." },
-		{ t: "Wo die Feldlinien dicht beieinander liegen, ist das Magnetfeld stark.", ja: true, erkl: "" },
-		{ t: "Zwischen den Schenkeln eines Hufeisenmagneten ist das Feld nahezu homogen.", ja: true, erkl: "" },
-		{ t: "Magnetische Feldlinien können sich schneiden.", ja: false, erkl: "An jedem Ort hat das Feld nur eine Richtung. Feldlinien schneiden sich deshalb nie." },
-		{ t: "Holz, Glas und Kunststoff schirmen ein Magnetfeld ab.", ja: false, erkl: "Nichtmagnetische Stoffe durchdringt das Magnetfeld nahezu ungestört." },
-		{ t: "Ein Magnet zieht Kupfer und Aluminium an.", ja: false, erkl: "Angezogen werden nur ferromagnetische Stoffe wie Eisen, Nickel und Cobalt." },
-		{ t: "Ein Eisennagel, der am Magneten hängt, wird selbst zum Magneten und kann einen zweiten Nagel halten.", ja: true, erkl: "" },
-		{ t: "Eine frei bewegliche Kompassnadel stellt sich parallel zu den Feldlinien; ihr Nordpol zeigt in Feldrichtung.", ja: true, erkl: "" },
-		{ t: "Eisenfeilspäne zeigen den Verlauf der Feldlinien, aber nicht ihre Richtung.", ja: true, erkl: "" },
-		{ t: "Ein Magnetfeld weist man mit einem Elektroskop nach.", ja: false, erkl: "Ein Elektroskop zeigt Ladung an. Magnetfelder weist man mit einer Kompassnadel oder mit Eisenfeilspänen nach." },
-		{ t: "Am geographischen Nordpol der Erde liegt ein magnetischer Nordpol.", ja: false, erkl: "Dort liegt ein magnetischer Südpol: Er zieht den Nordpol der Kompassnadel an." },
-		{ t: "Überlagern sich zwei Magnetfelder, addiert man die beiden Felder wie Pfeile.", ja: true, erkl: "Felder überlagern sich vektoriell: Richtung und Betrag zählen." },
-		{ t: "Gleichnamige Pole ziehen sich an.", ja: false, erkl: "Gleichnamige Pole stoßen sich ab, ungleichnamige ziehen sich an." },
-		{ t: "Das Magnetfeld im Innern einer langen Spule ist nahezu homogen.", ja: true, erkl: "" },
-		{ t: "Kehrt man die Stromrichtung in einer Spule um, vertauschen Nord- und Südpol.", ja: true, erkl: "" },
-		{ t: "Die Feldlinien eines geraden stromdurchflossenen Leiters sind Kreise um den Leiter.", ja: true, erkl: "" },
-		{ t: "Je weiter man sich von einem geraden stromdurchflossenen Leiter entfernt, desto stärker wird sein Magnetfeld.", ja: false, erkl: "Mit wachsendem Abstand liegen die Feldlinien weiter auseinander: Das Feld wird schwächer." },
-		{ t: "Fließt in zwei parallelen Leitern Strom in dieselbe Richtung, ist das Feld zwischen den Leitern besonders stark.", ja: false, erkl: "Zwischen den Leitern zeigen die beiden Felder in entgegengesetzte Richtungen und schwächen sich ab. Die Leiter ziehen sich an." },
-		{ t: "Ein Eisenkern verstärkt das Magnetfeld einer Spule.", ja: true, erkl: "" },
-		{ t: "An den Polen eines Stabmagneten ist das Magnetfeld am schwächsten.", ja: false, erkl: "An den Polen liegen die Feldlinien am dichtesten: Dort ist das Feld am stärksten." }
-	]
-});
+	};
+	fett();
+	new MutationObserver(() => { if (t.querySelector("b") === null && /Entstehung:/.test(t.textContent)) fett(); }).observe(t, { childList: true });
+};
 
 /* ==========================================================================
    Gemeinsames Gerüst der eigenen Übungen: Kopf mit Kreisen, Auftrag, Ergebniskarte mit Bild, Prüfen, Rückmeldung
@@ -3457,18 +3378,10 @@ function polKnopf(buehne, x, y, wert, gesperrt, farbeRand, setze) {
    Kompassnadeln einstellen
    ========================================================================== */
 const KOMPASS = [
-	{ name: "Stabmagnet", text: "Stabmagnet", erzeuge: () => ({ typ: "stab", o: { nordRechts: Math.random() < 0.5 } }),
-		erkl: () => "Der Nordpol der Nadel zeigt in Feldrichtung, also tangential zur Feldlinie. Außen verlaufen die Feldlinien vom Nord- zum Südpol: Auf der Achse vor dem Südpol zeigt die Nadel deshalb zum Magneten hin, über der Mitte parallel zum Magneten." },
-	{ name: "Hufeisen", text: "Hufeisenmagnet", erzeuge: () => ({ typ: "hufeisen", o: { nordOben: Math.random() < 0.5 } }),
-		erkl: () => "Zwischen den Schenkeln verlaufen die Feldlinien nahezu parallel vom Nord- zum Südpol (homogenes Feld). Außen biegen sie um die Schenkel herum zum Südpol." },
-	{ name: "Leiter", text: "Gerader Leiter, von oben gesehen", erzeuge: () => ({ typ: "leiter", o: { s: Math.random() < 0.5 ? 1 : -1 } }),
-		erkl: () => "Rechte-Faust-Regel: Der Daumen zeigt in die technische Stromrichtung, die gekrümmten Finger zeigen den Umlaufsinn der kreisförmigen Feldlinien. Jede Nadel steht tangential an ihrem Kreis." },
 	{ name: "Spule", text: "Spule im Längsschnitt", erzeuge: () => ({ typ: "spule", o: { obenPunkt: Math.random() < 0.5 } }),
 		erkl: () => "Rechte-Faust-Regel an jedem Draht, dann überlagern: Innen zeigt das Feld vom Süd- zum Nordpol und ist nahezu homogen. Außen läuft es zurück: Über und unter der Spule zeigen die Nadeln entgegengesetzt zur Nadel im Innern." },
 	{ name: "Zwei Magnete", text: "Zwei Stabmagnete", erzeuge: () => ({ typ: "zwei", o: { art: KI.mischen(["NN", "SS", "NS", "SN"])[0] } }),
-		erkl: a => a.o.art[0] === a.o.art[1] ? "Gleichnamige Pole: Die Feldlinien weichen einander aus. In der Mitte zwischen den Magneten heben sich die Felder auf (feldfreier Punkt), darüber und darunter zeigen sie vom Spalt weg bzw. zu ihm hin." : "Ungleichnamige Pole: Die Feldlinien laufen vom Nordpol des einen zum Südpol des anderen Magneten. Im Spalt ist das Feld stark und nahezu homogen." },
-	{ name: "Erde", text: "Die Erde", erzeuge: () => ({ typ: "erde", o: {} }),
-		erkl: () => "Im geographischen Norden liegt ein magnetischer Südpol. Außen verlaufen die Feldlinien deshalb von Süden nach Norden; an den Polen stehen sie steil zur Erdoberfläche. Frei drehbare Nadeln zeigen das (Inklination)." }
+		erkl: a => a.o.art[0] === a.o.art[1] ? "Gleichnamige Pole: Die Feldlinien weichen einander aus. In der Mitte zwischen den Magneten heben sich die Felder auf (feldfreier Punkt), darüber und darunter zeigen sie vom Spalt weg bzw. zu ihm hin." : "Ungleichnamige Pole: Die Feldlinien laufen vom Nordpol des einen zum Südpol des anderen Magneten. Im Spalt ist das Feld stark und nahezu homogen." }
 ];
 function kompassAufgabe(st) {
 	const a = KOMPASS[st].erzeuge();
@@ -3582,201 +3495,15 @@ BAU.kompass = function (b) {
 };
 
 /* ==========================================================================
-   Welches Feldlinienbild stimmt?
-   ========================================================================== */
-const FB_ANORDNUNG = {
-	stab: { name: "Stabmagnet", fehler: ["pfeile", "offen", "schneiden"], o: () => ({ nordRechts: Math.random() < 0.5 }) },
-	hufeisen: { name: "Hufeisenmagnet", fehler: ["pfeile", "offen", "schneiden"], o: () => ({ nordOben: Math.random() < 0.5 }) },
-	zweiGleich: { typ: "zwei", name: "Zwei Stabmagnete, gleichnamige Pole gegenüber", fehler: ["verbinden", "pfeile", "offen"], o: () => ({ art: Math.random() < 0.5 ? "NN" : "SS" }) },
-	zweiUngleich: { typ: "zwei", name: "Zwei Stabmagnete, ungleichnamige Pole gegenüber", fehler: ["abweisen", "pfeile", "offen"], o: () => ({ art: Math.random() < 0.5 ? "NS" : "SN" }) },
-	leiter: { name: "Gerader Leiter, von oben gesehen", fehler: ["pfeile", "dichte", "schneiden"], o: () => ({ s: Math.random() < 0.5 ? 1 : -1 }) },
-	spule: { name: "Spule im Längsschnitt", fehler: ["innen", "pfeile", "offen"], o: () => ({ obenPunkt: Math.random() < 0.5 }) },
-	erde: { name: "Die Erde", fehler: ["pfeile", "offen", "schneiden"], o: () => ({}) }
-};
-const FB_TEXT = {
-	ok: "Richtig.",
-	pfeile: { std: "Pfeile falsch: Außen verlaufen die Feldlinien vom Nord- zum Südpol.", leiter: "Umlaufsinn falsch: Rechte-Faust-Regel.", erde: "Pfeile falsch: Im geographischen Norden liegt ein magnetischer Südpol.", spule: "Pfeile falsch: Rechte-Faust-Regel an den Drähten." },
-	offen: "Feldlinien enden im Nichts: Magnetische Feldlinien sind geschlossen.",
-	schneiden: "Feldlinien schneiden sich: An jedem Ort hat das Feld nur eine Richtung.",
-	dichte: "Abstände falsch: Nach außen wird das Feld schwächer, die Kreise liegen weiter auseinander.",
-	innen: "Innen falsch: In der Spule verlaufen die Feldlinien vom Süd- zum Nordpol.",
-	verbinden: "Falsch: Gleichnamige Pole sind nicht durch Feldlinien verbunden, sie stoßen sich ab.",
-	abweisen: "Falsch: Ungleichnamige Pole sind durch Feldlinien verbunden, sie ziehen sich an."
-};
-function fbText(f, schluessel) { const t = FB_TEXT[f]; return typeof t === "string" ? t : (t[schluessel] || t.std); }
-function fbVariante(a, f) {
-	const def = FB_ANORDNUNG[a.art], typ = def.typ || a.art;
-	let o = a.o;
-	if (f === "verbinden") o = { art: o.art[0] === "N" ? "NS" : "SN" };
-	if (f === "abweisen") o = { art: o.art[0] === "N" ? "NN" : "SS" };
-	const sz = SZ[typ](o), zeig = SZ[typ](a.o);
-	let ls = linien(sz);
-	if (f === "verbinden" || f === "abweisen") { /* Linien der falschen Anordnung, aber die Magnete der gestellten */ }
-	if (f === "pfeile") ls = ls.map(L => ({ ...L, pts: L.pts.slice().reverse() }));
-	if (f === "innen") ls = ls.map(L => L.innen ? { ...L, pts: L.pts.slice().reverse() } : L);
-	if (f === "offen") {   /* aus jeder zweiten Linie, deren Mitte sichtbar ist, ein Mittelstück herausschneiden: Linien enden im Nichts */
-		let n = 0; const neu = [];
-		for (const L of ls) {
-			const p = L.pts, m = p[Math.floor(p.length / 2)];
-			const sichtbar = !L.kreis && !L.innen && p.length > 30 && m[0] > 30 && m[0] < W - 30 && m[1] > 20 && m[1] < H - 20;
-			if (sichtbar && n++ % 2 === 0) neu.push({ ...L, pts: p.slice(0, Math.round(p.length * 0.38)) }, { ...L, pts: p.slice(Math.round(p.length * 0.66)) });
-			else neu.push(L);
-		}
-		ls = neu;
-	}
-	if (f === "dichte") ls = ls.filter(L => !L.kreis).concat([34, 92, 122, 140].map(r => ({ pts: kreisLinie(200, 140, r, a.o.s > 0), kreis: true })));
-	if (f === "schneiden") {
-		if (typ === "leiter") ls = ls.concat([58, 96].map(r => ({ pts: kreisLinie(232, 128, r, a.o.s > 0), kreis: true })));
-		else {
-			const g = SZ[typ](a.o);
-			g.ladungen = g.ladungen.map(q => q.q > 0 ? { ...q, y: q.y + (typ === "erde" ? 0 : 0), x: q.x + (typ === "erde" ? 26 : 0) } : q);
-			if (typ !== "erde") g.ladungen = g.ladungen.map(q => q.q > 0 ? { ...q, y: q.y + 40 } : q);
-			const extra = linien(g).filter((L, i) => i % 3 === 1 && !L.innen).slice(0, 3);
-			ls = ls.concat(extra);
-		}
-	}
-	return szeneInhalt(zeig, { linien: ls });
-}
-function fbAufgabe(art) {
-	const def = FB_ANORDNUNG[art];
-	const a = { art, o: def.o() };
-	const falsch = KI.mischen(def.fehler).slice(0, 2);
-	a.bilder = KI.mischen(["ok"].concat(falsch));
-	return a;
-}
-BAU.feldbild = function (b) {
-	const g = geruest(b); g.chips.hidden = true;
-	const SERIE = KI.serie("feldbild"), ANZ = 6;
-	const runde = KI.runde("feldbild", 0);
-	const stand = runde.stand || { nr: 0, ergebnisse: [], verlauf: [], wahl: null, reihe: KI.mischen(Object.keys(FB_ANORDNUNG)).slice(0, ANZ) };
-	g.pruef.hidden = true;
-	g.hinweis.innerHTML = KI.rundenHinweis(runde, "Sechs Anordnungen, jeweils ein Versuch.");
-	const heft = KI.heftleiste(b, async () => !stand.verlauf.length ? KI.blattBild([{ art: "titel", t: "Richtige Feldlinienbilder" }, { art: "text", teile: [{ t: "Noch kein Bild gewählt." }] }]) : KI.blattBild([{ art: "titel", t: "Richtige Feldlinienbilder" + KI.durchgangTitel(runde) },
-		{ art: "bild", quelle: await svgCanvas(gitter(stand.verlauf.map(v => ({ titel: FB_ANORDNUNG[v.a.art].name.replace(", von oben gesehen", "") + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: fbVariante(v.a, "ok") }))), 1640) },
-		{ art: "kasten", rand: F.B, hg: "#fff", groesse: 22, teile: [{ t: "Feldlinien schneiden sich nie, sie sind geschlossen, außen laufen sie vom Nord- zum Südpol, innen vom Süd- zum Nordpol. Um einen geraden Leiter liegen die Kreise nach außen immer weiter auseinander." }] }]), "Feldlinienbilder");
-	heft.hidden = true;
-	let a;
-	function zeigeStatus() { g.status.innerHTML = KI.kreise(stand.ergebnisse, ANZ, stand.nr); }
-	function situation() {
-		if (stand.nr >= ANZ) return fertig();
-		a = SERIE.aufgabe(0, stand.nr, () => fbAufgabe(stand.reihe[stand.nr]));
-		const def = FB_ANORDNUNG[a.art];
-		g.titel.textContent = (stand.nr + 1) + " von " + ANZ + ": " + def.name;
-		g.auftrag.innerHTML = "Nur eines der drei Feldlinienbilder ist richtig. Tippen Sie es an. Achten Sie auf Pfeile, Verlauf und Abstände der Feldlinien.";
-		g.weiterK.hidden = stand.wahl === null; g.rueck.innerHTML = "";
-		zeichne(); zeigeStatus();
-		if (stand.wahl !== null) g.rueck.innerHTML = rueckHtml();
-	}
-	function rueckHtml() {
-		const ok = a.bilder[stand.wahl] === "ok";
-		return '<p class="rueck ' + (ok ? "gut" : "schlecht") + '">' + (ok ? "Richtig!" : "Leider nicht. Das richtige Bild ist grün umrandet.") + "</p>";
-	}
-	function zeichne() {
-		const raster = KI.el("div", ""); raster.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.6rem";
-		const def = FB_ANORDNUNG[a.art], schluessel = def.typ ? "std" : a.art;
-		a.bilder.forEach((f, i) => {
-			const beantwortet = stand.wahl !== null, ok = f === "ok";
-			const kn = KI.el("button", "", flexibel(huelleSzene('<rect width="' + W + '" height="' + H + '" fill="#fff"/>' + fbVariante(a, f), W)) +
-				(beantwortet ? '<div style="font-size:0.88rem;text-align:left;padding:0.25rem 0.2rem 0;color:' + (ok ? F.gut : "#444") + '">' + (ok ? "<b>Richtig.</b>" : fbText(f, schluessel)) + "</div>" : ""));
-			kn.style.cssText = "padding:4px;background:#fff;border:2px solid #ccc;border-radius:2mm;cursor:pointer;font:inherit";
-			if (beantwortet) {
-				if (ok) { kn.style.borderColor = "var(--gut)"; kn.style.borderWidth = "3px"; }
-				else if (i === stand.wahl) { kn.style.borderColor = "var(--falsch)"; kn.style.background = "var(--falsch-hg)"; }
-				kn.style.cursor = "default";
-			}
-			kn.addEventListener("click", () => {
-				if (stand.wahl !== null) return;
-				stand.wahl = i; stand.ergebnisse.push(ok); stand.verlauf.push({ a, ok });
-				runde.merke(stand);
-				g.rueck.innerHTML = rueckHtml(); if (ok) KI.funken(g.rueck, 8);
-				g.weiterK.hidden = false; zeichne(); zeigeStatus();
-			});
-			raster.appendChild(kn);
-		});
-		g.buehne.style.maxWidth = "820px";
-		g.buehne.innerHTML = ""; g.buehne.appendChild(raster);
-	}
-	g.weiterK.addEventListener("click", () => { stand.nr++; stand.wahl = null; runde.merke(stand); situation(); });
-	function fertig() {
-		const r = stand.ergebnisse.filter(Boolean).length;
-		const s = runde.sterne(r >= 5 ? 3 : r === 4 ? 2 : r === 3 ? 1 : 0);
-		SERIE.loesche(0);
-		g.titel.textContent = "Geschafft"; g.auftrag.innerHTML = "Hier sind die richtigen Feldlinienbilder. Kopieren Sie das Ergebnisbild ins Heft."; g.weiterK.hidden = true; g.hinweis.innerHTML = "";
-		g.buehne.innerHTML = flexibel(gitter(stand.verlauf.map(v => ({ titel: FB_ANORDNUNG[v.a.art].name.replace(", von oben gesehen", "") + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: fbVariante(v.a, "ok") }))));
-		g.rueck.innerHTML = '<p class="rueck ' + (s ? "gut" : "schlecht") + '">' + r + " von " + ANZ + " richtig erkannt. " + KI.sterneHtml(s) + KI.durchgangHtml(runde) + "</p>";
-		const l = KI.el("div", "leiste"); l.style.justifyContent = "center";
-		l.appendChild(KI.symbolKnopf("zurueck", "Neuer Durchgang", () => location.reload()));
-		g.rueck.appendChild(l);
-		KI.bestwert("feldbild", s); if (s) KI.funken(g.rueck, 18);
-		zeigeStatus(); heft.hidden = false; b.appendChild(heft);
-	}
-	situation();
-};
-
-/* ==========================================================================
    Knobeleien
    ========================================================================== */
 const gegen = p => p === "N" ? "S" : "N";
 function polFarbe(p) { return p === "N" ? F.N : F.Sd; }
-/* Nagel senkrecht: Kopf oben bei y0, Spitze unten bei y1; Pole farbig, wenn gegeben */
-function nagel(x, y0, y1, pole) {
-	const m = (y0 + y1) / 2;
-	let s = "";
-	if (pole) {
-		s += '<rect x="' + (x - 4) + '" y="' + (y0 + 7) + '" width="8" height="' + (m - y0 - 7) + '" fill="' + polFarbe(pole[0]) + '"/>';
-		s += '<polygon points="' + (x - 4) + "," + m + " " + (x + 4) + "," + m + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="' + polFarbe(pole[1]) + '"/>';
-		s += '<rect x="' + (x - 13) + '" y="' + y0 + '" width="26" height="7" rx="1.5" fill="' + polFarbe(pole[0]) + '"/>';
-	} else {
-		s += '<polygon points="' + (x - 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="' + F.eisen + '"/>';
-		s += '<rect x="' + (x - 13) + '" y="' + y0 + '" width="26" height="7" rx="1.5" fill="' + F.eisen + '"/>';
-	}
-	return s + '<polygon points="' + (x - 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y0 + 7) + " " + (x + 4) + "," + (y1 - 9) + " " + x + "," + y1 + " " + (x - 4) + "," + (y1 - 9) + '" fill="none" stroke="#333" stroke-width="0.9"/>';
-}
 function kompassRose(x, y, r) {
 	return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#FAFAF5" stroke="#666" stroke-width="2"/>' +
 		[["N", 0, -1], ["O", 1, 0], ["S", 0, 1], ["W", -1, 0]].map(([t, dx, dy]) => '<text x="' + fx(x + dx * (r - 12)) + '" y="' + fx(y + dy * (r - 12) + 5) + '" font-size="14" font-weight="bold" text-anchor="middle" fill="#555">' + t + "</text>").join("");
 }
 const KNOBEL = [
-	{
-		name: "Zerbrochen", titel: "Der zerbrochene Magnet",
-		erzeuge: () => ({ nordLinks: Math.random() < 0.5 }),
-		auftrag: () => "Der Stabmagnet zerbricht an den gestrichelten Stellen in drei Stücke. Tragen Sie an jedem Ende der Bruchstücke den Pol ein (Feld antippen: N, S, leer).",
-		felder: v => { const p = v.nordLinks ? ["N", "S"] : ["S", "N"]; return [[57, 200, p[0]], [115, 200, p[1]], [172, 200, p[0]], [230, 200, p[1]], [287, 200, p[0]], [345, 200, p[1]]]; },
-		bild: (v, geloest) => {
-			let s = S.magnet(200, 52, 240, 32, v.nordLinks);
-			s += '<line x1="160" y1="28" x2="160" y2="76" stroke="#111" stroke-width="2" stroke-dasharray="5 3"/><line x1="240" y1="28" x2="240" y2="76" stroke="#111" stroke-width="2" stroke-dasharray="5 3"/>';
-			s += S.pfeil(200, 86, 200, 126, "#555", 2.5);
-			[87.5, 202.5, 317.5].forEach(cx => { s += geloest ? S.magnet(cx, 200, 100, 32, v.nordLinks, false, false) : '<rect x="' + (cx - 50) + '" y="184" width="100" height="32" fill="#B9C0C6" stroke="#222" stroke-width="1.2"/>'; });
-			return s;
-		},
-		erkl: () => "Jedes Bruchstück ist wieder ein vollständiger Magnet mit Nord- und Südpol, in derselben Ausrichtung wie vorher. An jeder Bruchstelle liegen sich deshalb ein Nord- und ein Südpol gegenüber: Die Stücke ziehen sich an. Magnetische Monopole gibt es nicht."
-	},
-	{
-		name: "Nägel", titel: "Zwei Nägel am Magneten",
-		erzeuge: () => ({ unten: Math.random() < 0.5 ? "N" : "S" }),
-		auftrag: () => "Ein Eisennagel hängt am Magneten, ein zweiter Nagel hängt am ersten. Tragen Sie an beiden Enden jedes Nagels den Pol ein.",
-		felder: v => [[250, 132, gegen(v.unten)], [250, 178, v.unten], [150, 207, gegen(v.unten)], [150, 254, v.unten]],
-		bild: (v, geloest) => {
-			let s = S.magnet(200, 64, 98, 46, v.unten === "S", true);
-			s += nagel(200, 114, 188, geloest ? [gegen(v.unten), v.unten] : null) + nagel(200, 191, 266, geloest ? [gegen(v.unten), v.unten] : null);
-			s += '<line x1="231" y1="132" x2="208" y2="122" stroke="#999"/><line x1="231" y1="178" x2="206" y2="180" stroke="#999"/><line x1="169" y1="207" x2="190" y2="198" stroke="#999"/><line x1="169" y1="254" x2="196" y2="258" stroke="#999"/>';
-			return s;
-		},
-		erkl: v => "Im Feld des Magneten wird der Nagel selbst magnetisch. Ungleichnamige Pole ziehen sich an: Das Nagelende am " + (v.unten === "N" ? "Nordpol wird zum Südpol" : "Südpol wird zum Nordpol") + ", die Spitze zum " + (v.unten === "N" ? "Nordpol" : "Südpol") + ". Genauso magnetisiert der erste Nagel den zweiten."
-	},
-	{
-		name: "Unbekannt", titel: "Welcher Pol ist wo?",
-		erzeuge: () => ({ nordRechts: Math.random() < 0.5 }),
-		auftrag: () => "Die Pole des grauen Stabmagneten sind nicht beschriftet. Zwei Kompassnadeln zeigen, wie das Feld verläuft. Tragen Sie die Pole des Magneten ein.",
-		felder: v => [[155, 180, v.nordRechts ? "S" : "N"], [245, 180, v.nordRechts ? "N" : "S"]],
-		bild: (v, geloest) => {
-			const sz = neueSzene(); stabTeil(sz, 200, 180, 180, 36, v.nordRechts, { grau: !geloest, saat: false });
-			let s = szeneInhalt(sz);
-			s += nadel(50, 180, feldWinkel(sz, 50, 180), { r: 22 }) + nadel(200, 92, feldWinkel(sz, 200, 92), { r: 22 });
-			return s;
-		},
-		erkl: v => "Der Nordpol einer Kompassnadel zeigt in Feldrichtung. Außen verlaufen die Feldlinien vom Nord- zum Südpol: Links auf der Achse zeigt die Nadel " + (v.nordRechts ? "zum Magneten hin, dort liegt also der Südpol" : "vom Magneten weg, dort liegt also der Nordpol") + ". Die Nadel über der Mitte zeigt parallel zum Magneten zum Südpol."
-	},
 	{
 		name: "Zwei Spulen", titel: "Zwei Spulen nebeneinander",
 		erzeuge: () => ({ a: Math.random() < 0.5, b: Math.random() < 0.5 }),
@@ -3833,10 +3560,10 @@ BAU.knobeln = function (b) {
 	const SERIE = KI.serie("knobeln"), ANZ = KNOBEL.length;
 	const runde = KI.runde("knobeln", 0);
 	const stand = runde.stand || { nr: 0, ergebnisse: [], verlauf: [], eintrag: null, wahl: null, geprueft: false };
-	g.hinweis.innerHTML = KI.rundenHinweis(runde, "Sechs Knobeleien, jeweils ein Versuch.");
+	g.hinweis.innerHTML = KI.rundenHinweis(runde, "Drei Knobeleien, jeweils ein Versuch.");
 	const heft = KI.heftleiste(b, async () => !stand.verlauf.length ? KI.blattBild([{ art: "titel", t: "Knobeleien zum Magnetfeld" }, { art: "text", teile: [{ t: "Noch keine Knobelei geprüft." }] }]) : KI.blattBild([{ art: "titel", t: "Knobeleien zum Magnetfeld" + KI.durchgangTitel(runde) },
 		{ art: "bild", quelle: await svgCanvas(gitter(stand.verlauf.map(v => ({ titel: KNOBEL[v.k].titel + (v.ok ? " ✓" : " ✗"), farbe: v.ok ? F.gut : F.falsch, inhalt: loesungsBild(v.k, v.v) }))), 1640) },
-		{ art: "kasten", rand: F.B, hg: "#fff", groesse: 20, teile: [{ t: "Jedes Bruchstück eines Magneten hat wieder zwei Pole. Eisen wird im Magnetfeld selbst magnetisch. Der Nordpol einer Kompassnadel zeigt in Feldrichtung. Pole einer Spule und Feld um einen Draht: Rechte-Faust-Regel. Im geographischen Norden liegt ein magnetischer Südpol." }] }]), "Knobeleien_Magnetfeld");
+		{ art: "kasten", rand: F.B, hg: "#fff", groesse: 20, teile: [{ t: "Pole einer Spule und Feld um einen Draht: Rechte-Faust-Regel. Über und unter einem Draht zeigt sein Feld in entgegengesetzte Richtungen. Der Nordpol einer Kompassnadel zeigt in Feldrichtung. Im geographischen Norden liegt ein magnetischer Südpol, die Feldlinien treten dort steil in die Erde ein." }] }]), "Knobeleien_Magnetfeld");
 	heft.hidden = true;
 	let k, v, felder, wahl, eintrag;
 	function loesungsBild(ki, vv) {
@@ -3903,7 +3630,7 @@ BAU.knobeln = function (b) {
 	g.weiterK.addEventListener("click", () => { stand.nr++; stand.eintrag = null; stand.geprueft = false; runde.merke(stand); situation(); });
 	function fertig() {
 		const r = stand.ergebnisse.filter(Boolean).length;
-		const s = runde.sterne(r >= 5 ? 3 : r === 4 ? 2 : r === 3 ? 1 : 0);
+		const s = runde.sterne(r);
 		SERIE.loesche(0);
 		g.titel.textContent = "Geschafft"; g.auftrag.innerHTML = "Hier sind alle Lösungen. Kopieren Sie das Ergebnisbild ins Heft."; g.pruef.hidden = true; g.weiterK.hidden = true; g.hinweis.innerHTML = "";
 		g.buehne.style.maxWidth = "820px"; g.extra.innerHTML = "";
@@ -3920,15 +3647,12 @@ BAU.knobeln = function (b) {
 
 /* ---------- Seite ---------- */
 const ICON_KOMPASS = '<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="12,3.5 15,12 9,12" fill="#D32F2F"/><polygon points="12,20.5 15,12 9,12" fill="#2E7D32"/>';
-const ICON_FELDBILD = '<rect x="9" y="9" width="6" height="6" fill="currentColor"/><path d="M15 12 C22 4 2 4 9 12 M15 12 C22 20 2 20 9 12" fill="none" stroke="currentColor" stroke-width="1.8"/>';
 const ICON_KNOBELN = '<path d="M8 8a4 4 0 1 1 6 3.5c-1.4.8-2 1.6-2 3V16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="20" r="1.6" fill="currentColor"/>';
 KI.seite({
 	klasse: 12, kapitel: "A.5.1 Magnetische Flussdichte",
 	modi: [
-		{ id: "wischen", name: "Stimmt's?", titel: "Stimmt's? Das Magnetfeld", bau: BAU.wischen },
-		{ id: "paare", name: "Paare", titel: "Paare und Trios: Darstellungen des Magnetfelds", bau: BAU.paare },
+		{ id: "luecken", name: "Lückentext", titel: "Lückentext: Das magnetische Feld", bau: BAU.luecken },
 		{ id: "kompass", name: "Kompass", titel: "Kompassnadeln einstellen", bau: BAU.kompass, icon: ICON_KOMPASS },
-		{ id: "feldbild", name: "Feldbilder", titel: "Welches Feldlinienbild stimmt?", bau: BAU.feldbild, icon: ICON_FELDBILD },
 		{ id: "knobeln", name: "Knobeleien", titel: "Knobeleien zum Magnetfeld", bau: BAU.knobeln, icon: ICON_KNOBELN }
 	]
 });
