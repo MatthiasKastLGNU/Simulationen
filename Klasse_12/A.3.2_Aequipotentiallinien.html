@@ -965,7 +965,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 	<div class="tcb blau" data-modus="versuch">
 		<div class="tcb-title">Feuchtes Kopierpapier A3 mit Elektroden (Draufsicht)</div>
 		<div class="tcb-body">
-			<div class="leinwand" id="papier-leinwand"><canvas id="papier" class="sim" style="cursor: crosshair"></canvas><div class="rechnet" id="rechnet">rechnet …</div></div>
+			<div class="leinwand" id="papier-leinwand"><canvas id="papier" class="sim" style="cursor: grab"></canvas><div class="rechnet" id="rechnet">rechnet …</div></div>
 			<div class="gruppen">
 				<div class="gr"><div class="gt">Elektroden</div><div class="kn" id="anordnung">
 					<button data-wert="platten" class="aktiv" title="Zwei Metallstangen (Modell des Plattenkondensators)" aria-label="Zwei Stangen"><svg width="34" height="22" viewBox="0 0 34 22"><rect x="5" y="2" width="4" height="18" rx="1" fill="#3050E0"/><rect x="25" y="2" width="4" height="18" rx="1" fill="#E03030"/></svg></button>
@@ -988,7 +988,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 					<button data-wert="gross" title="Rechnung mit sehr großem Papier (fast unbegrenzt)" aria-label="ohne Papierrand"><svg width="30" height="22" viewBox="0 0 30 22"><rect x="2" y="2" width="26" height="18" fill="#FBF8EE" stroke="#555" stroke-width="1.2" stroke-dasharray="2 2"/><rect x="8" y="6" width="2.5" height="10" fill="#3050E0"/><rect x="19.5" y="6" width="2.5" height="10" fill="#E03030"/><path d="M1 11 h-1 M29 11 h1" stroke="#555"/></svg></button>
 				</div></div>
 			</div>
-			<p class="legende">Das Voltmeter misst die Spannung zwischen Sonde (rotes Kabel) und Minusstange (schwarzes Kabel, Nullniveau). Ziehen Sie die Sonde oder tippen Sie auf das Papier.</p>
+			<p class="legende">Das Voltmeter misst die Spannung zwischen Sonde (rotes Kabel) und Minusstange (schwarzes Kabel, Nullniveau). Fassen Sie die Sonde am Griff und ziehen Sie sie über das Papier; gemessen wird an der Spitze.</p>
 		</div>
 	</div>
 
@@ -1067,7 +1067,7 @@ html.kd .wertkarte.betont { max-width: 24rem; }
 const LABOR = (() => {
 	const B = 42, H = 29.7, OBEN = 4.6, UNTEN = 6.0, RAND = 0.7;
 	const MX = 21, MY = 14.85;                         /* Papiermitte */
-	const RING = { R: 12, ri: 2 }, DIPOL = { a: 13, b: 29, r: 2 }, STANGE = { minus: 11, plus: 31 };
+	const RING = { R: 12, ri: 1.4 }, DIPOL = { a: 13, b: 29, r: 1.4 }   /* Massestück: Teller 28 mm (Kast 2026-11-25) */, STANGE = { minus: 11, plus: 31 };
 	const FARBE = { plus: "#E03030", minus: "#3050E0", plushell: "#F8D0D0", minushell: "#D0D8F8" };
 	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
 	/* Maßstab aus der Breite; Höhe des Bildes in Pixeln */
@@ -1274,7 +1274,9 @@ const LABOR = (() => {
 		g.fillStyle = gr; g.beginPath(); g.moveTo(px(24), py(MY)); g.lineTo(px(26.5), py(MY - b)); g.lineTo(px(41), py(MY - b)); g.lineTo(px(41), py(MY + b)); g.lineTo(px(26.5), py(MY + b)); g.closePath(); g.fill(); g.restore();
 		g.strokeStyle = "rgba(40,44,50,0.6)"; g.lineWidth = 0.8; g.stroke();
 	}
-	return { B, H, MX, MY, RING, DIPOL, STANGE, layout, verhaeltnis, papier, aufbau, ladung };
+	/* Abstand Zeiger -> Spitze in Pixeln: Zeiger auf dem Griff, beim Finger weiter weg */
+	const griffVersatz = (L, art) => art === "touch" ? Math.max(2.4 * L.s, 44) : Math.max(1.5 * L.s, 20);
+	return { B, H, MX, MY, RING, DIPOL, STANGE, layout, verhaeltnis, papier, aufbau, ladung, griffVersatz };
 })();
 
 const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
@@ -1560,8 +1562,10 @@ function kabel(ctx, x1, y1, x2, y2, farbe, pol) {
 (function () {
 	let zieht = false;
 	const pos = ev => { const r = cP.getBoundingClientRect(); return { x: (ev.clientX - r.left - POX) / PS, y: (ev.clientY - r.top - POY) / PS }; };
-	const setze = p => { versuch.sonde.x = Math.max(0, Math.min(PAPIER.b, p.x)); versuch.sonde.y = Math.max(0, Math.min(PAPIER.h, p.y)); zeichnePapier(); };
-	cP.addEventListener("pointerdown", ev => { const p = pos(ev); if (p.x < -0.5 || p.x > PAPIER.b + 0.5 || p.y < -0.5 || p.y > PAPIER.h + 0.5) return; zieht = true; cP.setPointerCapture(ev.pointerId); setze(p); ev.preventDefault(); });
+	let art = "mouse";
+	const versetzt = p => { const d = LABOR.griffVersatz(LL, art) / PS; return { x: p.x + 0.55 * d, y: p.y - 0.835 * d }; };   /* Spitze rechts oberhalb des Zeigers (Kast 2026-11-25: Zeiger verdeckt sonst die Spitze) */
+	const setze = p => { p = versetzt(p); versuch.sonde.x = Math.max(0, Math.min(PAPIER.b, p.x)); versuch.sonde.y = Math.max(0, Math.min(PAPIER.h, p.y)); zeichnePapier(); };
+	cP.addEventListener("pointerdown", ev => { const p = pos(ev); if (p.x < -0.5 || p.x > PAPIER.b + 0.5 || p.y < -0.5 || p.y > PAPIER.h + 0.5) return; art = ev.pointerType; zieht = true; cP.setPointerCapture(ev.pointerId); setze(p); ev.preventDefault(); });
 	cP.addEventListener("pointermove", ev => { if (zieht) setze(pos(ev)); });
 	cP.addEventListener("pointerup", () => { zieht = false; });
 	cP.style.touchAction = "none";

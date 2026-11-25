@@ -2055,7 +2055,7 @@ const K = window.SimKit, P = window.SimPlus;
 const LABOR = (() => {
 	const B = 42, H = 29.7, OBEN = 4.6, UNTEN = 6.0, RAND = 0.7;
 	const MX = 21, MY = 14.85;                         /* Papiermitte */
-	const RING = { R: 12, ri: 2 }, DIPOL = { a: 13, b: 29, r: 2 }, STANGE = { minus: 11, plus: 31 };
+	const RING = { R: 12, ri: 1.4 }, DIPOL = { a: 13, b: 29, r: 1.4 }   /* Massestück: Teller 28 mm (Kast 2026-11-25) */, STANGE = { minus: 11, plus: 31 };
 	const FARBE = { plus: "#E03030", minus: "#3050E0", plushell: "#F8D0D0", minushell: "#D0D8F8" };
 	const SCHRIFT = "'Libertinus Sans', 'Segoe UI', system-ui, sans-serif";
 	/* Maßstab aus der Breite; Höhe des Bildes in Pixeln */
@@ -2257,7 +2257,9 @@ const LABOR = (() => {
 		g.fillStyle = gr; g.beginPath(); g.moveTo(px(24), py(MY)); g.lineTo(px(26.5), py(MY - b)); g.lineTo(px(41), py(MY - b)); g.lineTo(px(41), py(MY + b)); g.lineTo(px(26.5), py(MY + b)); g.closePath(); g.fill(); g.restore();
 		g.strokeStyle = "rgba(40,44,50,0.6)"; g.lineWidth = 0.8; g.stroke();
 	}
-	return { B, H, MX, MY, RING, DIPOL, STANGE, layout, verhaeltnis, papier, aufbau, ladung };
+	/* Abstand Zeiger -> Spitze in Pixeln: Zeiger auf dem Griff, beim Finger weiter weg */
+	const griffVersatz = (L, art) => art === "touch" ? Math.max(2.4 * L.s, 44) : Math.max(1.5 * L.s, 20);
+	return { B, H, MX, MY, RING, DIPOL, STANGE, layout, verhaeltnis, papier, aufbau, ladung, griffVersatz };
 })();
 
 
@@ -2310,7 +2312,7 @@ function starteRechnung() {
 	}
 	setTimeout(schritt, 0);
 }
-const HINWEIS = "Ziehen Sie die Sonde (schwarzer Punkt) über das Papier. Das Voltmeter misst zwischen Sonde (rotes Kabel) und der Elektrode mit 0&nbsp;V (schwarzes Kabel). Raster 1&nbsp;cm.";
+const HINWEIS = "Fassen Sie die Sonde am Griff und ziehen Sie sie über das Papier; gemessen wird an der Spitze (schwarzer Punkt). Das Voltmeter misst zwischen Sonde (rotes Kabel) und der Elektrode mit 0&nbsp;V (schwarzes Kabel). Raster 1&nbsp;cm.";
 function phiBei(x, y) {
 	const gx = Math.max(0, Math.min(NX - 1.001, x / H_CM)), gy = Math.max(0, Math.min(NY - 1.001, y / H_CM));
 	const i = Math.floor(gx), j = Math.floor(gy), fx = gx - i, fy = gy - j;
@@ -2446,7 +2448,7 @@ document.getElementById("btn-leeren").addEventListener("click", () => { messpunk
 function eigenerWert() {
 	const r = parseFloat(String(document.getElementById("ein-r").value).replace(",", "."));
 	const ph = parseFloat(String(document.getElementById("ein-phi").value).replace(",", "."));
-	if (!(r > RING.ri && r < RING.R) || !isFinite(ph)) { SimUI.meldung("r zwischen " + P.de(RING.ri, 0) + " cm und " + P.de(RING.R, 0) + " cm und φ als Zahl eintragen"); return; }
+	if (!(r > RING.ri && r < RING.R) || !isFinite(ph)) { SimUI.meldung("r zwischen " + P.de(RING.ri, 1) + " cm und " + P.de(RING.R, 0) + " cm und φ als Zahl eintragen"); return; }
 	const p = { x: NaN, y: NaN, r, phi: ph };
 	messpunkte.hinzu(["–", "–", P.de(r, 1), P.de(ph, 2)], p);
 	document.getElementById("ein-r").value = ""; document.getElementById("ein-phi").value = "";
@@ -2456,11 +2458,16 @@ function eigenerWert() {
 }
 document.getElementById("btn-eigen").addEventListener("click", eigenerWert);
 ["ein-r", "ein-phi"].forEach(id => document.getElementById(id).addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); eigenerWert(); } }));
+let zeigerArt = "mouse";
+cW.addEventListener("pointerdown", ev => { zeigerArt = ev.pointerType; }, true);
 P.ziehbar(cW, (x, y) => {
 	if (!L) return null;
 	const X = (x - L.ox) / L.s, Y = (y - L.oy) / L.s;
 	return (X >= -0.3 && X <= LABOR.B + 0.3 && Y >= -0.3 && Y <= LABOR.H + 0.3) ? "sonde" : null;
 }, (id, x, y) => {
+	/* Man hält die Sonde am Griff: die Spitze sitzt rechts oberhalb des Zeigers, damit Zeiger oder Finger sie nicht verdecken (Kast 2026-11-25) */
+	const d = LABOR.griffVersatz(L, zeigerArt);
+	x += 0.55 * d; y -= 0.835 * d;
 	zustand.sonde = { x: Math.max(0, Math.min(LABOR.B, (x - L.ox) / L.s)), y: Math.max(0, Math.min(LABOR.H, (y - L.oy) / L.s)) };
 	zeichneWanne(gW, WW, HW, true);
 });
