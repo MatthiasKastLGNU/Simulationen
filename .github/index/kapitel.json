@@ -46,7 +46,8 @@
   "C.9": "Druck in Gasen",
   "C.9.1": "Druck als Zustandsgröße",
   "C.9.2": "Druckänderung eines Gases",
-  "C.9.3": "Druckunterschied als Ursache für einen Teilchenstrom"
+  "C.9.3": "Druckunterschied als Ursache für einen Teilchenstrom",
+  "P": "Profilbereich"
  },
  "10": {
   "A": "Elektromagnetismus",
@@ -90,7 +91,11 @@
   "D.11.3": "Die Funktionsweise eines Kernreaktors",
   "D.12": "Halbwertszeit",
   "D.12.1": "Halbwertszeit",
-  "D.12.3": "Gefahren radioaktiver Strahlung"
+  "D.12.3": "Gefahren radioaktiver Strahlung",
+  "P": "Profilbereich",
+  "P.5": "Profilbereich am NTG",
+  "P.5.1": "Halbleiterbauelemente in Experimenten",
+  "P.5.2": "Vertiefung anhand ausgewählter Inhalte"
  },
  "12": {
   "A": "Statische elektrische und magnetische Felder",
